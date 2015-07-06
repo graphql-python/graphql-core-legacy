@@ -198,7 +198,7 @@ def coerce_value_ast(type, value_ast, variables):
     if isinstance(type, GraphQLScalarType) or \
         isinstance(type, GraphQLEnumType):
         coerced = type.coerce_literal(value_ast)
-        if is_nullish(coerced):
+        if not is_nullish(coerced):
             return coerced
 
     return None

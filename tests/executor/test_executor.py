@@ -111,5 +111,249 @@ def test_executes_arbitary_code():
 
     schema = GraphQLSchema(query=DataType())
 
-    assert execute(schema, Data(), ast, 'Example', {'size': 100}).data \
-        == expected
+    result = execute(schema, Data(), ast, 'Example', {'size': 100})
+    assert not result.errors
+    assert result.data == expected
+
+
+def test_merges_parallel_fragments():
+    ast = parse('''
+        { a, ...FragOne, ...FragTwo }
+
+        fragment FragOne on Type {
+            b
+            deep { b, deeper: deep { b } }
+        }
+
+        fragment FragTwo on Type {
+            c
+            deep { c, deeper: deep { c } }
+        }
+    ''')
+
+    class Type(GraphQLObjectType):
+        name = 'Type'
+        
+        def get_fields(self):
+            return {
+                'a': GraphQLField(GraphQLString(),
+                    resolver=lambda *_: 'Apple'),
+                'b': GraphQLField(GraphQLString(),
+                    resolver=lambda *_: 'Banana'),
+                'c': GraphQLField(GraphQLString(),
+                    resolver=lambda *_: 'Cherry'),
+                'deep': GraphQLField(Type(), resolver=lambda *_: {}),
+            }
+
+    schema = GraphQLSchema(query=Type())
+    result = execute(schema, None, ast)
+    assert not result.errors
+    assert result.data == \
+        {
+            'a': 'Apple',
+            'b': 'Banana',
+            'c': 'Cherry',
+            'deep': {
+              'b': 'Banana',
+              'c': 'Cherry',
+              'deeper': {
+                'b': 'Banana',
+                'c': 'Cherry' } }
+        }
+
+
+def test_threads_context_correctly():
+    doc = 'query Example { a }'
+
+    class Data(object):
+        context_thing = 'thing'
+
+    ast = parse(doc)
+
+    def resolver(context, *_):
+        assert context.context_thing == 'thing'
+        resolver.got_here = True
+    
+    resolver.got_here = False
+
+    class Type(GraphQLObjectType):
+        name = 'Type'
+        fields = {
+            'a': GraphQLField(GraphQLString(), resolver=resolver)
+        }
+
+    result = execute(GraphQLSchema(Type()), Data(), ast, 'Example', {})
+    assert not result.errors
+    assert resolver.got_here
+
+
+def test_correctly_threads_arguments():
+    doc = '''
+        query Example {
+            b(numArg: 123, stringArg: "foo")
+        }
+    '''
+
+    def resolver(_, args, *_args):
+        assert args['numArg'] == 123
+        assert args['stringArg'] == 'foo'
+        resolver.got_here = True
+
+    resolver.got_here = False
+
+    doc_ast = parse(doc)
+
+    class Type(GraphQLObjectType):
+        name = 'Type'
+        fields = {
+            'b': GraphQLField(GraphQLString(),
+                args={
+                    'numArg': GraphQLArgument(GraphQLInt()),
+                    'stringArg': GraphQLArgument(GraphQLString()),
+                },
+                resolver=resolver),
+        }
+
+    result = execute(GraphQLSchema(Type()), None, doc_ast, 'Example', {})
+    assert not result.errors
+    assert resolver.got_here
+
+
+def test_nulls_out_error_subtrees():
+    doc = '''{
+        ok,
+        error
+    }'''
+
+    class Data(object):
+        def ok(self):
+            return 'ok'
+
+        def error(self):
+            raise Exception('Error getting error')
+
+    doc_ast = parse(doc)
+
+    class Type(GraphQLObjectType):
+        name = 'Type'
+        fields = {
+            'ok': GraphQLField(GraphQLString()),
+            'error': GraphQLField(GraphQLString()),
+        }
+
+    result = execute(GraphQLSchema(Type()), Data(), doc_ast)
+    assert result.data == {'ok': 'ok', 'error': None}
+    assert len(result.errors) == 1
+    assert result.errors[0].message == 'Error getting error'
+    # TODO: check error location
+
+
+def test_uses_the_inline_operation_if_no_operation_is_provided():
+    doc = '{ a }'
+    class Data(object):
+        a = 'b'
+    ast = parse(doc)
+    class Type(GraphQLObjectType):
+        name = 'Type'
+        fields = {'a': GraphQLField(GraphQLString())}
+    result = execute(GraphQLSchema(Type()), Data(), ast)
+    assert not result.errors
+    assert result.data == {'a': 'b'}
+
+
+def test_uses_the_only_operation_if_no_operation_is_provided():
+    doc = 'query Example { a }'
+    class Data(object):
+        a = 'b'
+    ast = parse(doc)
+    class Type(GraphQLObjectType):
+        name = 'Type'
+        fields = {'a': GraphQLField(GraphQLString())}
+    result = execute(GraphQLSchema(Type()), Data(), ast)
+    assert not result.errors
+    assert result.data == {'a': 'b'}
+
+
+def test_raises_the_inline_operation_if_no_operation_is_provided():
+    doc = 'query Example { a } query OtherExample { a }'
+    class Data(object):
+        a = 'b'
+    ast = parse(doc)
+    class Type(GraphQLObjectType):
+        name = 'Type'
+        fields = {'a': GraphQLField(GraphQLString())}
+    result = execute(GraphQLSchema(Type()), Data(), ast)
+    assert not result.data
+    assert len(result.errors) == 1
+    assert result.errors[0].message == 'Must provide operation name if query contains multiple operations'
+
+
+def test_uses_the_query_schema_for_queries():
+    doc = 'query Q { a } mutation M { c }'
+    class Data(object):
+        a = 'b'
+        c = 'd'
+    ast = parse(doc)
+    class Q(GraphQLObjectType):
+        name = 'Q'
+        fields = {'a': GraphQLField(GraphQLString())}
+    class M(GraphQLObjectType):
+        name = 'M'
+        fields = {'c': GraphQLField(GraphQLString())}
+    result = execute(GraphQLSchema(Q(), M()), Data(), ast, 'Q')
+    assert not result.errors
+    assert result.data == {'a': 'b'}
+
+
+def test_uses_the_mutation_schema_for_queries():
+    doc = 'query Q { a } mutation M { c }'
+    class Data(object):
+        a = 'b'
+        c = 'd'
+    ast = parse(doc)
+    class Q(GraphQLObjectType):
+        name = 'Q'
+        fields = {'a': GraphQLField(GraphQLString())}
+    class M(GraphQLObjectType):
+        name = 'M'
+        fields = {'c': GraphQLField(GraphQLString())}
+    result = execute(GraphQLSchema(Q(), M()), Data(), ast, 'M')
+    assert not result.errors
+    assert result.data == {'c': 'd'}
+
+
+def test_avoids_recursion():
+    doc = '''
+        query Q {
+            a
+            ...Frag
+            ...Frag
+        }
+        fragment Frag on Type {
+            a,
+            ...Frag
+        }
+    '''
+    class Data(object):
+        a = 'b'
+    ast = parse(doc)
+    class Type(GraphQLObjectType):
+        name = 'Type'
+        fields = {'a': GraphQLField(GraphQLString())}
+    result = execute(GraphQLSchema(Type()), Data(), ast, 'Q')
+    assert not result.errors
+    assert result.data == {'a': 'b'}
+
+
+def test_does_not_include_illegal_fields_in_output():
+    doc = 'mutation M { thisIsIllegalDontIncludeMe }'
+    ast = parse(doc)
+    class Q(GraphQLObjectType):
+        name = 'Q'
+        fields = {'a': GraphQLField(GraphQLString())}
+    class M(GraphQLObjectType):
+        name = 'M'
+        fields = {'c': GraphQLField(GraphQLString())}
+    result = execute(GraphQLSchema(Q(), M()), None, ast)
+    assert not result.errors
+    assert result.data == {}

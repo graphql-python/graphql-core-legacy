@@ -25,6 +25,8 @@ from graphql.type.directives import (
     GraphQLUnlessDirective,
 )
 
+Undefined = object()
+
 
 """
 Terminology
@@ -73,7 +75,7 @@ class ExecutionContext(object):
         operation = operations.get(op_name)
         if not operation:
             raise GraphQLError('Unknown operation name: {}'.format(op_name))
-        variables = get_variable_values(schema, operation['variableDefinitions'], args)
+        variables = get_variable_values(schema, operation['variableDefinitions'] or [], args)
 
         self.schema = schema
         self.fragments = fragments
@@ -93,17 +95,16 @@ class ExecutionResult(object):
         self.errors = errors
 
 
-def execute(schema, root, ast, operation_name, args):
+def execute(schema, root, ast, operation_name='', args=None):
     """Implements the "Evaluating requests" section of the spec."""
     assert schema, 'Must provide schema'
     errors = []
-    ctx = ExecutionContext(schema, root, ast, operation_name, args, errors)
-    data = None
     try:
+        ctx = ExecutionContext(schema, root, ast, operation_name, args, errors)
         data = execute_operation(ctx, root, ctx.operation)
     except Exception as e:
         errors.append(e)
-        raise e
+        data = None
     if not errors:
         return ExecutionResult(data)
     return ExecutionResult(data, map(format_error, errors))
@@ -142,7 +143,7 @@ def execute_fields_serially(ctx, parent_type, source, fields):
     results = {}
     for response_name, field_asts in fields.items():
         result = resolve_field(ctx, parent_type, source, field_asts)
-        if result is not None:
+        if result is not Undefined:
             results[response_name] = result
     return results
 
@@ -227,7 +228,7 @@ def resolve_field(ctx, parent_type, source, field_asts):
 
     field_def = get_field_def(ctx.schema, parent_type, field_ast)
     if not field_def:
-        return
+        return Undefined
 
     field_type = field_def.type
     resolve_fn = field_def.resolver or default_resolve_fn
@@ -366,4 +367,4 @@ def get_field_def(schema, parent_type, field_ast):
         return TypeMetaFieldDef
     elif name == TypeNameMetaFieldDef.name:
         return TypeNameMetaFieldDef
-    return parent_type.get_fields()[name]
+    return parent_type.get_fields().get(name)
