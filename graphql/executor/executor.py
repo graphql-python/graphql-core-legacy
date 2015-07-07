@@ -195,6 +195,7 @@ def should_include_node(ctx, directives):
         for directive in directives:
             if directive['name']['value'] == GraphQLSkipDirective.name:
                 skip_ast = directive
+                break
         if skip_ast:
             args = get_argument_values(
                 GraphQLSkipDirective.args,
@@ -207,6 +208,7 @@ def should_include_node(ctx, directives):
         for directive in directives:
             if directive['name']['value'] == GraphQLIncludeDirective.name:
                 include_ast = directive
+                break
         if include_ast:
             args = get_argument_values(
                 GraphQLIncludeDirective.args,
@@ -218,13 +220,13 @@ def should_include_node(ctx, directives):
     return True
 
 
-def does_fragment_condition_match(ctx, fragment, type):
+def does_fragment_condition_match(ctx, fragment, type_):
     conditional_type = type_from_ast(ctx.schema, fragment['typeCondition'])
-    if conditional_type == type:
+    if type(conditional_type) == type(type_):
         return True
     if isinstance(conditional_type, GraphQLInterfaceType) or \
         isinstance(conditional_type, GraphQLUnionType):
-        return conditional_type.is_possible_type(type)
+        return conditional_type.is_possible_type(type_)
     return False
 
 

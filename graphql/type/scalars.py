@@ -42,6 +42,8 @@ class GraphQLString(GraphQLScalarType):
     name = 'String'
 
     def coerce(self, value):
+        if isinstance(value, bool):
+            return 'true' if value else 'false'
         return str(value)
 
     def coerce_literal(self, ast):
