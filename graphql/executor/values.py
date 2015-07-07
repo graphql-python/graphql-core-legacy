@@ -5,8 +5,7 @@ from graphql.type import (GraphQLNonNull, GraphQLList,
     GraphQLInputObjectType, GraphQLScalarType, GraphQLEnumType)
 from graphql.utils import type_from_ast, is_nullish
 
-__all__ = ['get_variable_values', 'get_argument_values',
-    'get_directive_value']
+__all__ = ['get_variable_values', 'get_argument_values']
 
 
 def get_variable_values(schema, definition_asts, inputs):
@@ -22,8 +21,6 @@ def get_variable_values(schema, definition_asts, inputs):
 def get_argument_values(arg_defs, arg_asts, variables):
     """Prepares an object map of argument values given a list of argument
     definitions and list of argument AST nodes."""
-    if not arg_defs:
-        return None
     arg_ast_map = {}
     if arg_asts:
         for arg in arg_asts:
@@ -40,24 +37,6 @@ def get_argument_values(arg_defs, arg_asts, variables):
             variables
         )
     return result
-
-
-def get_directive_value(directive_def, directives, variables):
-    if not directives:
-        return None
-    directive_ast = None
-    for directive in directives:
-        if directive['name']['value'] == directive_def.name:
-            directive_ast = directive
-            break
-    if directive_ast:
-        if not directive_def.get('type'):
-            return None
-        return coerce_value_ast(
-            directive_def['type'],
-            directive_ast['value'],
-            vairables
-        )
 
 
 def get_variable_value(schema, definition_ast, input):

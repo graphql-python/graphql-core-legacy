@@ -18,7 +18,7 @@ query queryName($foo: ComplexType, $site: Site = MOBILE) {
     ... on User @defer {
       field2 {
         id ,
-        alias: field1(first:10, after:$foo,) @if: $foo {
+        alias: field1(first:10, after:$foo,) @include(if: $foo) {
           id,
           ...frag
         }

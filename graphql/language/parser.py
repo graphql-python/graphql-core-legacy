@@ -452,12 +452,9 @@ def parse_directive(parser):
     node = {
         'kind': DIRECTIVE,
         'name': parse_name(parser),
+        'arguments': parse_arguments(parser),
+        'loc': loc(parser, start),
     }
-    if skip(parser, TokenKind.COLON):
-        node['value'] = parse_value(parser, False)
-    else:
-        node['value'] = None
-    node['loc'] = loc(parser, start)
     return node
 
 

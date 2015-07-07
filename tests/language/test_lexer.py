@@ -100,11 +100,6 @@ def test_lex_reports_useful_string_errors():
   
 
 def test_lexes_numbers():
-    assert lex_one('"simple"') == Token(TokenKind.STRING, 0, 8, 'simple')
-    assert lex_one('" white space "') == Token(TokenKind.STRING, 0, 15, ' white space ')
-    assert lex_one('"escaped \\n\\r\\b\\t\\f"') == Token(TokenKind.STRING, 0, 20, 'escaped \n\r\b\t\f')
-    assert lex_one('"slashes \\\\ \\/"') == Token(TokenKind.STRING, 0, 15, 'slashes \\ /')
-    assert lex_one('"unicode \\u1234\\u5678\\u90AB\\uCDEF"') == Token(TokenKind.STRING, 0, 34, u'unicode \u1234\u5678\u90AB\uCDEF')
     assert lex_one('4') == Token(TokenKind.INT, 0, 1, '4')
     assert lex_one('4.123') == Token(TokenKind.FLOAT, 0, 5, '4.123')
     assert lex_one('-4') == Token(TokenKind.INT, 0, 2, '-4')

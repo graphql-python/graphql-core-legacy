@@ -3,9 +3,7 @@ import collections
 from graphql.error import GraphQLError, format_error
 from graphql.utils import type_from_ast, is_nullish
 from graphql.language import kinds as Kind
-from graphql.executor.values import (
-    get_variable_values, get_argument_values, get_directive_value
-)
+from graphql.executor.values import get_variable_values, get_argument_values
 from graphql.type.definition import (
     GraphQLScalarType,
     GraphQLObjectType,
@@ -21,8 +19,8 @@ from graphql.type.introspection import (
     TypeNameMetaFieldDef,
 )
 from graphql.type.directives import (
-    GraphQLIfDirective,
-    GraphQLUnlessDirective,
+    GraphQLIncludeDirective,
+    GraphQLSkipDirective,
 )
 
 Undefined = object()
@@ -190,16 +188,32 @@ def collect_fields(ctx, type, selection_set, fields, prev_fragment_names):
 
 
 def should_include_node(ctx, directives):
-    """Determines if a field should be included based on @if and @unless directives."""
-    if_directive = get_directive_value(GraphQLIfDirective,
-        directives, ctx.variables)
-    if if_directive is not None:
-        return if_directive
+    """Determines if a field should be included based on the @include and
+    @skip directives, where @skip has higher precidence than @include."""
+    if directives:
+        skip_ast = None
+        for directive in directives:
+            if directive['name']['value'] == GraphQLSkipDirective.name:
+                skip_ast = directive
+        if skip_ast:
+            args = get_argument_values(
+                GraphQLSkipDirective.args,
+                skip_ast['arguments'],
+                ctx.variables,
+            )
+            return not args.get('if')
 
-    unless_directive = get_directive_value(GraphQLUnlessDirective,
-        directives, ctx.variables)
-    if unless_directive is not None:
-        return unless_directive
+        include_ast = None
+        for directive in directives:
+            if directive['name']['value'] == GraphQLIncludeDirective.name:
+                include_ast = directive
+        if include_ast:
+            args = get_argument_values(
+                GraphQLIncludeDirective.args,
+                include_ast['arguments'],
+                ctx.variables,
+            )
+            return bool(args.get('if'))
 
     return True
 
@@ -235,9 +249,12 @@ def resolve_field(ctx, parent_type, source, field_asts):
 
     # Build a dict of arguments from the field.arguments AST, using the variables scope to fulfill any variable references.
     # TODO: find a way to memoize, in case this field is within a list type.
-    args = get_argument_values(
-        field_def.args, field_ast['arguments'], ctx.variables
-    )
+    if field_def.args:
+        args = get_argument_values(
+            field_def.args, field_ast['arguments'], ctx.variables
+        )
+    else:
+        args = None
 
     # If an error occurs while calling the field `resolve` function, ensure that it is wrapped as a GraphQLError with locations. Log this error and return null if allowed, otherwise throw the error so the parent field can handle it.
     try:
