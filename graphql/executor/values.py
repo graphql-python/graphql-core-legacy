@@ -10,10 +10,12 @@ __all__ = ['get_variable_values', 'get_argument_values']
 
 def get_variable_values(schema, definition_asts, inputs):
     """Prepares an object map of variables of the correct type based on the provided variable definitions and arbitrary input. If the input cannot be coerced to match the variable definitions, a GraphQLError will be thrown."""
+    if inputs is None:
+        inputs = {}
     values = {}
     for def_ast in definition_asts:
         var_name = def_ast['variable']['name']['value']
-        value = get_variable_value(schema, def_ast, inputs[var_name])
+        value = get_variable_value(schema, def_ast, inputs.get(var_name))
         values[var_name] = value
     return values
 
@@ -72,7 +74,8 @@ def is_valid_value(type, value):
 
     if isinstance(type, GraphQLList):
         item_type = type.of_type
-        if isinstance(value, collections.Iterable):
+        if not isinstance(value, basestring) and \
+                isinstance(value, collections.Iterable):
             return all(is_valid_value(item_type, item) for item in value)
         else:
             return is_valid_value(item_type, value)
@@ -104,7 +107,8 @@ def coerce_value(type, value):
 
     if isinstance(type, GraphQLList):
         item_type = type.of_type
-        if isinstance(value, collections.Iterable):
+        if not isinstance(value, basestring) and \
+            isinstance(value, collections.Iterable):
             return [coerce_value(item_type, item) for item in value]
         else:
             return [coerce_value(item_type, value)]

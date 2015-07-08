@@ -311,7 +311,7 @@ def complete_value(ctx, field_type, field_asts, result):
         if completed is None:
             raise GraphQLError(
                 'Cannot return null for non-nullable type.',
-                fieldASTs
+                field_asts
             )
         return completed
 
