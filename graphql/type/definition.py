@@ -290,7 +290,7 @@ class GraphQLInterfaceType(GraphQLType):
             )
         return type.name in self._possible_type_names
 
-    def resolve_type(value):
+    def resolve_type(self, value):
         return get_type_of(value, self)
 
 
@@ -329,7 +329,7 @@ class GraphQLUnionType(GraphQLType):
         assert self.types, \
             'Must provide types for Union {}.'.format(self.name)
         non_obj_types = [t for t in self.types
-            if not instanceof(t, GraphQLObjectType)]
+            if not isinstance(t, GraphQLObjectType)]
         if non_obj_types:
             raise Error(
                 'Union {} may only contain object types, it cannot ' \
@@ -349,7 +349,7 @@ class GraphQLUnionType(GraphQLType):
             )
         return type.name in self._possible_type_names
 
-    def resolve_type(value):
+    def resolve_type(self, value):
         return get_type_of(value, self)
         
 
@@ -421,7 +421,7 @@ class GraphQLEnumValue(object):
     def __init__(self, value=None, deprecation_reason=None,
         description=None):
         self.value = value
-        self.deprecation_reason = depreaction_reason
+        self.deprecation_reason = deprecation_reason
         self.description = description
 
 
