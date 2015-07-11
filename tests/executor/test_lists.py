@@ -4,7 +4,6 @@ from graphql.type import (
     GraphQLSchema,
     GraphQLObjectType,
     GraphQLField,
-    GraphQLArgument,
     GraphQLInt,
     GraphQLList,
     GraphQLNonNull,
@@ -19,7 +18,7 @@ def run(test_type, test_data):
         def get_fields(self):
             return {
                 'test': GraphQLField(test_type),
-                'nest': GraphQLField(DataType(), resolver=lambda *_: Data())
+                'nest': GraphQLField(DataType, resolver=lambda *_: Data())
             }
 
     schema = GraphQLSchema(DataType())
@@ -36,7 +35,7 @@ def check(test_type, test_data, expected_data):
 # Execute: Handles list nullability
 
 def test_nullable_list_of_nullables():
-    type = GraphQLList(GraphQLInt()) # [T]
+    type = GraphQLList(GraphQLInt) # [T]
     # Contains values
     check(type, [1, 2], {'nest': {'test': [1, 2]}})
     # Contains null
@@ -46,7 +45,7 @@ def test_nullable_list_of_nullables():
 
 
 def test_non_nullable_list_of_nullables():
-    type = GraphQLNonNull(GraphQLList(GraphQLInt())) # [T]!
+    type = GraphQLNonNull(GraphQLList(GraphQLInt)) # [T]!
     # Contains values
     check(type, [1, 2], {'nest': {'test': [1, 2]}})
     # Contains null
@@ -60,7 +59,7 @@ def test_non_nullable_list_of_nullables():
 
 
 def test_nullable_list_of_non_nullables():
-    type = GraphQLList(GraphQLNonNull(GraphQLInt())) # [T!]
+    type = GraphQLList(GraphQLNonNull(GraphQLInt)) # [T!]
     # Contains values
     check(type, [1, 2], {'nest': {'test': [1, 2]}})
     # Contains null
@@ -74,7 +73,7 @@ def test_nullable_list_of_non_nullables():
 
 
 def test_non_nullable_list_of_non_nullables():
-    type = GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLInt()))) # [T!]!
+    type = GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLInt))) # [T!]!
     # Contains values
     check(type, [1, 2], {'nest': {'test': [1, 2]}})
     # Contains null

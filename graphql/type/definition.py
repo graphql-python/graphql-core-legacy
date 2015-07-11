@@ -143,6 +143,13 @@ export function getUnmodifiedType(type: ?GraphQLType): ?GraphQLUnmodifiedType {
 }
 '''
 
+def to_instance(typeobj, *args, **kwargs):
+    if callable(typeobj):
+        return typeobj(*args, **kwargs)
+
+    return typeobj
+
+
 class GraphQLType(object):
     pass
 
@@ -232,8 +239,8 @@ class GraphQLObjectType(GraphQLType):
 
 class GraphQLField(object):
     def __init__(self, type, args=None, resolver=None,
-        deprecation_reason=None, description=None):
-        self.type = type
+            deprecation_reason=None, description=None):
+        self.type = to_instance(type)
         self.args = []
         if args:
             for arg_name, arg in args.items():
@@ -249,7 +256,7 @@ class GraphQLField(object):
 
 class GraphQLArgument(object):
     def __init__(self, type, default_value=None):
-        self.type = type
+        self.type = to_instance(type)
         self.default_value = default_value
 
 
@@ -299,8 +306,8 @@ def get_type_of(value, abstract_type):
     for type in possible_types:
         if not type.is_type_of(value):
             raise Error(
-                'Non-Object Type {} does not implement resolve_type and ' \
-                'Object Type {} does not implement is_type_of. ' \
+                'Non-Object Type {} does not implement resolve_type and '
+                'Object Type {} does not implement is_type_of. '
                 'There is no way to determine if a value is of this type.'
                 .format(abstract_type.name, type.name)
             )
@@ -316,7 +323,7 @@ class GraphQLUnionType(GraphQLType):
 
         class PetType(GraphQLUnionType):
             name = 'Pet'
-            types = [DogType(), CatType()]
+            types = [DogType, CatType]
 
             def resolve_type(self, value):
                 if isinstance(value, Dog):
@@ -328,7 +335,8 @@ class GraphQLUnionType(GraphQLType):
         assert self.name, 'Type must be named.'
         assert self.types, \
             'Must provide types for Union {}.'.format(self.name)
-        non_obj_types = [t for t in self.types
+        self._types = map(to_instance, self.types)
+        non_obj_types = [t for t in self._types
             if not isinstance(t, GraphQLObjectType)]
         if non_obj_types:
             raise Error(
@@ -340,7 +348,7 @@ class GraphQLUnionType(GraphQLType):
             )
 
     def get_possible_types(self):
-        return self.types
+        return self._types
 
     def is_possible_type(self, type):
         if self._possible_type_names is None:
@@ -419,7 +427,7 @@ class GraphQLEnumType(GraphQLType):
 
 class GraphQLEnumValue(object):
     def __init__(self, value=None, deprecation_reason=None,
-        description=None):
+            description=None):
         self.value = value
         self.deprecation_reason = deprecation_reason
         self.description = description
@@ -455,7 +463,7 @@ class GraphQLInputObjectType(GraphQLType):
 
 class GraphQLInputObjectField(object):
     def __init__(self, type, default_value=None, description=None):
-        self.type = type
+        self.type = to_instance(type)
         self.default_value = default_value
         self.description = description
 
@@ -479,7 +487,7 @@ class GraphQLList(GraphQLType):
                 }
     """
     def __init__(self, type):
-        self.of_type = type
+        self.of_type = to_instance(type)
 
 
 class GraphQLNonNull(GraphQLType):
@@ -498,4 +506,4 @@ class GraphQLNonNull(GraphQLType):
     Note: the enforcement of non-nullability occurs within the executor.
     """
     def __init__(self, type):
-        self.of_type = type
+        self.of_type = to_instance(type)

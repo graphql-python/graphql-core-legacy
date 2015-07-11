@@ -4,6 +4,7 @@ from graphql.type.definition import (
     GraphQLUnionType,
     GraphQLList,
     GraphQLNonNull,
+    to_instance,
 )
 from graphql.type.introspection import _Schema
 
@@ -20,8 +21,8 @@ class GraphQLSchema(object):
         )
     """
     def __init__(self, query, mutation=None):
-        self.query = query
-        self.mutation = mutation
+        self.query = to_instance(query)
+        self.mutation = to_instance(mutation)
         self._type_map = None
         self._directives = None
 

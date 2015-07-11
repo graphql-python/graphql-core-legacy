@@ -17,50 +17,50 @@ def test_executes_using_a_schema():
     class BlogImage(GraphQLObjectType):
         name = 'Image'
         fields = {
-            'url': GraphQLField(GraphQLString()),
-            'width': GraphQLField(GraphQLInt()),
-            'height': GraphQLField(GraphQLInt()),
+            'url': GraphQLField(GraphQLString),
+            'width': GraphQLField(GraphQLInt),
+            'height': GraphQLField(GraphQLInt),
         }
 
     class BlogAuthor(GraphQLObjectType):
         name = 'Author'
         def get_fields(self):
             return {
-                'id': GraphQLField(GraphQLString()),
-                'name': GraphQLField(GraphQLString()),
-                'pic': GraphQLField(BlogImage(),
+                'id': GraphQLField(GraphQLString),
+                'name': GraphQLField(GraphQLString),
+                'pic': GraphQLField(BlogImage,
                     args={
-                        'width': GraphQLArgument(GraphQLInt()),
-                        'height': GraphQLArgument(GraphQLInt()),
+                        'width': GraphQLArgument(GraphQLInt),
+                        'height': GraphQLArgument(GraphQLInt),
                     },
                     resolver=lambda obj, args, *_:
                         obj.pic(args['width'], args['height'])
                 ),
-                'recentArticle': GraphQLField(BlogArticle()),
+                'recentArticle': GraphQLField(BlogArticle),
             }
 
     class BlogArticle(GraphQLObjectType):
         name = 'Article'
         fields = {
-            'id': GraphQLField(GraphQLNonNull(GraphQLString())),
-            'isPublished': GraphQLField(GraphQLBoolean()),
-            'author': GraphQLField(BlogAuthor()),
-            'title': GraphQLField(GraphQLString()),
-            'body': GraphQLField(GraphQLString()),
-            'keywords': GraphQLField(GraphQLList(GraphQLString())),
+            'id': GraphQLField(GraphQLNonNull(GraphQLString)),
+            'isPublished': GraphQLField(GraphQLBoolean),
+            'author': GraphQLField(BlogAuthor),
+            'title': GraphQLField(GraphQLString),
+            'body': GraphQLField(GraphQLString),
+            'keywords': GraphQLField(GraphQLList(GraphQLString)),
         }
 
     class BlogQuery(GraphQLObjectType):
         name = 'Query'
         fields = {
-            'article': GraphQLField(BlogArticle(),
-                args={'id': GraphQLArgument(GraphQLID())},
+            'article': GraphQLField(BlogArticle,
+                args={'id': GraphQLArgument(GraphQLID)},
                 resolver=lambda obj, args, *_: Article(args['id'])),
-            'feed': GraphQLField(GraphQLList(BlogArticle()),
+            'feed': GraphQLField(GraphQLList(BlogArticle),
                 resolver=lambda *_: map(Article, range(1, 10 + 1))),
         }
 
-    BlogSchema = GraphQLSchema(BlogQuery())
+    BlogSchema = GraphQLSchema(BlogQuery)
 
     class Article(object):
         def __init__(self, id):

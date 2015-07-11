@@ -30,36 +30,36 @@ class Root(object):
 
 class NumberHolderType(GraphQLObjectType):
     name = 'NumberHolder'
-    fields = {'theNumber': GraphQLField(GraphQLInt())}
+    fields = {'theNumber': GraphQLField(GraphQLInt)}
 
 
 class QueryType(GraphQLObjectType):
     name = 'Query'
-    fields = {'numberHolder': GraphQLField(NumberHolderType())}
+    fields = {'numberHolder': GraphQLField(NumberHolderType)}
 
 
 class MutationType(GraphQLObjectType):
     name = 'Mutation'
     fields = {
-        'immediatelyChangeTheNumber': GraphQLField(NumberHolderType(),
-            args={'newNumber': GraphQLArgument(GraphQLInt())},
+        'immediatelyChangeTheNumber': GraphQLField(NumberHolderType,
+            args={'newNumber': GraphQLArgument(GraphQLInt)},
             resolver=lambda obj, args, *_:
                 obj.immediately_change_the_number(args['newNumber'])),
-        'promiseToChangeTheNumber': GraphQLField(NumberHolderType(),
-            args={'newNumber': GraphQLArgument(GraphQLInt())},
+        'promiseToChangeTheNumber': GraphQLField(NumberHolderType,
+            args={'newNumber': GraphQLArgument(GraphQLInt)},
             resolver=lambda obj, args, *_:
                 obj.promise_to_change_the_number(args['newNumber'])),
-        'failToChangeTheNumber': GraphQLField(NumberHolderType(),
-            args={'newNumber': GraphQLArgument(GraphQLInt())},
+        'failToChangeTheNumber': GraphQLField(NumberHolderType,
+            args={'newNumber': GraphQLArgument(GraphQLInt)},
             resolver=lambda obj, args, *_:
                 obj.fail_to_change_the_number(args['newNumber'])),
-        'promiseAndFailToChangeTheNumber': GraphQLField(NumberHolderType(),
-            args={'newNumber': GraphQLArgument(GraphQLInt())},
+        'promiseAndFailToChangeTheNumber': GraphQLField(NumberHolderType,
+            args={'newNumber': GraphQLArgument(GraphQLInt)},
             resolver=lambda obj, args, *_:
                 obj.promise_and_fail_to_change_the_number(args['newNumber'])),
     }
 
-schema = GraphQLSchema(QueryType(), MutationType())
+schema = GraphQLSchema(QueryType, MutationType)
 
 
 def test_evaluates_mutations_serially():
