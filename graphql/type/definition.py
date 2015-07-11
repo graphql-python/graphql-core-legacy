@@ -221,13 +221,17 @@ class GraphQLObjectType(GraphQLType):
         });
     """
     def __init__(self):
+        if not hasattr(self, 'interfaces'):
+            self._interfaces = []
+        else:
+            self._interfaces = map(to_instance, self.interfaces)
         self._add_impls_to_ifaces()
 
     def get_fields(self):
         return self.fields
 
     def get_interfaces(self):
-        return []
+        return self._interfaces
 
     def is_type_of(self, value):
         return False
@@ -304,14 +308,16 @@ class GraphQLInterfaceType(GraphQLType):
 def get_type_of(value, abstract_type):
     possible_types = abstract_type.get_possible_types()
     for type in possible_types:
-        if not type.is_type_of(value):
+        is_type_of = type.is_type_of(value)
+        if is_type_of is None:
             raise Error(
                 'Non-Object Type {} does not implement resolve_type and '
                 'Object Type {} does not implement is_type_of. '
                 'There is no way to determine if a value is of this type.'
                 .format(abstract_type.name, type.name)
             )
-        return type
+        if is_type_of:
+            return type
 
 
 class GraphQLUnionType(GraphQLType):
@@ -336,6 +342,7 @@ class GraphQLUnionType(GraphQLType):
         assert self.types, \
             'Must provide types for Union {}.'.format(self.name)
         self._types = map(to_instance, self.types)
+        self._possible_type_names = None
         non_obj_types = [t for t in self._types
             if not isinstance(t, GraphQLObjectType)]
         if non_obj_types:

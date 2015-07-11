@@ -45,5 +45,9 @@ SchemaMetaFieldDef = GraphQLField(GraphQLNonNull(_Schema()))
 SchemaMetaFieldDef.name = '__schema'
 TypeMetaFieldDef = GraphQLField(_Type())
 TypeMetaFieldDef.name = '__type'
-TypeNameMetaFieldDef = GraphQLField(GraphQLNonNull(GraphQLString()))
+TypeNameMetaFieldDef = GraphQLField(
+    GraphQLNonNull(GraphQLString),
+    resolver=lambda source, args, root, field_ast, field_type, parent_type, *_:
+        parent_type.name
+)
 TypeNameMetaFieldDef.name = '__typename'
