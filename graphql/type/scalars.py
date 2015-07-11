@@ -11,7 +11,13 @@ class GraphQLInt(GraphQLScalarType):
     name = 'Int'
     
     def coerce(self, value):
-        num = int(value)
+        try:
+            num = int(value)
+        except ValueError:
+            try:
+                num = int(float(value))
+            except ValueError:
+                return None
         if MIN_INT <= num <= MAX_INT:
             return num
         return None
@@ -27,7 +33,10 @@ class GraphQLFloat(GraphQLScalarType):
     name = 'Float'
     
     def coerce(self, value):
-        num = float(value)
+        try:
+            num = float(value)
+        except ValueError:
+            return None
         if num == num: # is NaN?
             return num
         return None
