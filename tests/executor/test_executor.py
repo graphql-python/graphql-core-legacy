@@ -83,7 +83,8 @@ def test_executes_arbitary_code():
     class DataType(GraphQLObjectType):
         name = 'DataType'
 
-        def get_fields(self):
+        @property
+        def fields(self):
             return {
                 'a': GraphQLField(GraphQLString),
                 'b': GraphQLField(GraphQLString),
@@ -133,8 +134,9 @@ def test_merges_parallel_fragments():
 
     class Type(GraphQLObjectType):
         name = 'Type'
-        
-        def get_fields(self):
+
+        @property
+        def fields(self):
             return {
                 'a': GraphQLField(GraphQLString,
                     resolver=lambda *_: 'Apple'),

@@ -151,7 +151,8 @@ def to_instance(typeobj, *args, **kwargs):
 
 
 class GraphQLType(object):
-    pass
+    def __str__(self):
+        return self.name
 
 
 class GraphQLScalarType(GraphQLType):
@@ -181,6 +182,17 @@ class GraphQLScalarType(GraphQLType):
         return self.name
 
 
+class _ObjectTypeMeta(type):
+    def __init__(cls, name, bases, dct):
+        super(_ObjectTypeMeta, cls).__init__(name, bases, dct)
+        cls._interfaces = []
+        if hasattr(cls, 'interfaces'):
+            for type in cls.interfaces:
+                type = to_instance(type)
+                type._impls.append(cls())
+                cls._interfaces.append(type)
+
+
 class GraphQLObjectType(GraphQLType):
     """Object Type Definition
 
@@ -191,54 +203,47 @@ class GraphQLObjectType(GraphQLType):
 
         class AddressType(GraphQLObjectType):
             name = 'Address'
-
-        var AddressType = new GraphQLObjectType({
-          name: 'Address',
-          fields: {
-            street: { type: GraphQLString },
-            number: { type: GraphQLInt },
-            formatted: {
-              type: GraphQLString,
-              resolve(obj) {
-                return obj.number + ' ' + obj.street
-              }
+            fields = {
+                'street': GraphQLField(GraphQLString),
+                'number': GraphQLField(GraphQLInt),
+                'formatted': GraphQLField(GraphQLString,
+                    resolver=lambda obj, *_: obj.number + ' ' + obj.street),
             }
-          }
-        });
 
     When two types need to refer to each other, or a type needs to refer to
-    itself in a field, you can use a function expression (aka a closure or a
-    thunk) to supply the fields lazily.
+    itself in a field, you can use a property decorator to supply the fields
+    lazily.
 
     Example:
 
-        var PersonType = new GraphQLObjectType({
-          name: 'Person',
-          fields: () => ({
-            name: { type: GraphQLString },
-            bestFriend: { type: PersonType },
-          })
-        });
+        class PersonType(GraphQLObjectType):
+            name = 'Person'
+
+            @property
+            def fields(self):
+                return {
+                    'name': GraphQLField(GraphQLString),
+                    'bestFriend': GraphQLField(PersonType)
+                }
     """
+    __metaclass__ = _ObjectTypeMeta
+
     def __init__(self):
-        if not hasattr(self, 'interfaces'):
-            self._interfaces = []
-        else:
-            self._interfaces = map(to_instance, self.interfaces)
-        self._add_impls_to_ifaces()
+        self._fields = None
 
     def get_fields(self):
-        return self.fields
+        if self._fields is None:
+            self._fields = {}
+            for field_name, field in self.fields.items():
+                field.name = field_name
+                self._fields[field_name] = field
+        return self._fields
 
     def get_interfaces(self):
         return self._interfaces
 
     def is_type_of(self, value):
         return False
-
-    def _add_impls_to_ifaces(self):
-        for type in self.get_interfaces():
-            type._impls.append(self)
 
 
 class GraphQLField(object):
@@ -350,7 +355,7 @@ class GraphQLUnionType(GraphQLType):
                 'Union {} may only contain object types, it cannot ' \
                 'contain: {}.'.format(
                     self.name,
-                    ', '.join(t.name for t in non_obj_types)
+                    ', '.join(str(t) for t in non_obj_types)
                 )
             )
 
@@ -496,6 +501,9 @@ class GraphQLList(GraphQLType):
     def __init__(self, type):
         self.of_type = to_instance(type)
 
+    def __str__(self):
+        return '[' + str(self.of_type) + ']'
+
 
 class GraphQLNonNull(GraphQLType):
     """Non-Null Modifier
@@ -513,4 +521,9 @@ class GraphQLNonNull(GraphQLType):
     Note: the enforcement of non-nullability occurs within the executor.
     """
     def __init__(self, type):
+        assert not isinstance(type, GraphQLNonNull), \
+            'Cannot nest NonNull inside NonNull.'
         self.of_type = to_instance(type)
+
+    def __str__(self):
+        return str(self.of_type) + '!'

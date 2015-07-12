@@ -15,7 +15,9 @@ def run(test_type, test_data):
 
     class DataType(GraphQLObjectType):
         name = 'DataType'
-        def get_fields(self):
+
+        @property
+        def fields(self):
             return {
                 'test': GraphQLField(test_type),
                 'nest': GraphQLField(DataType, resolver=lambda *_: Data())

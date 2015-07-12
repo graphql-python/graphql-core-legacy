@@ -24,7 +24,9 @@ def test_executes_using_a_schema():
 
     class BlogAuthor(GraphQLObjectType):
         name = 'Author'
-        def get_fields(self):
+
+        @property
+        def fields(self):
             return {
                 'id': GraphQLField(GraphQLString),
                 'name': GraphQLField(GraphQLString),
