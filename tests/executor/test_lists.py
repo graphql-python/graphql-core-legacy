@@ -13,17 +13,12 @@ def run(test_type, test_data):
     class Data(object):
         test = test_data
 
-    class DataType(GraphQLObjectType):
-        name = 'DataType'
+    DataType = GraphQLObjectType('DataType', lambda: {
+        'test': GraphQLField(test_type),
+        'nest': GraphQLField(DataType, resolver=lambda *_: Data())
+    })
 
-        @property
-        def fields(self):
-            return {
-                'test': GraphQLField(test_type),
-                'nest': GraphQLField(DataType, resolver=lambda *_: Data())
-            }
-
-    schema = GraphQLSchema(DataType())
+    schema = GraphQLSchema(DataType)
     ast = parse('{ nest { test } }')
     return execute(schema, Data(), ast)
 

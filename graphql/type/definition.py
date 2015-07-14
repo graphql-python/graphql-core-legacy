@@ -143,12 +143,6 @@ export function getUnmodifiedType(type: ?GraphQLType): ?GraphQLUnmodifiedType {
 }
 '''
 
-def to_instance(typeobj, *args, **kwargs):
-    if callable(typeobj):
-        return typeobj(*args, **kwargs)
-
-    return typeobj
-
 
 class GraphQLType(object):
     def __str__(self):
@@ -164,33 +158,30 @@ class GraphQLScalarType(GraphQLType):
 
     Example:
 
-        class OddType(GraphQLScalarType):
-            name = 'Odd'
+        def coerce_odd(value):
+            if value % 2 == 1:
+                return value
+            return None
 
-            def coerce(self, value):
-                if value % 2 == 1:
-                    return value
-                return None
+        OddType = GraphQLScalarType(name='Odd', coerce=coerce_odd)
     """
+    def __init__(self, name, description=None, coerce=None, coerce_literal=None):
+        assert name, 'Type must be named.'
+        self.name = name
+        self.description = description
+        self._coerce = coerce
+        self._coerce_literal = coerce_literal
+
     def coerce(self, value):
-        raise NotImplemented
+        return self._coerce(value)
 
     def coerce_literal(self, value):
+        if self._coerce_literal:
+            return self._coerce_literal(value)
         return None
 
     def __str__(self):
         return self.name
-
-
-class _ObjectTypeMeta(type):
-    def __init__(cls, name, bases, dct):
-        super(_ObjectTypeMeta, cls).__init__(name, bases, dct)
-        cls._interfaces = []
-        if hasattr(cls, 'interfaces'):
-            for type in cls.interfaces:
-                type = to_instance(type)
-                type._impls.append(cls())
-                cls._interfaces.append(type)
 
 
 class GraphQLObjectType(GraphQLType):
@@ -201,55 +192,64 @@ class GraphQLObjectType(GraphQLType):
 
     Example:
 
-        class AddressType(GraphQLObjectType):
-            name = 'Address'
-            fields = {
-                'street': GraphQLField(GraphQLString),
-                'number': GraphQLField(GraphQLInt),
-                'formatted': GraphQLField(GraphQLString,
-                    resolver=lambda obj, *_: obj.number + ' ' + obj.street),
-            }
+        AddressType = GraphQLObjectType('Address', {
+            'street': GraphQLField(GraphQLString),
+            'number': GraphQLField(GraphQLInt),
+            'formatted': GraphQLField(GraphQLString,
+                resolver=lambda obj, *_: obj.number + ' ' + obj.street),
+        })
 
     When two types need to refer to each other, or a type needs to refer to
-    itself in a field, you can use a property decorator to supply the fields
+    itself in a field, you can use a static method to supply the fields
     lazily.
 
     Example:
 
-        class PersonType(GraphQLObjectType):
-            name = 'Person'
-
-            @property
-            def fields(self):
-                return {
-                    'name': GraphQLField(GraphQLString),
-                    'bestFriend': GraphQLField(PersonType)
-                }
+        PersonType = GraphQLObjectType('Person', lambda: {
+            'name': GraphQLField(GraphQLString),
+            'bestFriend': GraphQLField(PersonType)
+        })
     """
-    __metaclass__ = _ObjectTypeMeta
-
-    def __init__(self):
-        self._fields = None
+    def __init__(self, name, fields, interfaces=None, is_type_of=None, description=None):
+        assert name, 'Type must be named.'
+        self.name = name
+        self.description = description
+        self._fields = fields
+        self._field_map = None
+        self._interfaces = interfaces or []
+        self._is_type_of = is_type_of
+        add_impl_to_interfaces(self)
 
     def get_fields(self):
-        if self._fields is None:
-            self._fields = {}
-            for field_name, field in self.fields.items():
-                field.name = field_name
-                self._fields[field_name] = field
-        return self._fields
+        if self._field_map is None:
+            self._field_map = define_field_map(self._fields)
+        return self._field_map
 
     def get_interfaces(self):
         return self._interfaces
 
     def is_type_of(self, value):
-        return False
+        if self._is_type_of:
+            return self._is_type_of(value)
+
+
+def define_field_map(fields):
+    if callable(fields):
+        fields = fields()
+    for field_name, field in fields.items():
+        field.name = field_name
+    return fields
+
+
+def add_impl_to_interfaces(impl):
+    for type in impl.get_interfaces():
+        type._impls.append(impl)
 
 
 class GraphQLField(object):
     def __init__(self, type, args=None, resolver=None,
-            deprecation_reason=None, description=None):
-        self.type = to_instance(type)
+                 deprecation_reason=None, description=None):
+        self.type = type
         self.args = []
         if args:
             for arg_name, arg in args.items():
@@ -265,14 +265,8 @@ class GraphQLField(object):
 
 class GraphQLArgument(object):
     def __init__(self, type, default_value=None):
-        self.type = to_instance(type)
+        self.type = type
         self.default_value = default_value
-
-
-class _InterfaceTypeMeta(type):
-    def __init__(cls, name, bases, dct):
-        super(_InterfaceTypeMeta, cls).__init__(name, bases, dct)
-        cls._impls = []
 
 
 class GraphQLInterfaceType(GraphQLType):
@@ -282,19 +276,28 @@ class GraphQLInterfaceType(GraphQLType):
 
     Example:
 
-        class EntityType(GraphQLInterfaceType):
-            name = 'Entity'
-            fields = {
-                'name': GraphQLField(GraphQLString()),
-            }
+        EntityType = GraphQLInterfaceType(
+            name='Entity',
+            fields={
+                'name': GraphQLField(GraphQLString),
+            })
     """
-    __metaclass__ = _InterfaceTypeMeta
 
-    def __init__(self):
+    def __init__(self, name, fields=None, resolve_type=None, description=None):
+        assert name, 'Type must be named.'
+        self.name = name
+        self.description = description
+        self._fields = fields or {}
+        self._resolver = resolve_type
+
+        self._impls = []
+        self._field_map = None
         self._possible_type_names = None
 
     def get_fields(self):
-        return self.fields
+        if self._field_map is None:
+            self._field_map = define_field_map(self._fields)
+        return self._field_map
 
     def get_possible_types(self):
         return self._impls
@@ -307,6 +310,8 @@ class GraphQLInterfaceType(GraphQLType):
         return type.name in self._possible_type_names
 
     def resolve_type(self, value):
+        if self._resolver:
+            return self._resolver(value)
         return get_type_of(value, self)
 
 
@@ -342,14 +347,15 @@ class GraphQLUnionType(GraphQLType):
                 if isinstance(value, Cat):
                     return CatType()
     """
-    def __init__(self):
-        assert self.name, 'Type must be named.'
-        assert self.types, \
-            'Must provide types for Union {}.'.format(self.name)
-        self._types = map(to_instance, self.types)
+    def __init__(self, name, types=None, resolve_type=None, description=None):
+        assert name, 'Type must be named.'
+        self.name = name
+        self.description = description
+        assert types, \
+            'Must provide types for Union {}.'.format(name)
         self._possible_type_names = None
-        non_obj_types = [t for t in self._types
-            if not isinstance(t, GraphQLObjectType)]
+        non_obj_types = [t for t in types
+                         if not isinstance(t, GraphQLObjectType)]
         if non_obj_types:
             raise Error(
                 'Union {} may only contain object types, it cannot ' \
@@ -358,6 +364,8 @@ class GraphQLUnionType(GraphQLType):
                     ', '.join(str(t) for t in non_obj_types)
                 )
             )
+        self._types = types
+        self._resolve_type = resolve_type
 
     def get_possible_types(self):
         return self._types
@@ -370,9 +378,10 @@ class GraphQLUnionType(GraphQLType):
         return type.name in self._possible_type_names
 
     def resolve_type(self, value):
+        if self._resolve_type:
+            return self._resolve_type(value)
         return get_type_of(value, self)
         
-
 
 class GraphQLEnumType(GraphQLType):
     """Enum Type Definition
@@ -381,20 +390,21 @@ class GraphQLEnumType(GraphQLType):
 
     Example:
 
-        class RGBType(GraphQLEnumType):
-            name = 'RGB'
-            values = {
-                'RED': GraphQLEnumValue(0),
-                'GREEN': GraphQLEnumValue(1),
-                'BLUE': GraphQLEnumValue(2),
-            }
+        RGBType = GraphQLEnumType('RGB', {
+            'RED': 0,
+            'GREEN': 1,
+            'BLUE': 2,
+        })
 
     Note: If a value is not provided in a definition, the name of the enum value will be used as it's internal value.
     """
-    def __init__(self):
+    def __init__(self, name, values, description=None):
+        self.name = name
+        self.description = description
+        self._values = values
         self._values = None
         self._value_lookup = None
-        self._namee_lookup = None
+        self._name_lookup = None
 
     def get_values(self):
         if self._values is None:
@@ -414,7 +424,9 @@ class GraphQLEnumType(GraphQLType):
                 return enum_value.value
 
     def _define_value_map(self):
-        for value_name, value in self.values.items():
+        for value_name, value in self._values.items():
+            if not isinstance(value, GraphQLEnumValue):
+                value = GraphQLEnumValue(value)
             value.name = value_name
             if value.value is None:
                 value.value = value_name
@@ -439,7 +451,7 @@ class GraphQLEnumType(GraphQLType):
 
 class GraphQLEnumValue(object):
     def __init__(self, value=None, deprecation_reason=None,
-            description=None):
+                 description=None):
         self.value = value
         self.deprecation_reason = deprecation_reason
         self.description = description
@@ -466,16 +478,22 @@ class GraphQLInputObjectType(GraphQLType):
                     default_value=0)
             }
     """
-    def __init__(self):
-        assert self.name, 'Type must be named.'
+    def __init__(self, name, fields, description=None):
+        assert name, 'Type must be named.'
+        self.name = name
+        self.description = description
+        self._fields = fields
+        self._field_map = None
 
     def get_fields(self):
-        return self.fields
+        if self._field_map is None:
+            self._field_map = define_field_map(self._fields)
+        return self._field_map
 
 
 class GraphQLInputObjectField(object):
     def __init__(self, type, default_value=None, description=None):
-        self.type = to_instance(type)
+        self.type = type
         self.default_value = default_value
         self.description = description
 
@@ -499,7 +517,7 @@ class GraphQLList(GraphQLType):
                 }
     """
     def __init__(self, type):
-        self.of_type = to_instance(type)
+        self.of_type = type
 
     def __str__(self):
         return '[' + str(self.of_type) + ']'
@@ -523,7 +541,7 @@ class GraphQLNonNull(GraphQLType):
     def __init__(self, type):
         assert not isinstance(type, GraphQLNonNull), \
             'Cannot nest NonNull inside NonNull.'
-        self.of_type = to_instance(type)
+        self.of_type = type
 
     def __str__(self):
         return str(self.of_type) + '!'

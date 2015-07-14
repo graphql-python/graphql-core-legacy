@@ -31,59 +31,50 @@ class Person(object):
         self.friends = friends
 
 
-class NamedType(GraphQLInterfaceType):
-    name = 'Named'
-    fields = {
-        'name': GraphQLField(GraphQLString)
-    }
+NamedType = GraphQLInterfaceType('Named', {
+    'name': GraphQLField(GraphQLString)
+})
 
-
-class DogType(GraphQLObjectType):
-    name = 'Dog'
-    interfaces = [NamedType]
-    fields = {
+DogType = GraphQLObjectType(
+    name='Dog',
+    interfaces=[NamedType],
+    fields={
         'name': GraphQLField(GraphQLString),
         'barks': GraphQLField(GraphQLBoolean),
-    }
+    },
+    is_type_of=lambda value: isinstance(value, Dog)
+)
 
-    def is_type_of(self, value):
-        return isinstance(value, Dog)
-
-
-class CatType(GraphQLObjectType):
-    name = 'Cat'
-    interfaces = [NamedType]
-    fields = {
+CatType = GraphQLObjectType(
+    name='Cat',
+    interfaces=[NamedType],
+    fields={
         'name': GraphQLField(GraphQLString),
         'meows': GraphQLField(GraphQLBoolean),
-    }
-
-    def is_type_of(self, value):
-        return isinstance(value, Cat)
-
-
-class PetType(GraphQLUnionType):
-    name = 'Pet'
-    types = [DogType, CatType]
-
-    def resolve_type(self, value):
-        if isinstance(value, Dog):
-            return DogType()
-        if isinstance(value, Cat):
-            return CatType()
+    },
+    is_type_of=lambda value: isinstance(value, Cat)
+)
 
 
-class PersonType(GraphQLObjectType):
-    name = 'Person'
-    interfaces = [NamedType]
-    fields = {
+def resolve_pet_type(value):
+    if isinstance(value, Dog):
+        return DogType
+    if isinstance(value, Cat):
+        return CatType
+
+PetType = GraphQLUnionType('Pet', [DogType, CatType],
+                           resolve_type=resolve_pet_type)
+
+PersonType = GraphQLObjectType(
+    name='Person',
+    interfaces=[NamedType],
+    fields={
         'name': GraphQLField(GraphQLString),
         'pets': GraphQLField(GraphQLList(PetType)),
         'friends': GraphQLField(GraphQLList(NamedType)),
-    }
-
-    def is_type_of(self, value):
-        return isinstance(value, Person)
+    },
+    is_type_of=lambda value: isinstance(value, Person)
+)
 
 schema = GraphQLSchema(PersonType)
 

@@ -34,17 +34,12 @@ class NullingData(object):
         return NullingData()
 
 
-class DataType(GraphQLObjectType):
-    name = 'DataType'
-
-    @property
-    def fields(self):
-        return {
-            'sync': GraphQLField(GraphQLString),
-            'nonNullSync': GraphQLField(GraphQLNonNull(GraphQLString)),
-            'nest': GraphQLField(DataType),
-            'nonNullNest': GraphQLField(GraphQLNonNull(DataType)),
-        }
+DataType = GraphQLObjectType('DataType', lambda: {
+    'sync': GraphQLField(GraphQLString),
+    'nonNullSync': GraphQLField(GraphQLNonNull(GraphQLString)),
+    'nest': GraphQLField(DataType),
+    'nonNullNest': GraphQLField(GraphQLNonNull(DataType)),
+})
 
 schema = GraphQLSchema(DataType)
 

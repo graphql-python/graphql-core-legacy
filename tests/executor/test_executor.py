@@ -3,6 +3,7 @@ from graphql.language import parse
 from graphql.type import (GraphQLSchema, GraphQLObjectType, GraphQLField,
     GraphQLArgument, GraphQLList, GraphQLInt, GraphQLString)
 
+
 def test_executes_arbitary_code():
     class Data(object):
         a = 'Apple'
@@ -21,7 +22,6 @@ def test_executes_arbitary_code():
         def promise(self):
             # FIXME: promise is unsupported
             return Data()
-
 
     class DeepData(object):
         a = 'Already Been Done'
@@ -80,35 +80,28 @@ def test_executes_arbitary_code():
             { 'a': 'Apple', 'b': 'Banana' } ] }
     }
 
-    class DataType(GraphQLObjectType):
-        name = 'DataType'
+    DataType = GraphQLObjectType('DataType', lambda: {
+        'a': GraphQLField(GraphQLString),
+        'b': GraphQLField(GraphQLString),
+        'c': GraphQLField(GraphQLString),
+        'd': GraphQLField(GraphQLString),
+        'e': GraphQLField(GraphQLString),
+        'f': GraphQLField(GraphQLString),
+        'pic': GraphQLField(
+            args={'size': GraphQLArgument(GraphQLInt)},
+            type=GraphQLString,
+            resolver=lambda obj, args, *_: obj.pic(args['size']),
+        ),
+        'deep': GraphQLField(DeepDataType),
+        'promise': GraphQLField(DataType),
+    })
 
-        @property
-        def fields(self):
-            return {
-                'a': GraphQLField(GraphQLString),
-                'b': GraphQLField(GraphQLString),
-                'c': GraphQLField(GraphQLString),
-                'd': GraphQLField(GraphQLString),
-                'e': GraphQLField(GraphQLString),
-                'f': GraphQLField(GraphQLString),
-                'pic': GraphQLField(
-                    args={'size': GraphQLArgument(GraphQLInt)},
-                    type=GraphQLString,
-                    resolver=lambda obj, args, *_: obj.pic(args['size']),
-                ),
-                'deep': GraphQLField(DeepDataType),
-                'promise': GraphQLField(DataType),
-            }
-
-    class DeepDataType(GraphQLObjectType):
-        name = 'DeepDataType'
-        fields = {
-            'a': GraphQLField(GraphQLString),
-            'b': GraphQLField(GraphQLString),
-            'c': GraphQLField(GraphQLList(GraphQLString)),
-            'deeper': GraphQLField(GraphQLList(DataType)),
-        }
+    DeepDataType = GraphQLObjectType('DeepDataType', {
+        'a': GraphQLField(GraphQLString),
+        'b': GraphQLField(GraphQLString),
+        'c': GraphQLField(GraphQLList(GraphQLString)),
+        'deeper': GraphQLField(GraphQLList(DataType)),
+    })
 
     schema = GraphQLSchema(query=DataType)
 
@@ -132,20 +125,15 @@ def test_merges_parallel_fragments():
         }
     ''')
 
-    class Type(GraphQLObjectType):
-        name = 'Type'
-
-        @property
-        def fields(self):
-            return {
-                'a': GraphQLField(GraphQLString,
-                    resolver=lambda *_: 'Apple'),
-                'b': GraphQLField(GraphQLString,
-                    resolver=lambda *_: 'Banana'),
-                'c': GraphQLField(GraphQLString,
-                    resolver=lambda *_: 'Cherry'),
-                'deep': GraphQLField(Type, resolver=lambda *_: {}),
-            }
+    Type = GraphQLObjectType('Type', lambda: {
+        'a': GraphQLField(GraphQLString,
+                          resolver=lambda *_: 'Apple'),
+        'b': GraphQLField(GraphQLString,
+                          resolver=lambda *_: 'Banana'),
+        'c': GraphQLField(GraphQLString,
+                          resolver=lambda *_: 'Cherry'),
+        'deep': GraphQLField(Type, resolver=lambda *_: {}),
+    })
 
     schema = GraphQLSchema(query=Type)
     result = execute(schema, None, ast)
@@ -178,11 +166,9 @@ def test_threads_context_correctly():
     
     resolver.got_here = False
 
-    class Type(GraphQLObjectType):
-        name = 'Type'
-        fields = {
-            'a': GraphQLField(GraphQLString, resolver=resolver)
-        }
+    Type = GraphQLObjectType('Type', {
+        'a': GraphQLField(GraphQLString, resolver=resolver)
+    })
 
     result = execute(GraphQLSchema(Type), Data(), ast, 'Example', {})
     assert not result.errors
@@ -205,16 +191,15 @@ def test_correctly_threads_arguments():
 
     doc_ast = parse(doc)
 
-    class Type(GraphQLObjectType):
-        name = 'Type'
-        fields = {
-            'b': GraphQLField(GraphQLString,
-                args={
-                    'numArg': GraphQLArgument(GraphQLInt),
-                    'stringArg': GraphQLArgument(GraphQLString),
-                },
-                resolver=resolver),
-        }
+    Type = GraphQLObjectType('Type', {
+        'b': GraphQLField(
+            GraphQLString,
+            args={
+                'numArg': GraphQLArgument(GraphQLInt),
+                'stringArg': GraphQLArgument(GraphQLString),
+            },
+            resolver=resolver),
+    })
 
     result = execute(GraphQLSchema(Type), None, doc_ast, 'Example', {})
     assert not result.errors
@@ -236,12 +221,10 @@ def test_nulls_out_error_subtrees():
 
     doc_ast = parse(doc)
 
-    class Type(GraphQLObjectType):
-        name = 'Type'
-        fields = {
-            'ok': GraphQLField(GraphQLString),
-            'error': GraphQLField(GraphQLString),
-        }
+    Type = GraphQLObjectType('Type', {
+        'ok': GraphQLField(GraphQLString),
+        'error': GraphQLField(GraphQLString),
+    })
 
     result = execute(GraphQLSchema(Type), Data(), doc_ast)
     assert result.data == {'ok': 'ok', 'error': None}
@@ -255,9 +238,9 @@ def test_uses_the_inline_operation_if_no_operation_is_provided():
     class Data(object):
         a = 'b'
     ast = parse(doc)
-    class Type(GraphQLObjectType):
-        name = 'Type'
-        fields = {'a': GraphQLField(GraphQLString)}
+    Type = GraphQLObjectType('Type', {
+        'a': GraphQLField(GraphQLString)
+    })
     result = execute(GraphQLSchema(Type), Data(), ast)
     assert not result.errors
     assert result.data == {'a': 'b'}
@@ -268,9 +251,9 @@ def test_uses_the_only_operation_if_no_operation_is_provided():
     class Data(object):
         a = 'b'
     ast = parse(doc)
-    class Type(GraphQLObjectType):
-        name = 'Type'
-        fields = {'a': GraphQLField(GraphQLString)}
+    Type = GraphQLObjectType('Type', {
+        'a': GraphQLField(GraphQLString)
+    })
     result = execute(GraphQLSchema(Type), Data(), ast)
     assert not result.errors
     assert result.data == {'a': 'b'}
@@ -281,9 +264,9 @@ def test_raises_the_inline_operation_if_no_operation_is_provided():
     class Data(object):
         a = 'b'
     ast = parse(doc)
-    class Type(GraphQLObjectType):
-        name = 'Type'
-        fields = {'a': GraphQLField(GraphQLString)}
+    Type = GraphQLObjectType('Type', {
+        'a': GraphQLField(GraphQLString)
+    })
     result = execute(GraphQLSchema(Type), Data(), ast)
     assert not result.data
     assert len(result.errors) == 1
@@ -296,12 +279,12 @@ def test_uses_the_query_schema_for_queries():
         a = 'b'
         c = 'd'
     ast = parse(doc)
-    class Q(GraphQLObjectType):
-        name = 'Q'
-        fields = {'a': GraphQLField(GraphQLString)}
-    class M(GraphQLObjectType):
-        name = 'M'
-        fields = {'c': GraphQLField(GraphQLString)}
+    Q = GraphQLObjectType('Q', {
+        'a': GraphQLField(GraphQLString)
+    })
+    M = GraphQLObjectType('M', {
+        'c': GraphQLField(GraphQLString)
+    })
     result = execute(GraphQLSchema(Q, M), Data(), ast, 'Q')
     assert not result.errors
     assert result.data == {'a': 'b'}
@@ -313,12 +296,12 @@ def test_uses_the_mutation_schema_for_queries():
         a = 'b'
         c = 'd'
     ast = parse(doc)
-    class Q(GraphQLObjectType):
-        name = 'Q'
-        fields = {'a': GraphQLField(GraphQLString)}
-    class M(GraphQLObjectType):
-        name = 'M'
-        fields = {'c': GraphQLField(GraphQLString)}
+    Q = GraphQLObjectType('Q', {
+        'a': GraphQLField(GraphQLString)
+    })
+    M = GraphQLObjectType('M', {
+        'c': GraphQLField(GraphQLString)
+    })
     result = execute(GraphQLSchema(Q, M), Data(), ast, 'M')
     assert not result.errors
     assert result.data == {'c': 'd'}
@@ -339,9 +322,9 @@ def test_avoids_recursion():
     class Data(object):
         a = 'b'
     ast = parse(doc)
-    class Type(GraphQLObjectType):
-        name = 'Type'
-        fields = {'a': GraphQLField(GraphQLString)}
+    Type = GraphQLObjectType('Type', {
+        'a': GraphQLField(GraphQLString)
+    })
     result = execute(GraphQLSchema(Type), Data(), ast, 'Q')
     assert not result.errors
     assert result.data == {'a': 'b'}
@@ -350,12 +333,12 @@ def test_avoids_recursion():
 def test_does_not_include_illegal_fields_in_output():
     doc = 'mutation M { thisIsIllegalDontIncludeMe }'
     ast = parse(doc)
-    class Q(GraphQLObjectType):
-        name = 'Q'
-        fields = {'a': GraphQLField(GraphQLString)}
-    class M(GraphQLObjectType):
-        name = 'M'
-        fields = {'c': GraphQLField(GraphQLString)}
+    Q = GraphQLObjectType('Q', {
+        'a': GraphQLField(GraphQLString)
+    })
+    M = GraphQLObjectType('M', {
+        'c': GraphQLField(GraphQLString)
+    })
     result = execute(GraphQLSchema(Q, M), None, ast)
     assert not result.errors
     assert result.data == {}

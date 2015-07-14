@@ -3,6 +3,7 @@ from graphql.language import parse
 from graphql.type import (GraphQLSchema, GraphQLObjectType, GraphQLField,
     GraphQLArgument, GraphQLList, GraphQLInt, GraphQLString)
 
+
 class NumberHolder(object):
     def __init__(self, n):
         self.theNumber = n
@@ -28,36 +29,36 @@ class Root(object):
         self.fail_to_change_the_number(n)
         
 
-class NumberHolderType(GraphQLObjectType):
-    name = 'NumberHolder'
-    fields = {'theNumber': GraphQLField(GraphQLInt)}
+NumberHolderType = GraphQLObjectType('NumberHolder', {
+    'theNumber': GraphQLField(GraphQLInt)
+})
 
+QueryType = GraphQLObjectType('Query', {
+    'numberHolder': GraphQLField(NumberHolderType)
+})
 
-class QueryType(GraphQLObjectType):
-    name = 'Query'
-    fields = {'numberHolder': GraphQLField(NumberHolderType)}
-
-
-class MutationType(GraphQLObjectType):
-    name = 'Mutation'
-    fields = {
-        'immediatelyChangeTheNumber': GraphQLField(NumberHolderType,
-            args={'newNumber': GraphQLArgument(GraphQLInt)},
-            resolver=lambda obj, args, *_:
-                obj.immediately_change_the_number(args['newNumber'])),
-        'promiseToChangeTheNumber': GraphQLField(NumberHolderType,
-            args={'newNumber': GraphQLArgument(GraphQLInt)},
-            resolver=lambda obj, args, *_:
-                obj.promise_to_change_the_number(args['newNumber'])),
-        'failToChangeTheNumber': GraphQLField(NumberHolderType,
-            args={'newNumber': GraphQLArgument(GraphQLInt)},
-            resolver=lambda obj, args, *_:
-                obj.fail_to_change_the_number(args['newNumber'])),
-        'promiseAndFailToChangeTheNumber': GraphQLField(NumberHolderType,
-            args={'newNumber': GraphQLArgument(GraphQLInt)},
-            resolver=lambda obj, args, *_:
-                obj.promise_and_fail_to_change_the_number(args['newNumber'])),
-    }
+MutationType = GraphQLObjectType('Mutation', {
+    'immediatelyChangeTheNumber': GraphQLField(
+        NumberHolderType,
+        args={'newNumber': GraphQLArgument(GraphQLInt)},
+        resolver=lambda obj, args, *_:
+            obj.immediately_change_the_number(args['newNumber'])),
+    'promiseToChangeTheNumber': GraphQLField(
+        NumberHolderType,
+        args={'newNumber': GraphQLArgument(GraphQLInt)},
+        resolver=lambda obj, args, *_:
+            obj.promise_to_change_the_number(args['newNumber'])),
+    'failToChangeTheNumber': GraphQLField(
+        NumberHolderType,
+        args={'newNumber': GraphQLArgument(GraphQLInt)},
+        resolver=lambda obj, args, *_:
+            obj.fail_to_change_the_number(args['newNumber'])),
+    'promiseAndFailToChangeTheNumber': GraphQLField(
+        NumberHolderType,
+        args={'newNumber': GraphQLArgument(GraphQLInt)},
+        resolver=lambda obj, args, *_:
+            obj.promise_and_fail_to_change_the_number(args['newNumber'])),
+})
 
 schema = GraphQLSchema(QueryType, MutationType)
 
