@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import collections
+import re
 from graphql.error import GraphQLError, format_error
 from graphql.utils import type_from_ast, is_nullish
 from graphql.language import kinds as Kind
@@ -251,7 +252,7 @@ def resolve_field(ctx, parent_type, source, field_asts):
 
     # Build a dict of arguments from the field.arguments AST, using the variables scope to fulfill any variable references.
     # TODO: find a way to memoize, in case this field is within a list type.
-    if field_def.args:
+    if field_def.args is not None:
         args = get_argument_values(
             field_def.args, field_ast['arguments'], ctx.variables
         )
@@ -361,9 +362,19 @@ def complete_value(ctx, field_type, field_asts, result):
     return execute_fields(ctx, object_type, result, subfield_asts)
 
 
+CAMEL_CASE_PATTERN = re.compile(r'([a-z])([A-Z]+)')
+
+
+def camel_to_snake_case(name):
+    return CAMEL_CASE_PATTERN.sub(lambda m: m.group(1) + '_' + m.group(2).lower(), name)
+
+
 def default_resolve_fn(source, args, root, field_ast, *_):
     """If a resolve function is not given, then a default resolve behavior is used which takes the property of the source object of the same name as the field and returns it as the result, or if it's a function, returns the result of calling that function."""
-    property = getattr(source, field_ast['name']['value'])
+    name = field_ast['name']['value']
+    property = getattr(source, name, None)
+    if property is None:
+        property = getattr(source, camel_to_snake_case(name), None)
     if callable(property):
         return property()
     return property

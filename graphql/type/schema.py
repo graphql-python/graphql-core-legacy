@@ -6,6 +6,7 @@ from graphql.type.definition import (
     GraphQLNonNull,
 )
 from graphql.type.introspection import IntrospectionSchema
+from graphql.type.directives import GraphQLIncludeDirective, GraphQLSkipDirective
 
 
 class GraphQLSchema(object):
@@ -38,13 +39,13 @@ class GraphQLSchema(object):
         return self._type_map
 
     def get_type(self, name):
-        return self.get_type_map()[name]
+        return self.get_type_map().get(name)
 
     def get_directives(self):
         if self._directives is None:
             self._directives = [
-                GraphQLIfDirective,
-                GraphQLUnlessDirective
+                GraphQLIncludeDirective,
+                GraphQLSkipDirective
             ]
         return self._directives
 
@@ -84,11 +85,10 @@ def type_map_reducer(map, type):
             type_map_reducer, type.get_interfaces(), reduced_map
         )
 
-    if isinstance(type, GraphQLObjectType) or \
-        isinstance(type, GraphQLInterfaceType):
+    if isinstance(type, (GraphQLObjectType, GraphQLInterfaceType)):
         field_map = type.get_fields()
         for field_name, field in field_map.items():
-            field_arg_types = [arg['type'] for arg in field.args]
+            field_arg_types = [arg.type for arg in field.args]
             reduced_map = reduce(
                 type_map_reducer, field_arg_types, reduced_map
             )

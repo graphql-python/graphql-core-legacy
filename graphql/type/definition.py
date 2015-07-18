@@ -1,3 +1,4 @@
+import collections
 from graphql.error import Error
 from graphql.language.kinds import ENUM
 
@@ -253,20 +254,18 @@ class GraphQLField(object):
         self.args = []
         if args:
             for arg_name, arg in args.items():
-                self.args.append({
-                    'name': arg_name,
-                    'type': arg.type,
-                    'default_value': arg.default_value,
-                })
+                arg.name = arg_name
+                self.args.append(arg)
         self.resolver = resolver
         self.deprecation_reason = deprecation_reason
         self.description = description
 
 
 class GraphQLArgument(object):
-    def __init__(self, type, default_value=None):
+    def __init__(self, type, default_value=None, description=None):
         self.type = type
         self.default_value = default_value
+        self.description = description
 
 
 class GraphQLInterfaceType(GraphQLType):
@@ -402,40 +401,43 @@ class GraphQLEnumType(GraphQLType):
         self.name = name
         self.description = description
         self._values = values
-        self._values = None
+        self._value_map = None
         self._value_lookup = None
         self._name_lookup = None
 
     def get_values(self):
-        if self._values is None:
-            self._values = self._define_value_map()
-        return self._values
+        if self._value_map is None:
+            self._value_map = self._define_value_map()
+        return self._value_map
 
     def coerce(self, value):
-        enum_value = self._get_value_lookup().get(value)
-        if enum_value:
-            return enum_value.name
+        if isinstance(value, collections.Hashable):
+            enum_value = self._get_value_lookup().get(value)
+            if enum_value:
+                return enum_value.name
         return None
 
     def coerce_literal(self, value):
-        if value.kind == ENUM:
-            enum_value = self._get_name_lookup().get(value.value)
+        if value['kind'] == ENUM:
+            enum_value = self._get_name_lookup().get(value['value'])
             if enum_value:
                 return enum_value.value
 
     def _define_value_map(self):
+        value_map = {}
         for value_name, value in self._values.items():
             if not isinstance(value, GraphQLEnumValue):
                 value = GraphQLEnumValue(value)
             value.name = value_name
             if value.value is None:
                 value.value = value_name
-        return self.values
+            value_map[value_name] = value
+        return value_map
 
     def _get_value_lookup(self):
         if self._value_lookup is None:
             lookup = {}
-            for value_name, value in self.get_values():
+            for value_name, value in self.get_values().items():
                 lookup[value.value] = value
             self._value_lookup = lookup
         return self._value_lookup
@@ -443,7 +445,7 @@ class GraphQLEnumType(GraphQLType):
     def _get_name_lookup(self):
         if self._name_lookup is None:
             lookup = {}
-            for value_name, value in self.get_values():
+            for value_name, value in self.get_values().items():
                 lookup[value.name] = value
             self._name_lookup = lookup
         return self._name_lookup

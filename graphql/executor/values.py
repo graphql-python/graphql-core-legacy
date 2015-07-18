@@ -29,12 +29,12 @@ def get_argument_values(arg_defs, arg_asts, variables):
             arg_ast_map[arg['name']['value']] = arg
     result = {}
     for arg_def in arg_defs:
-        name = arg_def['name']
+        name = arg_def.name
         value_ast = arg_ast_map.get(name)
         if value_ast:
             value_ast = value_ast['value']
         result[name] = coerce_value_ast(
-            arg_def['type'],
+            arg_def.type,
             value_ast,
             variables
         )
