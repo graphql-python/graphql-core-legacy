@@ -1,5 +1,3 @@
-import re
-
 __all__ = ['get_location']
 
 

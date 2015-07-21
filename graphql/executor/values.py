@@ -1,15 +1,21 @@
 import collections
 from graphql.error import GraphQLError
 from graphql.language import Kind
-from graphql.type import (GraphQLNonNull, GraphQLList,
-    GraphQLInputObjectType, GraphQLScalarType, GraphQLEnumType)
+from graphql.type import (GraphQLNonNull, GraphQLList, GraphQLInputObjectType,
+                          GraphQLScalarType, GraphQLEnumType)
 from graphql.utils import type_from_ast, is_nullish
 
 __all__ = ['get_variable_values', 'get_argument_values']
 
 
+def print_ast(ast):
+    # TODO: replace to real printer
+    return repr(ast)
+
+
 def get_variable_values(schema, definition_asts, inputs):
-    """Prepares an object map of variables of the correct type based on the provided variable definitions and arbitrary input. If the input cannot be coerced to match the variable definitions, a GraphQLError will be thrown."""
+    """Prepares an object map of variables of the correct type based on the provided variable definitions and arbitrary input.
+    If the input cannot be coerced to match the variable definitions, a GraphQLError will be thrown."""
     if inputs is None:
         inputs = {}
     values = {}
@@ -87,8 +93,7 @@ def is_valid_value(type, value):
             for field_name in fields
         )
 
-    if isinstance(type, GraphQLScalarType) or \
-        isinstance(type, GraphQLEnumType):
+    if isinstance(type, (GraphQLScalarType, GraphQLEnumType)):
         return not is_nullish(type.coerce(value))
 
     return False
@@ -107,8 +112,7 @@ def coerce_value(type, value):
 
     if isinstance(type, GraphQLList):
         item_type = type.of_type
-        if not isinstance(value, basestring) and \
-            isinstance(value, collections.Iterable):
+        if not isinstance(value, basestring) and isinstance(value, collections.Iterable):
             return [coerce_value(item_type, item) for item in value]
         else:
             return [coerce_value(item_type, value)]
@@ -123,8 +127,7 @@ def coerce_value(type, value):
             obj[field_name] = field_value
         return obj
 
-    if isinstance(type, GraphQLScalarType) or \
-        isinstance(type, GraphQLEnumType):
+    if isinstance(type, (GraphQLScalarType, GraphQLEnumType)):
         coerced = type.coerce(value)
         if not is_nullish(coerced):
             return coerced
@@ -136,7 +139,8 @@ def coerce_value_ast(type, value_ast, variables):
     """Given a type and a value AST node known to match this type, build a
     runtime value."""
     if isinstance(type, GraphQLNonNull):
-        # Note: we're not checking that the result of coerceValueAST is non-null. We're assuming that this query has been validated and the value used here is of the correct type.
+        # Note: we're not checking that the result of coerceValueAST is non-null.
+        # We're assuming that this query has been validated and the value used here is of the correct type.
         return coerce_value_ast(type.of_type, value_ast, variables)
 
     if not value_ast:
@@ -146,14 +150,15 @@ def coerce_value_ast(type, value_ast, variables):
         variable_name = value_ast['name']['value']
         if not variables or variable_name not in variables:
             return None
-        # Note: we're not doing any checking that this variable is correct. We're assuming that this query has been validated and the variable usage here is of the correct type.
+        # Note: we're not doing any checking that this variable is correct. We're assuming that this query
+        # has been validated and the variable usage here is of the correct type.
         return variables[variable_name]
 
     if isinstance(type, GraphQLList):
         item_type = type.of_type
         if value_ast['kind'] == Kind.ARRAY:
             return [coerce_value_ast(item_type, item_ast, variables)
-                for item_ast in value_ast['values']]
+                    for item_ast in value_ast['values']]
         else:
             return [coerce_value_ast(item_type, value_ast, variables)]
 
@@ -178,8 +183,7 @@ def coerce_value_ast(type, value_ast, variables):
             obj[field_name] = field_value
         return obj
 
-    if isinstance(type, GraphQLScalarType) or \
-        isinstance(type, GraphQLEnumType):
+    if isinstance(type, (GraphQLScalarType, GraphQLEnumType)):
         coerced = type.coerce_literal(value_ast)
         if not is_nullish(coerced):
             return coerced

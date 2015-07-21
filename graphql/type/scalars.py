@@ -37,7 +37,7 @@ def coerce_float(value):
         num = float(value)
     except ValueError:
         return None
-    if num == num: # is NaN?
+    if num == num:  # is NaN?
         return num
     return None
 

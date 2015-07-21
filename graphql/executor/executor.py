@@ -68,7 +68,8 @@ class ExecutionContext(object):
             elif statement['kind'] == Kind.FRAGMENT_DEFINITION:
                 fragments[statement['name']['value']] = statement
         if not operation_name and len(operations) != 1:
-            raise GraphQLError('Must provide operation name '
+            raise GraphQLError(
+                'Must provide operation name '
                 'if query contains multiple operations')
         op_name = operation_name or operations.keys()[0]
         operation = operations.get(op_name)
@@ -167,23 +168,25 @@ def collect_fields(ctx, type, selection_set, fields, prev_fragment_names):
             fields[name].append(selection)
         elif kind == Kind.INLINE_FRAGMENT:
             if not should_include_node(ctx, directives) or \
-                not does_fragment_condition_match(ctx, selection, type):
+                    not does_fragment_condition_match(ctx, selection, type):
                 continue
-            collect_fields(ctx, type, selection['selectionSet'],
+            collect_fields(
+                ctx, type, selection['selectionSet'],
                 fields, prev_fragment_names)
         elif kind == Kind.FRAGMENT_SPREAD:
             frag_name = selection['name']['value']
             if frag_name in prev_fragment_names or \
-                not should_include_node(ctx, directives):
+                    not should_include_node(ctx, directives):
                 continue
             prev_fragment_names.add(frag_name)
             fragment = ctx.fragments.get(frag_name)
             frag_directives = fragment.get('directives')
             if not fragment or \
-                not should_include_node(ctx, directives) or \
-                not does_fragment_condition_match(ctx, fragment, type):
+                    not should_include_node(ctx, frag_directives) or \
+                    not does_fragment_condition_match(ctx, fragment, type):
                 continue
-            collect_fields(ctx, type, fragment['selectionSet'],
+            collect_fields(
+                ctx, type, fragment['selectionSet'],
                 fields, prev_fragment_names)
     return fields
 
@@ -225,8 +228,7 @@ def does_fragment_condition_match(ctx, fragment, type_):
     conditional_type = type_from_ast(ctx.schema, fragment['typeCondition'])
     if type(conditional_type) == type(type_):
         return True
-    if isinstance(conditional_type, GraphQLInterfaceType) or \
-        isinstance(conditional_type, GraphQLUnionType):
+    if isinstance(conditional_type, (GraphQLInterfaceType, GraphQLUnionType)):
         return conditional_type.is_possible_type(type_)
     return False
 
@@ -259,9 +261,11 @@ def resolve_field(ctx, parent_type, source, field_asts):
     else:
         args = None
 
-    # If an error occurs while calling the field `resolve` function, ensure that it is wrapped as a GraphQLError with locations. Log this error and return null if allowed, otherwise throw the error so the parent field can handle it.
+    # If an error occurs while calling the field `resolve` function, ensure that it is wrapped as a GraphQLError with locations.
+    # Log this error and return null if allowed, otherwise throw the error so the parent field can handle it.
     try:
-        result = resolve_fn(source, args, ctx.root,
+        result = resolve_fn(
+            source, args, ctx.root,
             # TODO: provide all fieldASTs, not just the first field
             field_ast,
             field_type, parent_type, ctx.schema
@@ -272,7 +276,7 @@ def resolve_field(ctx, parent_type, source, field_asts):
             raise reported_error
         ctx.errors.append(reported_error)
         return None
-    
+
     return complete_value_catching_error(
         ctx, field_type, field_asts, result
     )
@@ -297,11 +301,13 @@ def complete_value(ctx, field_type, field_asts, result):
     """Implements the instructions for completeValue as defined in the
     "Field entries" section of the spec.
 
-    If the field type is Non-Null, then this recursively completes the value for the inner type. It throws a field error if that completion returns null, as per the "Nullability" section of the spec.
+    If the field type is Non-Null, then this recursively completes the value for the inner type. It throws a field error
+    if that completion returns null, as per the "Nullability" section of the spec.
 
     If the field type is a List, then this recursively completes the value for the inner type on each item in the list.
 
-    If the field type is a Scalar or Enum, ensures the completed value is a legal value of the type by calling the `coerce` method of GraphQL type definition.
+    If the field type is a Scalar or Enum, ensures the completed value is a legal value of the type by calling the `coerce`
+    method of GraphQL type definition.
 
     Otherwise, the field type expects a sub-selection set, and will complete the value by evaluating all sub-selections."""
     # If field type is NonNull, complete for inner type, and throw field error if result is null.
@@ -331,8 +337,7 @@ def complete_value(ctx, field_type, field_asts, result):
         ) for item in result]
 
     # If field type is Scalar or Enum, coerce to a valid value, returning null if coercion is not possible.
-    if isinstance(field_type, GraphQLScalarType) or \
-        isinstance(field_type, GraphQLEnumType):
+    if isinstance(field_type, (GraphQLScalarType, GraphQLEnumType)):
         coerced_result = field_type.coerce(result)
         if is_nullish(coerced_result):
             return None
@@ -341,8 +346,7 @@ def complete_value(ctx, field_type, field_asts, result):
     # Field type must be Object, Interface or Union and expect sub-selections.
     if isinstance(field_type, GraphQLObjectType):
         object_type = field_type
-    elif isinstance(field_type, GraphQLInterfaceType) or \
-        isinstance(field_type, GraphQLUnionType):
+    elif isinstance(field_type, (GraphQLInterfaceType, GraphQLUnionType)):
         object_type = field_type.resolve_type(result)
     else:
         object_type = None
@@ -356,9 +360,10 @@ def complete_value(ctx, field_type, field_asts, result):
     for field_ast in field_asts:
         selection_set = field_ast.get('selectionSet')
         if selection_set:
-            subfield_asts = collect_fields(ctx, object_type, selection_set,
+            subfield_asts = collect_fields(
+                ctx, object_type, selection_set,
                 subfield_asts, visited_fragment_names)
-    
+
     return execute_fields(ctx, object_type, result, subfield_asts)
 
 
@@ -370,7 +375,8 @@ def camel_to_snake_case(name):
 
 
 def default_resolve_fn(source, args, root, field_ast, *_):
-    """If a resolve function is not given, then a default resolve behavior is used which takes the property of the source object of the same name as the field and returns it as the result, or if it's a function, returns the result of calling that function."""
+    """If a resolve function is not given, then a default resolve behavior is used which takes the property of the source object
+    of the same name as the field and returns it as the result, or if it's a function, returns the result of calling that function."""
     name = field_ast['name']['value']
     property = getattr(source, name, None)
     if property is None:
@@ -390,10 +396,10 @@ def get_field_def(schema, parent_type, field_ast):
     definitions, which would cause issues."""
     name = field_ast['name']['value']
     if name == SchemaMetaFieldDef.name and \
-        schema.get_query_type() == parent_type:
+            schema.get_query_type() == parent_type:
         return SchemaMetaFieldDef
     elif name == TypeMetaFieldDef.name and \
-        schema.get_query_type() == parent_type:
+            schema.get_query_type() == parent_type:
         return TypeMetaFieldDef
     elif name == TypeNameMetaFieldDef.name:
         return TypeNameMetaFieldDef

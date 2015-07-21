@@ -1,3 +1,4 @@
+# flake8: noqa
 from graphql.language.location import get_location
 from graphql.language import kinds as Kind
 from graphql.language.lexer import Lexer

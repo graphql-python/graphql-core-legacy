@@ -271,7 +271,8 @@ class GraphQLArgument(object):
 class GraphQLInterfaceType(GraphQLType):
     """Interface Type Definition
 
-    When a field can return one of a heterogeneous set of types, a Interface type is used to describe what types are possible, what fields are in common across all types, as well as a function to determine which type is actually used when the field is resolved.
+    When a field can return one of a heterogeneous set of types, a Interface type is used to describe what types are possible,
+    what fields are in common across all types, as well as a function to determine which type is actually used when the field is resolved.
 
     Example:
 
@@ -332,7 +333,8 @@ def get_type_of(value, abstract_type):
 class GraphQLUnionType(GraphQLType):
     """Union Type Definition
 
-    When a field can return one of a heterogeneous set of types, a Union type is used to describe what types are possible as well as providing a function to determine which type is actually used when the field is resolved.
+    When a field can return one of a heterogeneous set of types, a Union type is used to describe what types are possible
+    as well as providing a function to determine which type is actually used when the field is resolved.
 
     Example:
 
@@ -357,7 +359,7 @@ class GraphQLUnionType(GraphQLType):
                          if not isinstance(t, GraphQLObjectType)]
         if non_obj_types:
             raise Error(
-                'Union {} may only contain object types, it cannot ' \
+                'Union {} may only contain object types, it cannot '
                 'contain: {}.'.format(
                     self.name,
                     ', '.join(str(t) for t in non_obj_types)
@@ -380,12 +382,13 @@ class GraphQLUnionType(GraphQLType):
         if self._resolve_type:
             return self._resolve_type(value)
         return get_type_of(value, self)
-        
+
 
 class GraphQLEnumType(GraphQLType):
     """Enum Type Definition
 
-    Some leaf values of requests and input values are Enums. GraphQL serializes Enum values as strings, however internally Enums can be represented by any kind of type, often integers.
+    Some leaf values of requests and input values are Enums. GraphQL serializes Enum values as strings,
+    however internally Enums can be represented by any kind of type, often integers.
 
     Example:
 
@@ -468,7 +471,7 @@ class GraphQLInputObjectType(GraphQLType):
     Using `NonNull` will ensure that a value must be provided by the query
 
     Example:
-        
+
         NonNullFloat = GraphQLNonNull(GraphQLFloat())
 
         class GeoPoint(GraphQLInputObjectType):
@@ -528,7 +531,9 @@ class GraphQLList(GraphQLType):
 class GraphQLNonNull(GraphQLType):
     """Non-Null Modifier
 
-    A non-null is a kind of type marker, a wrapping type which points to another type. Non-null types enforce that their values are never null and can ensure an error is raised if this ever occurs during a request. It is useful for fields which you can make a strong guarantee on non-nullability, for example usually the id field of a database row will never be null.
+    A non-null is a kind of type marker, a wrapping type which points to another type. Non-null types enforce that their values are never null
+    and can ensure an error is raised if this ever occurs during a request. It is useful for fields which you can make a strong guarantee on
+    non-nullability, for example usually the id field of a database row will never be null.
 
     Example:
 

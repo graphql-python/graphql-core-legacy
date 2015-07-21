@@ -1,8 +1,7 @@
-from graphql.language.source import Source
 from graphql.language.error import LanguageError
 
-__all__ = ['Token', 'Lexer', 'TokenKind', 'get_token_desc',
-    'get_token_kind_desc']
+__all__ = ['Token', 'Lexer', 'TokenKind',
+           'get_token_desc', 'get_token_kind_desc']
 
 
 class Token(object):
@@ -22,9 +21,9 @@ class Token(object):
 
     def __eq__(self, other):
         return (self.kind == other.kind and
-            self.start == other.start and
-            self.end == other.end and
-            self.value == other.value)
+                self.start == other.start and
+                self.end == other.end and
+                self.value == other.value)
 
 
 class Lexer(object):
@@ -123,7 +122,7 @@ PUNCT_CODE_TO_KIND = {
 
 def read_token(source, from_position):
     """Gets the next token from the source starting at the given position.
- 
+
     This skips over whitespace and comments until it finds the next lexable
     token, then lexes punctuators immediately or calls the appropriate
     helper fucntion for more complicated tokens."""
@@ -140,19 +139,20 @@ def read_token(source, from_position):
     if kind is not None:
         return Token(kind, position, position + 1)
 
-    if code == 46: # .
+    if code == 46:  # .
         if char_code_at(body, position + 1) == 46 and \
-            char_code_at(body, position + 2) == 46:
+                char_code_at(body, position + 2) == 46:
             return Token(TokenKind.SPREAD, position, position + 3)
     elif 65 <= code <= 90 or code == 95 or 97 <= code <= 122:
         # A-Z, _, a-z
         return read_name(source, position)
-    elif code == 45 or 48 <= code <= 57: # -, 0-9
+    elif code == 45 or 48 <= code <= 57:  # -, 0-9
         return read_number(source, position, code)
-    elif code == 34: # "
+    elif code == 34:  # "
         return read_string(source, position)
 
-    raise LanguageError(source, position,
+    raise LanguageError(
+        source, position,
         u'Unexpected character "{}"'.format(body[position]))
 
 
@@ -165,19 +165,18 @@ def position_after_whitespace(body, start_position):
     while position < body_length:
         code = char_code_at(body, position)
         if code in (
-            32, # space
-            44, # comma
-            160, # '\xa0'
-            0x2028, # line separator
-            0x2029, # paragraph separator
-        ) or (code > 8 and code < 14): # whitespace
+            32,  # space
+            44,  # comma
+            160,  # '\xa0'
+            0x2028,  # line separator
+            0x2029,  # paragraph separator
+        ) or (code > 8 and code < 14):  # whitespace
             position += 1
-        elif code == 35: # #, skip comments
+        elif code == 35:  # #, skip comments
             position += 1
             while position < body_length:
                 code = char_code_at(body, position)
-                if code is None or \
-                    code in (10, 13, 0x2028, 0x2029):
+                if code is None or code in (10, 13, 0x2028, 0x2029):
                     break
                 position += 1
         else:
@@ -196,46 +195,46 @@ def read_number(source, start, first_code):
     position = start
     is_float = False
 
-    if code == 45: # -
+    if code == 45:  # -
         position += 1
         code = char_code_at(body, position)
 
-    if code == 48: # 0
+    if code == 48:  # 0
         position += 1
         code = char_code_at(body, position)
-    elif 49 <= code <= 57: # 1 - 9
+    elif 49 <= code <= 57:  # 1 - 9
         position += 1
         code = char_code_at(body, position)
-        while 48 <= code <= 57: # 0 - 9
+        while 48 <= code <= 57:  # 0 - 9
             position += 1
             code = char_code_at(body, position)
     else:
         raise LanguageError(source, position, 'Invalid number')
 
-    if code == 46: # .
+    if code == 46:  # .
         is_float = True
 
         position += 1
         code = char_code_at(body, position)
-        if 48 <= code <= 57: # 0 - 9
+        if 48 <= code <= 57:  # 0 - 9
             position += 1
             code = char_code_at(body, position)
-            while 48 <= code <= 57: # 0 - 9
+            while 48 <= code <= 57:  # 0 - 9
                 position += 1
                 code = char_code_at(body, position)
         else:
             raise LanguageError(source, position, 'Invalid number')
 
-        if code == 101: # e
+        if code == 101:  # e
             position += 1
             code = char_code_at(body, position)
-            if code == 45: # -
+            if code == 45:  # -
                 position += 1
                 code = char_code_at(body, position)
-            if 48 <= code <= 57: # 0 - 9
+            if 48 <= code <= 57:  # 0 - 9
                 position += 1
                 code = char_code_at(body, position)
-                while 48 <= code <= 57: # 0 - 9
+                while 48 <= code <= 57:  # 0 - 9
                     position += 1
                     code = char_code_at(body, position)
             else:
@@ -263,7 +262,7 @@ ESCAPED_CHAR_CODES = {
 
 def read_string(source, start):
     """Reads a string token from the source file.
-    
+
     "([^"\\\u000A\u000D\u2028\u2029]|(\\(u[0-9a-fA-F]{4}|["\\/bfnrt])))*"
     """
     body = source.body
@@ -277,7 +276,7 @@ def read_string(source, start):
         if code is None or code in (34, 10, 13, 0x2028, 0x2029):
             break
         position += 1
-        if code == 92: # \
+        if code == 92:  # \
             value += body[chunk_start:position - 1]
             code = char_code_at(body, position)
             escaped = ESCAPED_CHAR_CODES.get(code)
@@ -291,12 +290,14 @@ def read_string(source, start):
                     char_code_at(body, position + 4) or 0,
                 )
                 if char_code < 0:
-                    raise LanguageError(source, position,
+                    raise LanguageError(
+                        source, position,
                         'Bad character escape sequence')
                 value += unichr(char_code)
                 position += 4
             else:
-                raise LanguageError(source, position,
+                raise LanguageError(
+                    source, position,
                     'Bad character escape sequence')
             position += 1
             chunk_start = position
@@ -319,7 +320,7 @@ def uni_char_code(a, b, c, d):
     which means the result of ORing the char2hex() will also be negative.
     """
     return (char2hex(a) << 12 | char2hex(b) << 8 |
-        char2hex(c) << 4 | char2hex(d))
+            char2hex(c) << 4 | char2hex(d))
 
 
 def char2hex(a):
@@ -329,11 +330,11 @@ def char2hex(a):
     'a' becomes 10, 'f' becomes 15
 
     Returns -1 on error."""
-    if 48 <= a <= 57: # 0-9
+    if 48 <= a <= 57:  # 0-9
         return a - 48
-    elif 65 <= a <= 70: # A-F
+    elif 65 <= a <= 70:  # A-F
         return a - 55
-    elif 97 <= a <= 102: # a-f
+    elif 97 <= a <= 102:  # a-f
         return a - 87
     return -1
 
@@ -349,10 +350,10 @@ def read_name(source, position):
     while end != body_length:
         code = char_code_at(body, end)
         if code is None or not (
-            code == 95 or # _
-            48 <= code <= 57 or # 0-9
-            65 <= code <= 90 or # A-Z
-            97 <= code <= 122 # a-z
+            code == 95 or  # _
+            48 <= code <= 57 or  # 0-9
+            65 <= code <= 90 or  # A-Z
+            97 <= code <= 122  # a-z
         ):
             break
         end += 1

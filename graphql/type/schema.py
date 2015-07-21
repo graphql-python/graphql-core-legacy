@@ -12,7 +12,8 @@ from graphql.type.directives import GraphQLIncludeDirective, GraphQLSkipDirectiv
 class GraphQLSchema(object):
     """Schema Definition
 
-    A Schema is created by supplying the root types of each type of operation, query and mutation (optional). A schema definition is then supplied to the validator and executor.
+    A Schema is created by supplying the root types of each type of operation, query and mutation (optional).
+    A schema definition is then supplied to the validator and executor.
 
     Example:
 
@@ -74,8 +75,7 @@ def type_map_reducer(map, type):
 
     reduced_map = map
 
-    if isinstance(type, GraphQLUnionType) or \
-        isinstance(type, GraphQLInterfaceType):
+    if isinstance(type, (GraphQLUnionType, GraphQLInterfaceType)):
         reduced_map = reduce(
             type_map_reducer, type.get_possible_types(), reduced_map
         )

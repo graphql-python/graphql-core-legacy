@@ -562,7 +562,7 @@ def test_introspects_on_input_object():
     '''
     result = graphql(schema, request)
     assert not result.errors
-    assert {'kind': 'INPUT_OBJECT',
+    assert sort_lists({'kind': 'INPUT_OBJECT',
             'name': 'TestInputObject',
             'inputFields':
                 [{'name': 'a',
@@ -579,7 +579,8 @@ def test_introspects_on_input_object():
                            {'kind': 'SCALAR',
                             'name': 'String',
                             'ofType': None}},
-                  'defaultValue': None}]} in result.data['__schema']['types']
+                  'defaultValue': None}]}) in \
+                  sort_lists(result.data['__schema']['types'])
 
 
 def test_supports_the_type_root_field():

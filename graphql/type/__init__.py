@@ -1,3 +1,4 @@
+# flake8: noqa
 from graphql.type.schema import GraphQLSchema
 from graphql.type.definition import (
     GraphQLScalarType,

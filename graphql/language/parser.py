@@ -1,8 +1,7 @@
 from graphql.language.source import Source
 from graphql.language.error import LanguageError
-from graphql.language.lexer import (Lexer, TokenKind,
-    get_token_kind_desc, get_token_desc)
-from graphql.language.kinds import *
+from graphql.language.lexer import Lexer, TokenKind, get_token_kind_desc, get_token_desc
+from graphql.language.kinds import *  # noqa
 
 __all__ = ['parse']
 
@@ -238,7 +237,8 @@ def parse_selection_set(parser):
     return {
         'kind': SELECTION_SET,
         'selections':
-            many(parser, TokenKind.BRACE_L,
+            many(
+                parser, TokenKind.BRACE_L,
                 parse_selection, TokenKind.BRACE_R),
         'loc': loc(parser, start)
     }
@@ -280,7 +280,8 @@ def parse_field(parser):
 
 def parse_arguments(parser):
     if peek(parser, TokenKind.PAREN_L):
-        return many(parser, TokenKind.PAREN_L,
+        return many(
+            parser, TokenKind.PAREN_L,
             parse_argument, TokenKind.PAREN_R)
     return []
 
@@ -290,11 +291,11 @@ def parse_argument(parser):
     return {
         'kind': ARGUMENT,
         'name': parse_name(parser),
-        'value': (expect(parser, TokenKind.COLON),
+        'value': (
+            expect(parser, TokenKind.COLON),
             parse_value(parser, False))[1],
         'loc': loc(parser, start)
     }
-
 
 
 # Implements the parsing rules in the Fragments section.
@@ -326,7 +327,8 @@ def parse_fragment_definition(parser):
     return {
         'kind': FRAGMENT_DEFINITION,
         'name': parse_name(parser),
-        'typeCondition': (expect_keyword(parser, 'on'),
+        'typeCondition': (
+            expect_keyword(parser, 'on'),
             parse_name(parser))[1],
         'directives': parse_directives(parser),
         'selectionSet': parse_selection_set(parser),
@@ -398,7 +400,8 @@ def parse_array(parser, is_const):
         item = parse_variable_value
     return {
         'kind': ARRAY,
-        'values': any(parser, TokenKind.BRACKET_L,
+        'values': any(
+            parser, TokenKind.BRACKET_L,
             item, TokenKind.BRACKET_R),
         'loc': loc(parser, start)
     }
@@ -431,7 +434,8 @@ def parse_object_field(parser, is_const, field_names):
     return {
         'kind': OBJECT_FIELD,
         'name': name,
-        'value': (expect(parser, TokenKind.COLON),
+        'value': (
+            expect(parser, TokenKind.COLON),
             parse_value(parser, is_const))[1],
         'loc': loc(parser, start)
     }

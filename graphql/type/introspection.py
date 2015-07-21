@@ -7,7 +7,11 @@ from graphql.type.definition import (
     GraphQLNonNull,
     GraphQLArgument,
     GraphQLEnumValue,
-    GraphQLInterfaceType, GraphQLUnionType, GraphQLInputObjectType, GraphQLScalarType)
+    GraphQLInterfaceType,
+    GraphQLUnionType,
+    GraphQLInputObjectType,
+    GraphQLScalarType,
+)
 from graphql.type.scalars import GraphQLString, GraphQLBoolean
 
 __Schema = GraphQLObjectType(
