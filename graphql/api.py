@@ -81,9 +81,26 @@ class LazyField(object):
         self.description = description
 
     def resolve(self, schema):
+        args = {}
+        if self.args:
+            for arg_name, arg in self.args.items():
+                args[arg_name] = arg.resolve(schema)
         return graphql.type.GraphQLField(
             self.typeref.resolve(schema),
-            self.args, self.resolver, self.deprecation_reason, self.description
+            args, self.resolver, self.deprecation_reason, self.description
+        )
+
+
+class LazyArgument(object):
+    def __init__(self, typerefspec, default_value=None, description=None):
+        self.typeref = build_typeref(typerefspec)
+        self.default_value = default_value
+        self.description = description
+
+    def resolve(self, schema):
+        return graphql.type.GraphQLArgument(
+            self.typeref.resolve(schema),
+            self.default_value, self.description
         )
 
 
@@ -91,9 +108,11 @@ class Schema(object):
     String = InternalTypeRef(graphql.type.GraphQLString)
     Int = InternalTypeRef(graphql.type.GraphQLInt)
     Float = InternalTypeRef(graphql.type.GraphQLFloat)
+    Boolean = InternalTypeRef(graphql.type.GraphQLBoolean)
     ID = InternalTypeRef(graphql.type.GraphQLID)
 
     Field = LazyField
+    Argument = LazyArgument
     EnumValue = graphql.type.GraphQLEnumValue
 
     def __init__(self):
@@ -108,6 +127,7 @@ class Schema(object):
 
         self.EnumType = self._build_type_definer(self._define_enum)
         self.InterfaceType = self._build_type_definer(self._define_interface)
+        self.UnionType = self._build_type_definer(self._define_union)
         self.ObjectType = self._build_type_definer(self._define_object)
         self.QueryRoot = self._build_type_definer(self._define_query_root)
         self.MutationRoot = self._build_type_definer(self._define_mutation_root)
@@ -131,6 +151,15 @@ class Schema(object):
         return graphql.type.GraphQLInterfaceType(
             name=dct['__typename__'],
             fields=lambda: self._resolve_fields(fields),
+            description=dct.get('__doc__'),
+        )
+
+    def _define_union(self, dct):
+        types = [self._public_types[public_type] for public_type in dct['types']]
+        return graphql.type.GraphQLUnionType(
+            name=dct['__typename__'],
+            types=types,
+            resolve_type=dct.get('resolve_type'),
             description=dct.get('__doc__'),
         )
 

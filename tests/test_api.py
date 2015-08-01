@@ -146,6 +146,56 @@ def test_define_object_type():
     })
 
 
+def test_field_arguments():
+    gql = Schema()
+
+    class A(gql.ObjectType):
+        pass
+
+    class QueryRoot(gql.QueryRoot):
+        field = gql.Field(gql.String, {
+            'byPublicType': gql.Argument(A),
+            'byName': gql.Argument('A'),
+            'byInternalType': gql.Argument(gql.String),
+            'byPublicTypeWrapped': gql.Argument(gql.List(A)),
+            'byNameWrapped': gql.Argument(gql.List('A')),
+            'byInternalTypeWrapped': gql.Argument(gql.List(gql.String)),
+        })
+
+    result = graphql(gql.to_internal(), '''{
+        type: __type(name: "QueryRoot") {
+            fields {
+                args {
+                    name
+                    type { ...TypeRef }
+                }
+            }
+        }
+    }
+    fragment TypeRef on __Type {
+        kind, name
+        ofType {
+            kind, name
+            ofType { kind, name, ofType }
+        }
+    }''')
+    assert not result.errors
+    a_type = {"kind": "OBJECT", "name": "A", "ofType": None}
+    string_type = {"kind": "SCALAR", "name": "String", "ofType": None}
+    assert sort_lists(result.data) == sort_lists({
+        "type": {
+            "fields": [{"args": [
+                {"name": "byPublicType", "type": a_type},
+                {"name": "byName", "type": a_type},
+                {"name": "byInternalType", "type": string_type},
+                {"name": "byPublicTypeWrapped", "type": {"kind": "LIST", "name": None, "ofType": a_type}},
+                {"name": "byNameWrapped", "type": {"kind": "LIST", "name": None, "ofType": a_type}},
+                {"name": "byInternalTypeWrapped", "type": {"kind": "LIST", "name": None, "ofType": string_type}},
+            ]}]
+        }
+    })
+
+
 def test_prevent_defining_many_query_roots():
     gql = Schema()
 
@@ -155,3 +205,42 @@ def test_prevent_defining_many_query_roots():
     with raises(Exception):
         class SecondQueryRoot(gql.QueryRoot):
             pass
+
+
+def test_define_union_type():
+    gql = Schema()
+
+    class A(gql.ObjectType):
+        pass
+
+    class B(gql.ObjectType):
+        pass
+
+    class UnionType(gql.UnionType):
+        """description"""
+        __typename__ = 'Union'
+        types = [A, B]
+
+    class QueryRoot(gql.QueryRoot):
+        union = gql.Field(UnionType)
+
+    result = graphql(gql.to_internal(), '''{
+        type: __type(name: "Union") {
+            kind
+            name
+            description
+            possibleTypes { name }
+        }
+    }''')
+    assert not result.errors
+    assert sort_lists(result.data) == sort_lists({
+        "type": {
+            "name": "Union",
+            "description": "description",
+            "kind": "UNION",
+            "possibleTypes": [
+                {"name": "A"},
+                {"name": "B"},
+                ]
+        }
+    })
