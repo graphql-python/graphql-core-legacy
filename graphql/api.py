@@ -90,6 +90,11 @@ class LazyField(object):
             args, self.resolver, self.deprecation_reason, self.description
         )
 
+    def __call__(self, resolver):
+        # Called when used as decorator
+        self.resolver = resolver
+        return self
+
 
 class LazyArgument(object):
     def __init__(self, typerefspec, default_value=None, description=None):
