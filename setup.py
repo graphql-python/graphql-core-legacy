@@ -49,7 +49,7 @@ setup(
     install_requires=[],
     tests_require=['pytest>=2.7.2'],
     extras_require={
-        'django': [],
+        'django': ['Django>=1.8.0,<1.9'],
     },
 
     cmdclass={'test': PyTest},
