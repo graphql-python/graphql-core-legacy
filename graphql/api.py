@@ -1,5 +1,5 @@
-from graphql import graphql as graphql_main
-import graphql.type
+from graphql.core import graphql as graphql_main
+import graphql.core.type as gql_types
 
 __all__ = ['Schema']
 
@@ -86,7 +86,7 @@ class LazyField(object):
         if self.args:
             for arg_name, arg in self.args.items():
                 args[arg_name] = arg.resolve(schema)
-        return graphql.type.GraphQLField(
+        return gql_types.GraphQLField(
             self.typeref.resolve(schema),
             args, self.resolver, self.deprecation_reason, self.description
         )
@@ -104,22 +104,22 @@ class LazyArgument(object):
         self.description = description
 
     def resolve(self, schema):
-        return graphql.type.GraphQLArgument(
+        return gql_types.GraphQLArgument(
             self.typeref.resolve(schema),
             self.default_value, self.description
         )
 
 
 class Schema(object):
-    String = InternalTypeRef(graphql.type.GraphQLString)
-    Int = InternalTypeRef(graphql.type.GraphQLInt)
-    Float = InternalTypeRef(graphql.type.GraphQLFloat)
-    Boolean = InternalTypeRef(graphql.type.GraphQLBoolean)
-    ID = InternalTypeRef(graphql.type.GraphQLID)
+    String = InternalTypeRef(gql_types.GraphQLString)
+    Int = InternalTypeRef(gql_types.GraphQLInt)
+    Float = InternalTypeRef(gql_types.GraphQLFloat)
+    Boolean = InternalTypeRef(gql_types.GraphQLBoolean)
+    ID = InternalTypeRef(gql_types.GraphQLID)
 
     Field = LazyField
     Argument = LazyArgument
-    EnumValue = graphql.type.GraphQLEnumValue
+    EnumValue = gql_types.GraphQLEnumValue
 
     def __init__(self):
         self._internal_types = {}
@@ -128,8 +128,8 @@ class Schema(object):
         self._mutation_root = None
 
         # Define in the constructor to make functions unbound
-        self.NonNull = WrappingTypeRef.factory(graphql.type.GraphQLNonNull)
-        self.List = WrappingTypeRef.factory(graphql.type.GraphQLList)
+        self.NonNull = WrappingTypeRef.factory(gql_types.GraphQLNonNull)
+        self.List = WrappingTypeRef.factory(gql_types.GraphQLList)
 
         self.EnumType = self._build_type_definer(self._define_enum)
         self.InterfaceType = self._build_type_definer(self._define_interface)
@@ -143,7 +143,7 @@ class Schema(object):
         for k, v in dct.items():
             if isinstance(v, self.EnumValue):
                 values[k] = v
-        return graphql.type.GraphQLEnumType(
+        return gql_types.GraphQLEnumType(
             name=dct['__typename__'],
             values=values,
             description=dct.get('__doc__'),
@@ -154,7 +154,7 @@ class Schema(object):
         for k, v in dct.items():
             if isinstance(v, self.Field):
                 fields[k] = v
-        return graphql.type.GraphQLInterfaceType(
+        return gql_types.GraphQLInterfaceType(
             name=dct['__typename__'],
             fields=lambda: self._resolve_fields(fields),
             description=dct.get('__doc__'),
@@ -162,7 +162,7 @@ class Schema(object):
 
     def _define_union(self, dct):
         types = [self._public_types[public_type] for public_type in dct['types']]
-        return graphql.type.GraphQLUnionType(
+        return gql_types.GraphQLUnionType(
             name=dct['__typename__'],
             types=types,
             resolve_type=dct.get('resolve_type'),
@@ -177,7 +177,7 @@ class Schema(object):
         interfaces = dct.get('__interfaces__')
         if interfaces:
             interfaces = [self._public_types[public_type] for public_type in interfaces]
-        return graphql.type.GraphQLObjectType(
+        return gql_types.GraphQLObjectType(
             name=dct['__typename__'],
             fields=lambda: self._resolve_fields(fields),
             interfaces=interfaces,
@@ -224,7 +224,7 @@ class Schema(object):
         self._public_types[cls] = internal_type
 
     def to_internal(self):
-        return graphql.type.GraphQLSchema(self._query_root)
+        return gql_types.GraphQLSchema(self._query_root)
 
     def execute(self, query, root=None, vars=None, operation_name=None):
         return graphql_main(self.to_internal(), query, root, vars, operation_name)
