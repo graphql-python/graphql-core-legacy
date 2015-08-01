@@ -1,3 +1,4 @@
+from graphql import graphql as graphql_main
 import graphql.type
 
 __all__ = ['Schema']
@@ -224,3 +225,6 @@ class Schema(object):
 
     def to_internal(self):
         return graphql.type.GraphQLSchema(self._query_root)
+
+    def execute(self, query, root=None, vars=None, operation_name=None):
+        return graphql_main(self.to_internal(), query, root, vars, operation_name)

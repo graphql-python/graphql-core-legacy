@@ -1,5 +1,4 @@
 from pytest import raises
-from graphql import graphql
 from graphql.api import Schema
 
 gql = Schema()
@@ -73,7 +72,7 @@ def test_define_enum_type():
     class QueryRoot(gql.QueryRoot):
         episode = gql.Field(EpisodeEnum)
 
-    result = graphql(gql.to_internal(), '''{
+    result = gql.execute('''{
         type: __type(name: "Episode") {
             name
             description
@@ -113,7 +112,7 @@ def test_define_object_type():
         byNameWrapped = gql.Field(gql.List('Episode'))
         byInternalTypeWrapped = gql.Field(gql.List(gql.String))
 
-    result = graphql(gql.to_internal(), '''{
+    result = gql.execute('''{
         type: __type(name: "QueryRoot") {
             name
             description
@@ -162,7 +161,7 @@ def test_field_arguments():
             'byInternalTypeWrapped': gql.Argument(gql.List(gql.String)),
         })
 
-    result = graphql(gql.to_internal(), '''{
+    result = gql.execute('''{
         type: __type(name: "QueryRoot") {
             fields {
                 args {
@@ -224,7 +223,7 @@ def test_define_union_type():
     class QueryRoot(gql.QueryRoot):
         union = gql.Field(UnionType)
 
-    result = graphql(gql.to_internal(), '''{
+    result = gql.execute('''{
         type: __type(name: "Union") {
             kind
             name

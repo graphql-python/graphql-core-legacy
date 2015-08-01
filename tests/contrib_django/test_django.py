@@ -1,6 +1,5 @@
 import django
 from django.conf import settings
-from graphql import graphql
 from graphql.contrib.django import DjangoSchema
 
 settings.configure(
@@ -37,7 +36,7 @@ def test_auto_definition():
         def humans(self, *args, **kwargs):
             return [Human(name='hi')]
 
-    result = graphql(gql.to_internal(), '''{
+    result = gql.execute('''{
         humans { name }
     }''')
     assert not result.errors
