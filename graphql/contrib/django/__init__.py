@@ -9,32 +9,32 @@ def convert_django_field(field, schema):
 
 
 @convert_django_field.register(models.CharField)
-def _(field, schema):
+def _(field, schema):  # flake8: noqa
     return schema.Field(schema.String)
 
 
 @convert_django_field.register(models.AutoField)
-def _(field, schema):
+def _(field, schema):  # flake8: noqa
     return schema.Field(schema.ID)
 
 
 @convert_django_field.register(models.IntegerField)
-def _(field, schema):
+def _(field, schema):  # flake8: noqa
     return schema.Field(schema.Int)
 
 
 @convert_django_field.register(models.BigIntegerField)
-def _(field, schema):
+def _(field, schema):  # flake8: noqa
     raise NotImplemented
 
 
 @convert_django_field.register(models.BooleanField)
-def _(field, schema):
+def _(field, schema):  # flake8: noqa
     return schema.Field(schema.Boolean)
 
 
 @convert_django_field.register(models.FloatField)
-def _(field, schema):
+def _(field, schema):  # flake8: noqa
     return schema.Field(schema.Float)
 
 
