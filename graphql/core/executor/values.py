@@ -2,7 +2,7 @@ import collections
 from ..error import GraphQLError
 from ..language import Kind
 from ..type import (GraphQLNonNull, GraphQLList, GraphQLInputObjectType,
-                    GraphQLScalarType, GraphQLEnumType)
+                    GraphQLScalarType, GraphQLEnumType, is_input_type)
 from ..utils import type_from_ast, is_nullish
 
 __all__ = ['get_variable_values', 'get_argument_values']
@@ -39,24 +39,33 @@ def get_argument_values(arg_defs, arg_asts, variables):
         value_ast = arg_ast_map.get(name)
         if value_ast:
             value_ast = value_ast['value']
-        result[name] = coerce_value_ast(
+        value = coerce_value_ast(
             arg_def.type,
             value_ast,
             variables
         )
+        if is_nullish(value) and not is_nullish(arg_def.default_value):
+            value = arg_def.default_value
+        result[name] = value
     return result
 
 
 def get_variable_value(schema, definition_ast, input):
     """Given a variable definition, and any value of input, return a value which adheres to the variable definition, or throw an error."""
     type = type_from_ast(schema, definition_ast['type'])
-    if not type:
-        return None
+    if not type or not is_input_type(type):
+        raise GraphQLError(
+            'Variable ${} expected value of type {} which cannot be used as an input type.'.format(
+                definition_ast['variable']['name']['value'],
+                print_ast(definition_ast['type']),
+            ),
+            [definition_ast]
+        )
     if is_valid_value(type, input):
         if is_nullish(input):
             default_value = definition_ast.get('defaultValue')
             if default_value:
-                return coerce_value_ast(type, default_value)
+                return coerce_value_ast(type, default_value, None)
         return coerce_value(type, input)
     raise GraphQLError(
         'Variable ${} expected value of type {} but got: {}'.format(
@@ -87,16 +96,24 @@ def is_valid_value(type, value):
             return is_valid_value(item_type, value)
 
     if isinstance(type, GraphQLInputObjectType):
+        if not isinstance(value, collections.Mapping):
+            return False
         fields = type.get_fields()
+
+        # Ensure every provided field is defined.
+        if any(field_name not in fields for field_name in value.keys()):
+            return False
+
+        # Ensure every defined field is valid.
         return all(
-            is_valid_value(fields[field_name].type, value[field_name])
+            is_valid_value(fields[field_name].type, value.get(field_name))
             for field_name in fields
         )
 
-    if isinstance(type, (GraphQLScalarType, GraphQLEnumType)):
-        return not is_nullish(type.coerce(value))
+    assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
+        'Must be input type'
 
-    return False
+    return not is_nullish(type.coerce(value))
 
 
 def coerce_value(type, value):
@@ -127,10 +144,12 @@ def coerce_value(type, value):
             obj[field_name] = field_value
         return obj
 
-    if isinstance(type, (GraphQLScalarType, GraphQLEnumType)):
-        coerced = type.coerce(value)
-        if not is_nullish(coerced):
-            return coerced
+    assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
+        'Must be input type'
+
+    coerced = type.coerce(value)
+    if not is_nullish(coerced):
+        return coerced
 
     return None
 
@@ -183,9 +202,11 @@ def coerce_value_ast(type, value_ast, variables):
             obj[field_name] = field_value
         return obj
 
-    if isinstance(type, (GraphQLScalarType, GraphQLEnumType)):
-        coerced = type.coerce_literal(value_ast)
-        if not is_nullish(coerced):
-            return coerced
+    assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
+        'Must be input type'
+
+    coerced = type.coerce_literal(value_ast)
+    if not is_nullish(coerced):
+        return coerced
 
     return None

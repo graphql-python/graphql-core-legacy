@@ -13,6 +13,7 @@ from .definition import (
     GraphQLInputObjectField,
     GraphQLList,
     GraphQLNonNull,
+    is_input_type,
 )
 from .scalars import (
     GraphQLInt,

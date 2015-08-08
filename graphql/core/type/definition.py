@@ -19,25 +19,6 @@ export type GraphQLType =
 // Predicates
 
 /**
- * These types may be used as input types for arguments and directives.
- */
-export type GraphQLInputType =
-  GraphQLScalarType |
-  GraphQLEnumType |
-  GraphQLInputObjectType |
-  GraphQLList |
-  GraphQLNonNull;
-
-export function isInputType(type: ?GraphQLType): boolean {
-  var nakedType = getUnmodifiedType(type);
-  return (
-    nakedType instanceof GraphQLScalarType ||
-    nakedType instanceof GraphQLEnumType ||
-    nakedType instanceof GraphQLInputObjectType
-  );
-}
-
-/**
  * These types may be used as output types as the result of fields.
  */
 export type GraphQLOutputType =
@@ -120,29 +101,23 @@ export type GraphQLNullableType =
 export function getNullableType(type: ?GraphQLType): ?GraphQLNullableType {
   return type instanceof GraphQLNonNull ? type.ofType : type;
 }
-
-/**
- * These types have no modifiers like List or NonNull.
- */
-export type GraphQLUnmodifiedType =
-  GraphQLScalarType |
-  GraphQLObjectType |
-  GraphQLInterfaceType |
-  GraphQLUnionType |
-  GraphQLEnumType |
-  GraphQLInputObjectType;
-
-export function getUnmodifiedType(type: ?GraphQLType): ?GraphQLUnmodifiedType {
-  var unmodifiedType = type;
-  while (
-    unmodifiedType instanceof GraphQLList ||
-    unmodifiedType instanceof GraphQLNonNull
-  ) {
-    unmodifiedType = unmodifiedType.ofType;
-  }
-  return unmodifiedType;
-}
 '''
+
+
+def is_input_type(type):
+    named_type = get_named_type(type)
+    return isinstance(named_type, (
+        GraphQLScalarType,
+        GraphQLEnumType,
+        GraphQLInputObjectType,
+    ))
+
+
+def get_named_type(type):
+    unmodified_type = type
+    while isinstance(unmodified_type, (GraphQLList, GraphQLNonNull)):
+        unmodified_type = unmodified_type.of_type
+    return unmodified_type
 
 
 class GraphQLType(object):

@@ -53,10 +53,11 @@ class ExecutionContext(object):
 
     Namely, schema of the type system that is currently executing,
     and the fragments defined in the query document"""
-    def __init__(self, schema, root, ast, operation_name, args, errors):
+    def __init__(self, schema, root, ast, operation_name, args):
         """Constructs a ExecutionContext object from the arguments passed
         to execute, which we will pass throughout the other execution
         methods."""
+        errors = []
         operations = {}
         fragments = {}
         for statement in ast['definitions']:
@@ -98,16 +99,15 @@ class ExecutionResult(object):
 def execute(schema, root, ast, operation_name='', args=None):
     """Implements the "Evaluating requests" section of the spec."""
     assert schema, 'Must provide schema'
-    errors = []
+    ctx = ExecutionContext(schema, root, ast, operation_name, args)
     try:
-        ctx = ExecutionContext(schema, root, ast, operation_name, args, errors)
         data = execute_operation(ctx, root, ctx.operation)
     except Exception as e:
-        errors.append(e)
+        ctx.errors.append(e)
         data = None
-    if not errors:
+    if not ctx.errors:
         return ExecutionResult(data)
-    return ExecutionResult(data, map(format_error, errors))
+    return ExecutionResult(data, map(format_error, ctx.errors))
 
 
 def execute_operation(ctx, root, operation):

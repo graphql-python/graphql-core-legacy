@@ -1,7 +1,9 @@
+from pytest import raises
 from graphql.core.executor import execute
 from graphql.core.language import parse
 from graphql.core.type import (GraphQLSchema, GraphQLObjectType, GraphQLField,
     GraphQLArgument, GraphQLList, GraphQLInt, GraphQLString)
+from graphql.core.error import GraphQLError
 
 
 def test_executes_arbitary_code():
@@ -267,10 +269,9 @@ def test_raises_the_inline_operation_if_no_operation_is_provided():
     Type = GraphQLObjectType('Type', {
         'a': GraphQLField(GraphQLString)
     })
-    result = execute(GraphQLSchema(Type), Data(), ast)
-    assert not result.data
-    assert len(result.errors) == 1
-    assert result.errors[0].message == 'Must provide operation name if query contains multiple operations'
+    with raises(GraphQLError) as excinfo:
+        execute(GraphQLSchema(Type), Data(), ast)
+    assert 'Must provide operation name if query contains multiple operations' in str(excinfo.value)
 
 
 def test_uses_the_query_schema_for_queries():

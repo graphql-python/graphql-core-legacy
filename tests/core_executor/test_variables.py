@@ -1,3 +1,4 @@
+from pytest import raises
 import json
 from graphql.core.executor.executor import execute
 from graphql.core.language import parse
@@ -11,6 +12,7 @@ from graphql.core.type import (
     GraphQLString,
     GraphQLNonNull,
 )
+from graphql.core.error import GraphQLError
 
 TestInputObject = GraphQLInputObjectType('TestInputObject', {
     'a': GraphQLField(GraphQLString),
@@ -30,6 +32,10 @@ TestType = GraphQLObjectType('TestType', {
     'fieldWithNonNullableStringInput': GraphQLField(
         GraphQLString,
         args={'input': GraphQLArgument(GraphQLNonNull(GraphQLString))},
+        resolver=lambda obj, args, *_: json.dumps(args['input'])),
+    'fieldWithDefaultArgumentValue': GraphQLField(
+        GraphQLString,
+        args={'input': GraphQLArgument(GraphQLString, 'Hello World')},
         resolver=lambda obj, args, *_: json.dumps(args['input'])),
     'list': GraphQLField(
         GraphQLString,
@@ -85,6 +91,18 @@ def test_inline_properly_coerces_single_value_to_array():
            {"a": "foo", "b": ["bar"], "c": "baz"}
 
 
+def test_inline_does_not_use_incorrect_value():
+    doc = '''
+    {
+        fieldWithObjectInput(input: ["foo", "bar", "baz"])
+    }
+    '''
+    ast = parse(doc)
+    result = execute(schema, None, ast)
+    assert not result.errors
+    assert json.loads(result.data['fieldWithObjectInput']) is None
+
+
 def test_variable_executes_with_complex_input():
     doc = '''
     query q($input:TestInputObject) {
@@ -94,6 +112,19 @@ def test_variable_executes_with_complex_input():
     params = {'input': {'a': 'foo', 'b': ['bar'], 'c': 'baz'}}
     ast = parse(doc)
     result = execute(schema, None, ast, None, params)
+    assert not result.errors
+    assert json.loads(result.data['fieldWithObjectInput']) == \
+           {"a": "foo", "b": ["bar"], "c": "baz"}
+
+
+def test_variable_uses_default_value_when_not_provided():
+    with_defaults_ast = '''
+    query q($input: TestInputObject = {a: "foo", b: ["bar"], c: "baz"}) {
+        fieldWithObjectInput(input: $input)
+    }
+    '''
+    ast = parse(with_defaults_ast)
+    result = execute(schema, None, ast)
     assert not result.errors
     assert json.loads(result.data['fieldWithObjectInput']) == \
            {"a": "foo", "b": ["bar"], "c": "baz"}
@@ -121,10 +152,24 @@ def test_errors_on_null_for_nested_non_null():
     '''
     params = {'input': {'a': 'foo', 'b': 'bar', 'c': None}}
     ast = parse(doc)
-    result = execute(schema, None, ast, None, params)
-    assert len(result.errors) == 1
-    # TODO: check error message and location
-    assert not result.data
+    with raises(GraphQLError) as excinfo:
+        execute(schema, None, ast, None, params)
+    e = excinfo.value
+    # TODO: check error location and message
+
+
+def test_errors_on_incorrect_type():
+    doc = '''
+    query q($input:TestInputObject) {
+        fieldWithObjectInput(input: $input)
+    }
+    '''
+    params = {'input': 'foo bar'}
+    ast = parse(doc)
+    with raises(GraphQLError) as excinfo:
+        execute(schema, None, ast, None, params)
+    e = excinfo.value
+    # TODO: check error location and message
 
 
 def test_errors_on_omission_of_nested_non_null():
@@ -135,10 +180,24 @@ def test_errors_on_omission_of_nested_non_null():
     '''
     params = {'input': {'a': 'foo', 'b': 'bar'}}
     ast = parse(doc)
-    result = execute(schema, None, ast, None, params)
-    assert len(result.errors) == 1
-    # TODO: check error message and location
-    assert not result.data
+    with raises(GraphQLError) as excinfo:
+        execute(schema, None, ast, None, params)
+    e = excinfo.value
+    # TODO: check error location and message
+
+
+def test_errors_on_addition_of_unknown_input_field():
+    doc = '''
+    query q($input:TestInputObject) {
+        fieldWithObjectInput(input: $input)
+    }
+    '''
+    params = {'input': {'a': 'foo', 'b': 'bar', 'c': 'baz', 'd': 'dog'}}
+    ast = parse(doc)
+    with raises(GraphQLError) as excinfo:
+        execute(schema, None, ast, None, params)
+    e = excinfo.value
+    # TODO: check error location and message
 
 
 # Handles nullable scalars
@@ -243,10 +302,10 @@ def test_does_not_allow_non_nullable_inputs_to_be_omitted_in_a_variable():
         }
     '''
     ast = parse(doc)
-    result = execute(schema, None, ast)
-    assert len(result.errors) == 1
-    # TODO: check error message and location
-    assert not result.data
+    with raises(GraphQLError) as excinfo:
+        execute(schema, None, ast)
+    e = excinfo.value
+    # TODO: check error location and message
 
 
 def test_does_not_allow_non_nullable_inputs_to_be_set_to_null_in_a_variable():
@@ -256,10 +315,10 @@ def test_does_not_allow_non_nullable_inputs_to_be_set_to_null_in_a_variable():
         }
     '''
     ast = parse(doc)
-    result = execute(schema, None, ast, None, {'value': None})
-    assert len(result.errors) == 1
-    # TODO: check error message and location
-    assert not result.data
+    with raises(GraphQLError) as excinfo:
+        execute(schema, None, ast, None, {'value': None})
+    e = excinfo.value
+    # TODO: check error location and message
 
 
 def test_allows_non_nullable_inputs_to_be_set_to_a_value_in_a_variable():
@@ -346,10 +405,10 @@ def test_does_not_allow_non_null_lists_to_be_null():
         }
     '''
     ast = parse(doc)
-    result = execute(schema, None, ast, None, {'input': None})
-    assert len(result.errors) == 1
+    with raises(GraphQLError) as excinfo:
+        execute(schema, None, ast, None, {'input': None})
+    e = excinfo.value
     # TODO: check error message and location
-    assert not result.data
 
 
 def test_allows_non_null_lists_to_contain_values():
@@ -407,10 +466,10 @@ def test_does_not_allow_lists_of_non_nulls_to_contain_null():
         }
     '''
     ast = parse(doc)
-    result = execute(schema, None, ast, None, {'input': ['A', None, 'B']})
-    assert len(result.errors) == 1
+    with raises(GraphQLError) as excinfo:
+        execute(schema, None, ast, None, {'input': ['A', None, 'B']})
+    e = excinfo.value
     # TODO: check error message and location
-    assert not result.data
 
 
 def test_does_not_allow_non_null_lists_of_non_nulls_to_be_null():
@@ -420,10 +479,10 @@ def test_does_not_allow_non_null_lists_of_non_nulls_to_be_null():
         }
     '''
     ast = parse(doc)
-    result = execute(schema, None, ast, None, {'input': None})
-    assert len(result.errors) == 1
+    with raises(GraphQLError) as excinfo:
+        execute(schema, None, ast, None, {'input': None})
+    e = excinfo.value
     # TODO: check error message and location
-    assert not result.data
 
 
 def test_allows_non_null_lists_of_non_nulls_to_contain_values():
@@ -445,7 +504,60 @@ def test_does_not_allow_non_null_lists_of_non_nulls_to_contain_null():
         }
     '''
     ast = parse(doc)
-    result = execute(schema, None, ast, None, {'input': ['A', None, 'B']})
-    assert len(result.errors) == 1
+    with raises(GraphQLError) as excinfo:
+        execute(schema, None, ast, None, {'input': ['A', None, 'B']})
+    e = excinfo.value
     # TODO: check error message and location
-    assert not result.data
+
+
+def test_does_not_allow_invalid_types_to_be_used_as_values():
+    doc = '''
+        query q($input: TestType!) {
+          fieldWithObjectInput(input: $input)
+        }
+    '''
+    ast = parse(doc)
+    with raises(GraphQLError) as excinfo:
+        execute(schema, None, ast)
+    e = excinfo.value
+    # TODO: check error location and message
+
+
+def test_does_not_allow_unknown_types_to_be_used_as_values():
+    doc = '''
+        query q($input: UnknownType!) {
+          fieldWithObjectInput(input: $input)
+        }
+    '''
+    ast = parse(doc)
+    with raises(GraphQLError) as excinfo:
+        execute(schema, None, ast)
+    e = excinfo.value
+    # TODO: check error location and message
+
+
+# Uses argument default values
+
+def test_when_no_argument_provided():
+    ast = parse('{ fieldWithDefaultArgumentValue }')
+    result = execute(schema, None, ast)
+    assert not result.errors
+    assert result.data == {'fieldWithDefaultArgumentValue': '"Hello World"'}
+
+
+def test_when_nullable_variable_provided():
+    ast = parse('''query optionalVariable($optional: String) {
+        fieldWithDefaultArgumentValue(input: $optional)
+    }''')
+    result = execute(schema, None, ast)
+    assert not result.errors
+    assert result.data == {'fieldWithDefaultArgumentValue': '"Hello World"'}
+
+
+def test_when_argument_provided_cannot_be_coerced():
+    ast = parse('''{
+        fieldWithDefaultArgumentValue(input: WRONG_TYPE)
+    }''')
+    result = execute(schema, None, ast)
+    assert not result.errors
+    assert result.data == {'fieldWithDefaultArgumentValue': '"Hello World"'}
