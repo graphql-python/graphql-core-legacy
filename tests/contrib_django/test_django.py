@@ -17,6 +17,9 @@ from django.db import models
 
 class Human(models.Model):
     name = models.CharField()
+    i = models.IntegerField()
+    si = models.SmallIntegerField()
+    b = models.BooleanField()
 
     class Meta:
         app_label = 'graphql'
@@ -34,14 +37,14 @@ def test_auto_definition():
     class QueryRoot(gql.QueryRoot):
         @gql.Field(gql.List(gql.NonNull(HumanType)))
         def humans(self, *args, **kwargs):
-            return [Human(name='hi')]
+            return [Human(id=1, name='hi', i=123, si=1, b=True)]
 
     result = gql.execute('''{
-        humans { name }
+        humans { id, name, i, si, b }
     }''')
     assert not result.errors
     assert result.data == {
         'humans': [
-            {'name': 'hi'}
+            {'id': '1', 'name': 'hi', 'i': 123, 'si': 1, 'b': True}
         ]
     }

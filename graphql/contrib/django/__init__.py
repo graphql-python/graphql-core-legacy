@@ -1,5 +1,41 @@
 from graphql.api import Schema
+from singledispatch import singledispatch
 from django.db import models
+
+
+@singledispatch
+def convert_django_field(field, schema):
+    raise NotImplemented
+
+
+@convert_django_field.register(models.CharField)
+def _(field, schema):
+    return schema.Field(schema.String)
+
+
+@convert_django_field.register(models.AutoField)
+def _(field, schema):
+    return schema.Field(schema.ID)
+
+
+@convert_django_field.register(models.IntegerField)
+def _(field, schema):
+    return schema.Field(schema.Int)
+
+
+@convert_django_field.register(models.BigIntegerField)
+def _(field, schema):
+    raise NotImplemented
+
+
+@convert_django_field.register(models.BooleanField)
+def _(field, schema):
+    return schema.Field(schema.Boolean)
+
+
+@convert_django_field.register(models.FloatField)
+def _(field, schema):
+    return schema.Field(schema.Float)
 
 
 class DjangoSchema(Schema):
@@ -14,7 +50,6 @@ class DjangoSchema(Schema):
                 if field.is_relation:
                     pass  # TODO
                 else:
-                    if isinstance(field, models.CharField):
-                        dct[field.name] = self.Field(self.String)
+                    dct[field.name] = convert_django_field(field, self)
                     # ... TODO
         return super(DjangoSchema, self)._define_object(dct)
