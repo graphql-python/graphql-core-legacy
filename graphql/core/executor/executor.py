@@ -3,7 +3,7 @@ import collections
 import re
 from ..error import GraphQLError, format_error
 from ..utils import type_from_ast, is_nullish
-from ..language import kinds as Kind
+from ..language import ast
 from .values import get_variable_values, get_argument_values
 from ..type.definition import (
     GraphQLScalarType,
@@ -53,21 +53,21 @@ class ExecutionContext(object):
 
     Namely, schema of the type system that is currently executing,
     and the fragments defined in the query document"""
-    def __init__(self, schema, root, ast, operation_name, args):
+    def __init__(self, schema, root, document_ast, operation_name, args):
         """Constructs a ExecutionContext object from the arguments passed
         to execute, which we will pass throughout the other execution
         methods."""
         errors = []
         operations = {}
         fragments = {}
-        for statement in ast['definitions']:
-            if statement['kind'] == Kind.OPERATION_DEFINITION:
+        for statement in document_ast.definitions:
+            if isinstance(statement, ast.OperationDefinition):
                 name = ''
-                if statement.get('name'):
-                    name = statement['name']['value']
+                if statement.name:
+                    name = statement.name.value
                 operations[name] = statement
-            elif statement['kind'] == Kind.FRAGMENT_DEFINITION:
-                fragments[statement['name']['value']] = statement
+            elif isinstance(statement, ast.FragmentDefinition):
+                fragments[statement.name.value] = statement
         if not operation_name and len(operations) != 1:
             raise GraphQLError(
                 'Must provide operation name '
@@ -76,7 +76,7 @@ class ExecutionContext(object):
         operation = operations.get(op_name)
         if not operation:
             raise GraphQLError('Unknown operation name: {}'.format(op_name))
-        variables = get_variable_values(schema, operation['variableDefinitions'] or [], args)
+        variables = get_variable_values(schema, operation.variable_definitions or [], args)
 
         self.schema = schema
         self.fragments = fragments
@@ -113,14 +113,14 @@ def execute(schema, root, ast, operation_name='', args=None):
 def execute_operation(ctx, root, operation):
     """Implements the "Evaluating operations" section of the spec."""
     type = get_operation_root_type(ctx.schema, operation)
-    fields = collect_fields(ctx, type, operation['selectionSet'], {}, set())
-    if operation['operation'] == 'mutation':
+    fields = collect_fields(ctx, type, operation.selection_set, {}, set())
+    if operation.operation == 'mutation':
         return execute_fields_serially(ctx, type, root, fields)
     return execute_fields(ctx, type, root, fields)
 
 
 def get_operation_root_type(schema, operation):
-    op = operation['operation']
+    op = operation.operation
     if op == 'query':
         return schema.get_query_type()
     elif op == 'mutation':
@@ -156,37 +156,36 @@ def execute_fields(ctx, parent_type, source, fields):
 
 
 def collect_fields(ctx, type, selection_set, fields, prev_fragment_names):
-    for selection in selection_set['selections']:
-        kind = selection['kind']
-        directives = selection.get('directives')
-        if kind == Kind.FIELD:
+    for selection in selection_set.selections:
+        directives = selection.directives
+        if isinstance(selection, ast.Field):
             if not should_include_node(ctx, directives):
                 continue
             name = get_field_entry_key(selection)
             if name not in fields:
                 fields[name] = []
             fields[name].append(selection)
-        elif kind == Kind.INLINE_FRAGMENT:
+        elif isinstance(selection, ast.InlineFragment):
             if not should_include_node(ctx, directives) or \
                     not does_fragment_condition_match(ctx, selection, type):
                 continue
             collect_fields(
-                ctx, type, selection['selectionSet'],
+                ctx, type, selection.selection_set,
                 fields, prev_fragment_names)
-        elif kind == Kind.FRAGMENT_SPREAD:
-            frag_name = selection['name']['value']
+        elif isinstance(selection, ast.FragmentSpread):
+            frag_name = selection.name.value
             if frag_name in prev_fragment_names or \
                     not should_include_node(ctx, directives):
                 continue
             prev_fragment_names.add(frag_name)
             fragment = ctx.fragments.get(frag_name)
-            frag_directives = fragment.get('directives')
+            frag_directives = fragment.directives
             if not fragment or \
                     not should_include_node(ctx, frag_directives) or \
                     not does_fragment_condition_match(ctx, fragment, type):
                 continue
             collect_fields(
-                ctx, type, fragment['selectionSet'],
+                ctx, type, fragment.selection_set,
                 fields, prev_fragment_names)
     return fields
 
@@ -197,26 +196,26 @@ def should_include_node(ctx, directives):
     if directives:
         skip_ast = None
         for directive in directives:
-            if directive['name']['value'] == GraphQLSkipDirective.name:
+            if directive.name.value == GraphQLSkipDirective.name:
                 skip_ast = directive
                 break
         if skip_ast:
             args = get_argument_values(
                 GraphQLSkipDirective.args,
-                skip_ast['arguments'],
+                skip_ast.arguments,
                 ctx.variables,
             )
             return not args.get('if')
 
         include_ast = None
         for directive in directives:
-            if directive['name']['value'] == GraphQLIncludeDirective.name:
+            if directive.name.value == GraphQLIncludeDirective.name:
                 include_ast = directive
                 break
         if include_ast:
             args = get_argument_values(
                 GraphQLIncludeDirective.args,
-                include_ast['arguments'],
+                include_ast.arguments,
                 ctx.variables,
             )
             return bool(args.get('if'))
@@ -225,7 +224,7 @@ def should_include_node(ctx, directives):
 
 
 def does_fragment_condition_match(ctx, fragment, type_):
-    conditional_type = type_from_ast(ctx.schema, fragment['typeCondition'])
+    conditional_type = type_from_ast(ctx.schema, fragment.type_condition)
     if type(conditional_type) == type(type_):
         return True
     if isinstance(conditional_type, (GraphQLInterfaceType, GraphQLUnionType)):
@@ -235,9 +234,9 @@ def does_fragment_condition_match(ctx, fragment, type_):
 
 def get_field_entry_key(node):
     """Implements the logic to compute the key of a given field’s entry"""
-    if node['alias']:
-        return node['alias']['value']
-    return node['name']['value']
+    if node.alias:
+        return node.alias.value
+    return node.name.value
 
 
 def resolve_field(ctx, parent_type, source, field_asts):
@@ -256,7 +255,7 @@ def resolve_field(ctx, parent_type, source, field_asts):
     # TODO: find a way to memoize, in case this field is within a list type.
     if field_def.args is not None:
         args = get_argument_values(
-            field_def.args, field_ast['arguments'], ctx.variables
+            field_def.args, field_ast.arguments, ctx.variables
         )
     else:
         args = None
@@ -358,7 +357,7 @@ def complete_value(ctx, field_type, field_asts, result):
     subfield_asts = {}
     visited_fragment_names = set()
     for field_ast in field_asts:
-        selection_set = field_ast.get('selectionSet')
+        selection_set = field_ast.selection_set
         if selection_set:
             subfield_asts = collect_fields(
                 ctx, object_type, selection_set,
@@ -377,7 +376,7 @@ def camel_to_snake_case(name):
 def default_resolve_fn(source, args, root, field_ast, *_):
     """If a resolve function is not given, then a default resolve behavior is used which takes the property of the source object
     of the same name as the field and returns it as the result, or if it's a function, returns the result of calling that function."""
-    name = field_ast['name']['value']
+    name = field_ast.name.value
     property = getattr(source, name, None)
     if property is None:
         property = getattr(source, camel_to_snake_case(name), None)
@@ -394,7 +393,7 @@ def get_field_def(schema, parent_type, field_ast):
     are allowed, like on a Union. __schema could get automatically
     added to the query type, but that would require mutating type
     definitions, which would cause issues."""
-    name = field_ast['name']['value']
+    name = field_ast.name.value
     if name == SchemaMetaFieldDef.name and \
             schema.get_query_type() == parent_type:
         return SchemaMetaFieldDef

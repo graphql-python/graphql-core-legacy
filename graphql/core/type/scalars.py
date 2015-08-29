@@ -1,5 +1,10 @@
 from .definition import GraphQLScalarType
-from ..language import Kind
+from ..language.ast import (
+    IntValue,
+    FloatValue,
+    StringValue,
+    BooleanValue,
+)
 
 # Integers are only safe when between -(2^53 - 1) and 2^53 - 1 due to being
 # encoded in JavaScript and represented in JSON as double-precision floating
@@ -22,8 +27,8 @@ def coerce_int(value):
 
 
 def coerce_int_literal(ast):
-    if ast['kind'] == Kind.INT:
-        num = int(ast['value'])
+    if isinstance(ast, IntValue):
+        num = int(ast.value)
         if MIN_INT <= num <= MAX_INT:
             return num
 
@@ -43,8 +48,8 @@ def coerce_float(value):
 
 
 def coerce_float_literal(ast):
-    if ast['kind'] == Kind.FLOAT or ast['kind'] == Kind.INT:
-        return float(ast['value'])
+    if isinstance(ast, (FloatValue, IntValue)):
+        return float(ast.value)
     return None
 
 GraphQLFloat = GraphQLScalarType(name='Float',
@@ -59,8 +64,8 @@ def coerce_string(value):
 
 
 def coerce_string_literal(ast):
-    if ast['kind'] == Kind.STRING:
-        return ast['value']
+    if isinstance(ast, StringValue):
+        return ast.value
     return None
 
 GraphQLString = GraphQLScalarType(name='String',
@@ -69,8 +74,8 @@ GraphQLString = GraphQLScalarType(name='String',
 
 
 def coerce_boolean_literal(ast):
-    if ast['kind'] == Kind.BOOLEAN:
-        return ast['value']
+    if isinstance(ast, BooleanValue):
+        return ast.value
     return None
 
 GraphQLBoolean = GraphQLScalarType(name='Boolean',
@@ -79,8 +84,8 @@ GraphQLBoolean = GraphQLScalarType(name='Boolean',
 
 
 def coerce_id_literal(ast):
-    if ast['kind'] == Kind.STRING or ast['kind'] == Kind.INT:
-        return ast['value']
+    if isinstance(ast, (StringValue, IntValue)):
+        return ast.value
     return None
 
 GraphQLID = GraphQLScalarType(name='ID',

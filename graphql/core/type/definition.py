@@ -1,6 +1,6 @@
 import collections
 from ..error import Error
-from ..language.kinds import ENUM
+from ..language import ast
 
 '''
 /**
@@ -396,8 +396,8 @@ class GraphQLEnumType(GraphQLType):
         return None
 
     def coerce_literal(self, value):
-        if value['kind'] == ENUM:
-            enum_value = self._get_name_lookup().get(value['value'])
+        if isinstance(value, ast.EnumValue):
+            enum_value = self._get_name_lookup().get(value.value)
             if enum_value:
                 return enum_value.value
 

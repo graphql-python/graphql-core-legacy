@@ -1,7 +1,7 @@
 from pytest import raises
 import json
 from graphql.core.executor.executor import execute
-from graphql.core.language import parse
+from graphql.core.language.parser import parse
 from graphql.core.type import (
     GraphQLSchema,
     GraphQLObjectType,

@@ -1,5 +1,6 @@
 from .executor import execute
-from .language import Source, parse
+from .language.source import Source
+from .language.parser import parse
 
 
 def graphql(schema, request='', root=None, vars=None, operation_name=None):

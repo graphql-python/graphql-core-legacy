@@ -1,6 +1,6 @@
 import collections
 from ..error import GraphQLError
-from ..language import Kind
+from ..language import ast
 from ..type import (GraphQLNonNull, GraphQLList, GraphQLInputObjectType,
                     GraphQLScalarType, GraphQLEnumType, is_input_type)
 from ..utils import type_from_ast, is_nullish
@@ -20,7 +20,7 @@ def get_variable_values(schema, definition_asts, inputs):
         inputs = {}
     values = {}
     for def_ast in definition_asts:
-        var_name = def_ast['variable']['name']['value']
+        var_name = def_ast.variable.name.value
         value = get_variable_value(schema, def_ast, inputs.get(var_name))
         values[var_name] = value
     return values
@@ -32,13 +32,13 @@ def get_argument_values(arg_defs, arg_asts, variables):
     arg_ast_map = {}
     if arg_asts:
         for arg in arg_asts:
-            arg_ast_map[arg['name']['value']] = arg
+            arg_ast_map[arg.name.value] = arg
     result = {}
     for arg_def in arg_defs:
         name = arg_def.name
         value_ast = arg_ast_map.get(name)
         if value_ast:
-            value_ast = value_ast['value']
+            value_ast = value_ast.value
         value = coerce_value_ast(
             arg_def.type,
             value_ast,
@@ -52,25 +52,25 @@ def get_argument_values(arg_defs, arg_asts, variables):
 
 def get_variable_value(schema, definition_ast, input):
     """Given a variable definition, and any value of input, return a value which adheres to the variable definition, or throw an error."""
-    type = type_from_ast(schema, definition_ast['type'])
+    type = type_from_ast(schema, definition_ast.type)
     if not type or not is_input_type(type):
         raise GraphQLError(
             'Variable ${} expected value of type {} which cannot be used as an input type.'.format(
-                definition_ast['variable']['name']['value'],
-                print_ast(definition_ast['type']),
+                definition_ast.variable.name.value,
+                print_ast(definition_ast.type),
             ),
             [definition_ast]
         )
     if is_valid_value(type, input):
         if is_nullish(input):
-            default_value = definition_ast.get('defaultValue')
+            default_value = definition_ast.default_value
             if default_value:
                 return coerce_value_ast(type, default_value, None)
         return coerce_value(type, input)
     raise GraphQLError(
         'Variable ${} expected value of type {} but got: {}'.format(
-            definition_ast['variable']['name']['value'],
-            print_ast(definition_ast['type']),
+            definition_ast.variable.name.value,
+            print_ast(definition_ast.type),
             repr(input)
         ),
         [definition_ast]
@@ -165,8 +165,8 @@ def coerce_value_ast(type, value_ast, variables):
     if not value_ast:
         return None
 
-    if value_ast['kind'] == Kind.VARIABLE:
-        variable_name = value_ast['name']['value']
+    if isinstance(value_ast, ast.Variable):
+        variable_name = value_ast.name.value
         if not variables or variable_name not in variables:
             return None
         # Note: we're not doing any checking that this variable is correct. We're assuming that this query
@@ -175,25 +175,25 @@ def coerce_value_ast(type, value_ast, variables):
 
     if isinstance(type, GraphQLList):
         item_type = type.of_type
-        if value_ast['kind'] == Kind.ARRAY:
+        if isinstance(value_ast, ast.ListValue):
             return [coerce_value_ast(item_type, item_ast, variables)
-                    for item_ast in value_ast['values']]
+                    for item_ast in value_ast.values]
         else:
             return [coerce_value_ast(item_type, value_ast, variables)]
 
     if isinstance(type, GraphQLInputObjectType):
         fields = type.get_fields()
-        if value_ast['kind'] != Kind.OBJECT:
+        if not isinstance(value_ast, ast.ObjectValue):
             return None
         field_asts = {}
-        for field in value_ast['fields']:
-            field_asts[field['name']['value']] = field
+        for field in value_ast.fields:
+            field_asts[field.name.value] = field
         obj = {}
         for field_name, field in fields.items():
             field_ast = field_asts.get(field_name)
             field_value_ast = None
             if field_ast:
-                field_value_ast = field_ast['value']
+                field_value_ast = field_ast.value
             field_value = coerce_value_ast(
                 field.type, field_value_ast, variables
             )

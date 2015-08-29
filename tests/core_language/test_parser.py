@@ -2,7 +2,7 @@ from pytest import raises
 from graphql.core.language.error import LanguageError
 from graphql.core.language.source import Source
 from graphql.core.language.parser import parse
-from graphql.core.language import kinds as Kind
+from graphql.core.language import ast
 
 KITCHEN_SINK = """
 # Copyright (c) 2015, Facebook, Inc.
@@ -103,59 +103,50 @@ def test_parse_creates_ast():
     result = parse(source)
 
     assert result == \
-      { 'kind': Kind.DOCUMENT,
-        'loc': { 'start': 0, 'end': 41, 'source': source },
-        'definitions':
-         [ { 'kind': Kind.OPERATION_DEFINITION,
-             'loc': { 'start': 0, 'end': 40, 'source': source },
-             'operation': 'query',
-             'name': None,
-             'variableDefinitions': None,
-             'directives': [],
-             'selectionSet':
-              { 'kind': Kind.SELECTION_SET,
-                'loc': { 'start': 0, 'end': 40, 'source': source },
-                'selections':
-                 [ { 'kind': Kind.FIELD,
-                     'loc': { 'start': 4, 'end': 38, 'source': source },
-                     'alias': None,
-                     'name':
-                      { 'kind': Kind.NAME,
-                        'loc': { 'start': 4, 'end': 8, 'source': source },
-                        'value': 'node' },
-                     'arguments':
-                      [ { 'kind': Kind.ARGUMENT,
-                          'name':
-                           { 'kind': Kind.NAME,
-                             'loc': { 'start': 9, 'end': 11, 'source': source },
-                             'value': 'id' },
-                          'value':
-                           { 'kind': Kind.INT,
-                             'loc': { 'start': 13, 'end': 14, 'source': source },
-                             'value': '4' },
-                          'loc': { 'start': 9, 'end': 14, 'source': source } } ],
-                     'directives': [],
-                     'selectionSet':
-                      { 'kind': Kind.SELECTION_SET,
-                        'loc': { 'start': 16, 'end': 38, 'source': source },
-                        'selections':
-                         [ { 'kind': Kind.FIELD,
-                             'loc': { 'start': 22, 'end': 24, 'source': source },
-                             'alias': None,
-                             'name':
-                              { 'kind': Kind.NAME,
-                                'loc': { 'start': 22, 'end': 24, 'source': source },
-                                'value': 'id' },
-                             'arguments': [],
-                             'directives': [],
-                             'selectionSet': None },
-                           { 'kind': Kind.FIELD,
-                             'loc': { 'start': 30, 'end': 34, 'source': source },
-                             'alias': None,
-                             'name':
-                              { 'kind': Kind.NAME,
-                                'loc': { 'start': 30, 'end': 34, 'source': source },
-                                'value': 'name' },
-                             'arguments': [],
-                             'directives': [],
-                             'selectionSet': None } ] } } ] } } ] }
+           ast.Document(
+               loc={'start': 0, 'end': 41, 'source': source},
+               definitions=
+               [ast.OperationDefinition(
+                   loc={'start': 0, 'end': 40, 'source': source},
+                   operation='query',
+                   name=None,
+                   variable_definitions=None,
+                   directives=[],
+                   selection_set=ast.SelectionSet(
+                       loc={'start': 0, 'end': 40, 'source': source},
+                       selections=
+                       [ast.Field(
+                           loc={'start': 4, 'end': 38, 'source': source},
+                           alias=None,
+                           name=ast.Name(
+                               loc={'start': 4, 'end': 8, 'source': source},
+                               value='node'),
+                           arguments=[ast.Argument(
+                               name=ast.Name(loc={'start': 9, 'end': 11, 'source': source},
+                                             value='id'),
+                               value=ast.IntValue(
+                                   loc={'start': 13, 'end': 14, 'source': source},
+                                   value='4'),
+                               loc={'start': 9, 'end': 14, 'source': source})],
+                           directives=[],
+                           selection_set=ast.SelectionSet(
+                               loc={'start': 16, 'end': 38, 'source': source},
+                               selections=
+                               [ast.Field(
+                                   loc={'start': 22, 'end': 24, 'source': source},
+                                   alias=None,
+                                   name=ast.Name(
+                                       loc={'start': 22, 'end': 24, 'source': source},
+                                       value='id'),
+                                   arguments=[],
+                                   directives=[],
+                                   selection_set=None),
+                                ast.Field(
+                                    loc={'start': 30, 'end': 34, 'source': source},
+                                    alias=None,
+                                    name=ast.Name(
+                                        loc={'start': 30, 'end': 34, 'source': source},
+                                        value='name'),
+                                    arguments=[],
+                                    directives=[],
+                                    selection_set=None)]))]))])

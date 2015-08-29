@@ -1,7 +1,7 @@
 from .source import Source
 from .error import LanguageError
 from .lexer import Lexer, TokenKind, get_token_kind_desc, get_token_desc
-from .kinds import *  # noqa
+from . import ast
 
 __all__ = ['parse']
 
@@ -136,11 +136,10 @@ def many(parser, open_kind, parse_fn, close_kind):
 def parse_name(parser):
     """Converts a name lex token into a name parse node."""
     token = expect(parser, TokenKind.NAME)
-    return {
-        'kind': NAME,
-        'value': token.value,
-        'loc': loc(parser, token.start)
-    }
+    return ast.Name(
+        value=token.value,
+        loc=loc(parser, token.start)
+    )
 
 
 # Implements the parsing rules in the Document section.
@@ -162,11 +161,10 @@ def parse_document(parser):
             raise unexpected(parser)
         if skip(parser, TokenKind.EOF):
             break
-    return {
-        'kind': DOCUMENT,
-        'definitions': definitions,
-        'loc': loc(parser, start)
-    }
+    return ast.Document(
+        definitions=definitions,
+        loc=loc(parser, start)
+    )
 
 
 # Implements the parsing rules in the Operations section.
@@ -174,26 +172,24 @@ def parse_document(parser):
 def parse_operation_definition(parser):
     start = parser.token.start
     if peek(parser, TokenKind.BRACE_L):
-        return {
-            'kind': OPERATION_DEFINITION,
-            'operation': 'query',
-            'name': None,
-            'variableDefinitions': None,
-            'directives': [],
-            'selectionSet': parse_selection_set(parser),
-            'loc': loc(parser, start)
-        }
+        return ast.OperationDefinition(
+            operation='query',
+            name=None,
+            variable_definitions=None,
+            directives=[],
+            selection_set=parse_selection_set(parser),
+            loc=loc(parser, start)
+        )
     operation_token = expect(parser, TokenKind.NAME)
     operation = operation_token.value
-    return {
-        'kind': OPERATION_DEFINITION,
-        'operation': operation,
-        'name': parse_name(parser),
-        'variableDefinitions': parse_variable_definitions(parser),
-        'directives': parse_directives(parser),
-        'selectionSet': parse_selection_set(parser),
-        'loc': loc(parser, start)
-    }
+    return ast.OperationDefinition(
+        operation=operation,
+        name=parse_name(parser),
+        variable_definitions=parse_variable_definitions(parser),
+        directives=parse_directives(parser),
+        selection_set=parse_selection_set(parser),
+        loc=loc(parser, start)
+    )
 
 
 def parse_variable_definitions(parser):
@@ -209,39 +205,35 @@ def parse_variable_definitions(parser):
 
 def parse_variable_definition(parser):
     start = parser.token.start
-    node = {
-        'kind': VARIABLE_DEFINITION,
-        'variable': parse_variable(parser),
-        'type': (expect(parser, TokenKind.COLON), parse_type(parser))[1],
-    }
+    variable = parse_variable(parser)
+    type = (expect(parser, TokenKind.COLON), parse_type(parser))[1]
     if skip(parser, TokenKind.EQUALS):
-        node['defaultValue'] = parse_value(parser, True)
+        default_value = parse_value(parser, True)
     else:
-        node['defaultValue'] = None
-    node['loc'] = loc(parser, start)
-    return node
+        default_value = None
+    return ast.VariableDefinition(
+        variable=variable,
+        type=type,
+        default_value=default_value,
+        loc=loc(parser, start)
+    )
 
 
 def parse_variable(parser):
     start = parser.token.start
     expect(parser, TokenKind.DOLLAR)
-    return {
-        'kind': VARIABLE,
-        'name': parse_name(parser),
-        'loc': loc(parser, start)
-    }
+    return ast.Variable(
+        name=parse_name(parser),
+        loc=loc(parser, start)
+    )
 
 
 def parse_selection_set(parser):
     start = parser.token.start
-    return {
-        'kind': SELECTION_SET,
-        'selections':
-            many(
-                parser, TokenKind.BRACE_L,
-                parse_selection, TokenKind.BRACE_R),
-        'loc': loc(parser, start)
-    }
+    return ast.SelectionSet(
+        selections=many(parser, TokenKind.BRACE_L, parse_selection, TokenKind.BRACE_R),
+        loc=loc(parser, start)
+    )
 
 
 def parse_selection(parser):
@@ -263,19 +255,20 @@ def parse_field(parser):
         alias = None
         name = name_or_alias
 
-    node = {
-        'kind': FIELD,
-        'alias': alias,
-        'name': name,
-        'arguments': parse_arguments(parser),
-        'directives': parse_directives(parser),
-    }
+    arguments = parse_arguments(parser)
+    directives = parse_directives(parser)
     if peek(parser, TokenKind.BRACE_L):
-        node['selectionSet'] = parse_selection_set(parser)
+        selection_set = parse_selection_set(parser)
     else:
-        node['selectionSet'] = None
-    node['loc'] = loc(parser, start)
-    return node
+        selection_set = None
+    return ast.Field(
+        alias=alias,
+        name=name,
+        arguments=arguments,
+        directives=directives,
+        selection_set=selection_set,
+        loc=loc(parser, start)
+    )
 
 
 def parse_arguments(parser):
@@ -288,14 +281,13 @@ def parse_arguments(parser):
 
 def parse_argument(parser):
     start = parser.token.start
-    return {
-        'kind': ARGUMENT,
-        'name': parse_name(parser),
-        'value': (
+    return ast.Argument(
+        name=parse_name(parser),
+        value=(
             expect(parser, TokenKind.COLON),
             parse_value(parser, False))[1],
-        'loc': loc(parser, start)
-    }
+        loc=loc(parser, start)
+    )
 
 
 # Implements the parsing rules in the Fragments section.
@@ -306,34 +298,31 @@ def parse_fragment(parser):
     expect(parser, TokenKind.SPREAD)
     if parser.token.value == 'on':
         advance(parser)
-        return {
-            'kind': INLINE_FRAGMENT,
-            'typeCondition': parse_name(parser),
-            'directives': parse_directives(parser),
-            'selectionSet': parse_selection_set(parser),
-            'loc': loc(parser, start)
-        }
-    return {
-        'kind': FRAGMENT_SPREAD,
-        'name': parse_name(parser),
-        'directives': parse_directives(parser),
-        'loc': loc(parser, start)
-    }
+        return ast.InlineFragment(
+            type_condition=parse_name(parser),
+            directives=parse_directives(parser),
+            selection_set=parse_selection_set(parser),
+            loc=loc(parser, start)
+        )
+    return ast.FragmentSpread(
+        name=parse_name(parser),
+        directives=parse_directives(parser),
+        loc=loc(parser, start)
+    )
 
 
 def parse_fragment_definition(parser):
     start = parser.token.start
     expect_keyword(parser, 'fragment')
-    return {
-        'kind': FRAGMENT_DEFINITION,
-        'name': parse_name(parser),
-        'typeCondition': (
+    return ast.FragmentDefinition(
+        name=parse_name(parser),
+        type_condition=(
             expect_keyword(parser, 'on'),
             parse_name(parser))[1],
-        'directives': parse_directives(parser),
-        'selectionSet': parse_selection_set(parser),
-        'loc': loc(parser, start)
-    }
+        directives=parse_directives(parser),
+        selection_set=parse_selection_set(parser),
+        loc=loc(parser, start)
+    )
 
 
 # Implements the parsing rules in the Values section.
@@ -354,38 +343,18 @@ def parse_value(parser, is_const):
         return parse_object(parser, is_const)
     elif token.kind == TokenKind.INT:
         advance(parser)
-        return {
-            'kind': INT,
-            'value': token.value,
-            'loc': loc(parser, token.start)
-        }
+        return ast.IntValue(value=token.value, loc=loc(parser, token.start))
     elif token.kind == TokenKind.FLOAT:
         advance(parser)
-        return {
-            'kind': FLOAT,
-            'value': token.value,
-            'loc': loc(parser, token.start)
-        }
+        return ast.FloatValue(value=token.value, loc=loc(parser, token.start))
     elif token.kind == TokenKind.STRING:
         advance(parser)
-        return {
-            'kind': STRING,
-            'value': token.value,
-            'loc': loc(parser, token.start)
-        }
+        return ast.StringValue(value=token.value, loc=loc(parser, token.start))
     elif token.kind == TokenKind.NAME:
         advance(parser)
         if token.value in ('true', 'false'):
-            return {
-                'kind': BOOLEAN,
-                'value': token.value == 'true',
-                'loc': loc(parser, token.start)
-            }
-        return {
-            'kind': ENUM,
-            'value': token.value,
-            'loc': loc(parser, token.start)
-        }
+            return ast.BooleanValue(value=token.value == 'true', loc=loc(parser, token.start))
+        return ast.EnumValue(value=token.value, loc=loc(parser, token.start))
     elif token.kind == TokenKind.DOLLAR:
         if not is_const:
             return parse_variable(parser)
@@ -398,13 +367,12 @@ def parse_array(parser, is_const):
         item = parse_const_value
     else:
         item = parse_variable_value
-    return {
-        'kind': ARRAY,
-        'values': any(
+    return ast.ListValue(
+        values=any(
             parser, TokenKind.BRACKET_L,
             item, TokenKind.BRACKET_R),
-        'loc': loc(parser, start)
-    }
+        loc=loc(parser, start)
+    )
 
 
 def parse_object(parser, is_const):
@@ -414,31 +382,26 @@ def parse_object(parser, is_const):
     fields = []
     while not skip(parser, TokenKind.BRACE_R):
         fields.append(parse_object_field(parser, is_const, field_names))
-    return {
-        'kind': OBJECT,
-        'fields': fields,
-        'loc': loc(parser, start)
-    }
+    return ast.ObjectValue(fields=fields, loc=loc(parser, start))
 
 
 def parse_object_field(parser, is_const, field_names):
     start = parser.token.start
     name = parse_name(parser)
-    if name['value'] in field_names:
+    if name.value in field_names:
         raise LanguageError(
             parser.source,
             start,
-            "Duplicate input object field {}.".format(name['value'])
+            "Duplicate input object field {}.".format(name.value)
         )
-    field_names.add(name['value'])
-    return {
-        'kind': OBJECT_FIELD,
-        'name': name,
-        'value': (
+    field_names.add(name.value)
+    return ast.ObjectField(
+        name=name,
+        value=(
             expect(parser, TokenKind.COLON),
             parse_value(parser, is_const))[1],
-        'loc': loc(parser, start)
-    }
+        loc=loc(parser, start)
+    )
 
 
 # Implements the parsing rules in the Directives section.
@@ -453,12 +416,11 @@ def parse_directives(parser):
 def parse_directive(parser):
     start = parser.token.start
     expect(parser, TokenKind.AT)
-    node = {
-        'kind': DIRECTIVE,
-        'name': parse_name(parser),
-        'arguments': parse_arguments(parser),
-        'loc': loc(parser, start),
-    }
+    node = ast.Directive(
+        name=parse_name(parser),
+        arguments=parse_arguments(parser),
+        loc=loc(parser, start),
+    )
     return node
 
 
@@ -472,17 +434,9 @@ def parse_type(parser):
     if skip(parser, TokenKind.BRACKET_L):
         type = parse_type(parser)
         expect(parser, TokenKind.BRACKET_R)
-        type = {
-            'kind': LIST_TYPE,
-            'type': type,
-            'loc': loc(parser, start)
-        }
+        type = ast.ListType(type=type, loc=loc(parser, start))
     else:
         type = parse_name(parser)
     if skip(parser, TokenKind.BANG):
-        return {
-            'kind': NON_NULL_TYPE,
-            'type': type,
-            'loc': loc(parser, start)
-        }
+        return ast.NonNullType(type=type, loc=loc(parser, start))
     return type
