@@ -299,7 +299,7 @@ def parse_fragment(parser):
     if parser.token.value == 'on':
         advance(parser)
         return ast.InlineFragment(
-            type_condition=parse_name(parser),
+            type_condition=parse_named_type(parser),
             directives=parse_directives(parser),
             selection_set=parse_selection_set(parser),
             loc=loc(parser, start)
@@ -318,7 +318,7 @@ def parse_fragment_definition(parser):
         name=parse_name(parser),
         type_condition=(
             expect_keyword(parser, 'on'),
-            parse_name(parser))[1],
+            parse_named_type(parser))[1],
         directives=parse_directives(parser),
         selection_set=parse_selection_set(parser),
         loc=loc(parser, start)
@@ -436,7 +436,15 @@ def parse_type(parser):
         expect(parser, TokenKind.BRACKET_R)
         type = ast.ListType(type=type, loc=loc(parser, start))
     else:
-        type = parse_name(parser)
+        type = parse_named_type(parser)
     if skip(parser, TokenKind.BANG):
         return ast.NonNullType(type=type, loc=loc(parser, start))
     return type
+
+
+def parse_named_type(parser):
+    start = parser.token.start
+    return ast.NamedType(
+        name=parse_name(parser),
+        loc=loc(parser, start),
+    )

@@ -3,47 +3,7 @@ from graphql.core.language.error import LanguageError
 from graphql.core.language.source import Source
 from graphql.core.language.parser import parse
 from graphql.core.language import ast
-
-KITCHEN_SINK = """
-# Copyright (c) 2015, Facebook, Inc.
-# All rights reserved.
-#
-# This source code is licensed under the BSD-style license found in the
-# LICENSE file in the root directory of this source tree. An additional grant
-# of patent rights can be found in the PATENTS file in the same directory.
-
-query queryName($foo: ComplexType, $site: Site = MOBILE) {
-  whoever123is: node(id: [123, 456]) {
-    id ,
-    ... on User @defer {
-      field2 {
-        id ,
-        alias: field1(first:10, after:$foo,) @include(if: $foo) {
-          id,
-          ...frag
-        }
-      }
-    }
-  }
-}
-
-mutation likeStory {
-  like(story: 123) @defer {
-    story {
-      id
-    }
-  }
-}
-
-fragment frag on Friend {
-  foo(size: $size, bar: $b, obj: {key: "value"})
-}
-
-{
-  unnamed(truthy: true, falsey: false),
-  query
-}
-"""
+from fixtures import KITCHEN_SINK
 
 
 def test_parse_provides_useful_errors():

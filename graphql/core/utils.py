@@ -1,4 +1,4 @@
-from .language.ast import ListType, NonNullType, Name
+from .language.ast import ListType, NonNullType, NamedType
 from .type.definition import GraphQLList, GraphQLNonNull
 
 
@@ -15,8 +15,8 @@ def type_from_ast(schema, input_type_ast):
             return GraphQLNonNull(inner_type)
         else:
             return None
-    assert isinstance(input_type_ast, Name), 'Must be a type name.'
-    return schema.get_type(input_type_ast.value)
+    assert isinstance(input_type_ast, NamedType), 'Must be a type name.'
+    return schema.get_type(input_type_ast.name.value)
 
 
 def is_nullish(value):
