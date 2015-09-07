@@ -1,16 +1,12 @@
 import collections
 from ..error import GraphQLError
 from ..language import ast
+from ..language.printer import print_ast
 from ..type import (GraphQLNonNull, GraphQLList, GraphQLInputObjectType,
                     GraphQLScalarType, GraphQLEnumType, is_input_type)
 from ..utils import type_from_ast, is_nullish
 
 __all__ = ['get_variable_values', 'get_argument_values']
-
-
-def print_ast(ast):
-    # TODO: replace to real printer
-    return repr(ast)
 
 
 def get_variable_values(schema, definition_asts, inputs):
