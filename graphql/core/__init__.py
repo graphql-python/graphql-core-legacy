@@ -17,6 +17,6 @@ def graphql(schema, request='', root=None, vars=None, operation_name=None):
         schema,
         root or object(),
         ast,
+        operation_name,
         vars or {},
-        operation_name
     )
