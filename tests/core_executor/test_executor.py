@@ -231,7 +231,7 @@ def test_nulls_out_error_subtrees():
     result = execute(GraphQLSchema(Type), Data(), doc_ast)
     assert result.data == {'ok': 'ok', 'error': None}
     assert len(result.errors) == 1
-    assert result.errors[0].message == 'Error getting error'
+    assert result.errors[0]['message'] == 'Error getting error'
     # TODO: check error location
 
 

@@ -1,10 +1,8 @@
-__all__ = ['get_location']
+from collections import namedtuple
 
+__all__ = ['get_location', 'SourceLocation']
 
-class SourceLocation(object):
-    def __init__(self, line, column):
-        self.line = line
-        self.column = column
+SourceLocation = namedtuple('SourceLocation', 'line column')
 
 
 def get_location(source, position):

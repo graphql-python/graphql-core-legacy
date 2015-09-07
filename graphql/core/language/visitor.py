@@ -151,14 +151,14 @@ def is_node(maybe_node):
 
 class Visitor(object):
     def enter(self, node, key, parent, path, ancestors):
-        self._call_kind_specific_visitor('enter_', node, key, parent, path, ancestors)
+        return self._call_kind_specific_visitor('enter_', node, key, parent, path, ancestors)
 
     def leave(self, node, key, parent, path, ancestors):
-        self._call_kind_specific_visitor('leave_', node, key, parent, path, ancestors)
+        return self._call_kind_specific_visitor('leave_', node, key, parent, path, ancestors)
 
     def _call_kind_specific_visitor(self, prefix, node, key, parent, path, ancestors):
         node_kind = type(node).__name__
         method_name = prefix + node_kind
         method = getattr(self, method_name, None)
         if method:
-            method(node, key, parent, path, ancestors)
+            return method(node, key, parent, path, ancestors)

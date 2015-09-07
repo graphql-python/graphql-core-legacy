@@ -59,22 +59,6 @@ export function isLeafType(type: ?GraphQLType): boolean {
 /**
  * These types may describe the parent context of a selection set.
  */
-export type GraphQLCompositeType =
-  GraphQLObjectType |
-  GraphQLInterfaceType |
-  GraphQLUnionType;
-
-export function isCompositeType(type: ?GraphQLType): boolean {
-  return (
-    type instanceof GraphQLObjectType ||
-    type instanceof GraphQLInterfaceType ||
-    type instanceof GraphQLUnionType
-  );
-}
-
-/**
- * These types may describe the parent context of a selection set.
- */
 export type GraphQLAbstractType =
   GraphQLInterfaceType |
   GraphQLUnionType;
@@ -113,11 +97,25 @@ def is_input_type(type):
     ))
 
 
+def is_composite_type(type):
+    return isinstance(type, (
+        GraphQLObjectType,
+        GraphQLInterfaceType,
+        GraphQLUnionType,
+    ))
+
+
 def get_named_type(type):
     unmodified_type = type
     while isinstance(unmodified_type, (GraphQLList, GraphQLNonNull)):
         unmodified_type = unmodified_type.of_type
     return unmodified_type
+
+
+def get_nullable_type(type):
+    if isinstance(type, GraphQLNonNull):
+        return type.of_type
+    return type
 
 
 class GraphQLType(object):

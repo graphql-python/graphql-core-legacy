@@ -50,7 +50,7 @@ def test_non_nullable_list_of_nullables():
     # Returns null
     result = run(type, None)
     assert len(result.errors) == 1
-    assert result.errors[0].message == 'Cannot return null for non-nullable type.'
+    assert result.errors[0]['message'] == 'Cannot return null for non-nullable type.'
     # TODO: check error location
     assert result.data == {'nest': None}
 
@@ -62,7 +62,7 @@ def test_nullable_list_of_non_nullables():
     # Contains null
     result = run(type, [1, None, 2])
     assert len(result.errors) == 1
-    assert result.errors[0].message == 'Cannot return null for non-nullable type.'
+    assert result.errors[0]['message'] == 'Cannot return null for non-nullable type.'
     # TODO: check error location
     assert result.data == {'nest': {'test': None}}
     # Returns null
@@ -76,12 +76,12 @@ def test_non_nullable_list_of_non_nullables():
     # Contains null
     result = run(type, [1, None, 2])
     assert len(result.errors) == 1
-    assert result.errors[0].message == 'Cannot return null for non-nullable type.'
+    assert result.errors[0]['message'] == 'Cannot return null for non-nullable type.'
     # TODO: check error location
     assert result.data == {'nest': None}
     # Returns null
     result = run(type, None)
     assert len(result.errors) == 1
-    assert result.errors[0].message == 'Cannot return null for non-nullable type.'
+    assert result.errors[0]['message'] == 'Cannot return null for non-nullable type.'
     # TODO: check error location
     assert result.data == {'nest': None}
