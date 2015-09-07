@@ -2,91 +2,6 @@ import collections
 from ..error import Error
 from ..language import ast
 
-'''
-/**
- * These are all of the possible kinds of types.
- */
-export type GraphQLType =
-  GraphQLScalarType |
-  GraphQLObjectType |
-  GraphQLInterfaceType |
-  GraphQLUnionType |
-  GraphQLEnumType |
-  GraphQLInputObjectType |
-  GraphQLList |
-  GraphQLNonNull;
-
-// Predicates
-
-/**
- * These types may be used as output types as the result of fields.
- */
-export type GraphQLOutputType =
-  GraphQLScalarType |
-  GraphQLObjectType |
-  GraphQLInterfaceType |
-  GraphQLUnionType |
-  GraphQLEnumType |
-  GraphQLList |
-  GraphQLNonNull;
-
-export function isOutputType(type: ?GraphQLType): boolean {
-  var nakedType = getUnmodifiedType(type);
-  return (
-    nakedType instanceof GraphQLScalarType ||
-    nakedType instanceof GraphQLObjectType ||
-    nakedType instanceof GraphQLInterfaceType ||
-    nakedType instanceof GraphQLUnionType ||
-    nakedType instanceof GraphQLEnumType
-  );
-}
-
-/**
- * These types may describe types which may be leaf values.
- */
-export type GraphQLLeafType =
-  GraphQLScalarType |
-  GraphQLEnumType;
-
-export function isLeafType(type: ?GraphQLType): boolean {
-  var nakedType = getUnmodifiedType(type);
-  return (
-    nakedType instanceof GraphQLScalarType ||
-    nakedType instanceof GraphQLEnumType
-  );
-}
-
-/**
- * These types may describe the parent context of a selection set.
- */
-export type GraphQLAbstractType =
-  GraphQLInterfaceType |
-  GraphQLUnionType;
-
-export function isAbstractType(type: ?GraphQLType): boolean {
-  return (
-    type instanceof GraphQLInterfaceType ||
-    type instanceof GraphQLUnionType
-  );
-}
-
-/**
- * These types can all accept null as a value.
- */
-export type GraphQLNullableType =
-  GraphQLScalarType |
-  GraphQLObjectType |
-  GraphQLInterfaceType |
-  GraphQLUnionType |
-  GraphQLEnumType |
-  GraphQLInputObjectType |
-  GraphQLList;
-
-export function getNullableType(type: ?GraphQLType): ?GraphQLNullableType {
-  return type instanceof GraphQLNonNull ? type.ofType : type;
-}
-'''
-
 
 def is_input_type(type):
     named_type = get_named_type(type)
@@ -98,10 +13,19 @@ def is_input_type(type):
 
 
 def is_composite_type(type):
-    return isinstance(type, (
+    named_type = get_named_type(type)
+    return isinstance(named_type, (
         GraphQLObjectType,
         GraphQLInterfaceType,
         GraphQLUnionType,
+    ))
+
+
+def is_leaf_type(type):
+    named_type = get_named_type(type)
+    return isinstance(named_type, (
+        GraphQLScalarType,
+        GraphQLEnumType,
     ))
 
 

@@ -8,7 +8,12 @@ from graphql.core.type import (
     GraphQLID,
     GraphQLString,
     GraphQLBoolean,
-    GraphQLInterfaceType, GraphQLEnumType, GraphQLEnumValue, GraphQLInputObjectType)
+    GraphQLInterfaceType,
+    GraphQLEnumType,
+    GraphQLEnumValue,
+    GraphQLInputObjectType,
+    GraphQLUnionType,
+    GraphQLList)
 from graphql.core.error import format_error
 
 Pet = GraphQLInterfaceType('Pet', {
@@ -17,18 +22,34 @@ Pet = GraphQLInterfaceType('Pet', {
     }),
 })
 
+DogCommand = GraphQLEnumType('DogCommand', {
+    'SIT': GraphQLEnumValue(0),
+    'HEEL': GraphQLEnumValue(1),
+    'DOWN': GraphQLEnumValue(2),
+})
+
 Dog = GraphQLObjectType('Dog', {
+    'name': GraphQLField(GraphQLString, {
+        'surname': GraphQLArgument(GraphQLBoolean),
+    }),
+    'nickname': GraphQLField(GraphQLString),
     'barks': GraphQLField(GraphQLBoolean),
+    'doesKnowCommand': GraphQLField(GraphQLBoolean, {
+        'dogCommand': GraphQLArgument(DogCommand)
+    })
 }, interfaces=[Pet])
 
 Cat = GraphQLObjectType('Cat', lambda: {
     'furColor': GraphQLField(FurColor)
 }, interfaces=[Pet])
 
+CatOrDog = GraphQLUnionType('CatOrDog', [Dog, Cat])
+
 Human = GraphQLObjectType('Human', {
     'name': GraphQLField(GraphQLString, {
         'surname': GraphQLArgument(GraphQLBoolean),
-    })
+    }),
+    'pets': GraphQLField(GraphQLList(Pet)),
 })
 
 FurColor = GraphQLEnumType('FurColor', {
@@ -50,9 +71,10 @@ ComplicatedArgs = GraphQLObjectType('ComplicatedArgs', {
 
 QueryRoot = GraphQLObjectType('QueryRoot', {
     'human': GraphQLField(Human, {
-        'id': GraphQLArgument(GraphQLID)
+        'id': GraphQLArgument(GraphQLID),
     }),
     'pet': GraphQLField(Pet),
+    'catOrDog': GraphQLField(CatOrDog),
     'complicatedArgs': GraphQLField(ComplicatedArgs),
 })
 

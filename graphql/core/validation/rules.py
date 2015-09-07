@@ -1,5 +1,6 @@
+from ..utils import type_from_ast
 from ..error import GraphQLError
-from ..type.definition import is_composite_type
+from ..type.definition import is_composite_type, is_input_type, is_leaf_type
 from ..language.ast import OperationDefinition
 from ..language.visitor import Visitor
 from ..language.printer import print_ast
@@ -87,3 +88,120 @@ class FragmentsOnCompositeTypes(ValidationRule):
     @staticmethod
     def message(frag_name, type):
         return 'Fragment "{}" cannot condition on non composite type "{}".'.format(frag_name, type)
+
+
+class VariablesAreInputTypes(ValidationRule):
+    def enter_VariableDefinition(self, node, *args):
+        type = type_from_ast(self.context.get_schema(), node.type)
+
+        if type and not is_input_type(type):
+            variable_name = node.variable.name.value
+            return GraphQLError(
+                self.message(variable_name, print_ast(node.type)),
+                [node.type]
+            )
+
+    @staticmethod
+    def message(variable_name, type_name):
+        return 'Variable "${}" cannot be non-input type "{}".'.format(variable_name, type_name)
+
+
+class ScalarLeafs(ValidationRule):
+    def enter_Field(self, node, *args):
+        type = self.context.get_type()
+        if type:
+            if is_leaf_type(type):
+                if node.selection_set:
+                    return GraphQLError(
+                        self.not_allowed_message(node.name.value, type),
+                        [node.selection_set]
+                    )
+            elif not node.selection_set:
+                return GraphQLError(
+                    self.required_message(node.name.value, type),
+                    [node]
+                )
+
+    @staticmethod
+    def not_allowed_message(field, type):
+        return 'Field "{}" of type "{}" must not have a sub selection.'.format(field, type)
+
+    @staticmethod
+    def required_message(field, type):
+        return 'Field "{}" of type "{}" must have a sub selection.'.format(field, type)
+
+
+class FieldsOnCorrectType(ValidationRule):
+    def enter_Field(self, node, *args):
+        type = self.context.get_parent_type()
+        if type:
+            field_def = self.context.get_field_def()
+            if not field_def:
+                return GraphQLError(
+                    self.message(node.name.value, type.name),
+                    [node]
+                )
+
+    @staticmethod
+    def message(field_name, type):
+        return 'Cannot query field "{}" on "{}".'.format(field_name, type)
+
+
+class UniqueFragmentNames(ValidationRule):
+    pass
+
+
+class KnownFragmentNames(ValidationRule):
+    pass
+
+
+class NoUnusedFragments(ValidationRule):
+    pass
+
+
+class PossibleFragmentSpreads(ValidationRule):
+    pass
+
+
+class NoFragmentCycles(ValidationRule):
+    pass
+
+
+class NoUndefinedVariables(ValidationRule):
+    pass
+
+
+class NoUnusedVariables(ValidationRule):
+    pass
+
+
+class KnownDirectives(ValidationRule):
+    pass
+
+
+class KnownArgumentNames(ValidationRule):
+    pass
+
+
+class UniqueArgumentNames(ValidationRule):
+    pass
+
+
+class ArgumentsOfCorrectType(ValidationRule):
+    pass
+
+
+class ProvidedNonNullArguments(ValidationRule):
+    pass
+
+
+class DefaultValuesOfCorrectType(ValidationRule):
+    pass
+
+
+class VariablesInAllowedPosition(ValidationRule):
+    pass
+
+
+class OverlappingFieldsCanBeMerged(ValidationRule):
+    pass

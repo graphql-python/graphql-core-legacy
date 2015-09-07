@@ -10,6 +10,24 @@ specified_rules = [
     Rules.LoneAnonymousOperation,
     Rules.KnownTypeNames,
     Rules.FragmentsOnCompositeTypes,
+    Rules.VariablesAreInputTypes,
+    Rules.ScalarLeafs,
+    Rules.FieldsOnCorrectType,
+    Rules.UniqueFragmentNames,
+    Rules.KnownFragmentNames,
+    Rules.NoUnusedFragments,
+    Rules.PossibleFragmentSpreads,
+    Rules.NoFragmentCycles,
+    Rules.NoUndefinedVariables,
+    Rules.NoUnusedVariables,
+    Rules.KnownDirectives,
+    Rules.KnownArgumentNames,
+    Rules.UniqueArgumentNames,
+    Rules.ArgumentsOfCorrectType,
+    Rules.ProvidedNonNullArguments,
+    Rules.DefaultValuesOfCorrectType,
+    Rules.VariablesInAllowedPosition,
+    Rules.OverlappingFieldsCanBeMerged,
 ]
 
 
@@ -55,7 +73,10 @@ class ValidationVisitor(Visitor):
                 visit(fragment, self)
 
         if result is False:
+            print 'leave', node
             self.type_info.leave(node)
+
+        return result
 
     def leave(self, node, key, parent, path, ancestors):
         result = self.instance.leave(node, key, parent, path, ancestors)

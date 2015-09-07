@@ -123,7 +123,7 @@ def test_define_object_type():
         kind, name
         ofType {
             kind, name
-            ofType { kind, name, ofType }
+            ofType { kind, name }
         }
     }''')
     assert not result.errors
@@ -175,7 +175,7 @@ def test_field_arguments():
         kind, name
         ofType {
             kind, name
-            ofType { kind, name, ofType }
+            ofType { kind, name }
         }
     }''')
     assert not result.errors
