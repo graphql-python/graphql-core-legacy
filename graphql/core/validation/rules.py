@@ -1,3 +1,4 @@
+from ..language.ast import OperationDefinition
 from ..error import GraphQLError
 from ..language.visitor import Visitor
 
@@ -25,3 +26,36 @@ class UniqueOperationNames(ValidationRule):
     @staticmethod
     def message(operation_name):
         return 'There can only be one operation named "{}".'.format(operation_name)
+
+
+class LoneAnonymousOperation(ValidationRule):
+    def __init__(self, context):
+        super(LoneAnonymousOperation, self).__init__(context)
+        self._op_count = 0
+
+    def enter_Document(self, node, *args):
+        n = 0
+        for definition in node.definitions:
+            if isinstance(definition, OperationDefinition):
+                n += 1
+        self._op_count = n
+
+    def enter_OperationDefinition(self, node, *args):
+        if not node.name and self._op_count > 1:
+            return GraphQLError(self.message(), [node])
+
+    @staticmethod
+    def message():
+        return 'This anonymous operation must be the only defined operation.'
+
+
+class KnownTypeNames(ValidationRule):
+    def enter_NamedType(self, node, *args):
+        type_name = node.name.value
+        type = self.context.get_schema().get_type(type_name)
+        if not type:
+            return GraphQLError(self.message(type_name), [node])
+
+    @staticmethod
+    def message(type):
+        return 'Unknown type "{}".'.format(type)

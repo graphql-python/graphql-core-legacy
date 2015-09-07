@@ -6,8 +6,16 @@ from graphql.core.type import (
     GraphQLField,
     GraphQLArgument,
     GraphQLID,
-    GraphQLString, GraphQLBoolean)
+    GraphQLString,
+    GraphQLBoolean,
+    GraphQLInterfaceType)
 from graphql.core.error import format_error
+
+Pet = GraphQLInterfaceType('Pet', {
+    'name': GraphQLField(GraphQLString, {
+        'surname': GraphQLArgument(GraphQLBoolean),
+    }),
+})
 
 Human = GraphQLObjectType('Human', {
     'name': GraphQLField(GraphQLString, {
@@ -18,7 +26,8 @@ Human = GraphQLObjectType('Human', {
 QueryRoot = GraphQLObjectType('QueryRoot', {
     'human': GraphQLField(Human, {
         'id': GraphQLArgument(GraphQLID)
-    })
+    }),
+    'pet': GraphQLField(Pet),
 })
 
 default_schema = GraphQLSchema(query=QueryRoot)

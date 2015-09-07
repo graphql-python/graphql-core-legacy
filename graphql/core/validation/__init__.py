@@ -7,6 +7,8 @@ from . import rules as Rules
 
 specified_rules = [
     Rules.UniqueOperationNames,
+    Rules.LoneAnonymousOperation,
+    Rules.KnownTypeNames,
 ]
 
 
