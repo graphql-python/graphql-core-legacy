@@ -73,7 +73,6 @@ class ValidationVisitor(Visitor):
                 visit(fragment, self)
 
         if result is False:
-            print 'leave', node
             self.type_info.leave(node)
 
         return result
