@@ -8,7 +8,7 @@ from graphql.core.type import (
     GraphQLID,
     GraphQLString,
     GraphQLBoolean,
-    GraphQLInterfaceType)
+    GraphQLInterfaceType, GraphQLEnumType, GraphQLEnumValue, GraphQLInputObjectType)
 from graphql.core.error import format_error
 
 Pet = GraphQLInterfaceType('Pet', {
@@ -17,9 +17,34 @@ Pet = GraphQLInterfaceType('Pet', {
     }),
 })
 
+Dog = GraphQLObjectType('Dog', {
+    'barks': GraphQLField(GraphQLBoolean),
+}, interfaces=[Pet])
+
+Cat = GraphQLObjectType('Cat', lambda: {
+    'furColor': GraphQLField(FurColor)
+}, interfaces=[Pet])
+
 Human = GraphQLObjectType('Human', {
     'name': GraphQLField(GraphQLString, {
         'surname': GraphQLArgument(GraphQLBoolean),
+    })
+})
+
+FurColor = GraphQLEnumType('FurColor', {
+    'BROWN': GraphQLEnumValue(0),
+    'BLACK': GraphQLEnumValue(1),
+    'TAN': GraphQLEnumValue(2),
+    'SPOTTED': GraphQLEnumValue(3),
+})
+
+ComplexInput = GraphQLInputObjectType('ComplexInput', {
+    'stringField': GraphQLField(GraphQLString)
+})
+
+ComplicatedArgs = GraphQLObjectType('ComplicatedArgs', {
+    'complexArgField': GraphQLField(GraphQLString, {
+        'complexArg': GraphQLArgument(ComplexInput),
     })
 })
 
@@ -28,6 +53,7 @@ QueryRoot = GraphQLObjectType('QueryRoot', {
         'id': GraphQLArgument(GraphQLID)
     }),
     'pet': GraphQLField(Pet),
+    'complicatedArgs': GraphQLField(ComplicatedArgs),
 })
 
 default_schema = GraphQLSchema(query=QueryRoot)

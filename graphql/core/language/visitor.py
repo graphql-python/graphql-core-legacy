@@ -101,7 +101,7 @@ def visit(root, visitor, key_map=None):
 
         result = None
         if not isinstance(node, list):
-            assert is_node(node), 'Invalid AST Node: ' + node
+            assert is_node(node), 'Invalid AST Node: ' + repr(node)
             if is_leaving:
                 result = visitor.leave(node, key, parent, path, ancestors)
             else:
@@ -146,7 +146,7 @@ def visit(root, visitor, key_map=None):
 
 
 def is_node(maybe_node):
-    return isinstance(maybe_node, object)  # FIXME
+    return hasattr(maybe_node, 'loc')  # FIXME
 
 
 class Visitor(object):

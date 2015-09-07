@@ -9,6 +9,7 @@ specified_rules = [
     Rules.UniqueOperationNames,
     Rules.LoneAnonymousOperation,
     Rules.KnownTypeNames,
+    Rules.FragmentsOnCompositeTypes,
 ]
 
 

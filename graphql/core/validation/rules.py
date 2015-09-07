@@ -1,6 +1,8 @@
-from ..language.ast import OperationDefinition
 from ..error import GraphQLError
+from ..type.definition import is_composite_type
+from ..language.ast import OperationDefinition
 from ..language.visitor import Visitor
+from ..language.printer import print_ast
 
 
 class ValidationRule(Visitor):
@@ -59,3 +61,29 @@ class KnownTypeNames(ValidationRule):
     @staticmethod
     def message(type):
         return 'Unknown type "{}".'.format(type)
+
+
+class FragmentsOnCompositeTypes(ValidationRule):
+    def enter_InlineFragment(self, node, *args):
+        type = self.context.get_type()
+        if type and not is_composite_type(type):
+            return GraphQLError(
+                self.inline_message(print_ast(node.type_condition)),
+                [node.type_condition]
+            )
+
+    def enter_FragmentDefinition(self, node, *args):
+        type = self.context.get_type()
+        if type and not is_composite_type(type):
+            return GraphQLError(
+                self.message(node.name.value, print_ast(node.type_condition)),
+                [node.type_condition]
+            )
+
+    @staticmethod
+    def inline_message(type):
+        return 'Fragment cannot condition on non composite type "{}".'.format(type)
+
+    @staticmethod
+    def message(frag_name, type):
+        return 'Fragment "{}" cannot condition on non composite type "{}".'.format(frag_name, type)
