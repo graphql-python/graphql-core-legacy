@@ -1,4 +1,4 @@
-from .executor.executor import execute, ExecutionResult
+from .execution import execute, ExecutionResult
 from .language.source import Source
 from .language.parser import parse
 from .validation import validate

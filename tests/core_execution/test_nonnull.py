@@ -1,6 +1,6 @@
 from graphql.core.language.parser import parse
 from graphql.core.type import GraphQLObjectType, GraphQLField, GraphQLString, GraphQLNonNull, GraphQLSchema
-from graphql.core.executor import execute
+from graphql.core.execution import execute
 
 sync_error = Exception('sync')
 non_null_sync_error = Exception('nonNullSync')

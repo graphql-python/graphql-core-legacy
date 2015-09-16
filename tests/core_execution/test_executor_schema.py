@@ -1,4 +1,4 @@
-from graphql.core.executor import execute
+from graphql.core.execution import execute
 from graphql.core.language.parser import parse
 from graphql.core.type import (
     GraphQLSchema,

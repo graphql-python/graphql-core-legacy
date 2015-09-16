@@ -394,11 +394,9 @@ def get_field_def(schema, parent_type, field_ast):
     added to the query type, but that would require mutating type
     definitions, which would cause issues."""
     name = field_ast.name.value
-    if name == SchemaMetaFieldDef.name and \
-            schema.get_query_type() == parent_type:
+    if name == SchemaMetaFieldDef.name and schema.get_query_type() == parent_type:
         return SchemaMetaFieldDef
-    elif name == TypeMetaFieldDef.name and \
-            schema.get_query_type() == parent_type:
+    elif name == TypeMetaFieldDef.name and schema.get_query_type() == parent_type:
         return TypeMetaFieldDef
     elif name == TypeNameMetaFieldDef.name:
         return TypeNameMetaFieldDef
