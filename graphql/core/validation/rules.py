@@ -1,7 +1,7 @@
 from ..utils import type_from_ast
 from ..error import GraphQLError
 from ..type.definition import is_composite_type, is_input_type, is_leaf_type
-from ..language.ast import OperationDefinition
+from ..language import ast
 from ..language.visitor import Visitor
 from ..language.printer import print_ast
 
@@ -39,7 +39,7 @@ class LoneAnonymousOperation(ValidationRule):
     def enter_Document(self, node, *args):
         n = 0
         for definition in node.definitions:
-            if isinstance(definition, OperationDefinition):
+            if isinstance(definition, ast.OperationDefinition):
                 n += 1
         self._op_count = n
 
@@ -180,7 +180,44 @@ class KnownDirectives(ValidationRule):
 
 
 class KnownArgumentNames(ValidationRule):
-    pass
+    def enter_Argument(self, node, key, parent, path, ancestors):
+        argument_of = ancestors[-1]
+        if isinstance(argument_of, ast.Field):
+            field_def = self.context.get_field_def()
+            if field_def:
+                field_arg_def = None
+                for arg in field_def.args:
+                    if arg.name == node.name.value:
+                        field_arg_def = arg
+                        break
+                if not field_arg_def:
+                    parent_type = self.context.get_parent_type()
+                    assert parent_type
+                    return GraphQLError(
+                        self.message(node.name.value, field_def.name, parent_type.name),
+                        [node]
+                    )
+        elif isinstance(argument_of, ast.Directive):
+            directive = self.context.get_directive()
+            if directive:
+                directive_arg_def = None
+                for arg in directive.args:
+                    if arg.name == node.name.value:
+                        directive_arg_def = arg
+                        break
+                if not directive_arg_def:
+                    return GraphQLError(
+                        self.directive_message(node.name.value, directive.name),
+                        [node]
+                    )
+
+    @staticmethod
+    def message(arg_name, field_name, type):
+        return 'Unknown argument "{}" on field "{}" of type "{}".'.format(arg_name, field_name, type)
+
+    @staticmethod
+    def directive_message(arg_name, directive_name):
+        return 'Unknown argument "{}" on directive "@{}".'.format(arg_name, directive_name)
 
 
 class UniqueArgumentNames(ValidationRule):

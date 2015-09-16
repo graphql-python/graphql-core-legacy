@@ -73,6 +73,7 @@ QueryRoot = GraphQLObjectType('QueryRoot', {
     'human': GraphQLField(Human, {
         'id': GraphQLArgument(GraphQLID),
     }),
+    'dog': GraphQLField(Dog),
     'pet': GraphQLField(Pet),
     'catOrDog': GraphQLField(CatOrDog),
     'complicatedArgs': GraphQLField(ComplicatedArgs),
