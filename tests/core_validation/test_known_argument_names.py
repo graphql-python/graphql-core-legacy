@@ -1,7 +1,7 @@
 import pytest
 
 from graphql.core.language.location import SourceLocation
-from graphql.core.validation.rules import KnownArgumentNames, KnownDirectives
+from graphql.core.validation.rules import KnownArgumentNames
 from utils import expect_passes_rule, expect_fails_rule
 
 
@@ -14,7 +14,8 @@ def unknown_arg(arg_name, field_name, type_name, line, column):
 
 def unknown_directive_arg(arg_name, directive_name, line, column):
     return {
-        'message': KnownDirectives.message(arg_name, directive_name),
+        'message': KnownArgumentNames.unknown_directive_message(
+            arg_name, directive_name),
         'locations': [SourceLocation(line, column)]
     }
 
@@ -84,8 +85,10 @@ def test_directive_args_are_known():
     ''')
 
 
-@pytest.mark.skipif(not hasattr(KnownDirectives, "message"),
-                    reason="KnownDirectives.method() not yet implemented")
+@pytest.mark.skipif(not hasattr(KnownArgumentNames,
+                                "unknown_directive_message"),
+                    reason=("KnownDirectives.unknown_directive_message not "
+                            "yet implemented"))
 def test_undirective_args_are_invalid():
     expect_fails_rule(KnownArgumentNames, '''
       {
@@ -95,7 +98,7 @@ def test_undirective_args_are_invalid():
 
 
 @pytest.mark.skipif(not hasattr(KnownArgumentNames, "message"),
-                    reason="KnownArgumentNames.method() not yet implemented")
+                    reason="KnownArgumentNames.message not yet implemented")
 def test_invalid_arg_name():
     expect_fails_rule(KnownArgumentNames, '''
       fragment invalidArgName on Dog {
@@ -105,7 +108,7 @@ def test_invalid_arg_name():
 
 
 @pytest.mark.skipif(not hasattr(KnownArgumentNames, "message"),
-                    reason="KnownArgumentNames.method() not yet implemented")
+                    reason="KnownArgumentNames.message not yet implemented")
 def test_unknown_args_amongst_known_args():
     expect_fails_rule(KnownArgumentNames, '''
       fragment oneGoodArgOneInvalidArg on Dog {
@@ -116,7 +119,7 @@ def test_unknown_args_amongst_known_args():
 
 
 @pytest.mark.skipif(not hasattr(KnownArgumentNames, "message"),
-                    reason="KnownArgumentNames.method() not yet implemented")
+                    reason="KnownArgumentNames.message not yet implemented")
 def test_unknown_args_deeply():
     expect_fails_rule(KnownArgumentNames, '''
       {
