@@ -1,5 +1,3 @@
-import pytest
-
 from graphql.core.language.location import SourceLocation
 from graphql.core.validation.rules import KnownDirectives
 from utils import expect_passes_rule, expect_fails_rule
@@ -46,9 +44,6 @@ def test_with_known_directives():
     ''')
 
 
-@pytest.mark.skipif(not hasattr(KnownDirectives, "message"),
-                    reason=("KnownDirectives.message has not yet been "
-                            "implemented"))
 def test_with_unknown_directive():
     expect_fails_rule(KnownDirectives, '''
       {
@@ -59,9 +54,6 @@ def test_with_unknown_directive():
     ''', [unknown_directive('unknown', 3, 13)])
 
 
-@pytest.mark.skipif(not hasattr(KnownDirectives, "message"),
-                    reason=("KnownDirectives.message has not yet been "
-                            "implemented"))
 def test_with_many_unknown_directives():
     expect_fails_rule(KnownDirectives, '''
       {
@@ -91,10 +83,6 @@ def test_with_well_placed_directives():
     ''')
 
 
-@pytest.mark.skipif(not hasattr(KnownDirectives,
-                                "misplaced_directive_message"),
-                    reason=("KnownDirectives.misplaced_directive_message has "
-                            "not yet been implemented"))
 def test_with_misplaced_directives():
     expect_fails_rule(KnownDirectives, '''
       query Foo @include(if: true) {

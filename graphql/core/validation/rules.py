@@ -176,7 +176,42 @@ class NoUnusedVariables(ValidationRule):
 
 
 class KnownDirectives(ValidationRule):
-    pass
+    def enter_Directive(self, node, key, parent, path, ancestors):
+        directive_def = None
+        for definition in self.context.get_schema().get_directives():
+            if definition.name == node.name.value:
+                directive_def = definition
+                break
+        if not directive_def:
+            return GraphQLError(
+                self.message(node.name.value),
+                [node]
+            )
+        applied_to = ancestors[-1]
+        if isinstance(applied_to, ast.OperationDefinition) and not directive_def.on_operation:
+            return GraphQLError(
+                self.misplaced_directive_message(node.name.value, 'operation'),
+                [node]
+            )
+        if isinstance(applied_to, ast.Field) and not directive_def.on_field:
+            return GraphQLError(
+                self.misplaced_directive_message(node.name.value, 'field'),
+                [node]
+            )
+        if (isinstance(applied_to, (ast.FragmentSpread, ast.InlineFragment, ast.FragmentDefinition)) and
+                not directive_def.on_fragment):
+            return GraphQLError(
+                self.misplaced_directive_message(node.name.value, 'fragment'),
+                [node]
+            )
+
+    @staticmethod
+    def message(directive_name):
+        return 'Unknown directive "{}".'.format(directive_name)
+
+    @staticmethod
+    def misplaced_directive_message(directive_name, placement):
+        return 'Directive "{}" may not be used on "{}".'.format(directive_name, placement)
 
 
 class KnownArgumentNames(ValidationRule):
