@@ -239,64 +239,96 @@ def get_field_entry_key(node):
     return node.name.value
 
 
+class ResolveInfo(object):
+    def __init__(self, field_name, field_asts, return_type, parent_type, context):
+        self.field_name = field_name
+        self.field_ast = field_asts
+        self.return_type = return_type
+        self.parent_type = parent_type
+        self.context = context
+
+    @property
+    def schema(self):
+        return self.context.schema
+
+    @property
+    def fragments(self):
+        return self.context.fragments
+
+    @property
+    def root_value(self):
+        return self.context.root_value
+
+    @property
+    def operation(self):
+        return self.context.operation
+
+    @property
+    def variable_values(self):
+        return self.context.variables
+
+
 def resolve_field(ctx, parent_type, source, field_asts):
     """A wrapper function for resolving the field, that catches the error
     and adds it to the context's global if the error is not rethrowable."""
     field_ast = field_asts[0]
+    field_name = field_ast.name.value
 
-    field_def = get_field_def(ctx.schema, parent_type, field_ast)
+    field_def = get_field_def(ctx.schema, parent_type, field_name)
     if not field_def:
         return Undefined
 
-    field_type = field_def.type
+    return_type = field_def.type
     resolve_fn = field_def.resolver or default_resolve_fn
 
     # Build a dict of arguments from the field.arguments AST, using the variables scope to fulfill any variable references.
     # TODO: find a way to memoize, in case this field is within a list type.
-    if field_def.args is not None:
-        args = get_argument_values(
-            field_def.args, field_ast.arguments, ctx.variables
-        )
-    else:
-        args = None
+    args = get_argument_values(
+        field_def.args, field_ast.arguments, ctx.variables
+    )
+
+    # The resolve function's optional third argument is a collection of
+    # information about the current execution state.
+    info = ResolveInfo(
+        field_name,
+        field_asts,
+        return_type,
+        parent_type,
+        ctx
+    )
 
     # If an error occurs while calling the field `resolve` function, ensure that it is wrapped as a GraphQLError with locations.
     # Log this error and return null if allowed, otherwise throw the error so the parent field can handle it.
     try:
-        result = resolve_fn(
-            source, args, ctx.root,
-            # TODO: provide all fieldASTs, not just the first field
-            field_ast,
-            field_type, parent_type, ctx.schema
-        )
+        result = resolve_fn(source, args, info)
     except Exception as e:
         reported_error = GraphQLError(str(e), [field_ast], e)
-        if isinstance(field_type, GraphQLNonNull):
+        if isinstance(return_type, GraphQLNonNull):
             raise reported_error
         ctx.errors.append(reported_error)
         return None
 
     return complete_value_catching_error(
-        ctx, field_type, field_asts, result
+        ctx, return_type, field_asts, info, result
     )
 
 
-def complete_value_catching_error(ctx, field_type, field_asts, result):
+def complete_value_catching_error(ctx, return_type, field_asts, info, result):
     # If the field type is non-nullable, then it is resolved without any
     # protection from errors.
-    if isinstance(field_type, GraphQLNonNull):
-        return complete_value(ctx, field_type, field_asts, result)
+    if isinstance(return_type, GraphQLNonNull):
+        return complete_value(ctx, return_type, field_asts, info, result)
 
     # Otherwise, error protection is applied, logging the error and
     # resolving a null value for this field if one is encountered.
     try:
-        return complete_value(ctx, field_type, field_asts, result)
+        return complete_value(ctx, return_type, field_asts, info, result)
     except Exception as e:
         ctx.errors.append(e)
         return None
 
 
-def complete_value(ctx, field_type, field_asts, result):
+def complete_value(ctx, return_type, field_asts, info, result):
     """Implements the instructions for completeValue as defined in the
     "Field entries" section of the spec.
 
@@ -310,9 +342,9 @@ def complete_value(ctx, field_type, field_asts, result):
 
     Otherwise, the field type expects a sub-selection set, and will complete the value by evaluating all sub-selections."""
     # If field type is NonNull, complete for inner type, and throw field error if result is null.
-    if isinstance(field_type, GraphQLNonNull):
+    if isinstance(return_type, GraphQLNonNull):
         completed = complete_value(
-            ctx, field_type.of_type, field_asts, result
+            ctx, return_type.of_type, field_asts, info, result
         )
         if completed is None:
             raise GraphQLError(
@@ -326,27 +358,27 @@ def complete_value(ctx, field_type, field_asts, result):
         return None
 
     # If field type is List, complete each item in the list with the inner type
-    if isinstance(field_type, GraphQLList):
+    if isinstance(return_type, GraphQLList):
         assert isinstance(result, collections.Iterable), \
             'User Error: expected iterable, but did not find one.'
 
-        item_type = field_type.of_type
+        item_type = return_type.of_type
         return [complete_value_catching_error(
-            ctx, item_type, field_asts, item
+            ctx, item_type, field_asts, info, item
         ) for item in result]
 
     # If field type is Scalar or Enum, coerce to a valid value, returning null if coercion is not possible.
-    if isinstance(field_type, (GraphQLScalarType, GraphQLEnumType)):
-        coerced_result = field_type.coerce(result)
+    if isinstance(return_type, (GraphQLScalarType, GraphQLEnumType)):
+        coerced_result = return_type.coerce(result)
         if is_nullish(coerced_result):
             return None
         return coerced_result
 
     # Field type must be Object, Interface or Union and expect sub-selections.
-    if isinstance(field_type, GraphQLObjectType):
-        object_type = field_type
-    elif isinstance(field_type, (GraphQLInterfaceType, GraphQLUnionType)):
-        object_type = field_type.resolve_type(result)
+    if isinstance(return_type, GraphQLObjectType):
+        object_type = return_type
+    elif isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
+        object_type = return_type.resolve_type(result)
     else:
         object_type = None
 
@@ -373,19 +405,17 @@ def camel_to_snake_case(name):
     return CAMEL_CASE_PATTERN.sub(lambda m: m.group(1) + '_' + m.group(2).lower(), name)
 
 
-def default_resolve_fn(source, args, root, field_ast, *_):
+def default_resolve_fn(source, args, info):
     """If a resolve function is not given, then a default resolve behavior is used which takes the property of the source object
     of the same name as the field and returns it as the result, or if it's a function, returns the result of calling that function."""
-    name = field_ast.name.value
+    name = info.field_name
     property = getattr(source, name, None)
-    if property is None:
-        property = getattr(source, camel_to_snake_case(name), None)
     if callable(property):
         return property()
     return property
 
 
-def get_field_def(schema, parent_type, field_ast):
+def get_field_def(schema, parent_type, field_name):
     """This method looks up the field on the given type defintion.
     It has special casing for the two introspection fields, __schema
     and __typename. __typename is special because it can always be
@@ -393,11 +423,10 @@ def get_field_def(schema, parent_type, field_ast):
     are allowed, like on a Union. __schema could get automatically
     added to the query type, but that would require mutating type
     definitions, which would cause issues."""
-    name = field_ast.name.value
-    if name == SchemaMetaFieldDef.name and schema.get_query_type() == parent_type:
+    if field_name == SchemaMetaFieldDef.name and schema.get_query_type() == parent_type:
         return SchemaMetaFieldDef
-    elif name == TypeMetaFieldDef.name and schema.get_query_type() == parent_type:
+    elif field_name == TypeMetaFieldDef.name and schema.get_query_type() == parent_type:
         return TypeMetaFieldDef
-    elif name == TypeNameMetaFieldDef.name:
+    elif field_name == TypeNameMetaFieldDef.name:
         return TypeNameMetaFieldDef
-    return parent_type.get_fields().get(name)
+    return parent_type.get_fields().get(field_name)

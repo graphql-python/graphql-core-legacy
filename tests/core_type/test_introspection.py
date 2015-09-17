@@ -525,7 +525,7 @@ def test_introspects_on_input_object():
         'field': GraphQLField(
             type=GraphQLString,
             args={'complex': GraphQLArgument(TestInputObject)},
-            resolver=lambda obj, args, *_: json.dumps(args.get('complex'))
+            resolver=lambda obj, args, info: json.dumps(args.get('complex'))
         )
     })
     schema = GraphQLSchema(TestType)

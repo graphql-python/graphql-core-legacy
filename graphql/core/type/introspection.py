@@ -51,9 +51,18 @@ __Directive = GraphQLObjectType('__Directive', lambda: {
         type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
         resolver=lambda directive, *args: directive.args or [],
     ),
-    'onOperation': GraphQLField(GraphQLBoolean),
-    'onFragment': GraphQLField(GraphQLBoolean),
-    'onField': GraphQLField(GraphQLBoolean),
+    'onOperation': GraphQLField(
+        type=GraphQLBoolean,
+        resolver=lambda directive, *args: directive.on_operation,
+    ),
+    'onFragment': GraphQLField(
+        type=GraphQLBoolean,
+        resolver=lambda directive, *args: directive.on_fragment,
+    ),
+    'onField': GraphQLField(
+        type=GraphQLBoolean,
+        resolver=lambda directive, *args: directive.on_field,
+    ),
 })
 
 
@@ -188,7 +197,10 @@ __EnumValue = GraphQLObjectType('__EnumValue', lambda: {
         type=GraphQLNonNull(GraphQLBoolean),
         resolver=lambda field, *_: bool(field.deprecation_reason)
     ),
-    'deprecationReason': GraphQLField(GraphQLString)
+    'deprecationReason': GraphQLField(
+        type=GraphQLString,
+        resolver=lambda enum_value, *_: enum_value.deprecation_reason,
+    )
 })
 
 
@@ -252,7 +264,7 @@ IntrospectionSchema = __Schema
 SchemaMetaFieldDef = GraphQLField(
     type=GraphQLNonNull(__Schema),
     description='Access the current type schema of this server.',
-    resolver=lambda source, args, root, field_ast, field_type, parent_type, schema: schema
+    resolver=lambda source, args, info: info.schema
 )
 SchemaMetaFieldDef.name = '__schema'
 
@@ -262,15 +274,12 @@ TypeMetaFieldDef = GraphQLField(
     args={
         'name': GraphQLArgument(GraphQLNonNull(GraphQLString))
     },
-    resolver=lambda source, args, root, field_ast, field_type, parent_type, schema: (
-        schema.get_type(args['name'])
-    )
+    resolver=lambda source, args, info: info.schema.get_type(args['name'])
 )
 TypeMetaFieldDef.name = '__type'
 
 TypeNameMetaFieldDef = GraphQLField(
     GraphQLNonNull(GraphQLString),
-    resolver=lambda source, args, root, field_ast, field_type, parent_type, *_:
-        parent_type.name
+    resolver=lambda source, args, info: info.parent_type.name
 )
 TypeNameMetaFieldDef.name = '__typename'
