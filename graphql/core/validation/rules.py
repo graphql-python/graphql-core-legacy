@@ -280,7 +280,6 @@ class UniqueArgumentNames(ValidationRule):
         return 'There can only be one argument named {}'.format(field)
 
 
-
 class ArgumentsOfCorrectType(ValidationRule):
     pass
 
