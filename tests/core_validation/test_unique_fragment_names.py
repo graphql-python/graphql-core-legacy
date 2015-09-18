@@ -78,7 +78,7 @@ def test_fragments_same_name():
         fragment fragA on Type {
           fieldB
         }
-    ''', [duplicate_fragment('fragA', 5, 16, 8, 16)]
+    ''', [duplicate_fragment('fragA', 5, 18, 8, 18)]
     )
 
 def test_fragments_same_name_no_ref():
@@ -90,6 +90,6 @@ def test_fragments_same_name_no_ref():
           fieldB
         }
       ''', [
-        duplicate_fragment('fragA', 2, 16, 5, 16)
+        duplicate_fragment('fragA', 2, 18, 5, 18)
       ]
     )
