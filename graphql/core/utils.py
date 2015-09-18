@@ -162,9 +162,9 @@ def get_field_def(schema, parent_type, field_ast):
         return TypeMetaFieldDef
     elif name == TypeNameMetaFieldDef.name and \
             isinstance(parent_type, (
-                    GraphQLObjectType,
-                    GraphQLInterfaceType,
-                    GraphQLUnionType,
+                GraphQLObjectType,
+                GraphQLInterfaceType,
+                GraphQLUnionType,
             )):
         return TypeNameMetaFieldDef
     elif isinstance(parent_type, (GraphQLObjectType, GraphQLInterfaceType)):
