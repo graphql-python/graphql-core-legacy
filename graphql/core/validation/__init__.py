@@ -68,7 +68,7 @@ class ValidationVisitor(Visitor):
             result = False
 
         if result is None and hasattr(self.instance, 'visit_spread_fragments') and isinstance(node, FragmentSpread):
-            fragment = self.context.get_fragment(node.name.value)
+            fragment = self.instance.context.get_fragment(node.name.value)
             if fragment:
                 visit(fragment, self)
 
@@ -118,7 +118,7 @@ class ValidationContext(object):
         fragments = self._fragments
         if fragments is None:
             self._fragments = fragments = {}
-            for statement in self.get_document().definitions:
+            for statement in self.get_ast().definitions:
                 if isinstance(statement, FragmentDefinition):
                     fragments[statement.name.value] = statement
         return fragments[name]
