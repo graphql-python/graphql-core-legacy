@@ -152,7 +152,7 @@ class UniqueFragmentNames(ValidationRule):
         super(UniqueFragmentNames, self).__init__(context)
         self.known_fragment_names = {}
 
-    def enter_FragmentName(self, node, *args):
+    def enter_FragmentDefinition(self, node, *args):
         fragment_name = node.name.value
         if fragment_name in self.known_fragment_names:
             return GraphQLError(
