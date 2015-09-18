@@ -181,13 +181,11 @@ class PossibleFragmentSpreads(ValidationRule):
 class NoFragmentCycles(ValidationRule):
     def __init__(self, context):
         super(NoFragmentCycles, self).__init__(context)
-
-        self.spreads_in_fragment = {}
-        definitions = context.get_ast().definitions
-        for node in definitions:
-            if isinstance(node, ast.FragmentDefinition):
-                self.spreads_in_fragment[node.name.value] = self.gather_spreads(node)
-
+        self.spreads_in_fragment = {
+            node.name.value: self.gather_spreads(node)
+            for node in context.get_ast().definitions
+            if isinstance(node, ast.FragmentDefinition)
+        }
         self.known_to_lead_to_cycle = set()
 
     def enter_FragmentDefinition(self, node, *args):
