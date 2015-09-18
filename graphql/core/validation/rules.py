@@ -157,10 +157,10 @@ class UniqueFragmentNames(ValidationRule):
         if fragment_name in self.known_fragment_names:
             return GraphQLError(
                 self.duplicate_fragment_name_message(fragment_name),
-                [ self.known_fragment_names[fragment_name], node.name]
+                [self.known_fragment_names[fragment_name], node.name]
             )
         self.known_fragment_names[fragment_name] = node.name
-    
+
     @staticmethod
     def duplicate_fragment_name_message(field):
         return 'There can only be one fragment named {}'.format(field)
