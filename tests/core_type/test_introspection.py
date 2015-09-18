@@ -1,5 +1,7 @@
 import json
 from graphql.core import graphql
+from graphql.core.error import format_error
+from graphql.core.language.location import SourceLocation
 from graphql.core.language.parser import parse
 from graphql.core.execution import execute
 from graphql.core.type import (
@@ -14,6 +16,7 @@ from graphql.core.type import (
     GraphQLEnumType,
     GraphQLEnumValue,
 )
+from graphql.core.validation.rules import ProvidedNonNullArguments
 
 introspection_query = '''
   query IntrospectionQuery {
@@ -707,10 +710,16 @@ def test_fails_as_expected_on_the_type_root_field_without_an_arg():
         'testField': GraphQLField(GraphQLString)
     })
     schema = GraphQLSchema(TestType)
-    request = '{ __type { name } }'
+    request = '''
+    {
+        __type {
+           name
+        }
+    }'''
     result = graphql(schema, request)
-    # TODO: change after implementing validation
-    assert not result.errors
+    expected_error = {'message': ProvidedNonNullArguments.missing_field_arg_message('__type', 'name', 'String!'),
+                      'locations': [SourceLocation(line=3, column=9)]}
+    assert (expected_error in [format_error(error) for error in result.errors])
 
 
 def test_exposes_descriptions_on_types_and_fields():
