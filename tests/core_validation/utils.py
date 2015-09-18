@@ -6,7 +6,10 @@ from graphql.core.type import (
     GraphQLField,
     GraphQLArgument,
     GraphQLID,
+    GraphQLNonNull,
     GraphQLString,
+    GraphQLInt,
+    GraphQLFloat,
     GraphQLBoolean,
     GraphQLInterfaceType,
     GraphQLEnumType,
@@ -60,12 +63,54 @@ FurColor = GraphQLEnumType('FurColor', {
 })
 
 ComplexInput = GraphQLInputObjectType('ComplexInput', {
-    'stringField': GraphQLField(GraphQLString)
+    'requiredField': GraphQLField(GraphQLNonNull(GraphQLBoolean)),
+    'intField': GraphQLField(GraphQLInt),
+    'stringField': GraphQLField(GraphQLString),
+    'booleanField': GraphQLField(GraphQLBoolean),
+    'stringListField': GraphQLField(GraphQLList(GraphQLString)),
 })
 
 ComplicatedArgs = GraphQLObjectType('ComplicatedArgs', {
+    'intArgField': GraphQLField(GraphQLString, {
+        'intArg': GraphQLArgument(GraphQLInt)
+    }),
+    'nonNullIntArgField': GraphQLField(GraphQLString, {
+        'nonNullIntArg': GraphQLArgument(GraphQLNonNull(GraphQLInt))
+    }),
+    'stringArgField': GraphQLField(GraphQLString, {
+        'stringArg': GraphQLArgument(GraphQLString)
+    }),
+    'booleanArgField': GraphQLField(GraphQLString, {
+        'booleanArg': GraphQLArgument(GraphQLBoolean)
+    }),
+    'enumArgField': GraphQLField(GraphQLString, {
+        'enumArg': GraphQLArgument(FurColor)
+    }),
+    'floatArgField': GraphQLField(GraphQLString, {
+        'floatArg': GraphQLArgument(GraphQLFloat)
+    }),
+    'idArgField': GraphQLField(GraphQLString, {
+        'idArg': GraphQLArgument(GraphQLID)
+    }),
+    'stringListArgField': GraphQLField(GraphQLString, {
+        'stringListArg': GraphQLArgument(GraphQLList(GraphQLString))
+    }),
     'complexArgField': GraphQLField(GraphQLString, {
-        'complexArg': GraphQLArgument(ComplexInput),
+        'complexArg': GraphQLArgument(ComplexInput)
+    }),
+    'multipleReqs': GraphQLField(GraphQLString, {
+        'req1': GraphQLArgument(GraphQLNonNull(GraphQLInt)),
+        'req2': GraphQLArgument(GraphQLNonNull(GraphQLInt)),
+    }),
+    'multipleOpts': GraphQLField(GraphQLString, {
+        'opt1': GraphQLArgument(GraphQLInt, 0),
+        'opt2': GraphQLArgument(GraphQLInt, 0)
+    }),
+    'multipleOptsAndReq': GraphQLField(GraphQLString, {
+        'req1': GraphQLArgument(GraphQLNonNull(GraphQLInt)),
+        'req2': GraphQLArgument(GraphQLNonNull(GraphQLInt)),
+        'opt1': GraphQLArgument(GraphQLInt, 0),
+        'opt2': GraphQLArgument(GraphQLInt, 0)
     })
 })
 
