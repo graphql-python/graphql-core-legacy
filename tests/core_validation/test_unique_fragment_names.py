@@ -28,65 +28,68 @@ def test_one_fragment():
     ''')
 
 def test_many_fragments():
-  expect_passes_rule(UniqueFragmentNames, '''
-    {
-      ...fragA
-      ...fragB
-      ...fragC
-    }
-    fragment fragA on Type {
-      fieldA
-    }
-    fragment fragB on Type {
-      fieldB
-    }
-    fragment fragC on Type {
-      fieldC
-    }
-  ''')
-def test_inline_fragments():
-  expect_passes_rule(UniqueFragmentNames, '''
-    {
-      ...on Type {
-        fieldA
-      }
-      ...on Type {
-        fieldB
-      }
-    }
-  ''')
-def test_fragment_operation_same_name():
-  expect_passes_rule(UniqueFragmentNames, '''
-    query Foo {
-      ...Foo
-    }
-    fragment Foo on Type {
-      field
-    }
-  ''')
-def test_fragments_same_name():
-  expect_fails_rule(UniqueFragmentNames, '''
+    expect_passes_rule(UniqueFragmentNames, '''
       {
         ...fragA
+        ...fragB
+        ...fragC
       }
       fragment fragA on Type {
         fieldA
       }
-      fragment fragA on Type {
+      fragment fragB on Type {
         fieldB
       }
-  ''', [duplicate_fragment('fragA', 5, 16, 8, 16)]
-  )
+      fragment fragC on Type {
+        fieldC
+      }
+    ''')
+
+def test_inline_fragments():
+    expect_passes_rule(UniqueFragmentNames, '''
+      {
+        ...on Type {
+          fieldA
+        }
+        ...on Type {
+          fieldB
+        }
+      }
+    ''')
+
+def test_fragment_operation_same_name():
+    expect_passes_rule(UniqueFragmentNames, '''
+      query Foo {
+        ...Foo
+      }
+      fragment Foo on Type {
+        field
+      }
+    ''')
+
+def test_fragments_same_name():
+    expect_fails_rule(UniqueFragmentNames, '''
+        {
+          ...fragA
+        }
+        fragment fragA on Type {
+          fieldA
+        }
+        fragment fragA on Type {
+          fieldB
+        }
+    ''', [duplicate_fragment('fragA', 5, 16, 8, 16)]
+    )
 
 def test_fragments_same_name_no_ref():
-  expect_fails_rule(UniqueFragmentNames, '''
-      fragment fragA on Type {
-        fieldA
-      }
-      fragment fragA on Type {
-        fieldB
-      }
-    ''', [
-      duplicate_fragment('fragA', 2, 16, 5, 16)
-    ]
-  )
+    expect_fails_rule(UniqueFragmentNames, '''
+        fragment fragA on Type {
+          fieldA
+        }
+        fragment fragA on Type {
+          fieldB
+        }
+      ''', [
+        duplicate_fragment('fragA', 2, 16, 5, 16)
+      ]
+    )
