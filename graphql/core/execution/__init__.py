@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import collections
-import re
 from ..error import GraphQLError, format_error
 from ..utils import type_from_ast, is_nullish
 from ..language import ast
@@ -396,13 +395,6 @@ def complete_value(ctx, return_type, field_asts, info, result):
                 subfield_asts, visited_fragment_names)
 
     return execute_fields(ctx, object_type, result, subfield_asts)
-
-
-CAMEL_CASE_PATTERN = re.compile(r'([a-z])([A-Z]+)')
-
-
-def camel_to_snake_case(name):
-    return CAMEL_CASE_PATTERN.sub(lambda m: m.group(1) + '_' + m.group(2).lower(), name)
 
 
 def default_resolve_fn(source, args, info):
