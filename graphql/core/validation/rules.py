@@ -338,7 +338,7 @@ class NoUndefinedVariables(ValidationRule):
         var_name = variable.name.value
         if var_name not in self.defined_variable_names:
             is_fragment = lambda node: isinstance(node, ast.FragmentDefinition)
-            within_fragment = filter(is_fragment, ancestors)
+            within_fragment = any(is_fragment(node) for node in ancestors)
             if within_fragment and self.operation and self.operation.name:
                 return GraphQLError(
                     self.undefined_var_by_op_message(var_name, self.operation.name.value),

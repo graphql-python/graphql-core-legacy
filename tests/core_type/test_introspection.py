@@ -93,12 +93,12 @@ introspection_query = '''
 
 def sort_lists(value):
     if isinstance(value, dict):
-        new_mapping = {}
-        for k, v in value.iteritems():
-            new_mapping[k] = sort_lists(v)
+        new_mapping = []
+        for k in sorted(value.keys()):
+            new_mapping.append((k, sort_lists(value[k])))
         return new_mapping
     elif isinstance(value, list):
-        return sorted(map(sort_lists, value))
+        return sorted(map(sort_lists, value), key=repr)
     return value
 
 

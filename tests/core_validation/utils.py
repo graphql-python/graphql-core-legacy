@@ -134,10 +134,10 @@ def expect_valid(schema, rules, query):
 
 def sort_lists(value):
     if isinstance(value, dict):
-        new_mapping = {}
-        for k, v in value.iteritems():
-            new_mapping[k] = sort_lists(v)
-        return new_mapping
+        new_mapping = []
+        for k, v in value.items():
+            new_mapping.append((k, sort_lists(v)))
+        return sorted(new_mapping)
     elif isinstance(value, list):
         return sorted(map(sort_lists, value))
     return value
@@ -146,7 +146,7 @@ def sort_lists(value):
 def expect_invalid(schema, rules, query, expected_errors):
     errors = validate(schema, parse(query), rules)
     assert errors, 'Should not validate'
-    assert sort_lists(map(format_error, errors)) == sort_lists(expected_errors)
+    assert sort_lists(list(map(format_error, errors))) == sort_lists(expected_errors)
 
 
 def expect_passes_rule(rule, query):

@@ -170,4 +170,4 @@ def test_lex_reports_useful_unknown_character_error():
 
     with raises(LanguageError) as excinfo:
         lex_one(u'\u203B')
-    assert u'Syntax Error GraphQL (1:1) Unexpected character "\u203B"' in unicode(excinfo.value) # FIXME: unicode on exception?!
+    assert r'Syntax Error GraphQL (1:1) Unexpected character "\u203b"' in str(excinfo.value)

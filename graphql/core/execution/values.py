@@ -1,4 +1,5 @@
 import collections
+from ..compat import str_type
 from ..error import GraphQLError
 from ..language import ast
 from ..language.printer import print_ast
@@ -85,7 +86,7 @@ def is_valid_value(type, value):
 
     if isinstance(type, GraphQLList):
         item_type = type.of_type
-        if not isinstance(value, basestring) and \
+        if not isinstance(value, str_type) and \
                 isinstance(value, collections.Iterable):
             return all(is_valid_value(item_type, item) for item in value)
         else:
@@ -125,7 +126,7 @@ def coerce_value(type, value):
 
     if isinstance(type, GraphQLList):
         item_type = type.of_type
-        if not isinstance(value, basestring) and isinstance(value, collections.Iterable):
+        if not isinstance(value, str_type) and isinstance(value, collections.Iterable):
             return [coerce_value(item_type, item) for item in value]
         else:
             return [coerce_value(item_type, value)]

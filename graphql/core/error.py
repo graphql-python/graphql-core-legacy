@@ -8,6 +8,7 @@ class Error(Exception):
 class GraphQLError(Error):
     def __init__(self, message, nodes=None, stack=None, source=None, positions=None):
         super(GraphQLError, self).__init__(message)
+        self.message = message
         self.nodes = nodes
         self.stack = stack or message
         self._source = source

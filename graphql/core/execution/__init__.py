@@ -71,7 +71,7 @@ class ExecutionContext(object):
             raise GraphQLError(
                 'Must provide operation name '
                 'if query contains multiple operations')
-        op_name = operation_name or operations.keys()[0]
+        op_name = operation_name or next(iter(operations.keys()))
         operation = operations.get(op_name)
         if not operation:
             raise GraphQLError('Unknown operation name: {}'.format(op_name))
@@ -106,7 +106,8 @@ def execute(schema, root, ast, operation_name='', args=None):
         data = None
     if not ctx.errors:
         return ExecutionResult(data)
-    return ExecutionResult(data, map(format_error, ctx.errors))
+    formatted_errors = list(map(format_error, ctx.errors))
+    return ExecutionResult(data, formatted_errors)
 
 
 def execute_operation(ctx, root, operation):

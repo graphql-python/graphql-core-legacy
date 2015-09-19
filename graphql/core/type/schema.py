@@ -1,3 +1,4 @@
+from functools import reduce
 from .definition import (
     GraphQLObjectType,
     GraphQLInterfaceType,

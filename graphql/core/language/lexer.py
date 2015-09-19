@@ -1,3 +1,5 @@
+import json
+from ..compat import unichr
 from .error import LanguageError
 
 __all__ = ['Token', 'Lexer', 'TokenKind',
@@ -101,7 +103,7 @@ TOKEN_DESCRIPTION = {
 def char_code_at(s, pos):
     if 0 <= pos < len(s):
         return ord(s[pos])
-    return None
+    return 0
 
 
 PUNCT_CODE_TO_KIND = {
@@ -153,7 +155,7 @@ def read_token(source, from_position):
 
     raise LanguageError(
         source, position,
-        u'Unexpected character "{}"'.format(body[position]))
+        u'Unexpected character {}'.format(json.dumps(body[position])))
 
 
 def position_after_whitespace(body, start_position):
@@ -176,7 +178,7 @@ def position_after_whitespace(body, start_position):
             position += 1
             while position < body_length:
                 code = char_code_at(body, position)
-                if code is None or code in (10, 13, 0x2028, 0x2029):
+                if not code or code in (10, 13, 0x2028, 0x2029):
                     break
                 position += 1
         else:
@@ -273,7 +275,7 @@ def read_string(source, start):
 
     while position < len(body):
         code = char_code_at(body, position)
-        if code is None or code in (34, 10, 13, 0x2028, 0x2029):
+        if not code or code in (34, 10, 13, 0x2028, 0x2029):
             break
         position += 1
         if code == 92:  # \
@@ -349,7 +351,7 @@ def read_name(source, position):
     code = None
     while end != body_length:
         code = char_code_at(body, end)
-        if code is None or not (
+        if not code or not (
             code == 95 or  # _
             48 <= code <= 57 or  # 0-9
             65 <= code <= 90 or  # A-Z

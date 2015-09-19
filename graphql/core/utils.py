@@ -107,7 +107,7 @@ class TypeInfo(object):
             arg_type = None
             field_or_directive = self.get_directive() or self.get_field_def()
             if field_or_directive:
-                arg_def = filter(lambda arg: arg.name == node.name.value, field_or_directive.args)
+                arg_def = [arg for arg in field_or_directive.args if arg.name == node.name.value]
                 if arg_def:
                     arg_def = arg_def[0]
                     arg_type = arg_def.type

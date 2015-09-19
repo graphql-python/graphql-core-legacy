@@ -1,3 +1,4 @@
+from ..compat import str_type
 from .source import Source
 from .error import LanguageError
 from .lexer import Lexer, TokenKind, get_token_kind_desc, get_token_desc
@@ -11,7 +12,7 @@ def parse(source, **kwargs):
     options = {'no_location': False, 'no_source': False}
     options.update(kwargs)
     source_obj = source
-    if isinstance(source, basestring):
+    if isinstance(source, str_type):
         source_obj = Source(source)
     parser = Parser(source_obj, options)
     return parse_document(parser)

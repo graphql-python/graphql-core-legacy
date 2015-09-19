@@ -1,3 +1,4 @@
+from ..compat import native_str
 from ..error import Error
 from .location import get_location
 
@@ -11,18 +12,14 @@ class LanguageError(Error):
         self.description = description
 
     def __str__(self):
-        # FIXME
-        return unicode(self).encode(errors='replace')
-
-    def __unicode__(self):
         location = get_location(self.source, self.position)
-        return u'Syntax Error {} ({}:{}) {}\n\n{}'.format(
+        return native_str(u'Syntax Error {} ({}:{}) {}\n\n{}'.format(
             self.source.name,
             location.line,
             location.column,
             self.description,
             highlight_source_at_location(self.source, location),
-        )
+        ), errors='replace')
 
 
 def highlight_source_at_location(source, location):
