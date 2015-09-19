@@ -511,7 +511,18 @@ class UniqueArgumentNames(ValidationRule):
 
 
 class ArgumentsOfCorrectType(ValidationRule):
-    pass
+    def enter_Argument(self, node, *args):
+        arg_def = self.context.get_argument()
+        if arg_def and not is_valid_literal_value(arg_def.type, node.value):
+            return GraphQLError(
+                self.bad_value_message(node.name.value, arg_def.type,
+                                       print_ast(node.value)),
+                [node.value]
+            )
+
+    @staticmethod
+    def bad_value_message(arg_name, type, value):
+        return 'Argument "{}" expected type "{}" but got: {}.'.format(arg_name, type, value)
 
 
 class ProvidedNonNullArguments(ValidationRule):
