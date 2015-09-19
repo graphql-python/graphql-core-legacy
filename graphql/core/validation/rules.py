@@ -1,7 +1,6 @@
 from ..utils import type_from_ast, is_valid_literal_value
 from ..error import GraphQLError
-from ..type.definition import is_composite_type, is_input_type, is_leaf_type, GraphQLNonNull, GraphQLObjectType,
-  GraphQLInterfaceType, GraphQLUnionType
+from ..type.definition import is_composite_type, is_input_type, is_leaf_type, GraphQLNonNull, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType
 from ..language import ast
 from ..language.visitor import Visitor, visit
 from ..language.printer import print_ast
@@ -246,7 +245,7 @@ class PossibleFragmentSpreads(ValidationRule):
 
     def enter_FragmentSpread(self, node, *args):
         frag_name = node.name.value
-        frag_type = self.get_fragment_type(context, frag_name)
+        frag_type = self.get_fragment_type(self.context, frag_name)
         parent_type = self.context.get_parent_type()
         if frag_type and parent_type and not self.do_types_overlap(frag_type, parent_type):
             return GraphQLError(
@@ -259,6 +258,20 @@ class PossibleFragmentSpreads(ValidationRule):
         frag = context.get_fragment(name)
         return frag and type_from_ast(context.get_schema(), frag.type_condition)
 
+    @staticmethod
+    def do_types_overlap(t1, t2):
+        if t1 == t2:
+            return True
+        if isinstance(t1, GraphQLObjectType):
+            if isinstance(t2, GraphQLObjectType):
+                return False
+            return t2.get_possible_types().index(t1) != -1
+        if isinstance(t1, GraphQLInterfaceType) or isinstance(t1, GraphQLUnionType):
+            if isinstance(t2, GraphQLObjectType):
+                return t1.get_possible_types().index(t2) != -1
+
+            t1_type_names = { possible_type['name']: possible_type  for possible_type in t1.get_possible_types() }
+            return any(t['name'] in t1_type_names for t in t2.get_possible_types())
 
     @staticmethod
     def type_incompatible_spread_message(frag_name, parent_type, frag_type):
