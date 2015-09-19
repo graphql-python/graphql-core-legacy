@@ -23,12 +23,12 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 setup(
-    name='graphql-py',
+    name='graphqllib',
     version='0.1a0',
 
     description='GraphQL implementation for Python',
 
-    url='https://github.com/dittos/graphql-py',
+    url='https://github.com/dittos/graphqllib',
 
     author='Taeho Kim',
     author_email='dittos' '@' 'gmail.com',
