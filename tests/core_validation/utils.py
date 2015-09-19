@@ -63,7 +63,11 @@ FurColor = GraphQLEnumType('FurColor', {
 })
 
 ComplexInput = GraphQLInputObjectType('ComplexInput', {
-    'stringField': GraphQLField(GraphQLString)
+    'requiredField': GraphQLField(GraphQLNonNull(GraphQLBoolean)),
+    'intField': GraphQLField(GraphQLInt),
+    'stringField': GraphQLField(GraphQLString),
+    'booleanField': GraphQLField(GraphQLBoolean),
+    'stringListField': GraphQLField(GraphQLList(GraphQLString)),
 })
 
 ComplicatedArgs = GraphQLObjectType('ComplicatedArgs', {
