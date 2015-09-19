@@ -68,13 +68,9 @@ class ValidationVisitor(Visitor):
             result = False
 
         if result is None and getattr(self.instance, 'visit_spread_fragments', False) and isinstance(node, FragmentSpread):
-            try:
-                fragment = self.instance.context.get_fragment(node.name.value)
-            except KeyError:
-                pass
-            else:
-                if fragment:
-                    visit(fragment, self)
+            fragment = self.instance.context.get_fragment(node.name.value)
+            if fragment:
+                visit(fragment, self)
 
         if result is False:
             self.type_info.leave(node)
@@ -125,7 +121,7 @@ class ValidationContext(object):
             for statement in self.get_ast().definitions:
                 if isinstance(statement, FragmentDefinition):
                     fragments[statement.name.value] = statement
-        return fragments[name]
+        return fragments.get(name)
 
     def get_type(self):
         return self._type_info.get_type()
