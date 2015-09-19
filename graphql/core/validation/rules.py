@@ -628,11 +628,11 @@ class VariablesInAllowedPosition(ValidationRule):
     def __init__(self, context):
         super(VariablesInAllowedPosition, self).__init__(context)
         self.var_def_map = {}
-        self.visited_fragment_names = {}
+        self.visited_fragment_names = set()
 
     def enter_OperationDefinition(self, *args):
         self.var_def_map = {}
-        self.visited_fragment_names = {}
+        self.visited_fragment_names = set()
 
     def enter_VariableDefinition(self, var_def_ast, *args):
         self.var_def_map[var_def_ast.variable.name.value] = var_def_ast
@@ -648,7 +648,7 @@ class VariablesInAllowedPosition(ValidationRule):
     def enter_FragmentSpread(self, spread_ast, *args):
         if spread_ast.name.value in self.visited_fragment_names:
             return False
-        self.visited_fragment_names[spread_ast.name.value] = True;
+        self.visited_fragment_names.add(spread_ast.name.value);
 
     @staticmethod
     def effective_type(var_type, var_def):
