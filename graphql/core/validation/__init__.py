@@ -118,7 +118,7 @@ class ValidationContext(object):
         fragments = self._fragments
         if fragments is None:
             self._fragments = fragments = {}
-            for statement in self.get_document().definitions:
+            for statement in self.get_ast().definitions:
                 if isinstance(statement, FragmentDefinition):
                     fragments[statement.name.value] = statement
         return fragments[name]

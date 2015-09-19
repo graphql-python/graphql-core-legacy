@@ -167,7 +167,19 @@ class UniqueFragmentNames(ValidationRule):
 
 
 class KnownFragmentNames(ValidationRule):
-    pass
+    def enter_FragmentSpread(self, node, *args):
+        fragment_name = node.name.value
+        try:
+            self.context.get_fragment(fragment_name)
+        except KeyError:
+            return GraphQLError(
+                self.unknown_fragment_message(fragment_name),
+                [node.name]
+            )
+
+    @staticmethod
+    def unknown_fragment_message(fragment_name):
+        return 'Unknown fragment "{}".'.format(fragment_name)
 
 
 class NoUnusedFragments(ValidationRule):
