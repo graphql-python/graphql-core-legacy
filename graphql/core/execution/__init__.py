@@ -336,7 +336,7 @@ def complete_value(ctx, return_type, field_asts, info, result):
 
     If the field type is a List, then this recursively completes the value for the inner type on each item in the list.
 
-    If the field type is a Scalar or Enum, ensures the completed value is a legal value of the type by calling the `coerce`
+    If the field type is a Scalar or Enum, ensures the completed value is a legal value of the type by calling the `serialize`
     method of GraphQL type definition.
 
     Otherwise, the field type expects a sub-selection set, and will complete the value by evaluating all sub-selections."""
@@ -366,12 +366,12 @@ def complete_value(ctx, return_type, field_asts, info, result):
             ctx, item_type, field_asts, info, item
         ) for item in result]
 
-    # If field type is Scalar or Enum, coerce to a valid value, returning null if coercion is not possible.
+    # If field type is Scalar or Enum, serialize to a valid value, returning null if coercion is not possible.
     if isinstance(return_type, (GraphQLScalarType, GraphQLEnumType)):
-        coerced_result = return_type.coerce(result)
-        if is_nullish(coerced_result):
+        serialized_result = return_type.serialize(result)
+        if is_nullish(serialized_result):
             return None
-        return coerced_result
+        return serialized_result
 
     # Field type must be Object, Interface or Union and expect sub-selections.
     if isinstance(return_type, GraphQLObjectType):

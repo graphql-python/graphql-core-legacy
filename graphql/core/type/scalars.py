@@ -26,15 +26,16 @@ def coerce_int(value):
     return None
 
 
-def coerce_int_literal(ast):
+def parse_int_literal(ast):
     if isinstance(ast, IntValue):
         num = int(ast.value)
         if MIN_INT <= num <= MAX_INT:
             return num
 
 GraphQLInt = GraphQLScalarType(name='Int',
-                               coerce=coerce_int,
-                               coerce_literal=coerce_int_literal)
+                               serialize=coerce_int,
+                               parse_value=coerce_int,
+                               parse_literal=parse_int_literal)
 
 
 def coerce_float(value):
@@ -47,14 +48,15 @@ def coerce_float(value):
     return None
 
 
-def coerce_float_literal(ast):
+def parse_float_literal(ast):
     if isinstance(ast, (FloatValue, IntValue)):
         return float(ast.value)
     return None
 
 GraphQLFloat = GraphQLScalarType(name='Float',
-                                 coerce=coerce_float,
-                                 coerce_literal=coerce_float_literal)
+                                 serialize=coerce_float,
+                                 parse_value=coerce_float,
+                                 parse_literal=parse_float_literal)
 
 
 def coerce_string(value):
@@ -63,31 +65,34 @@ def coerce_string(value):
     return str(value)
 
 
-def coerce_string_literal(ast):
+def parse_string_literal(ast):
     if isinstance(ast, StringValue):
         return ast.value
     return None
 
 GraphQLString = GraphQLScalarType(name='String',
-                                  coerce=coerce_string,
-                                  coerce_literal=coerce_string_literal)
+                                  serialize=coerce_string,
+                                  parse_value=coerce_string,
+                                  parse_literal=parse_string_literal)
 
 
-def coerce_boolean_literal(ast):
+def parse_boolean_literal(ast):
     if isinstance(ast, BooleanValue):
         return ast.value
     return None
 
 GraphQLBoolean = GraphQLScalarType(name='Boolean',
-                                   coerce=bool,
-                                   coerce_literal=coerce_boolean_literal)
+                                   serialize=bool,
+                                   parse_value=bool,
+                                   parse_literal=parse_boolean_literal)
 
 
-def coerce_id_literal(ast):
+def parse_id_literal(ast):
     if isinstance(ast, (StringValue, IntValue)):
         return ast.value
     return None
 
 GraphQLID = GraphQLScalarType(name='ID',
-                              coerce=str,
-                              coerce_literal=coerce_id_literal)
+                              serialize=str,
+                              parse_value=str,
+                              parse_literal=parse_id_literal)

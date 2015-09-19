@@ -61,21 +61,30 @@ class GraphQLScalarType(GraphQLType):
                 return value
             return None
 
-        OddType = GraphQLScalarType(name='Odd', coerce=coerce_odd)
+        OddType = GraphQLScalarType(name='Odd', serialize=coerce_odd)
     """
-    def __init__(self, name, description=None, coerce=None, coerce_literal=None):
+    def __init__(self, name, description=None, serialize=None, parse_value=None, parse_literal=None):
         assert name, 'Type must be named.'
         self.name = name
         self.description = description
-        self._coerce = coerce
-        self._coerce_literal = coerce_literal
+        assert callable(serialize)
+        if parse_value or parse_literal:
+            assert callable(parse_value) and callable(parse_literal)
+        self._serialize = serialize
+        self._parse_value = parse_value
+        self._parse_literal = parse_literal
 
-    def coerce(self, value):
-        return self._coerce(value)
+    def serialize(self, value):
+        return self._serialize(value)
 
-    def coerce_literal(self, value):
-        if self._coerce_literal:
-            return self._coerce_literal(value)
+    def parse_value(self, value):
+        if self._parse_value:
+            return self._parse_value(value)
+        return None
+
+    def parse_literal(self, value_ast):
+        if self._parse_literal:
+            return self._parse_literal(value_ast)
         return None
 
     def __str__(self):
@@ -310,16 +319,23 @@ class GraphQLEnumType(GraphQLType):
             self._value_map = self._define_value_map()
         return self._value_map
 
-    def coerce(self, value):
+    def serialize(self, value):
         if isinstance(value, collections.Hashable):
             enum_value = self._get_value_lookup().get(value)
             if enum_value:
                 return enum_value.name
         return None
 
-    def coerce_literal(self, value):
-        if isinstance(value, ast.EnumValue):
-            enum_value = self._get_name_lookup().get(value.value)
+    def parse_value(self, value):
+        if isinstance(value, collections.Hashable):
+            enum_value = self._get_value_lookup().get(value)
+            if enum_value:
+                return enum_value.name
+        return None
+
+    def parse_literal(self, value_ast):
+        if isinstance(value_ast, ast.EnumValue):
+            enum_value = self._get_name_lookup().get(value_ast.value)
             if enum_value:
                 return enum_value.value
 

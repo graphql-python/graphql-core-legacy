@@ -11,7 +11,7 @@ __all__ = ['get_variable_values', 'get_argument_values']
 
 def get_variable_values(schema, definition_asts, inputs):
     """Prepares an object map of variables of the correct type based on the provided variable definitions and arbitrary input.
-    If the input cannot be coerced to match the variable definitions, a GraphQLError will be thrown."""
+    If the input cannot be parsed to match the variable definitions, a GraphQLError will be thrown."""
     if inputs is None:
         inputs = {}
     values = {}
@@ -109,7 +109,7 @@ def is_valid_value(type, value):
     assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
         'Must be input type'
 
-    return not is_nullish(type.coerce(value))
+    return not is_nullish(type.parse_value(value))
 
 
 def coerce_value(type, value):
@@ -143,9 +143,9 @@ def coerce_value(type, value):
     assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
         'Must be input type'
 
-    coerced = type.coerce(value)
-    if not is_nullish(coerced):
-        return coerced
+    parsed = type.parse_value(value)
+    if not is_nullish(parsed):
+        return parsed
 
     return None
 
@@ -201,8 +201,8 @@ def coerce_value_ast(type, value_ast, variables):
     assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
         'Must be input type'
 
-    coerced = type.coerce_literal(value_ast)
-    if not is_nullish(coerced):
-        return coerced
+    parsed = type.parse_literal(value_ast)
+    if not is_nullish(parsed):
+        return parsed
 
     return None
