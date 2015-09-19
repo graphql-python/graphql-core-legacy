@@ -26,6 +26,15 @@ def test_ignores_unknown_arguments():
     }''')
 
 
+def test_arg_on_optional_arg():
+    expect_passes_rule(ProvidedNonNullArguments, '''
+    {
+        dog {
+          isHousetrained(atOtherHomes: true)
+        }
+    }''')
+
+
 def test_no_arg_on_optional_arg():
     expect_passes_rule(ProvidedNonNullArguments, '''
     {
