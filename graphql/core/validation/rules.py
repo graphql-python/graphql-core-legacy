@@ -270,7 +270,7 @@ class PossibleFragmentSpreads(ValidationRule):
             if isinstance(t2, GraphQLObjectType):
                 return t1.get_possible_types().index(t2) != -1
 
-            t1_type_names = { possible_type['name']: possible_type  for possible_type in t1.get_possible_types() }
+            t1_type_names = {possible_type['name']: possible_type for possible_type in t1.get_possible_types()}
             return any(t['name'] in t1_type_names for t in t2.get_possible_types())
 
     @staticmethod
