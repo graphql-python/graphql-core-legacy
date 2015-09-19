@@ -2,7 +2,7 @@ from ..utils import type_from_ast, is_valid_literal_value
 from ..error import GraphQLError
 from ..type.definition import is_composite_type, is_input_type, is_leaf_type, GraphQLNonNull
 from ..language import ast
-from ..language.visitor import Visitor
+from ..language.visitor import Visitor, visit
 from ..language.printer import print_ast
 
 
@@ -239,7 +239,74 @@ class PossibleFragmentSpreads(ValidationRule):
 
 
 class NoFragmentCycles(ValidationRule):
-    pass
+    def __init__(self, context):
+        super(NoFragmentCycles, self).__init__(context)
+        self.spreads_in_fragment = {
+            node.name.value: self.gather_spreads(node)
+            for node in context.get_ast().definitions
+            if isinstance(node, ast.FragmentDefinition)
+        }
+        self.known_to_lead_to_cycle = set()
+
+    def enter_FragmentDefinition(self, node, *args):
+        errors = []
+        initial_name = node.name.value
+        spread_path = []
+
+        # This will convert the ast.FragmentDefinition to something that we can add
+        # to a set. Otherwise we get a `unhashable type: dict` error.
+        # This makes it so that we can define a way to uniquely identify a FragmentDefinition
+        # within a set.
+        fragment_node_to_hashable = lambda fs: (fs.loc['start'], fs.loc['end'], fs.name.value)
+
+        def detect_cycle_recursive(fragment_name):
+            spread_nodes = self.spreads_in_fragment[fragment_name]
+
+            for spread_node in spread_nodes:
+                if fragment_node_to_hashable(spread_node) in self.known_to_lead_to_cycle:
+                    continue
+
+                if spread_node.name.value == initial_name:
+                    cycle_path = spread_path + [spread_node]
+                    self.known_to_lead_to_cycle |= set(map(fragment_node_to_hashable, cycle_path))
+
+                    errors.append(GraphQLError(
+                        self.cycle_error_message(initial_name, [s.name.value for s in spread_path]),
+                        cycle_path
+                    ))
+                    continue
+
+                if any(spread is spread_node for spread in spread_path):
+                    continue
+
+                spread_path.append(spread_node)
+                detect_cycle_recursive(spread_node.name.value)
+                spread_path.pop()
+
+        detect_cycle_recursive(initial_name)
+        if errors:
+            return errors
+
+    @staticmethod
+    def cycle_error_message(fragment_name, spread_names):
+        via = ' via {}'.format(', '.join(spread_names)) if spread_names else ''
+        return 'Cannot spread fragment "{}" within itself{}.'.format(fragment_name, via)
+
+    @classmethod
+    def gather_spreads(cls, node):
+        visitor = cls.CollectFragmentSpreadNodesVisitor()
+        visit(node, visitor)
+        return visitor.collect_fragment_spread_nodes()
+
+    class CollectFragmentSpreadNodesVisitor(Visitor):
+        def __init__(self):
+            self.spread_nodes = []
+
+        def enter_FragmentSpread(self, node, *args):
+            self.spread_nodes.append(node)
+
+        def collect_fragment_spread_nodes(self):
+            return self.spread_nodes
 
 
 class NoUndefinedVariables(ValidationRule):
