@@ -40,6 +40,12 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Libraries',
         'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: Implementation :: PyPy',
     ],
 
     keywords='api graphql protocol rest',
@@ -47,7 +53,7 @@ setup(
     packages=find_packages(exclude=['tests']),
 
     install_requires=[],
-    tests_require=['pytest>=2.7.2'],
+    tests_require=['pytest>=2.7.3'],
 
     cmdclass={'test': PyTest},
 )
