@@ -51,5 +51,4 @@ def test_unknown_fragment_names_are_invalid():
         undefined_fragment('UnknownFragment1', 4, 16),
         undefined_fragment('UnknownFragment2', 6, 20),
         undefined_fragment('UnknownFragment3', 12, 12),
-
     ])

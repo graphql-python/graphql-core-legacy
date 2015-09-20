@@ -3,9 +3,16 @@ from graphql.core.validation.rules import FragmentsOnCompositeTypes
 from utils import expect_passes_rule, expect_fails_rule
 
 
-def error(frag_name, type_name, line, column):
+def fragment_on_non_composite_error(frag_name, type_name, line, column):
     return {
         'message': FragmentsOnCompositeTypes.fragment_on_non_composite_error_message(frag_name, type_name),
+        'locations': [SourceLocation(line, column)]
+    }
+
+
+def inline_fragment_on_non_composite_error(type_name, line, column):
+    return {
+        'message': FragmentsOnCompositeTypes.inline_fragment_on_non_composite_error_message(type_name),
         'locations': [SourceLocation(line, column)]
     }
 
@@ -49,7 +56,9 @@ def test_scalar_is_invalid_fragment_type():
       fragment scalarFragment on Boolean {
         bad
       }
-    ''', [error('scalarFragment', 'Boolean', 2, 34)])
+    ''', [
+        fragment_on_non_composite_error('scalarFragment', 'Boolean', 2, 34)
+    ])
 
 
 def test_enum_is_invalid_fragment_type():
@@ -57,7 +66,9 @@ def test_enum_is_invalid_fragment_type():
       fragment scalarFragment on FurColor {
         bad
       }
-    ''', [error('scalarFragment', 'FurColor', 2, 34)])
+    ''', [
+        fragment_on_non_composite_error('scalarFragment', 'FurColor', 2, 34)
+    ])
 
 
 def test_input_object_is_invalid_fragment_type():
@@ -65,7 +76,9 @@ def test_input_object_is_invalid_fragment_type():
       fragment inputFragment on ComplexInput {
         stringField
       }
-    ''', [error('inputFragment', 'ComplexInput', 2, 33)])
+    ''', [
+        fragment_on_non_composite_error('inputFragment', 'ComplexInput', 2, 33)
+    ])
 
 
 def test_scalar_is_invalid_inline_fragment_type():
@@ -75,7 +88,6 @@ def test_scalar_is_invalid_inline_fragment_type():
           barks
         }
       }
-    ''', [{
-        'message': FragmentsOnCompositeTypes.inline_fragment_on_non_composite_error_message('String'),
-        'locations': [SourceLocation(3, 16)]
-    }])
+    ''', [
+        inline_fragment_on_non_composite_error('String', 3, 16)
+    ])

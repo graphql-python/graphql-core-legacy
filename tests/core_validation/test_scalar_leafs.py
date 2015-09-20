@@ -30,7 +30,9 @@ def test_object_type_missing_selection():
       query directQueryOnObjectWithoutSubFields {
         human
       }
-    ''', [missing_obj_subselection('human', 'Human', 3, 9)])
+    ''', [
+        missing_obj_subselection('human', 'Human', 3, 9)
+    ])
 
 
 def test_interface_type_missing_selection():
@@ -38,7 +40,9 @@ def test_interface_type_missing_selection():
       {
         human { pets }
       }
-    ''', [missing_obj_subselection('pets', '[Pet]', 3, 17)])
+    ''', [
+        missing_obj_subselection('pets', '[Pet]', 3, 17)
+    ])
 
 
 def test_valid_scalar_selection_with_args():
@@ -54,7 +58,9 @@ def test_scalar_selection_not_allowed_on_boolean():
       fragment scalarSelectionsNotAllowedOnBoolean on Dog {
         barks { sinceWhen }
       }
-    ''', [no_scalar_subselection('barks', 'Boolean', 3, 15)])
+    ''', [
+        no_scalar_subselection('barks', 'Boolean', 3, 15)
+    ])
 
 
 def test_scalar_selection_not_allowed_on_enum():
@@ -62,7 +68,9 @@ def test_scalar_selection_not_allowed_on_enum():
       fragment scalarSelectionsNotAllowedOnEnum on Cat {
         furColor { inHexdec }
       }
-    ''', [no_scalar_subselection('furColor', 'FurColor', 3, 18)])
+    ''', [
+        no_scalar_subselection('furColor', 'FurColor', 3, 18)
+    ])
 
 
 def test_scalar_selection_not_allowed_with_args():
@@ -70,7 +78,9 @@ def test_scalar_selection_not_allowed_with_args():
       fragment scalarSelectionsNotAllowedWithArgs on Dog {
         doesKnowCommand(dogCommand: SIT) { sinceWhen }
       }
-    ''', [no_scalar_subselection('doesKnowCommand', 'Boolean', 3, 42)])
+    ''', [
+        no_scalar_subselection('doesKnowCommand', 'Boolean', 3, 42)
+    ])
 
 
 def test_scalar_selection_not_allowed_with_directives():
@@ -78,7 +88,9 @@ def test_scalar_selection_not_allowed_with_directives():
       fragment scalarSelectionsNotAllowedWithDirectives on Dog {
         name @include(if: true) { isAlsoHumanName }
       }
-    ''', [no_scalar_subselection('name', 'String', 3, 33)])
+    ''', [
+        no_scalar_subselection('name', 'String', 3, 33)
+    ])
 
 
 def test_scalar_selection_not_allowed_with_directives_and_args():
@@ -86,4 +98,6 @@ def test_scalar_selection_not_allowed_with_directives_and_args():
       fragment scalarSelectionsNotAllowedWithDirectivesAndArgs on Dog {
         doesKnowCommand(dogCommand: SIT) @include(if: true) { sinceWhen }
       }
-    ''', [no_scalar_subselection('doesKnowCommand', 'Boolean', 3, 61)])
+    ''', [
+        no_scalar_subselection('doesKnowCommand', 'Boolean', 3, 61)
+    ])

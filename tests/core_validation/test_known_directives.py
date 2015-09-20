@@ -12,8 +12,7 @@ def unknown_directive(directive_name, line, column):
 
 def misplaced_directive(directive_name, placement, line, column):
     return {
-        'message': KnownDirectives.misplaced_directive_message(directive_name,
-                                                               placement),
+        'message': KnownDirectives.misplaced_directive_message(directive_name, placement),
         'locations': [SourceLocation(line, column)]
     }
 
@@ -51,7 +50,9 @@ def test_with_unknown_directive():
           name
         }
       }
-    ''', [unknown_directive('unknown', 3, 13)])
+    ''', [
+        unknown_directive('unknown', 3, 13)
+    ])
 
 
 def test_with_many_unknown_directives():
@@ -67,9 +68,11 @@ def test_with_many_unknown_directives():
           }
         }
       }
-    ''', [unknown_directive('unknown', 3, 13),
-          unknown_directive('unknown', 6, 15),
-          unknown_directive('unknown', 8, 16)])
+    ''', [
+        unknown_directive('unknown', 3, 13),
+        unknown_directive('unknown', 6, 15),
+        unknown_directive('unknown', 8, 16)
+    ])
 
 
 def test_with_well_placed_directives():
@@ -89,4 +92,6 @@ def test_with_misplaced_directives():
         name
         ...Frag
       }
-    ''', [misplaced_directive('include', 'operation', 2, 17)])
+    ''', [
+        misplaced_directive('include', 'operation', 2, 17)
+    ])

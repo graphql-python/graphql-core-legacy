@@ -92,4 +92,4 @@ def test_multiple_operations_of_same_name_of_different_types():
       }
     ''', [
         duplicate_op('Foo', 2, 13, 5, 16),
-        ])
+    ])
