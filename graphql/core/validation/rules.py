@@ -309,11 +309,12 @@ class NoFragmentCycles(ValidationRule):
 
 
 class NoUndefinedVariables(ValidationRule):
+    visit_spread_fragments = True
+
     def __init__(self, context):
         self.operation = None
-        self.visited_fragment_names = {}
-        self.defined_variable_names = {}
-        self.visit_spread_fragments = True
+        self.visited_fragment_names = set()
+        self.defined_variable_names = set()
         super(NoUndefinedVariables, self).__init__(context)
 
     @staticmethod
@@ -328,22 +329,22 @@ class NoUndefinedVariables(ValidationRule):
 
     def enter_OperationDefinition(self, node, *args):
         self.operation = node
-        self.visited_fragment_names = {}
-        self.defined_variable_names = {}
+        self.visited_fragment_names = set()
+        self.defined_variable_names = set()
 
     def enter_VariableDefinition(self, node, *args):
-        self.defined_variable_names[node.variable.name.value] = True
+        self.defined_variable_names.add(node.variable.name.value)
 
     def enter_Variable(self, variable, key, parent, path, ancestors):
         var_name = variable.name.value
         if var_name not in self.defined_variable_names:
-            is_fragment = lambda node: isinstance(node, ast.FragmentDefinition)
-            within_fragment = any(is_fragment(node) for node in ancestors)
+            within_fragment = any(isinstance(node, ast.FragmentDefinition) for node in ancestors)
             if within_fragment and self.operation and self.operation.name:
                 return GraphQLError(
                     self.undefined_var_by_op_message(var_name, self.operation.name.value),
                     [variable, self.operation]
                 )
+
             return GraphQLError(
                 self.undefined_var_message(var_name),
                 [variable]
@@ -352,7 +353,8 @@ class NoUndefinedVariables(ValidationRule):
     def enter_FragmentSpread(self, spread_ast, *args):
         if spread_ast.name.value in self.visited_fragment_names:
             return False
-        self.visited_fragment_names[spread_ast.name.value] = True
+
+        self.visited_fragment_names.add(spread_ast.name.value)
 
 
 class NoUnusedVariables(ValidationRule):
@@ -511,7 +513,18 @@ class UniqueArgumentNames(ValidationRule):
 
 
 class ArgumentsOfCorrectType(ValidationRule):
-    pass
+    def enter_Argument(self, node, *args):
+        arg_def = self.context.get_argument()
+        if arg_def and not is_valid_literal_value(arg_def.type, node.value):
+            return GraphQLError(
+                self.bad_value_message(node.name.value, arg_def.type,
+                                       print_ast(node.value)),
+                [node.value]
+            )
+
+    @staticmethod
+    def bad_value_message(arg_name, type, value):
+        return 'Argument "{}" expected type "{}" but got: {}.'.format(arg_name, type, value)
 
 
 class ProvidedNonNullArguments(ValidationRule):
