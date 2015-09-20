@@ -640,10 +640,8 @@ class VariablesInAllowedPosition(ValidationRule):
     def enter_Variable(self, node, *args):
         var_name = node.name.value
         var_def = self.var_def_map.get(var_name)
-
         var_type = var_def and type_from_ast(self.context.get_schema(), var_def.type)
         input_type = self.context.get_input_type()
-
         if var_type and input_type and not self.var_type_allowed_for_type(self.effective_type(var_type, var_def),
                                                                           input_type):
             return GraphQLError(self.bad_var_pos_message(var_name, var_type, input_type),
@@ -652,7 +650,6 @@ class VariablesInAllowedPosition(ValidationRule):
     def enter_FragmentSpread(self, node, *args):
         if node.name.value in self.visited_fragment_names:
             return False
-
         self.visited_fragment_names.add(node.name.value)
 
     @staticmethod
@@ -680,7 +677,7 @@ class VariablesInAllowedPosition(ValidationRule):
 
     @staticmethod
     def bad_var_pos_message(var_name, var_type, expected_type):
-        return 'Variable "${}" of type "{}" used in position expecting type "{}".'.format(var_name, var_type, expected_type)
+        return 'Variable "{}" of type "{}" used in position expecting type "{}".'.format(var_name, var_type, expected_type)
 
 
 class OverlappingFieldsCanBeMerged(ValidationRule):
