@@ -5,7 +5,7 @@ from utils import expect_passes_rule, expect_fails_rule
 
 def unknown_directive(directive_name, line, column):
     return {
-        'message': KnownDirectives.message(directive_name),
+        'message': KnownDirectives.unknown_directive_message(directive_name),
         'locations': [SourceLocation(line, column)]
     }
 

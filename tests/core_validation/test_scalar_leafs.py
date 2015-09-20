@@ -5,14 +5,14 @@ from utils import expect_passes_rule, expect_fails_rule
 
 def no_scalar_subselection(field, type, line, column):
     return {
-        'message': ScalarLeafs.not_allowed_message(field, type),
+        'message': ScalarLeafs.no_subselection_allowed_message(field, type),
         'locations': [SourceLocation(line, column)]
     }
 
 
 def missing_obj_subselection(field, type, line, column):
     return {
-        'message': ScalarLeafs.required_message(field, type),
+        'message': ScalarLeafs.required_subselection_message(field, type),
         'locations': [SourceLocation(line, column)]
     }
 

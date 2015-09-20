@@ -5,7 +5,7 @@ from utils import expect_passes_rule, expect_fails_rule
 
 def unknown_type(type_name, line, column):
     return {
-        'message': KnownTypeNames.message(type_name),
+        'message': KnownTypeNames.unknown_type_message(type_name),
         'locations': [SourceLocation(line, column)]
     }
 
