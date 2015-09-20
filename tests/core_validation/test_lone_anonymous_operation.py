@@ -71,4 +71,6 @@ def test_anon_operation_with_another_operation():
       mutation Foo {
         fieldB
       }
-    ''', [anon_not_alone(2, 7)])
+    ''', [
+        anon_not_alone(2, 7)
+    ])

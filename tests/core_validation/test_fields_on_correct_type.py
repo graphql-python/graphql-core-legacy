@@ -3,7 +3,7 @@ from graphql.core.validation.rules import FieldsOnCorrectType
 from utils import expect_passes_rule, expect_fails_rule
 
 
-def error(field, type, line, column):
+def undefined_field(field, type, line, column):
     return {
         'message': FieldsOnCorrectType.undefined_field_message(field, type),
         'locations': [SourceLocation(line, column)]
@@ -66,7 +66,9 @@ def test_field_not_defined_on_fragment():
       fragment fieldNotDefined on Dog {
         meowVolume
       }
-    ''', [error('meowVolume', 'Dog', 3, 9)])
+    ''', [
+        undefined_field('meowVolume', 'Dog', 3, 9)
+    ])
 
 
 def test_field_not_defined_deeply_only_reports_first():
@@ -76,7 +78,9 @@ def test_field_not_defined_deeply_only_reports_first():
           deeper_unknown_field
         }
       }
-    ''', [error('unknown_field', 'Dog', 3, 9)])
+    ''', [
+        undefined_field('unknown_field', 'Dog', 3, 9)
+    ])
 
 
 def test_sub_field_not_defined():
@@ -86,7 +90,9 @@ def test_sub_field_not_defined():
           unknown_field
         }
       }
-    ''', [error('unknown_field', 'Pet', 4, 11)])
+    ''', [
+        undefined_field('unknown_field', 'Pet', 4, 11)
+    ])
 
 
 def test_field_not_defined_on_inline_fragment():
@@ -96,7 +102,9 @@ def test_field_not_defined_on_inline_fragment():
           meowVolume
         }
       }
-    ''', [error('meowVolume', 'Dog', 4, 11)])
+    ''', [
+        undefined_field('meowVolume', 'Dog', 4, 11)
+    ])
 
 
 def test_aliased_field_target_not_defined():
@@ -104,7 +112,9 @@ def test_aliased_field_target_not_defined():
       fragment aliasedFieldTargetNotDefined on Dog {
         volume : mooVolume
       }
-    ''', [error('mooVolume', 'Dog', 3, 9)])
+    ''', [
+        undefined_field('mooVolume', 'Dog', 3, 9)
+    ])
 
 
 def test_aliased_lying_field_target_not_defined():
@@ -112,7 +122,9 @@ def test_aliased_lying_field_target_not_defined():
       fragment aliasedLyingFieldTargetNotDefined on Dog {
         barkVolume : kawVolume
       }
-    ''', [error('kawVolume', 'Dog', 3, 9)])
+    ''', [
+        undefined_field('kawVolume', 'Dog', 3, 9)
+    ])
 
 
 def test_not_defined_on_interface():
@@ -120,7 +132,9 @@ def test_not_defined_on_interface():
       fragment notDefinedOnInterface on Pet {
         tailLength
       }
-    ''', [error('tailLength', 'Pet', 3, 9)])
+    ''', [
+        undefined_field('tailLength', 'Pet', 3, 9)
+    ])
 
 
 def test_defined_on_implementors_but_not_on_interface():
@@ -128,7 +142,9 @@ def test_defined_on_implementors_but_not_on_interface():
       fragment definedOnImplementorsButNotInterface on Pet {
         nickname
       }
-    ''', [error('nickname', 'Pet', 3, 9)])
+    ''', [
+        undefined_field('nickname', 'Pet', 3, 9)
+    ])
 
 
 def test_meta_field_selection_on_union():
@@ -144,7 +160,9 @@ def test_direct_field_selection_on_union():
       fragment directFieldSelectionOnUnion on CatOrDog {
         directField
       }
-    ''', [error('directField', 'CatOrDog', 3, 9)])
+    ''', [
+        undefined_field('directField', 'CatOrDog', 3, 9)
+    ])
 
 
 def test_defined_on_implementors_queried_on_union():
@@ -152,7 +170,9 @@ def test_defined_on_implementors_queried_on_union():
       fragment definedOnImplementorsQueriedOnUnion on CatOrDog {
         name
       }
-    ''', [error('name', 'CatOrDog', 3, 9)])
+    ''', [
+        undefined_field('name', 'CatOrDog', 3, 9)
+    ])
 
 
 def test_valid_field_in_inline_fragment():

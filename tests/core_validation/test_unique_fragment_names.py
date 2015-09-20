@@ -17,6 +17,7 @@ def test_no_fragments():
       }
     ''')
 
+
 def test_one_fragment():
     expect_passes_rule(UniqueFragmentNames, '''
       {
@@ -26,6 +27,7 @@ def test_one_fragment():
         field
       }
     ''')
+
 
 def test_many_fragments():
     expect_passes_rule(UniqueFragmentNames, '''
@@ -45,6 +47,7 @@ def test_many_fragments():
       }
     ''')
 
+
 def test_inline_fragments():
     expect_passes_rule(UniqueFragmentNames, '''
       {
@@ -57,6 +60,7 @@ def test_inline_fragments():
       }
     ''')
 
+
 def test_fragment_operation_same_name():
     expect_passes_rule(UniqueFragmentNames, '''
       query Foo {
@@ -66,6 +70,7 @@ def test_fragment_operation_same_name():
         field
       }
     ''')
+
 
 def test_fragments_same_name():
     expect_fails_rule(UniqueFragmentNames, '''
@@ -78,8 +83,10 @@ def test_fragments_same_name():
         fragment fragA on Type {
           fieldB
         }
-    ''', [duplicate_fragment('fragA', 5, 18, 8, 18)]
-    )
+    ''', [
+        duplicate_fragment('fragA', 5, 18, 8, 18)
+    ])
+
 
 def test_fragments_same_name_no_ref():
     expect_fails_rule(UniqueFragmentNames, '''
@@ -89,7 +96,6 @@ def test_fragments_same_name_no_ref():
         fragment fragA on Type {
           fieldB
         }
-      ''', [
+    ''', [
         duplicate_fragment('fragA', 2, 18, 5, 18)
-      ]
-    )
+    ])

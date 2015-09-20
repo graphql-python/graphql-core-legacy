@@ -12,8 +12,7 @@ def unknown_arg(arg_name, field_name, type_name, line, column):
 
 def unknown_directive_arg(arg_name, directive_name, line, column):
     return {
-        'message': KnownArgumentNames.unknown_directive_arg_message(
-            arg_name, directive_name),
+        'message': KnownArgumentNames.unknown_directive_arg_message(arg_name, directive_name),
         'locations': [SourceLocation(line, column)]
     }
 
@@ -88,7 +87,9 @@ def test_undirective_args_are_invalid():
       {
         dog @skip(unless: true)
       }
-    ''', [unknown_directive_arg('unless', 'skip', 3, 19)])
+    ''', [
+        unknown_directive_arg('unless', 'skip', 3, 19)
+    ])
 
 
 def test_invalid_arg_name():
@@ -96,7 +97,9 @@ def test_invalid_arg_name():
       fragment invalidArgName on Dog {
         doesKnowCommand(unknown: true)
       }
-    ''', [unknown_arg('unknown', 'doesKnowCommand', 'Dog', 3, 25)])
+    ''', [
+        unknown_arg('unknown', 'doesKnowCommand', 'Dog', 3, 25)
+    ])
 
 
 def test_unknown_args_amongst_known_args():
@@ -104,8 +107,10 @@ def test_unknown_args_amongst_known_args():
       fragment oneGoodArgOneInvalidArg on Dog {
         doesKnowCommand(whoknows: 1, dogCommand: SIT, unknown: true)
       }
-    ''', [unknown_arg('whoknows', 'doesKnowCommand', 'Dog', 3, 25),
-          unknown_arg('unknown', 'doesKnowCommand', 'Dog', 3, 55)])
+    ''', [
+        unknown_arg('whoknows', 'doesKnowCommand', 'Dog', 3, 25),
+        unknown_arg('unknown', 'doesKnowCommand', 'Dog', 3, 55)
+    ])
 
 
 def test_unknown_args_deeply():
@@ -122,5 +127,7 @@ def test_unknown_args_deeply():
           }
         }
       }
-    ''', [unknown_arg('unknown', 'doesKnowCommand', 'Dog', 4, 27),
-          unknown_arg('unknown', 'doesKnowCommand', 'Dog', 9, 31)])
+    ''', [
+        unknown_arg('unknown', 'doesKnowCommand', 'Dog', 4, 27),
+        unknown_arg('unknown', 'doesKnowCommand', 'Dog', 9, 31)
+    ])
