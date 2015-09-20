@@ -634,26 +634,32 @@ class VariablesInAllowedPosition(ValidationRule):
         self.var_def_map = {}
         self.visited_fragment_names = set()
 
-    def enter_VariableDefinition(self, var_def_ast, *args):
-        self.var_def_map[var_def_ast.variable.name.value] = var_def_ast
+    def enter_VariableDefinition(self, node, *args):
+        self.var_def_map[node.variable.name.value] = node
 
-    def enter_Variable(self, variable_ast, *args):
-        var_name = variable_ast.name.value
-        var_def = self.var_def_map[var_name]
+    def enter_Variable(self, node, *args):
+        var_name = node.name.value
+        var_def = self.var_def_map.get(var_name)
+
         var_type = var_def and type_from_ast(self.context.get_schema(), var_def.type)
         input_type = self.context.get_input_type()
-        if var_type and input_type and not self.var_type_allowed_for_type(self.effective_type(var_type, var_def), input_type):
-            return GraphQlError(self.bad_var_pos_message(var_name, var_type, input_type, [variable_ast]))
 
-    def enter_FragmentSpread(self, spread_ast, *args):
-        if spread_ast.name.value in self.visited_fragment_names:
+        if var_type and input_type and not self.var_type_allowed_for_type(self.effective_type(var_type, var_def),
+                                                                          input_type):
+            return GraphQLError(self.bad_var_pos_message(var_name, var_type, input_type),
+                                [node])
+
+    def enter_FragmentSpread(self, node, *args):
+        if node.name.value in self.visited_fragment_names:
             return False
-        self.visited_fragment_names.add(spread_ast.name.value);
+
+        self.visited_fragment_names.add(node.name.value)
 
     @staticmethod
     def effective_type(var_type, var_def):
         if not var_def.default_value or isinstance(var_def, GraphQLNonNull):
             return var_type
+
         return GraphQLNonNull(var_type)
 
     @staticmethod
@@ -661,16 +667,20 @@ class VariablesInAllowedPosition(ValidationRule):
         if isinstance(expected_type, GraphQLNonNull):
             if isinstance(var_type, GraphQLNonNull):
                 return VariablesInAllowedPosition.var_type_allowed_for_type(var_type.of_type, expected_type.of_type)
+
             return False
+
         if isinstance(var_type, GraphQLNonNull):
             return VariablesInAllowedPosition.var_type_allowed_for_type(var_type.of_type, expected_type)
+
         if isinstance(var_type, GraphQLList) and isinstance(expected_type, GraphQLList):
             return VariablesInAllowedPosition.var_type_allowed_for_type(var_type.of_type, expected_type.of_type)
+
         return var_type == expected_type
 
     @staticmethod
     def bad_var_pos_message(var_name, var_type, expected_type):
-        return 'Variable {} of type {} used in position expecting type {}'.format(var_name, var_type, expected_type)
+        return 'Variable "${}" of type "{}" used in position expecting type "{}".'.format(var_name, var_type, expected_type)
 
 
 class OverlappingFieldsCanBeMerged(ValidationRule):
