@@ -14,12 +14,7 @@ def test_does_not_alter_ast():
 
 
 def test_prints_minimal_ast():
-    ast = Field(name=Name(loc=None, value='foo'),
-                loc=None,
-                alias=None,
-                arguments=None,
-                directives=None,
-                selection_set=None)
+    ast = Field(name=Name(loc=None, value='foo'))
     assert print_ast(ast) == 'foo'
 
 
