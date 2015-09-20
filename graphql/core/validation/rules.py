@@ -265,13 +265,13 @@ class PossibleFragmentSpreads(ValidationRule):
         if isinstance(t1, GraphQLObjectType):
             if isinstance(t2, GraphQLObjectType):
                 return False
-            return t2.get_possible_types().index(t1) != -1
+            return t1 in t2.get_possible_types()
         if isinstance(t1, GraphQLInterfaceType) or isinstance(t1, GraphQLUnionType):
             if isinstance(t2, GraphQLObjectType):
-                return t1.get_possible_types().index(t2) != -1
+                return t2 in t1.get_possible_types()
 
-            t1_type_names = {possible_type['name']: possible_type for possible_type in t1.get_possible_types()}
-            return any(t['name'] in t1_type_names for t in t2.get_possible_types())
+            t1_type_names = {possible_type.name: possible_type for possible_type in t1.get_possible_types()}
+            return any(t.name in t1_type_names for t in t2.get_possible_types())
 
     @staticmethod
     def type_incompatible_spread_message(frag_name, parent_type, frag_type):
