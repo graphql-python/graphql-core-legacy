@@ -366,6 +366,17 @@ class TestInvalidEnumValues(object):
             bad_value('dogCommand', 'DogCommand', 'JUGGLE', 4, 45)
         ])
 
+    def test_different_case_enum_value_into_enum(self):
+        expect_fails_rule(ArgumentsOfCorrectType, '''
+        {
+            dog {
+                doesKnowCommand(dogCommand: sit)
+            }
+        }
+        ''', [
+            bad_value('dogCommand', 'DogCommand', 'sit', 4, 45)
+        ])
+
 
 # noinspection PyMethodMayBeStatic
 class TestValidListValues(object):
