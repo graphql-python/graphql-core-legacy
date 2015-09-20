@@ -128,5 +128,5 @@ def evaluates_mutations_correctly_in_the_presense_of_a_failed_mutation():
         }
     assert len(result.errors) == 2
     # TODO: check error location
-    assert result.errors[0].message == 'Cannot change the number'
-    assert result.errors[1].message == 'Cannot change the number'
+    assert result.errors[0].undefined_field_message == 'Cannot change the number'
+    assert result.errors[1].undefined_field_message == 'Cannot change the number'

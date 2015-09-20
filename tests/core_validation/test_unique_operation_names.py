@@ -5,7 +5,7 @@ from utils import expect_passes_rule, expect_fails_rule
 
 def duplicate_op(op_name, l1, c1, l2, c2):
     return {
-        'message': UniqueOperationNames.message(op_name),
+        'message': UniqueOperationNames.duplicate_operation_name_message(op_name),
         'locations': [SourceLocation(l1, c1), SourceLocation(l2, c2)]
     }
 

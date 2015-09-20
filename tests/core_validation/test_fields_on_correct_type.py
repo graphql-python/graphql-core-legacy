@@ -5,7 +5,7 @@ from utils import expect_passes_rule, expect_fails_rule
 
 def error(field, type, line, column):
     return {
-        'message': FieldsOnCorrectType.message(field, type),
+        'message': FieldsOnCorrectType.undefined_field_message(field, type),
         'locations': [SourceLocation(line, column)]
     }
 

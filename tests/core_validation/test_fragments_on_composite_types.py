@@ -5,7 +5,7 @@ from utils import expect_passes_rule, expect_fails_rule
 
 def error(frag_name, type_name, line, column):
     return {
-        'message': FragmentsOnCompositeTypes.message(frag_name, type_name),
+        'message': FragmentsOnCompositeTypes.fragment_on_non_composite_error_message(frag_name, type_name),
         'locations': [SourceLocation(line, column)]
     }
 
@@ -76,6 +76,6 @@ def test_scalar_is_invalid_inline_fragment_type():
         }
       }
     ''', [{
-        'message': FragmentsOnCompositeTypes.inline_message('String'),
+        'message': FragmentsOnCompositeTypes.inline_fragment_on_non_composite_error_message('String'),
         'locations': [SourceLocation(3, 16)]
     }])

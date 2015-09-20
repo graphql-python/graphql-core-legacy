@@ -5,7 +5,7 @@ from utils import expect_passes_rule, expect_fails_rule
 
 def anon_not_alone(line, column):
     return {
-        'message': LoneAnonymousOperation.message(),
+        'message': LoneAnonymousOperation.anonymous_operation_not_alone_message(),
         'locations': [SourceLocation(line, column)]
     }
 

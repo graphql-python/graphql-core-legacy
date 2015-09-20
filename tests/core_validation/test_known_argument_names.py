@@ -5,14 +5,14 @@ from utils import expect_passes_rule, expect_fails_rule
 
 def unknown_arg(arg_name, field_name, type_name, line, column):
     return {
-        'message': KnownArgumentNames.message(arg_name, field_name, type_name),
+        'message': KnownArgumentNames.unknown_arg_message(arg_name, field_name, type_name),
         'locations': [SourceLocation(line, column)]
     }
 
 
 def unknown_directive_arg(arg_name, directive_name, line, column):
     return {
-        'message': KnownArgumentNames.directive_message(
+        'message': KnownArgumentNames.unknown_directive_arg_message(
             arg_name, directive_name),
         'locations': [SourceLocation(line, column)]
     }

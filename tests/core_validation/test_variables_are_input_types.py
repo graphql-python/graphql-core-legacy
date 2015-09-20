@@ -18,9 +18,9 @@ def test_output_types_are_invalid():
       }
     ''', [
         {'locations': [SourceLocation(2, 21)],
-         'message': VariablesAreInputTypes.message('a', 'Dog')},
+         'message': VariablesAreInputTypes.non_input_type_on_variable_message('a', 'Dog')},
         {'locations': [SourceLocation(2, 30)],
-         'message': VariablesAreInputTypes.message('b', '[[CatOrDog!]]!')},
+         'message': VariablesAreInputTypes.non_input_type_on_variable_message('b', '[[CatOrDog!]]!')},
         {'locations': [SourceLocation(2, 50)],
-         'message': VariablesAreInputTypes.message('c', 'Pet')},
+         'message': VariablesAreInputTypes.non_input_type_on_variable_message('c', 'Pet')},
     ])
