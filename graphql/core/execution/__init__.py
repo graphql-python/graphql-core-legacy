@@ -242,7 +242,7 @@ def get_field_entry_key(node):
 class ResolveInfo(object):
     def __init__(self, field_name, field_asts, return_type, parent_type, context):
         self.field_name = field_name
-        self.field_ast = field_asts
+        self.field_asts = field_asts
         self.return_type = return_type
         self.parent_type = parent_type
         self.context = context
