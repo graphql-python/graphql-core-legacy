@@ -19,6 +19,12 @@ from graphql.core.type import (
     GraphQLList)
 from graphql.core.error import format_error
 
+Being = GraphQLInterfaceType('Being', {
+    'name': GraphQLField(GraphQLString, {
+        'surname': GraphQLArgument(GraphQLBoolean),
+    })
+})
+
 Pet = GraphQLInterfaceType('Pet', {
     'name': GraphQLField(GraphQLString, {
         'surname': GraphQLArgument(GraphQLBoolean),
@@ -40,20 +46,46 @@ Dog = GraphQLObjectType('Dog', {
     'doesKnowCommand': GraphQLField(GraphQLBoolean, {
         'dogCommand': GraphQLArgument(DogCommand)
     })
-}, interfaces=[Pet])
+}, interfaces=[Being, Pet])
 
 Cat = GraphQLObjectType('Cat', lambda: {
     'furColor': GraphQLField(FurColor)
-}, interfaces=[Pet])
+}, interfaces=[Being, Pet])
 
 CatOrDog = GraphQLUnionType('CatOrDog', [Dog, Cat])
 
-Human = GraphQLObjectType('Human', {
-    'name': GraphQLField(GraphQLString, {
-        'surname': GraphQLArgument(GraphQLBoolean),
-    }),
-    'pets': GraphQLField(GraphQLList(Pet)),
+Intelligent = GraphQLInterfaceType('Intelligent', {
+    'iq': GraphQLField(GraphQLInt),
 })
+
+Human = GraphQLObjectType(
+    name='Human',
+    interfaces=[Being, Intelligent],
+    fields={
+        'name': GraphQLField(GraphQLString, {
+            'surname': GraphQLArgument(GraphQLBoolean),
+        }),
+        'pets': GraphQLField(GraphQLList(Pet)),
+        'iq': GraphQLField(GraphQLInt),
+    },
+)
+
+Alien = GraphQLObjectType(
+    name='Alien',
+    is_type_of=lambda *args: True,
+    interfaces=[Being, Intelligent],
+    fields={
+        'iq': GraphQLField(GraphQLInt),
+        'name': GraphQLField(GraphQLString, {
+            'surname': GraphQLField(GraphQLBoolean),
+        }),
+        'numEyes': GraphQLField(GraphQLInt),
+    },
+)
+
+DogOrHuman = GraphQLUnionType('DogOrHuman', [Dog, Human])
+
+HumanOrAlien = GraphQLUnionType('HumanOrAlien', [Human, Alien])
 
 FurColor = GraphQLEnumType('FurColor', {
     'BROWN': GraphQLEnumValue(0),
@@ -121,6 +153,7 @@ QueryRoot = GraphQLObjectType('QueryRoot', {
     'dog': GraphQLField(Dog),
     'pet': GraphQLField(Pet),
     'catOrDog': GraphQLField(CatOrDog),
+    'humanOrAlien': GraphQLField(HumanOrAlien),
     'complicatedArgs': GraphQLField(ComplicatedArgs),
 })
 

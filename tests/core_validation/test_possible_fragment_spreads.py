@@ -120,7 +120,7 @@ def test_union_into_non_overlapping_union():
     expect_fails_rule(PossibleFragmentSpreads, '''
       fragment invalidUnionWithinUnion on CatOrDog { ...humanOrAlienFragment }
       fragment humanOrAlienFragment on HumanOrAlien { __typename }
-    ''', [error('humanOrAlienFragment', 'CatOrDog', 'HumanOrAlien', 2, 54)]);
+    ''', [error('humanOrAlienFragment', 'CatOrDog', 'HumanOrAlien', 2, 54)])
 
 def test_interface_into_non_implementing_object():
     expect_fails_rule(PossibleFragmentSpreads, '''
@@ -134,17 +134,17 @@ def test_interface_into_non_overlapping_interface():
         ...intelligentFragment
       }
       fragment intelligentFragment on Intelligent { iq }
-    ''', [error('intelligentFragment', 'Pet', 'Intelligent', 3, 9)]);
+    ''', [error('intelligentFragment', 'Pet', 'Intelligent', 3, 9)])
 
 def test_interface_into_non_overlapping_interface_in_inline_fragment():
     expect_fails_rule(PossibleFragmentSpreads, '''
       fragment invalidInterfaceWithinInterfaceAnon on Pet {
         ...on Intelligent { iq }
       }
-    ''', [error_anon('Pet', 'Intelligent', 3, 9)]);
+    ''', [error_anon('Pet', 'Intelligent', 3, 9)])
 
 def test_interface_into_non_overlapping_union():
     expect_fails_rule(PossibleFragmentSpreads, '''
       fragment invalidInterfaceWithinUnion on HumanOrAlien { ...petFragment }
       fragment petFragment on Pet { name }
-    ''', [error('petFragment', 'HumanOrAlien', 'Pet', 2, 62)]);
+    ''', [error('petFragment', 'HumanOrAlien', 'Pet', 2, 62)])
