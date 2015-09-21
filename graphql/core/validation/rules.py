@@ -2,8 +2,17 @@ import itertools
 from ..utils import type_from_ast, is_valid_literal_value
 from .utils import PairSet, DefaultOrderedDict
 from ..error import GraphQLError
-from ..type.definition import is_composite_type, is_input_type, is_leaf_type, get_named_type, GraphQLNonNull, \
-    GraphQLObjectType, GraphQLInterfaceType
+from ..type.definition import (
+    is_composite_type,
+    is_input_type,
+    is_leaf_type,
+    get_named_type,
+    GraphQLNonNull,
+    GraphQLList,
+    GraphQLObjectType,
+    GraphQLInterfaceType,
+    GraphQLUnionType,
+)
 from ..language import ast
 from ..language.visitor import Visitor, visit
 from ..language.printer import print_ast
@@ -237,7 +246,7 @@ class NoUnusedFragments(ValidationRule):
             )
             for fragment_definition in self.fragment_definitions
             if fragment_definition.name.value not in fragment_names_used
-        ]
+            ]
 
         if errors:
             return errors
@@ -248,7 +257,55 @@ class NoUnusedFragments(ValidationRule):
 
 
 class PossibleFragmentSpreads(ValidationRule):
-    pass
+    def enter_InlineFragment(self, node, *args):
+        frag_type = self.context.get_type()
+        parent_type = self.context.get_parent_type()
+        if frag_type and parent_type and not self.do_types_overlap(frag_type, parent_type):
+            return GraphQLError(
+                self.type_incompatible_anon_spread_message(parent_type, frag_type),
+                [node]
+            )
+
+    def enter_FragmentSpread(self, node, *args):
+        frag_name = node.name.value
+        frag_type = self.get_fragment_type(self.context, frag_name)
+        parent_type = self.context.get_parent_type()
+        if frag_type and parent_type and not self.do_types_overlap(frag_type, parent_type):
+            return GraphQLError(
+                self.type_incompatible_spread_message(frag_name, parent_type, frag_type),
+                [node]
+            )
+
+    @staticmethod
+    def get_fragment_type(context, name):
+        frag = context.get_fragment(name)
+        return frag and type_from_ast(context.get_schema(), frag.type_condition)
+
+    @staticmethod
+    def do_types_overlap(t1, t2):
+        if t1 == t2:
+            return True
+        if isinstance(t1, GraphQLObjectType):
+            if isinstance(t2, GraphQLObjectType):
+                return False
+            return t1 in t2.get_possible_types()
+        if isinstance(t1, GraphQLInterfaceType) or isinstance(t1, GraphQLUnionType):
+            if isinstance(t2, GraphQLObjectType):
+                return t2 in t1.get_possible_types()
+
+            t1_type_names = {possible_type.name: possible_type for possible_type in t1.get_possible_types()}
+            return any(t.name in t1_type_names for t in t2.get_possible_types())
+
+    @staticmethod
+    def type_incompatible_spread_message(frag_name, parent_type, frag_type):
+        return 'Fragment {} cannot be spread here as objects of type {} can never be of type {}'.format(frag_name,
+                                                                                                        parent_type,
+                                                                                                        frag_type)
+
+    @staticmethod
+    def type_incompatible_anon_spread_message(parent_type, frag_type):
+        return 'Fragment cannot be spread here as objects of type {} can never be of type {}'.format(parent_type,
+                                                                                                     frag_type)
 
 
 class NoFragmentCycles(ValidationRule):
@@ -258,7 +315,7 @@ class NoFragmentCycles(ValidationRule):
             node.name.value: self.gather_spreads(node)
             for node in context.get_ast().definitions
             if isinstance(node, ast.FragmentDefinition)
-        }
+            }
         self.known_to_lead_to_cycle = set()
 
     def enter_FragmentDefinition(self, node, *args):
@@ -393,7 +450,7 @@ class NoUnusedVariables(ValidationRule):
             )
             for variable_definition in self.variable_definitions
             if variable_definition.variable.name.value not in self.variable_name_used
-        ]
+            ]
 
         if errors:
             return errors
@@ -626,7 +683,62 @@ class DefaultValuesOfCorrectType(ValidationRule):
 
 
 class VariablesInAllowedPosition(ValidationRule):
-    pass
+    visit_spread_fragments = True
+
+    def __init__(self, context):
+        super(VariablesInAllowedPosition, self).__init__(context)
+        self.var_def_map = {}
+        self.visited_fragment_names = set()
+
+    def enter_OperationDefinition(self, *args):
+        self.var_def_map = {}
+        self.visited_fragment_names = set()
+
+    def enter_VariableDefinition(self, node, *args):
+        self.var_def_map[node.variable.name.value] = node
+
+    def enter_Variable(self, node, *args):
+        var_name = node.name.value
+        var_def = self.var_def_map.get(var_name)
+        var_type = var_def and type_from_ast(self.context.get_schema(), var_def.type)
+        input_type = self.context.get_input_type()
+        if var_type and input_type and not self.var_type_allowed_for_type(self.effective_type(var_type, var_def),
+                                                                          input_type):
+            return GraphQLError(self.bad_var_pos_message(var_name, var_type, input_type),
+                                [node])
+
+    def enter_FragmentSpread(self, node, *args):
+        if node.name.value in self.visited_fragment_names:
+            return False
+        self.visited_fragment_names.add(node.name.value)
+
+    @staticmethod
+    def effective_type(var_type, var_def):
+        if not var_def.default_value or isinstance(var_def, GraphQLNonNull):
+            return var_type
+
+        return GraphQLNonNull(var_type)
+
+    @classmethod
+    def var_type_allowed_for_type(cls, var_type, expected_type):
+        if isinstance(expected_type, GraphQLNonNull):
+            if isinstance(var_type, GraphQLNonNull):
+                return cls.var_type_allowed_for_type(var_type.of_type, expected_type.of_type)
+
+            return False
+
+        if isinstance(var_type, GraphQLNonNull):
+            return cls.var_type_allowed_for_type(var_type.of_type, expected_type)
+
+        if isinstance(var_type, GraphQLList) and isinstance(expected_type, GraphQLList):
+            return cls.var_type_allowed_for_type(var_type.of_type, expected_type.of_type)
+
+        return var_type == expected_type
+
+    @staticmethod
+    def bad_var_pos_message(var_name, var_type, expected_type):
+        return 'Variable "{}" of type "{}" used in position expecting type "{}".'.format(var_name, var_type,
+                                                                                         expected_type)
 
 
 class OverlappingFieldsCanBeMerged(ValidationRule):
@@ -739,7 +851,7 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
             return [
                 GraphQLError(self.fields_conflict_message(reason_name, reason), list(fields)) for
                 (reason_name, reason), fields in conflicts
-            ]
+                ]
 
     @staticmethod
     def same_type(type1, type2):

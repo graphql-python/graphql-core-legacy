@@ -115,7 +115,7 @@ class TypeInfo(object):
                     arg_def = None
             self._argument = arg_def
             self._input_type_stack.append(arg_type)
-        elif isinstance(node, ast.ListType):
+        elif isinstance(node, ast.ListValue):
             list_type = get_nullable_type(self.get_input_type())
             self._input_type_stack.append(
                 list_type.of_type if isinstance(list_type, GraphQLList) else None

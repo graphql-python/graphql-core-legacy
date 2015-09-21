@@ -4,6 +4,7 @@ GraphQL implementation for Python
 
 [![Build Status](https://travis-ci.org/dittos/graphqllib.svg?branch=master)](https://travis-ci.org/dittos/graphqllib)
 [![Coverage Status](https://coveralls.io/repos/dittos/graphqllib/badge.svg?branch=master&service=github)](https://coveralls.io/github/dittos/graphqllib?branch=master)
+[![Public Slack Discussion](https://graphql-slack.herokuapp.com/badge.svg)](https://graphql-slack.herokuapp.com/)
 
 
 ## Project Status
