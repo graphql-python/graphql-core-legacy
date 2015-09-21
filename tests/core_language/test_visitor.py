@@ -31,12 +31,7 @@ def test_allows_for_editing_on_leave():
 
 
 def test_visits_edited_node():
-    added_field = Field(loc=None,
-                        name=Name(loc=None, value='__typename'),
-                        alias=None,
-                        arguments=None,
-                        directives=None,
-                        selection_set=None)
+    added_field = Field(name=Name(value='__typename'))
     ast = parse('{ a { x } }')
 
     class TestVisitor(Visitor):
@@ -49,13 +44,8 @@ def test_visits_edited_node():
                 selections = []
                 if selection_set:
                     selections = selection_set.selections
-                new_selection_set = SelectionSet(loc=None, selections=[added_field] + selections)
-                return Field(loc=None,
-                             name=None,
-                             alias=None,
-                             arguments=None,
-                             directives=None,
-                             selection_set=new_selection_set)
+                new_selection_set = SelectionSet(selections=[added_field] + selections)
+                return Field(name=None, selection_set=new_selection_set)
             if node is added_field:
                 self.did_visit_added_field = True
 

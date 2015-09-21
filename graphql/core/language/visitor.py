@@ -1,4 +1,4 @@
-from copy import copy
+from copy import copy, deepcopy
 from collections import namedtuple
 from . import ast
 
@@ -78,7 +78,8 @@ def visit(root, visitor, key_map=None):
                         if isinstance(node, list):
                             node[edit_key] = edit_value
                         else:
-                            node = node._replace(**{edit_key: edit_value})
+                            node = deepcopy(node)
+                            setattr(node, edit_key, edit_value)
             index = stack.index
             keys = stack.keys
             edits = stack.edits
@@ -101,7 +102,7 @@ def visit(root, visitor, key_map=None):
 
         result = None
         if not isinstance(node, list):
-            assert is_node(node), 'Invalid AST Node: ' + repr(node)
+            assert isinstance(node, ast.Node), 'Invalid AST Node: ' + repr(node)
             if is_leaving:
                 result = visitor.leave(node, key, parent, path, ancestors)
             else:
@@ -143,10 +144,6 @@ def visit(root, visitor, key_map=None):
         new_root = edits[0][1]
 
     return new_root
-
-
-def is_node(maybe_node):
-    return hasattr(maybe_node, 'loc')  # FIXME
 
 
 class Visitor(object):
