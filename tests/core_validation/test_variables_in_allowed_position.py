@@ -50,7 +50,22 @@ def test_non_null_boolean_boolean():
       }
     ''')
 
-def test_int_non_nll_int_with_default():
+
+def test_non_null_boolean_to_boolean_within_fragment():
+    expect_passes_rule(VariablesInAllowedPosition, '''
+      fragment booleanArgFrag on ComplicatedArgs {
+        booleanArgField(booleanArg: $nonNullBooleanArg)
+      }
+      query Query($nonNullBooleanArg: Boolean!)
+      {
+        complicatedArgs {
+          ...booleanArgFrag
+        }
+      }
+    ''')
+
+
+def test_int_non_null_int_with_default():
     expect_passes_rule(VariablesInAllowedPosition, '''
       query Query($intArg: Int = 1)
       {

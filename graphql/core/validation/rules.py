@@ -659,19 +659,19 @@ class VariablesInAllowedPosition(ValidationRule):
 
         return GraphQLNonNull(var_type)
 
-    @staticmethod
-    def var_type_allowed_for_type(var_type, expected_type):
+    @classmethod
+    def var_type_allowed_for_type(cls, var_type, expected_type):
         if isinstance(expected_type, GraphQLNonNull):
             if isinstance(var_type, GraphQLNonNull):
-                return VariablesInAllowedPosition.var_type_allowed_for_type(var_type.of_type, expected_type.of_type)
+                return cls.var_type_allowed_for_type(var_type.of_type, expected_type.of_type)
 
             return False
 
         if isinstance(var_type, GraphQLNonNull):
-            return VariablesInAllowedPosition.var_type_allowed_for_type(var_type.of_type, expected_type)
+            return cls.var_type_allowed_for_type(var_type.of_type, expected_type)
 
         if isinstance(var_type, GraphQLList) and isinstance(expected_type, GraphQLList):
-            return VariablesInAllowedPosition.var_type_allowed_for_type(var_type.of_type, expected_type.of_type)
+            return cls.var_type_allowed_for_type(var_type.of_type, expected_type.of_type)
 
         return var_type == expected_type
 
