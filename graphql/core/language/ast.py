@@ -17,22 +17,17 @@ class Document(Node):
         self.loc = loc
         self.definitions = definitions
 
-    def clone(self):
-        return Document(
-            definitions=self.definitions,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, Document) and
+            self.loc == other.loc and
             self.definitions == other.definitions
         )
 
     def __repr__(self):
-        s = 'Document('
-        s += 'definitions=' + repr(self.definitions)
-        s += ')'
-        return s
+        return ('Document('
+                'definitions={self.definitions!r}'
+                ')').format(self=self)
 
 
 class OperationDefinition(Definition):
@@ -46,18 +41,10 @@ class OperationDefinition(Definition):
         self.directives = directives
         self.selection_set = selection_set
 
-    def clone(self):
-        return OperationDefinition(
-            operation=self.operation,
-            name=self.name,
-            variable_definitions=self.variable_definitions,
-            directives=self.directives,
-            selection_set=self.selection_set,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, OperationDefinition) and
+            self.loc == other.loc and
             self.operation == other.operation and
             self.name == other.name and
             self.variable_definitions == other.variable_definitions and
@@ -66,14 +53,13 @@ class OperationDefinition(Definition):
         )
 
     def __repr__(self):
-        s = 'OperationDefinition('
-        s += 'operation=' + repr(self.operation)
-        s += ', name=' + repr(self.name)
-        s += ', variable_definitions=' + repr(self.variable_definitions)
-        s += ', directives=' + repr(self.directives)
-        s += ', selection_set=' + repr(self.selection_set)
-        s += ')'
-        return s
+        return ('OperationDefinition('
+                'operation={self.operation!r}'
+                ', name={self.name!r}'
+                ', variable_definitions={self.variable_definitions!r}'
+                ', directives={self.directives!r}'
+                ', selection_set={self.selection_set!r}'
+                ')').format(self=self)
 
 
 class VariableDefinition(Node):
@@ -85,28 +71,21 @@ class VariableDefinition(Node):
         self.type = type
         self.default_value = default_value
 
-    def clone(self):
-        return VariableDefinition(
-            variable=self.variable,
-            type=self.type,
-            default_value=self.default_value,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, VariableDefinition) and
+            self.loc == other.loc and
             self.variable == other.variable and
             self.type == other.type and
             self.default_value == other.default_value
         )
 
     def __repr__(self):
-        s = 'VariableDefinition('
-        s += 'variable=' + repr(self.variable)
-        s += ', type=' + repr(self.type)
-        s += ', default_value=' + repr(self.default_value)
-        s += ')'
-        return s
+        return ('VariableDefinition('
+                'variable={self.variable!r}'
+                ', type={self.type!r}'
+                ', default_value={self.default_value!r}'
+                ')').format(self=self)
 
 
 class SelectionSet(Node):
@@ -116,22 +95,17 @@ class SelectionSet(Node):
         self.loc = loc
         self.selections = selections
 
-    def clone(self):
-        return SelectionSet(
-            selections=self.selections,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, SelectionSet) and
+            self.loc == other.loc and
             self.selections == other.selections
         )
 
     def __repr__(self):
-        s = 'SelectionSet('
-        s += 'selections=' + repr(self.selections)
-        s += ')'
-        return s
+        return ('SelectionSet('
+                'selections={self.selections!r}'
+                ')').format(self=self)
 
 
 class Selection(Node):
@@ -149,18 +123,10 @@ class Field(Selection):
         self.directives = directives
         self.selection_set = selection_set
 
-    def clone(self):
-        return Field(
-            alias=self.alias,
-            name=self.name,
-            arguments=self.arguments,
-            directives=self.directives,
-            selection_set=self.selection_set,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, Field) and
+            self.loc == other.loc and
             self.alias == other.alias and
             self.name == other.name and
             self.arguments == other.arguments and
@@ -169,14 +135,13 @@ class Field(Selection):
         )
 
     def __repr__(self):
-        s = 'Field('
-        s += 'alias=' + repr(self.alias)
-        s += ', name=' + repr(self.name)
-        s += ', arguments=' + repr(self.arguments)
-        s += ', directives=' + repr(self.directives)
-        s += ', selection_set=' + repr(self.selection_set)
-        s += ')'
-        return s
+        return ('Field('
+                'alias={self.alias!r}'
+                ', name={self.name!r}'
+                ', arguments={self.arguments!r}'
+                ', directives={self.directives!r}'
+                ', selection_set={self.selection_set!r}'
+                ')').format(self=self)
 
 
 class Argument(Node):
@@ -187,25 +152,19 @@ class Argument(Node):
         self.name = name
         self.value = value
 
-    def clone(self):
-        return Argument(
-            name=self.name,
-            value=self.value,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, Argument) and
+            self.loc == other.loc and
             self.name == other.name and
             self.value == other.value
         )
 
     def __repr__(self):
-        s = 'Argument('
-        s += 'name=' + repr(self.name)
-        s += ', value=' + repr(self.value)
-        s += ')'
-        return s
+        return ('Argument('
+                'name={self.name!r}'
+                ', value={self.value!r}'
+                ')').format(self=self)
 
 
 class FragmentSpread(Selection):
@@ -216,25 +175,19 @@ class FragmentSpread(Selection):
         self.name = name
         self.directives = directives
 
-    def clone(self):
-        return FragmentSpread(
-            name=self.name,
-            directives=self.directives,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, FragmentSpread) and
+            self.loc == other.loc and
             self.name == other.name and
             self.directives == other.directives
         )
 
     def __repr__(self):
-        s = 'FragmentSpread('
-        s += 'name=' + repr(self.name)
-        s += ', directives=' + repr(self.directives)
-        s += ')'
-        return s
+        return ('FragmentSpread('
+                'name={self.name!r}'
+                ', directives={self.directives!r}'
+                ')').format(self=self)
 
 
 class InlineFragment(Selection):
@@ -246,28 +199,21 @@ class InlineFragment(Selection):
         self.directives = directives
         self.selection_set = selection_set
 
-    def clone(self):
-        return InlineFragment(
-            type_condition=self.type_condition,
-            directives=self.directives,
-            selection_set=self.selection_set,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, InlineFragment) and
+            self.loc == other.loc and
             self.type_condition == other.type_condition and
             self.directives == other.directives and
             self.selection_set == other.selection_set
         )
 
     def __repr__(self):
-        s = 'InlineFragment('
-        s += 'type_condition=' + repr(self.type_condition)
-        s += ', directives=' + repr(self.directives)
-        s += ', selection_set=' + repr(self.selection_set)
-        s += ')'
-        return s
+        return ('InlineFragment('
+                'type_condition={self.type_condition!r}'
+                ', directives={self.directives!r}'
+                ', selection_set={self.selection_set!r}'
+                ')').format(self=self)
 
 
 class FragmentDefinition(Definition):
@@ -280,17 +226,10 @@ class FragmentDefinition(Definition):
         self.directives = directives
         self.selection_set = selection_set
 
-    def clone(self):
-        return FragmentDefinition(
-            name=self.name,
-            type_condition=self.type_condition,
-            directives=self.directives,
-            selection_set=self.selection_set,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, FragmentDefinition) and
+            self.loc == other.loc and
             self.name == other.name and
             self.type_condition == other.type_condition and
             self.directives == other.directives and
@@ -298,13 +237,12 @@ class FragmentDefinition(Definition):
         )
 
     def __repr__(self):
-        s = 'FragmentDefinition('
-        s += 'name=' + repr(self.name)
-        s += ', type_condition=' + repr(self.type_condition)
-        s += ', directives=' + repr(self.directives)
-        s += ', selection_set=' + repr(self.selection_set)
-        s += ')'
-        return s
+        return ('FragmentDefinition('
+                'name={self.name!r}'
+                ', type_condition={self.type_condition!r}'
+                ', directives={self.directives!r}'
+                ', selection_set={self.selection_set!r}'
+                ')').format(self=self)
 
 
 class Value(Node):
@@ -318,22 +256,17 @@ class Variable(Value):
         self.loc = loc
         self.name = name
 
-    def clone(self):
-        return Variable(
-            name=self.name,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, Variable) and
+            self.loc == other.loc and
             self.name == other.name
         )
 
     def __repr__(self):
-        s = 'Variable('
-        s += 'name=' + repr(self.name)
-        s += ')'
-        return s
+        return ('Variable('
+                'name={self.name!r}'
+                ')').format(self=self)
 
 
 class IntValue(Value):
@@ -343,22 +276,17 @@ class IntValue(Value):
         self.loc = loc
         self.value = value
 
-    def clone(self):
-        return IntValue(
-            value=self.value,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, IntValue) and
+            self.loc == other.loc and
             self.value == other.value
         )
 
     def __repr__(self):
-        s = 'IntValue('
-        s += 'value=' + repr(self.value)
-        s += ')'
-        return s
+        return ('IntValue('
+                'value={self.value!r}'
+                ')').format(self=self)
 
 
 class FloatValue(Value):
@@ -368,22 +296,17 @@ class FloatValue(Value):
         self.loc = loc
         self.value = value
 
-    def clone(self):
-        return FloatValue(
-            value=self.value,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, FloatValue) and
+            self.loc == other.loc and
             self.value == other.value
         )
 
     def __repr__(self):
-        s = 'FloatValue('
-        s += 'value=' + repr(self.value)
-        s += ')'
-        return s
+        return ('FloatValue('
+                'value={self.value!r}'
+                ')').format(self=self)
 
 
 class StringValue(Value):
@@ -393,22 +316,17 @@ class StringValue(Value):
         self.loc = loc
         self.value = value
 
-    def clone(self):
-        return StringValue(
-            value=self.value,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, StringValue) and
+            self.loc == other.loc and
             self.value == other.value
         )
 
     def __repr__(self):
-        s = 'StringValue('
-        s += 'value=' + repr(self.value)
-        s += ')'
-        return s
+        return ('StringValue('
+                'value={self.value!r}'
+                ')').format(self=self)
 
 
 class BooleanValue(Value):
@@ -418,22 +336,17 @@ class BooleanValue(Value):
         self.loc = loc
         self.value = value
 
-    def clone(self):
-        return BooleanValue(
-            value=self.value,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, BooleanValue) and
+            self.loc == other.loc and
             self.value == other.value
         )
 
     def __repr__(self):
-        s = 'BooleanValue('
-        s += 'value=' + repr(self.value)
-        s += ')'
-        return s
+        return ('BooleanValue('
+                'value={self.value!r}'
+                ')').format(self=self)
 
 
 class EnumValue(Value):
@@ -443,22 +356,17 @@ class EnumValue(Value):
         self.loc = loc
         self.value = value
 
-    def clone(self):
-        return EnumValue(
-            value=self.value,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, EnumValue) and
+            self.loc == other.loc and
             self.value == other.value
         )
 
     def __repr__(self):
-        s = 'EnumValue('
-        s += 'value=' + repr(self.value)
-        s += ')'
-        return s
+        return ('EnumValue('
+                'value={self.value!r}'
+                ')').format(self=self)
 
 
 class ListValue(Value):
@@ -468,22 +376,17 @@ class ListValue(Value):
         self.loc = loc
         self.values = values
 
-    def clone(self):
-        return ListValue(
-            values=self.values,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, ListValue) and
+            self.loc == other.loc and
             self.values == other.values
         )
 
     def __repr__(self):
-        s = 'ListValue('
-        s += 'values=' + repr(self.values)
-        s += ')'
-        return s
+        return ('ListValue('
+                'values={self.values!r}'
+                ')').format(self=self)
 
 
 class ObjectValue(Value):
@@ -493,22 +396,17 @@ class ObjectValue(Value):
         self.loc = loc
         self.fields = fields
 
-    def clone(self):
-        return ObjectValue(
-            fields=self.fields,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, ObjectValue) and
+            self.loc == other.loc and
             self.fields == other.fields
         )
 
     def __repr__(self):
-        s = 'ObjectValue('
-        s += 'fields=' + repr(self.fields)
-        s += ')'
-        return s
+        return ('ObjectValue('
+                'fields={self.fields!r}'
+                ')').format(self=self)
 
 
 class ObjectField(Node):
@@ -519,25 +417,19 @@ class ObjectField(Node):
         self.name = name
         self.value = value
 
-    def clone(self):
-        return ObjectField(
-            name=self.name,
-            value=self.value,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, ObjectField) and
+            self.loc == other.loc and
             self.name == other.name and
             self.value == other.value
         )
 
     def __repr__(self):
-        s = 'ObjectField('
-        s += 'name=' + repr(self.name)
-        s += ', value=' + repr(self.value)
-        s += ')'
-        return s
+        return ('ObjectField('
+                'name={self.name!r}'
+                ', value={self.value!r}'
+                ')').format(self=self)
 
 
 class Directive(Node):
@@ -548,25 +440,19 @@ class Directive(Node):
         self.name = name
         self.arguments = arguments
 
-    def clone(self):
-        return Directive(
-            name=self.name,
-            arguments=self.arguments,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, Directive) and
+            self.loc == other.loc and
             self.name == other.name and
             self.arguments == other.arguments
         )
 
     def __repr__(self):
-        s = 'Directive('
-        s += 'name=' + repr(self.name)
-        s += ', arguments=' + repr(self.arguments)
-        s += ')'
-        return s
+        return ('Directive('
+                'name={self.name!r}'
+                ', arguments={self.arguments!r}'
+                ')').format(self=self)
 
 
 class Type(Node):
@@ -580,22 +466,17 @@ class NamedType(Type):
         self.loc = loc
         self.name = name
 
-    def clone(self):
-        return NamedType(
-            name=self.name,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, NamedType) and
+            self.loc == other.loc and
             self.name == other.name
         )
 
     def __repr__(self):
-        s = 'NamedType('
-        s += 'name=' + repr(self.name)
-        s += ')'
-        return s
+        return ('NamedType('
+                'name={self.name!r}'
+                ')').format(self=self)
 
 
 class ListType(Type):
@@ -605,22 +486,17 @@ class ListType(Type):
         self.loc = loc
         self.type = type
 
-    def clone(self):
-        return ListType(
-            type=self.type,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, ListType) and
+            self.loc == other.loc and
             self.type == other.type
         )
 
     def __repr__(self):
-        s = 'ListType('
-        s += 'type=' + repr(self.type)
-        s += ')'
-        return s
+        return ('ListType('
+                'type={self.type!r}'
+                ')').format(self=self)
 
 
 class NonNullType(Type):
@@ -630,22 +506,17 @@ class NonNullType(Type):
         self.loc = loc
         self.type = type
 
-    def clone(self):
-        return NonNullType(
-            type=self.type,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, NonNullType) and
+            self.loc == other.loc and
             self.type == other.type
         )
 
     def __repr__(self):
-        s = 'NonNullType('
-        s += 'type=' + repr(self.type)
-        s += ')'
-        return s
+        return ('NonNullType('
+                'type={self.type!r}'
+                ')').format(self=self)
 
 
 class Name(Node):
@@ -655,19 +526,14 @@ class Name(Node):
         self.loc = loc
         self.value = value
 
-    def clone(self):
-        return Name(
-            value=self.value,
-        )
-
     def __eq__(self, other):
         return (
             isinstance(other, Name) and
+            self.loc == other.loc and
             self.value == other.value
         )
 
     def __repr__(self):
-        s = 'Name('
-        s += 'value=' + repr(self.value)
-        s += ')'
-        return s
+        return ('Name('
+                'value={self.value!r}'
+                ')').format(self=self)

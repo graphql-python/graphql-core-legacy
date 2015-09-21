@@ -79,7 +79,8 @@ class {name}({parent_type}):'''.format(name=name, parent_type=parent_type)
         print '''
     def __eq__(self, other):
         return (
-            isinstance(other, {typename}) and'''.format(typename=typename)
+            isinstance(other, {typename}) and
+            self.loc == other.loc and'''.format(typename=typename)
         print ' and\n'.join(
             '''            self.{name} == other.{name}'''.format(name=snake(name))
             for type, name, nullable, plural in self._fields
@@ -89,16 +90,15 @@ class {name}({parent_type}):'''.format(name=name, parent_type=parent_type)
     def _print_repr(self, typename):
         print '''
     def __repr__(self):
-        s = '{typename}(' '''.rstrip().format(typename=typename)
+        return ('{typename}(' '''.rstrip().format(typename=typename)
         first = True
         for type, name, nullable, plural in self._fields:
-            print '''        s += '{comma}{name}=' + repr(self.{name})'''.format(
+            print "                '{comma}{name}={{self.{name}!r}}'".format(
                 comma=', ' if not first else '',
                 name=snake(name)
             )
             first = False
-        print "        s += ')'"
-        print '        return s'
+        print '''                ')').format(self=self)'''
 
     def start_union(self, name):
         self._current_union = name
