@@ -1,4 +1,4 @@
-from copy import copy
+from copy import copy, deepcopy
 from collections import namedtuple
 from . import ast
 
@@ -78,7 +78,7 @@ def visit(root, visitor, key_map=None):
                         if isinstance(node, list):
                             node[edit_key] = edit_value
                         else:
-                            node = node.clone()
+                            node = deepcopy(node)
                             setattr(node, edit_key, edit_value)
             index = stack.index
             keys = stack.keys

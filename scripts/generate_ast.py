@@ -56,7 +56,6 @@ class {name}({parent_type}):'''.format(name=name, parent_type=parent_type)
         typename = remap_type(typename)
         self._print_slots()
         self._print_ctor()
-        self._print_clone_method(typename)
         self._print_comparator(typename)
         self._print_repr(typename)
         self._fields = []
@@ -75,14 +74,6 @@ class {name}({parent_type}):'''.format(name=name, parent_type=parent_type)
         self.loc = loc'''.format(ctor_args=ctor_args)
         for type, name, nullable, plural in self._fields:
             print '''        self.{name} = {name}'''.format(name=snake(name))
-
-    def _print_clone_method(self, typename):
-        print '''
-    def clone(self):
-        return {typename}('''.format(typename=typename)
-        for type, name, nullable, plural in self._fields:
-            print '''            {name}=self.{name},'''.format(name=snake(name))
-        print '        )'
 
     def _print_comparator(self, typename):
         print '''
