@@ -101,6 +101,17 @@ def test_conflicting_args():
     ], sort_list=False)
 
 
+def test_conflicting_directives():
+    expect_fails_rule(OverlappingFieldsCanBeMerged, '''
+    fragment conflictingDirectiveArgs on Dog {
+        name @include(if: true)
+        name @skip(if: false)
+    }
+    ''', [
+        fields_conflict('name', 'they have differing directives', L(3, 9), L(4, 9))
+    ], sort_list=False)
+
+
 def test_conflicting_directive_args():
     expect_fails_rule(OverlappingFieldsCanBeMerged, '''
     fragment conflictingDirectiveArgs on Dog {
