@@ -865,7 +865,7 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
     def same_arguments(cls, arguments1, arguments2):
         # Check to see if they are empty arguments or nones. If they are, we can
         # bail out early.
-        if not (arguments1 and arguments2):
+        if not (arguments1 or arguments2):
             return True
 
         if len(arguments1) != len(arguments2):
@@ -887,7 +887,7 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
     def same_directives(cls, directives1, directives2):
         # Check to see if they are empty directives or nones. If they are, we can
         # bail out early.
-        if not (directives1 and directives2):
+        if not (directives1 or directives2):
             return True
 
         if len(directives1) != len(directives2):
