@@ -1,14 +1,8 @@
 # -*- coding: utf-8 -*-
-import collections
-from ..error import GraphQLError, format_error
+from ..error import GraphQLError
 from ..language import ast
 from ..type.definition import (
-    GraphQLEnumType,
     GraphQLInterfaceType,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLObjectType,
-    GraphQLScalarType,
     GraphQLUnionType,
 )
 from ..type.directives import (
@@ -20,11 +14,10 @@ from ..type.introspection import (
     TypeMetaFieldDef,
     TypeNameMetaFieldDef,
 )
-from ..utils import is_nullish, type_from_ast
+from ..utils import type_from_ast
 from .values import get_argument_values, get_variable_values
 
 Undefined = object()
-
 
 """
 Terminology
@@ -52,6 +45,7 @@ class ExecutionContext(object):
 
     Namely, schema of the type system that is currently executing,
     and the fragments defined in the query document"""
+
     def __init__(self, schema, root, document_ast, operation_name, args):
         """Constructs a ExecutionContext object from the arguments passed
         to execute, which we will pass throughout the other execution
@@ -96,27 +90,13 @@ class ExecutionResult(object):
 
 
 def execute(schema, root, ast, operation_name='', args=None):
-    """Implements the "Evaluating requests" section of the spec."""
-    assert schema, 'Must provide schema'
-    ctx = ExecutionContext(schema, root, ast, operation_name, args)
-    try:
-        data = execute_operation(ctx, root, ctx.operation)
-    except Exception as e:
-        ctx.errors.append(e)
-        data = None
-    if not ctx.errors:
-        return ExecutionResult(data)
-    formatted_errors = list(map(format_error, ctx.errors))
-    return ExecutionResult(data, formatted_errors)
-
-
-def execute_operation(ctx, root, operation):
-    """Implements the "Evaluating operations" section of the spec."""
-    type = get_operation_root_type(ctx.schema, operation)
-    fields = collect_fields(ctx, type, operation.selection_set, {}, set())
-    if operation.operation == 'mutation':
-        return execute_fields_serially(ctx, type, root, fields)
-    return execute_fields(ctx, type, root, fields)
+    """
+    Executes an AST synchronously. Assumes that the AST is already validated.
+    """
+    from .parallel_execution import Executor
+    from .middlewares import SynchronousExecutionMiddleware
+    e = Executor(schema, [SynchronousExecutionMiddleware.SynchronousExecutionMiddleware()])
+    return e.execute(ast, root, args, operation_name, validate_ast=False)
 
 
 def get_operation_root_type(schema, operation):
@@ -135,24 +115,6 @@ def get_operation_root_type(schema, operation):
         'Can only execute queries and mutations',
         [operation]
     )
-
-
-def execute_fields_serially(ctx, parent_type, source, fields):
-    """Implements the "Evaluating selection sets" section of the spec
-    for "write" mode."""
-    results = {}
-    for response_name, field_asts in fields.items():
-        result = resolve_field(ctx, parent_type, source, field_asts)
-        if result is not Undefined:
-            results[response_name] = result
-    return results
-
-
-def execute_fields(ctx, parent_type, source, fields):
-    """Implements the "Evaluating selection sets" section of the spec
-    for "read" mode."""
-    # FIXME: just fallback to serial execution for now.
-    return execute_fields_serially(ctx, parent_type, source, fields)
 
 
 def collect_fields(ctx, type, selection_set, fields, prev_fragment_names):
@@ -266,136 +228,6 @@ class ResolveInfo(object):
     @property
     def variable_values(self):
         return self.context.variables
-
-
-def resolve_field(ctx, parent_type, source, field_asts):
-    """A wrapper function for resolving the field, that catches the error
-    and adds it to the context's global if the error is not rethrowable."""
-    field_ast = field_asts[0]
-    field_name = field_ast.name.value
-
-    field_def = get_field_def(ctx.schema, parent_type, field_name)
-    if not field_def:
-        return Undefined
-
-    return_type = field_def.type
-    resolve_fn = field_def.resolver or default_resolve_fn
-
-    # Build a dict of arguments from the field.arguments AST, using the variables scope to fulfill any variable references.
-    # TODO: find a way to memoize, in case this field is within a list type.
-    args = get_argument_values(
-        field_def.args, field_ast.arguments, ctx.variables
-    )
-
-    # The resolve function's optional third argument is a collection of
-    # information about the current execution state.
-    info = ResolveInfo(
-        field_name,
-        field_asts,
-        return_type,
-        parent_type,
-        ctx
-    )
-
-    # If an error occurs while calling the field `resolve` function, ensure that it is wrapped as a GraphQLError with locations.
-    # Log this error and return null if allowed, otherwise throw the error so the parent field can handle it.
-    try:
-        result = resolve_fn(source, args, info)
-    except Exception as e:
-        reported_error = GraphQLError(str(e), [field_ast], e)
-        if isinstance(return_type, GraphQLNonNull):
-            raise reported_error
-        ctx.errors.append(reported_error)
-        return None
-
-    return complete_value_catching_error(
-        ctx, return_type, field_asts, info, result
-    )
-
-
-def complete_value_catching_error(ctx, return_type, field_asts, info, result):
-    # If the field type is non-nullable, then it is resolved without any
-    # protection from errors.
-    if isinstance(return_type, GraphQLNonNull):
-        return complete_value(ctx, return_type, field_asts, info, result)
-
-    # Otherwise, error protection is applied, logging the error and
-    # resolving a null value for this field if one is encountered.
-    try:
-        return complete_value(ctx, return_type, field_asts, info, result)
-    except Exception as e:
-        ctx.errors.append(e)
-        return None
-
-
-def complete_value(ctx, return_type, field_asts, info, result):
-    """Implements the instructions for completeValue as defined in the
-    "Field entries" section of the spec.
-
-    If the field type is Non-Null, then this recursively completes the value for the inner type. It throws a field error
-    if that completion returns null, as per the "Nullability" section of the spec.
-
-    If the field type is a List, then this recursively completes the value for the inner type on each item in the list.
-
-    If the field type is a Scalar or Enum, ensures the completed value is a legal value of the type by calling the `serialize`
-    method of GraphQL type definition.
-
-    Otherwise, the field type expects a sub-selection set, and will complete the value by evaluating all sub-selections."""
-    # If field type is NonNull, complete for inner type, and throw field error if result is null.
-    if isinstance(return_type, GraphQLNonNull):
-        completed = complete_value(
-            ctx, return_type.of_type, field_asts, info, result
-        )
-        if completed is None:
-            raise GraphQLError(
-                'Cannot return null for non-nullable type.',
-                field_asts
-            )
-        return completed
-
-    # If result is null-like, return null.
-    if is_nullish(result):
-        return None
-
-    # If field type is List, complete each item in the list with the inner type
-    if isinstance(return_type, GraphQLList):
-        assert isinstance(result, collections.Iterable), \
-            'User Error: expected iterable, but did not find one.'
-
-        item_type = return_type.of_type
-        return [complete_value_catching_error(
-            ctx, item_type, field_asts, info, item
-        ) for item in result]
-
-    # If field type is Scalar or Enum, serialize to a valid value, returning null if coercion is not possible.
-    if isinstance(return_type, (GraphQLScalarType, GraphQLEnumType)):
-        serialized_result = return_type.serialize(result)
-        if is_nullish(serialized_result):
-            return None
-        return serialized_result
-
-    # Field type must be Object, Interface or Union and expect sub-selections.
-    if isinstance(return_type, GraphQLObjectType):
-        object_type = return_type
-    elif isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
-        object_type = return_type.resolve_type(result)
-    else:
-        object_type = None
-
-    if not object_type:
-        return None
-
-    # Collect sub-fields to execute to complete this value.
-    subfield_asts = {}
-    visited_fragment_names = set()
-    for field_ast in field_asts:
-        selection_set = field_ast.selection_set
-        if selection_set:
-            subfield_asts = collect_fields(
-                ctx, object_type, selection_set,
-                subfield_asts, visited_fragment_names)
-
-    return execute_fields(ctx, object_type, result, subfield_asts)
 
 
 def default_resolve_fn(source, args, info):

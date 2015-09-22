@@ -1,3 +1,5 @@
+# flake8: noqa
+
 from graphql.core.execution.parallel_execution import Executor
 from graphql.core.execution.middlewares.AsyncioExecutionMiddleware import AsyncioExecutionMiddleware
 from graphql.core.type import (

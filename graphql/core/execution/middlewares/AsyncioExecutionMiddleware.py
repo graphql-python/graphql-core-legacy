@@ -1,3 +1,4 @@
+# flake8: noqa
 from asyncio import Future, coroutine, iscoroutine, ensure_future
 from graphql.core.defer import Deferred
 

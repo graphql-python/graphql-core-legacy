@@ -64,14 +64,7 @@ import sys
 from graphql.core.compat import PY3
 
 __all__ = ("Deferred", "AlreadyCalledDeferred", "DeferredException",
-           "defer", "inline_callbacks", "return_value")
-
-
-class _DefGen_Return(BaseException):
-    """Exception to return a result from an inline callback."""
-
-    def __init__(self, value):
-        self.value = value
+           "defer", "succeed", "fail", "DeferredDict", "DeferredList")
 
 
 class AlreadyCalledDeferred(Exception):

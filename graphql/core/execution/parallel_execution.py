@@ -9,6 +9,7 @@ from graphql.core.execution import ExecutionContext, ResolveInfo, Undefined, col
 from graphql.core.type import GraphQLEnumType, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, \
     GraphQLScalarType, GraphQLUnionType
 from graphql.core.utils import is_nullish
+from graphql.core.language import ast
 
 
 class Executor(object):
@@ -16,22 +17,25 @@ class Executor(object):
         self.execution_middlewares = execution_middlewares or []
         self.schema = schema
 
-    def execute(self, request='', root=None, args=None, operation_name=None, execute_serially=False):
-        if not isinstance(request, Source):
-            request = Source(request, 'GraphQL request')
+    def execute(self, request='', root=None, args=None, operation_name=None, execute_serially=False, validate_ast=True):
+        if not isinstance(request, ast.Document):
+            if not isinstance(request, Source):
+                request = Source(request, 'GraphQL request')
 
-        ast = parse(request)
-        validation_errors = validate(self.schema, ast)
-        if validation_errors:
-            return ExecutionResult(
-                data=None,
-                errors=validation_errors,
-            )
+            request = parse(request)
+
+        if validate_ast:
+            validation_errors = validate(self.schema, request)
+            if validation_errors:
+                return ExecutionResult(
+                    data=None,
+                    errors=validation_errors,
+                )
 
         curried_execution_function = functools.partial(
             self._execute_graphql_query,
             root or object(),
-            ast,
+            request,
             operation_name,
             args or {},
             execute_serially)
