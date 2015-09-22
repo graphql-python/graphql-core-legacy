@@ -1,5 +1,4 @@
 from functools import reduce
-from py._log import warning
 from .definition import (
     GraphQLObjectType,
     GraphQLInterfaceType,
@@ -76,11 +75,10 @@ def type_map_reducer(map, type):
         return type_map_reducer(map, type.of_type)
 
     if type.name in map:
-        if map[type.name] != type:
-            warning.warn(
-                'Schema must contain unique named types but contains multiple types named "{}".'
-                .format(type.name)
-            )
+        assert map[type.name] == type, (
+            'Schema must contain unique named types but contains multiple types named "{}".'
+            .format(type.name)
+        )
         return map
     map[type.name] = type
 
