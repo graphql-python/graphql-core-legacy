@@ -1,4 +1,4 @@
-from collections import OrderedDict, Callable
+from collections import Callable, OrderedDict
 
 
 class PairSet(object):

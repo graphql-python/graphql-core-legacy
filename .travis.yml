@@ -11,7 +11,8 @@ install:
 - pip install pytest>=2.7.3 --upgrade
 - pip install -e .
 script:
-- py.test --cov=graphql tests
 - flake8
+- import-order graphql
+- py.test --cov=graphql tests
 after_success:
 - coveralls

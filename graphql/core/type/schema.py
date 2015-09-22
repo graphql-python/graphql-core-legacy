@@ -1,14 +1,14 @@
 from functools import reduce
 from .definition import (
-    GraphQLObjectType,
+    GraphQLInputObjectType,
     GraphQLInterfaceType,
-    GraphQLUnionType,
     GraphQLList,
     GraphQLNonNull,
-    GraphQLInputObjectType
+    GraphQLObjectType,
+    GraphQLUnionType,
 )
-from .introspection import IntrospectionSchema
 from .directives import GraphQLIncludeDirective, GraphQLSkipDirective
+from .introspection import IntrospectionSchema
 
 
 class GraphQLSchema(object):

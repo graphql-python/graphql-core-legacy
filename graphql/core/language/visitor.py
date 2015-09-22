@@ -1,5 +1,5 @@
-from copy import copy, deepcopy
 from collections import namedtuple
+from copy import copy, deepcopy
 from . import ast
 
 QUERY_DOCUMENT_KEYS = {

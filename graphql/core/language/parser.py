@@ -1,8 +1,8 @@
-from ..compat import str_type
-from .source import Source
-from .error import LanguageError
-from .lexer import Lexer, TokenKind, get_token_kind_desc, get_token_desc
 from . import ast
+from ..compat import str_type
+from .error import LanguageError
+from .lexer import Lexer, TokenKind, get_token_desc, get_token_kind_desc
+from .source import Source
 
 __all__ = ['parse']
 

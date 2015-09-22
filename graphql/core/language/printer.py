@@ -1,5 +1,5 @@
 import json
-from .visitor import visit, Visitor
+from .visitor import Visitor, visit
 
 __all__ = ['print_ast']
 

@@ -1,4 +1,4 @@
-from .definition import GraphQLNonNull, GraphQLArgument
+from .definition import GraphQLArgument, GraphQLNonNull
 from .scalars import GraphQLBoolean
 
 

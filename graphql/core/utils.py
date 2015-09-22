@@ -1,13 +1,13 @@
 from .language import ast
 from .type.definition import (
+    GraphQLEnumType,
     GraphQLInputObjectType,
-    GraphQLObjectType,
     GraphQLInterfaceType,
-    GraphQLUnionType,
     GraphQLList,
     GraphQLNonNull,
+    GraphQLObjectType,
     GraphQLScalarType,
-    GraphQLEnumType,
+    GraphQLUnionType,
     get_named_type,
     get_nullable_type,
     is_composite_type,

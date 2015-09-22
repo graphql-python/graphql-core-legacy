@@ -1,6 +1,6 @@
-from .execution import execute, ExecutionResult
-from .language.source import Source
+from .execution import ExecutionResult, execute
 from .language.parser import parse
+from .language.source import Source
 from .validation import validate
 
 

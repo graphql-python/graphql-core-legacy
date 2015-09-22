@@ -1,21 +1,21 @@
 import itertools
-from ..utils import type_from_ast, is_valid_literal_value
-from .utils import PairSet, DefaultOrderedDict
 from ..error import GraphQLError
+from ..language import ast
+from ..language.printer import print_ast
+from ..language.visitor import Visitor, visit
 from ..type.definition import (
+    GraphQLInterfaceType,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLObjectType,
+    GraphQLUnionType,
+    get_named_type,
     is_composite_type,
     is_input_type,
     is_leaf_type,
-    get_named_type,
-    GraphQLNonNull,
-    GraphQLList,
-    GraphQLObjectType,
-    GraphQLInterfaceType,
-    GraphQLUnionType,
 )
-from ..language import ast
-from ..language.visitor import Visitor, visit
-from ..language.printer import print_ast
+from ..utils import is_valid_literal_value, type_from_ast
+from .utils import DefaultOrderedDict, PairSet
 
 
 class ValidationRule(Visitor):

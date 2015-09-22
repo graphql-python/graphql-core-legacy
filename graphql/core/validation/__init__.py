@@ -1,9 +1,9 @@
+from . import rules as Rules
 from ..error import GraphQLError
 from ..language.ast import FragmentDefinition, FragmentSpread
 from ..language.visitor import Visitor, visit
-from ..utils import TypeInfo
 from ..type import GraphQLSchema
-from . import rules as Rules
+from ..utils import TypeInfo
 
 specified_rules = [
     Rules.UniqueOperationNames,

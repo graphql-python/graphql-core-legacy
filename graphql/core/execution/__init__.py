@@ -1,27 +1,27 @@
 # -*- coding: utf-8 -*-
 import collections
 from ..error import GraphQLError, format_error
-from ..utils import type_from_ast, is_nullish
 from ..language import ast
-from .values import get_variable_values, get_argument_values
 from ..type.definition import (
-    GraphQLScalarType,
-    GraphQLObjectType,
-    GraphQLInterfaceType,
-    GraphQLUnionType,
     GraphQLEnumType,
+    GraphQLInterfaceType,
     GraphQLList,
     GraphQLNonNull,
+    GraphQLObjectType,
+    GraphQLScalarType,
+    GraphQLUnionType,
+)
+from ..type.directives import (
+    GraphQLIncludeDirective,
+    GraphQLSkipDirective,
 )
 from ..type.introspection import (
     SchemaMetaFieldDef,
     TypeMetaFieldDef,
     TypeNameMetaFieldDef,
 )
-from ..type.directives import (
-    GraphQLIncludeDirective,
-    GraphQLSkipDirective,
-)
+from ..utils import is_nullish, type_from_ast
+from .values import get_argument_values, get_variable_values
 
 Undefined = object()
 

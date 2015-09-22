@@ -1,6 +1,5 @@
 # flake8: noqa
-from .schema import GraphQLSchema
-from .definition import (
+from .definition import (  # no import order
     GraphQLScalarType,
     GraphQLObjectType,
     GraphQLField,
@@ -15,10 +14,11 @@ from .definition import (
     GraphQLNonNull,
     is_input_type,
 )
-from .scalars import (
+from .scalars import (  # no import order
     GraphQLInt,
     GraphQLFloat,
     GraphQLString,
     GraphQLBoolean,
     GraphQLID,
 )
+from .schema import GraphQLSchema

@@ -1,10 +1,10 @@
-from .definition import GraphQLScalarType
 from ..language.ast import (
-    IntValue,
-    FloatValue,
-    StringValue,
     BooleanValue,
+    FloatValue,
+    IntValue,
+    StringValue,
 )
+from .definition import GraphQLScalarType
 
 # Integers are only safe when between -(2^53 - 1) and 2^53 - 1 due to being
 # encoded in JavaScript and represented in JSON as double-precision floating

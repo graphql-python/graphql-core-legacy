@@ -1,18 +1,18 @@
 import json
 from .definition import (
-    GraphQLObjectType,
-    GraphQLField,
+    GraphQLArgument,
     GraphQLEnumType,
+    GraphQLEnumValue,
+    GraphQLField,
+    GraphQLInputObjectType,
+    GraphQLInterfaceType,
     GraphQLList,
     GraphQLNonNull,
-    GraphQLArgument,
-    GraphQLEnumValue,
-    GraphQLInterfaceType,
-    GraphQLUnionType,
-    GraphQLInputObjectType,
+    GraphQLObjectType,
     GraphQLScalarType,
+    GraphQLUnionType,
 )
-from .scalars import GraphQLString, GraphQLBoolean
+from .scalars import GraphQLBoolean, GraphQLString
 
 __Schema = GraphQLObjectType(
     '__Schema',
