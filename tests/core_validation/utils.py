@@ -176,15 +176,27 @@ def sort_lists(value):
     return value
 
 
-def expect_invalid(schema, rules, query, expected_errors):
+def expect_invalid(schema, rules, query, expected_errors, sort_list=True):
     errors = validate(schema, parse(query), rules)
     assert errors, 'Should not validate'
-    assert sort_lists(list(map(format_error, errors))) == sort_lists(expected_errors)
+    if sort_list:
+        assert sort_lists(list(map(format_error, errors))) == sort_lists(expected_errors)
+
+    else:
+        assert list(map(format_error, errors)) == expected_errors
 
 
 def expect_passes_rule(rule, query):
     return expect_valid(default_schema, [rule], query)
 
 
-def expect_fails_rule(rule, query, errors):
-    return expect_invalid(default_schema, [rule], query, errors)
+def expect_fails_rule(rule, query, errors, sort_list=True):
+    return expect_invalid(default_schema, [rule], query, errors, sort_list)
+
+
+def expect_fails_rule_with_schema(schema, rule, query, errors, sort_list=True):
+    return expect_invalid(schema, [rule], query, errors, sort_list)
+
+
+def expect_passes_rule_with_schema(schema, rule, query):
+    return expect_valid(schema, [rule], query)

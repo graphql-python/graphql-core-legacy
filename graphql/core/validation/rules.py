@@ -1,9 +1,12 @@
+import itertools
 from ..utils import type_from_ast, is_valid_literal_value
+from .utils import PairSet, DefaultOrderedDict
 from ..error import GraphQLError
 from ..type.definition import (
     is_composite_type,
     is_input_type,
     is_leaf_type,
+    get_named_type,
     GraphQLNonNull,
     GraphQLList,
     GraphQLObjectType,
@@ -243,7 +246,7 @@ class NoUnusedFragments(ValidationRule):
             )
             for fragment_definition in self.fragment_definitions
             if fragment_definition.name.value not in fragment_names_used
-        ]
+            ]
 
         if errors:
             return errors
@@ -295,11 +298,14 @@ class PossibleFragmentSpreads(ValidationRule):
 
     @staticmethod
     def type_incompatible_spread_message(frag_name, parent_type, frag_type):
-        return 'Fragment {} cannot be spread here as objects of type {} can never be of type {}'.format(frag_name, parent_type, frag_type)
+        return 'Fragment {} cannot be spread here as objects of type {} can never be of type {}'.format(frag_name,
+                                                                                                        parent_type,
+                                                                                                        frag_type)
 
     @staticmethod
     def type_incompatible_anon_spread_message(parent_type, frag_type):
-        return 'Fragment cannot be spread here as objects of type {} can never be of type {}'.format(parent_type, frag_type)
+        return 'Fragment cannot be spread here as objects of type {} can never be of type {}'.format(parent_type,
+                                                                                                     frag_type)
 
 
 class NoFragmentCycles(ValidationRule):
@@ -309,7 +315,7 @@ class NoFragmentCycles(ValidationRule):
             node.name.value: self.gather_spreads(node)
             for node in context.get_ast().definitions
             if isinstance(node, ast.FragmentDefinition)
-        }
+            }
         self.known_to_lead_to_cycle = set()
 
     def enter_FragmentDefinition(self, node, *args):
@@ -444,7 +450,7 @@ class NoUnusedVariables(ValidationRule):
             )
             for variable_definition in self.variable_definitions
             if variable_definition.variable.name.value not in self.variable_name_used
-        ]
+            ]
 
         if errors:
             return errors
@@ -731,8 +737,233 @@ class VariablesInAllowedPosition(ValidationRule):
 
     @staticmethod
     def bad_var_pos_message(var_name, var_type, expected_type):
-        return 'Variable "{}" of type "{}" used in position expecting type "{}".'.format(var_name, var_type, expected_type)
+        return 'Variable "{}" of type "{}" used in position expecting type "{}".'.format(var_name, var_type,
+                                                                                         expected_type)
 
 
 class OverlappingFieldsCanBeMerged(ValidationRule):
-    pass
+    def __init__(self, context):
+        super(OverlappingFieldsCanBeMerged, self).__init__(context)
+        self.compared_set = PairSet()
+
+    def find_conflicts(self, field_map):
+        conflicts = []
+        for response_name, fields in field_map.items():
+            field_len = len(fields)
+            if field_len <= 1:
+                continue
+
+            for field_a in fields:
+                for field_b in fields:
+                    conflict = self.find_conflict(response_name, field_a, field_b)
+                    if conflict:
+                        conflicts.append(conflict)
+
+        return conflicts
+
+    @staticmethod
+    def ast_to_hashable(ast):
+        """
+        This function will take an AST, and return a portion of it that is unique enough to identify the AST,
+        but without the unhashable bits.
+        """
+        if not ast:
+            return None
+
+        return ast.__class__, ast.loc['start'], ast.loc['end']
+
+    def find_conflict(self, response_name, pair1, pair2):
+        ast1, def1 = pair1
+        ast2, def2 = pair2
+
+        ast1_hashable = self.ast_to_hashable(ast1)
+        ast2_hashable = self.ast_to_hashable(ast2)
+
+        if ast1 is ast2 or self.compared_set.has(ast1_hashable, ast2_hashable):
+            return
+
+        self.compared_set.add(ast1_hashable, ast2_hashable)
+
+        name1 = ast1.name.value
+        name2 = ast2.name.value
+
+        if name1 != name2:
+            return (
+                (response_name, '{} and {} are different fields'.format(name1, name2)),
+                (ast1, ast2)
+            )
+
+        type1 = def1 and def1.type
+        type2 = def2 and def2.type
+
+        if type1 and type2 and not self.same_type(type1, type2):
+            return (
+                (response_name, 'they return differing types {} and {}'.format(type1, type2)),
+                (ast1, ast2)
+            )
+
+        if not self.same_arguments(ast1.arguments, ast2.arguments):
+            return (
+                (response_name, 'they have differing arguments'),
+                (ast1, ast2)
+            )
+
+        if not self.same_directives(ast1.directives, ast2.directives):
+            return (
+                (response_name, 'they have differing directives'),
+                (ast1, ast2)
+            )
+
+        selection_set1 = ast1.selection_set
+        selection_set2 = ast2.selection_set
+
+        if selection_set1 and selection_set2:
+            visited_fragment_names = set()
+
+            subfield_map = self.collect_field_asts_and_defs(
+                get_named_type(type1),
+                selection_set1,
+                visited_fragment_names
+            )
+
+            subfield_map = self.collect_field_asts_and_defs(
+                get_named_type(type2),
+                selection_set2,
+                visited_fragment_names,
+                subfield_map
+            )
+
+            conflicts = self.find_conflicts(subfield_map)
+            if conflicts:
+                return (
+                    (response_name, [conflict[0] for conflict in conflicts]),
+                    tuple(itertools.chain((ast1, ast2), *[conflict[1] for conflict in conflicts]))
+                )
+
+    def leave_SelectionSet(self, node, *args):
+        field_map = self.collect_field_asts_and_defs(
+            self.context.get_parent_type(),
+            node
+        )
+
+        conflicts = self.find_conflicts(field_map)
+        if conflicts:
+            return [
+                GraphQLError(self.fields_conflict_message(reason_name, reason), list(fields)) for
+                (reason_name, reason), fields in conflicts
+                ]
+
+    @staticmethod
+    def same_type(type1, type2):
+        return type1.is_same_type(type2)
+
+    @staticmethod
+    def same_value(value1, value2):
+        return (not value1 and not value2) or print_ast(value1) == print_ast(value2)
+
+    @classmethod
+    def same_arguments(cls, arguments1, arguments2):
+        # Check to see if they are empty arguments or nones. If they are, we can
+        # bail out early.
+        if not (arguments1 or arguments2):
+            return True
+
+        if len(arguments1) != len(arguments2):
+            return False
+
+        arguments2_values_to_arg = {a.name.value: a for a in arguments2}
+
+        for argument1 in arguments1:
+            argument2 = arguments2_values_to_arg.get(argument1.name.value)
+            if not argument2:
+                return False
+
+            if not cls.same_value(argument1.value, argument2.value):
+                return False
+
+        return True
+
+    @classmethod
+    def same_directives(cls, directives1, directives2):
+        # Check to see if they are empty directives or nones. If they are, we can
+        # bail out early.
+        if not (directives1 or directives2):
+            return True
+
+        if len(directives1) != len(directives2):
+            return False
+
+        directives2_values_to_arg = {a.name.value: a for a in directives2}
+
+        for directive1 in directives1:
+            directive2 = directives2_values_to_arg.get(directive1.name.value)
+            if not directive2:
+                return False
+
+            if not cls.same_arguments(directive1.arguments, directive2.arguments):
+                return False
+
+        return True
+
+    def collect_field_asts_and_defs(self, parent_type, selection_set, visited_fragment_names=None, ast_and_defs=None):
+        if visited_fragment_names is None:
+            visited_fragment_names = set()
+
+        if ast_and_defs is None:
+            # An ordered dictionary is required, otherwise the error message will be out of order.
+            # We need to preserve the order that the item was inserted into the dict, as that will dictate
+            # in which order the reasons in the error message should show.
+            # Otherwise, the error messages will be inconsistently ordered for the same AST.
+            # And this can make it so that tests fail half the time, and fool a user into thinking that
+            # the errors are different, when in-fact they are the same, just that the ordering of the reasons differ.
+            ast_and_defs = DefaultOrderedDict(list)
+
+        for selection in selection_set.selections:
+            if isinstance(selection, ast.Field):
+                field_name = selection.name.value
+                field_def = None
+                if isinstance(parent_type, (GraphQLObjectType, GraphQLInterfaceType)):
+                    field_def = parent_type.get_fields().get(field_name)
+
+                response_name = selection.alias.value if selection.alias else field_name
+                ast_and_defs[response_name].append((selection, field_def))
+
+            elif isinstance(selection, ast.InlineFragment):
+                self.collect_field_asts_and_defs(
+                    type_from_ast(self.context.get_schema(), selection.type_condition),
+                    selection.selection_set,
+                    visited_fragment_names,
+                    ast_and_defs
+                )
+
+            elif isinstance(selection, ast.FragmentSpread):
+                fragment_name = selection.name.value
+                if fragment_name in visited_fragment_names:
+                    continue
+
+                visited_fragment_names.add(fragment_name)
+                fragment = self.context.get_fragment(fragment_name)
+
+                if not fragment:
+                    continue
+
+                self.collect_field_asts_and_defs(
+                    type_from_ast(self.context.get_schema(), fragment.type_condition),
+                    fragment.selection_set,
+                    visited_fragment_names,
+                    ast_and_defs
+                )
+
+        return ast_and_defs
+
+    @classmethod
+    def fields_conflict_message(cls, reason_name, reason):
+        return 'Fields "{}" conflict because {}'.format(reason_name, cls.reason_message(reason))
+
+    @classmethod
+    def reason_message(cls, reason):
+        if isinstance(reason, list):
+            return ' and '.join('subfields "{}" conflict because {}'.format(reason_name, cls.reason_message(sub_reason))
+                                for reason_name, sub_reason in reason)
+
+        return reason

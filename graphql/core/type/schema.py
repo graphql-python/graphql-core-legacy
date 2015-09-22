@@ -5,6 +5,7 @@ from .definition import (
     GraphQLUnionType,
     GraphQLList,
     GraphQLNonNull,
+    GraphQLInputObjectType
 )
 from .introspection import IntrospectionSchema
 from .directives import GraphQLIncludeDirective, GraphQLSkipDirective
@@ -67,10 +68,17 @@ class GraphQLSchema(object):
 
 
 def type_map_reducer(map, type):
+    if not type:
+        return map
+
     if isinstance(type, GraphQLList) or isinstance(type, GraphQLNonNull):
         return type_map_reducer(map, type.of_type)
 
-    if not type or type.name in map:
+    if type.name in map:
+        assert map[type.name] == type, (
+            'Schema must contain unique named types but contains multiple types named "{}".'
+            .format(type.name)
+        )
         return map
     map[type.name] = type
 
@@ -86,13 +94,15 @@ def type_map_reducer(map, type):
             type_map_reducer, type.get_interfaces(), reduced_map
         )
 
-    if isinstance(type, (GraphQLObjectType, GraphQLInterfaceType)):
+    if isinstance(type, (GraphQLObjectType, GraphQLInterfaceType, GraphQLInputObjectType)):
         field_map = type.get_fields()
         for field_name, field in field_map.items():
-            field_arg_types = [arg.type for arg in field.args]
-            reduced_map = reduce(
-                type_map_reducer, field_arg_types, reduced_map
-            )
-            reduced_map = type_map_reducer(reduced_map, field.type)
+            if hasattr(field, 'args'):
+                field_arg_types = [arg.type for arg in field.args]
+                reduced_map = reduce(
+                    type_map_reducer, field_arg_types, reduced_map
+                )
+
+            reduced_map = type_map_reducer(reduced_map, getattr(field, 'type', None))
 
     return reduced_map

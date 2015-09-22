@@ -46,6 +46,9 @@ class GraphQLType(object):
     def __str__(self):
         return self.name
 
+    def is_same_type(self, other):
+        return self.__class__ is other.__class__ and self.name == other.name
+
 
 class GraphQLScalarType(GraphQLType):
     """Scalar Type Definition
@@ -440,6 +443,9 @@ class GraphQLList(GraphQLType):
     def __str__(self):
         return '[' + str(self.of_type) + ']'
 
+    def is_same_type(self, other):
+        return isinstance(other, GraphQLList) and self.of_type.is_same_type(other.of_type)
+
 
 class GraphQLNonNull(GraphQLType):
     """Non-Null Modifier
@@ -465,3 +471,6 @@ class GraphQLNonNull(GraphQLType):
 
     def __str__(self):
         return str(self.of_type) + '!'
+
+    def is_same_type(self, other):
+        return isinstance(other, GraphQLNonNull) and self.of_type.is_same_type(other.of_type)
