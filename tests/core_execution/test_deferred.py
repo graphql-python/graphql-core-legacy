@@ -17,6 +17,17 @@ def test_fail_none():
     assert not d.callbacks
 
 
+def test_fail_none_catches_exception():
+    e = Exception('will be raised')
+    try:
+        raise e
+    except:
+        d = fail()
+        assert d.called
+        assert isinstance(d.result, DeferredException)
+        assert d.result.value == e
+
+
 def test_fail():
     e = Exception('failed')
     d = fail(e)

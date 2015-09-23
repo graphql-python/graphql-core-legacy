@@ -1,7 +1,7 @@
 import collections
 import functools
 
-from ..defer import Deferred, DeferredDict, DeferredList, defer, fail, succeed
+from ..defer import Deferred, DeferredDict, DeferredList, defer, succeed
 from ..error import GraphQLError, format_error
 from ..language import ast
 from ..language.parser import parse
