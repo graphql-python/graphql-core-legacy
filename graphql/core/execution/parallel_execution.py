@@ -2,7 +2,7 @@ import collections
 import functools
 
 from graphql.core import ExecutionResult, Source, parse, validate
-from graphql.core.defer import Deferred, DeferredList, DeferredDict, defer, fail, succeed
+from graphql.core.defer import Deferred, DeferredDict, DeferredList, defer, fail, succeed
 from graphql.core.error import GraphQLError, format_error
 from graphql.core.execution import ExecutionContext, ResolveInfo, Undefined, collect_fields, default_resolve_fn, \
     get_argument_values, get_field_def, get_operation_root_type

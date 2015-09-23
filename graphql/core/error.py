@@ -1,5 +1,5 @@
-from .language.location import get_location
 from .defer import DeferredException
+from .language.location import get_location
 
 
 class Error(Exception):

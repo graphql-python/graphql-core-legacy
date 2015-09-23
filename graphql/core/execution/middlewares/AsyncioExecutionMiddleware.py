@@ -1,10 +1,10 @@
 # flake8: noqa
-from asyncio import Future, coroutine, iscoroutine, ensure_future
+from asyncio import Future, ensure_future, iscoroutine
 from graphql.core.defer import Deferred
 
 
 def process_future_result(deferred):
-    def handle_future_result(future: Future):
+    def handle_future_result(future):
         exception = future.exception()
         if exception:
             deferred.errback(exception)
