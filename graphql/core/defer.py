@@ -459,8 +459,9 @@ class _ResultCollector(Deferred):
     objects_remaining_to_resolve = 0
     _result = None
 
-    def _schedule_callbacks(self, items, result):
-        self.objects_remaining_to_resolve = len(items)
+    def _schedule_callbacks(self, items, result, objects_remaining_to_resolve=None):
+        self.objects_remaining_to_resolve = \
+            objects_remaining_to_resolve if objects_remaining_to_resolve is not None else len(items)
         self._result = result
         for key, value in items:
             if isinstance(value, Deferred):
@@ -508,4 +509,5 @@ class DeferredList(_ResultCollector):
     def __init__(self, sequence):
         super(DeferredList, self).__init__()
         assert isinstance(sequence, collections.Sequence)
-        self._schedule_callbacks(enumerate(sequence), [None] * len(sequence))
+        sequence_len = len(sequence)
+        self._schedule_callbacks(enumerate(sequence), [None] * sequence_len, sequence_len)
