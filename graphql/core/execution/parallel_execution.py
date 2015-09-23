@@ -6,10 +6,10 @@ from graphql.core.defer import Deferred, DeferredDict, DeferredList, defer, fail
 from graphql.core.error import GraphQLError, format_error
 from graphql.core.execution import ExecutionContext, ResolveInfo, Undefined, collect_fields, default_resolve_fn, \
     get_argument_values, get_field_def, get_operation_root_type
+from graphql.core.language import ast
 from graphql.core.type import GraphQLEnumType, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, \
     GraphQLScalarType, GraphQLUnionType
 from graphql.core.utils import is_nullish
-from graphql.core.language import ast
 
 
 class Executor(object):

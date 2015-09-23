@@ -1,5 +1,7 @@
 # flake8: noqa
 
+import asyncio
+import functools
 from graphql.core.execution.parallel_execution import Executor
 from graphql.core.execution.middlewares.AsyncioExecutionMiddleware import AsyncioExecutionMiddleware
 from graphql.core.type import (
@@ -8,8 +10,6 @@ from graphql.core.type import (
     GraphQLField,
     GraphQLString
 )
-import functools
-import asyncio
 
 
 def run_until_complete(fun):
