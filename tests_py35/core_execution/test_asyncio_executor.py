@@ -2,8 +2,8 @@
 
 import asyncio
 import functools
-from graphql.core.execution.parallel_execution import Executor
-from graphql.core.execution.middlewares.AsyncioExecutionMiddleware import AsyncioExecutionMiddleware
+from graphql.core.execution import Executor
+from graphql.core.execution.middlewares.asyncio import AsyncioExecutionMiddleware
 from graphql.core.type import (
     GraphQLSchema,
     GraphQLObjectType,

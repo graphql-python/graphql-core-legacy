@@ -1,5 +1,5 @@
-from graphql.core.execution.middlewares.SynchronousExecutionMiddleware import SynchronousExecutionMiddleware
-from graphql.core.execution.parallel_execution import Executor
+from graphql.core.execution import Executor
+from graphql.core.execution.middlewares.sync import SynchronousExecutionMiddleware
 from graphql.core.defer import succeed, Deferred
 from graphql.core.language.location import SourceLocation
 from graphql.core.language.parser import parse
@@ -147,7 +147,8 @@ def test_synchronous_executor_doesnt_support_defers_with_nullable_type_getting_s
     assert not isinstance(result, Deferred)
     assert result.data == {"promise": None, 'notPromise': 'i should work'}
     assert result.errors == [{'locations': [SourceLocation(line=3, column=9)],
-                              'message': 'You cannot use Defers when using Synchronous Execution Middleware'}]
+                              'message': 'You cannot return a Deferred from a resolver '
+                                         'when using SynchronousExecutionMiddleware'}]
 
 
 def test_synchronous_executor_will_synchronously_resolve():

@@ -1,15 +1,17 @@
 import collections
 import functools
 
-from graphql.core import ExecutionResult, Source, parse, validate
-from graphql.core.defer import Deferred, DeferredDict, DeferredList, defer, fail, succeed
-from graphql.core.error import GraphQLError, format_error
-from graphql.core.execution import ExecutionContext, ResolveInfo, Undefined, collect_fields, default_resolve_fn, \
-    get_argument_values, get_field_def, get_operation_root_type
-from graphql.core.language import ast
-from graphql.core.type import GraphQLEnumType, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, \
+from ..defer import Deferred, DeferredDict, DeferredList, defer, fail, succeed
+from ..error import GraphQLError, format_error
+from ..language import ast
+from ..language.parser import parse
+from ..language.source import Source
+from ..type import GraphQLEnumType, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, \
     GraphQLScalarType, GraphQLUnionType
-from graphql.core.utils import is_nullish
+from ..utils import is_nullish
+from ..validation import validate
+from .base import ExecutionContext, ExecutionResult, ResolveInfo, Undefined, collect_fields, default_resolve_fn, \
+    get_argument_values, get_field_def, get_operation_root_type
 
 
 class Executor(object):
@@ -18,6 +20,23 @@ class Executor(object):
         self.schema = schema
 
     def execute(self, request='', root=None, args=None, operation_name=None, execute_serially=False, validate_ast=True):
+        curried_execution_function = functools.partial(
+            self._execute,
+            request,
+            root,
+            args,
+            operation_name,
+            execute_serially,
+            validate_ast)
+
+        for middleware in self.execution_middlewares:
+            if hasattr(middleware, 'execution_result'):
+                curried_execution_function = functools.partial(middleware.execution_result, curried_execution_function)
+
+        return curried_execution_function()
+
+    def _execute(self, request='', root=None, args=None, operation_name=None, execute_serially=False,
+                 validate_ast=True):
         if not isinstance(request, ast.Document):
             if not isinstance(request, Source):
                 request = Source(request, 'GraphQL request')
@@ -27,24 +46,17 @@ class Executor(object):
         if validate_ast:
             validation_errors = validate(self.schema, request)
             if validation_errors:
-                return ExecutionResult(
+                return succeed(ExecutionResult(
                     data=None,
                     errors=validation_errors,
-                )
+                ))
 
-        curried_execution_function = functools.partial(
-            self._execute_graphql_query,
+        return self._execute_graphql_query(
             root or object(),
             request,
             operation_name,
             args or {},
             execute_serially)
-
-        for middleware in self.execution_middlewares:
-            if hasattr(middleware, 'execution_result'):
-                curried_execution_function = functools.partial(middleware.execution_result, curried_execution_function)
-
-        return curried_execution_function()
 
     def _execute_graphql_query(self, root, ast, operation_name, args, execute_serially=False):
         ctx = ExecutionContext(self.schema, root, ast, operation_name, args)
@@ -260,7 +272,7 @@ class Executor(object):
 
         # Todo: Implement Properly
         # if hasattr(runtime_type, 'is_type_of') and not runtime_type.is_type_of(result):
-        #     pass
+        # pass
 
         # Collect sub-fields to execute to complete this value.
         subfield_asts = {}

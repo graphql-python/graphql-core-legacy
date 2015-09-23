@@ -6,7 +6,7 @@ class SynchronousExecutionMiddleware(object):
     def run_resolve_fn(self, resolver):
         result = resolver()
         if isinstance(result, Deferred):
-            raise GraphQLError('You cannot use Defers when using Synchronous Execution Middleware')
+            raise GraphQLError('You cannot return a Deferred from a resolver when using SynchronousExecutionMiddleware')
 
         return result
 
