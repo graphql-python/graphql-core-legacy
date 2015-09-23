@@ -1,10 +1,11 @@
 from graphql.core.execution import Executor
 from graphql.core.execution.middlewares.sync import SynchronousExecutionMiddleware
-from graphql.core.defer import succeed, Deferred
+from graphql.core.defer import succeed, Deferred, fail
 from graphql.core.language.location import SourceLocation
 from graphql.core.language.parser import parse
 from graphql.core.type import (GraphQLSchema, GraphQLObjectType, GraphQLField,
                                GraphQLArgument, GraphQLList, GraphQLInt, GraphQLString)
+from graphql.core.type.definition import GraphQLNonNull
 
 from .utils import raise_callback_results
 
@@ -149,6 +150,64 @@ def test_synchronous_executor_doesnt_support_defers_with_nullable_type_getting_s
     assert result.errors == [{'locations': [SourceLocation(line=3, column=9)],
                               'message': 'You cannot return a Deferred from a resolver '
                                          'when using SynchronousExecutionMiddleware'}]
+
+
+def test_synchronous_executor_doesnt_support_defers():
+    class Data(object):
+        def promise(self):
+            return succeed('i shouldn\'nt work')
+
+        def notPromise(self):
+            return 'i should work'
+
+    DataType = GraphQLObjectType('DataType', {
+        'promise': GraphQLField(GraphQLNonNull(GraphQLString)),
+        'notPromise': GraphQLField(GraphQLString),
+    })
+    doc = '''
+    query Example {
+        promise
+        notPromise
+    }
+    '''
+    schema = GraphQLSchema(query=DataType)
+    executor = Executor(schema, [SynchronousExecutionMiddleware()])
+
+    result = executor.execute(doc, Data(), operation_name='Example')
+    assert not isinstance(result, Deferred)
+    assert result.data is None
+    assert result.errors == [{'locations': [SourceLocation(line=3, column=9)],
+                              'message': 'You cannot return a Deferred from a resolver '
+                                         'when using SynchronousExecutionMiddleware'}]
+
+
+def test_executor_defer_failure():
+    class Data(object):
+        def promise(self):
+            return fail(Exception('Something bad happened! Sucks :('))
+
+        def notPromise(self):
+            return 'i should work'
+
+    DataType = GraphQLObjectType('DataType', {
+        'promise': GraphQLField(GraphQLNonNull(GraphQLString)),
+        'notPromise': GraphQLField(GraphQLString),
+    })
+    doc = '''
+    query Example {
+        promise
+        notPromise
+    }
+    '''
+    schema = GraphQLSchema(query=DataType)
+    executor = Executor(schema)
+
+    result = executor.execute(doc, Data(), operation_name='Example')
+    assert result.called
+    result = result.result
+    assert result.data is None
+    assert result.errors == [{'locations': [SourceLocation(line=3, column=9)],
+                              'message': "Something bad happened! Sucks :("}]
 
 
 def test_synchronous_executor_will_synchronously_resolve():

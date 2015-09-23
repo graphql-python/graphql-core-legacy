@@ -200,7 +200,7 @@ class Executor(object):
                     info,
                     resolved
                 ),
-                lambda error: fail(GraphQLError(str(error), field_asts, error))
+                lambda error: fail(GraphQLError(str(error.value), field_asts, error))
             )
 
         if isinstance(result, Exception):

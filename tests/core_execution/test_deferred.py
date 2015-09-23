@@ -235,3 +235,31 @@ def test_callback_var_args():
     d.callback(1)
 
     assert holder[0] == ((1, 2, 3), {'a': 4, 'b': 5})
+
+
+def test_deferred_callback_returns_another_deferred():
+    d = Deferred()
+    d2 = Deferred()
+
+    d.add_callback(lambda r: succeed(r + 5).add_callback(lambda v: v + 5))
+    d.add_callback(lambda r: d2)
+    d.callback(5)
+
+    assert d.result is d2
+    assert d.paused
+    assert d.called
+
+    d2.callback(7)
+    assert d.result == 7
+    assert d2.result == 7
+
+
+def test_deferred_exception_catch():
+    def dummy_errback(deferred_exception):
+        deferred_exception.catch(OSError)
+        return "caught"
+
+    deferred = Deferred()
+    deferred.add_errback(dummy_errback)
+    deferred.errback(OSError())
+    assert deferred.result == 'caught'

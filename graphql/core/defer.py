@@ -113,7 +113,7 @@ class DeferredException(object):
             raise self.type(self.value).with_traceback(self.traceback)
 
     else:
-        exec ("""def raise_exception(self):
+        exec("""def raise_exception(self):
     raise self.type, self.value, self.traceback""")
 
     def catch(self, *errors):
@@ -417,13 +417,6 @@ class Deferred(object):
                 self.paused = True
                 self.result.add_callbacks(self._continue, self._continue)
                 break
-
-        if isinstance(self.result, DeferredException):
-            # Print the exception to stderr and stop if there aren't any
-            # further errbacks to process
-            sys.excepthook(self.result.type, self.result.value,
-                           self.result.traceback)
-            return False
 
 
 def defer(func, *args, **kwargs):
