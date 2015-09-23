@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from ..error import GraphQLError
 from ..language import ast
 from ..type.definition import (
@@ -163,7 +165,7 @@ def does_fragment_condition_match(ctx, fragment, type_):
 
 
 def get_field_entry_key(node):
-    """Implements the logic to compute the key of a given field’s entry"""
+    """Implements the logic to compute the key of a given field's entry"""
     if node.alias:
         return node.alias.value
     return node.name.value
