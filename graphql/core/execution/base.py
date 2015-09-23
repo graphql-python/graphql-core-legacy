@@ -20,6 +20,7 @@ from .values import get_argument_values, get_variable_values
 
 Undefined = object()
 
+
 class ExecutionContext(object):
     """Data that must be available at all points during query execution.
 
