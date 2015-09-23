@@ -12,7 +12,10 @@ install:
 - pip install -e .
 script:
 - flake8
-- import-order graphql
 - py.test --cov=graphql tests
 after_success:
 - coveralls
+matrix:
+  include:
+    - python: "3.5"
+      script: import-order graphql
