@@ -113,7 +113,7 @@ class DeferredException(object):
             raise self.type(self.value).with_traceback(self.traceback)
 
     else:
-        exec("""def raise_exception(self):
+        exec ("""def raise_exception(self):
     raise self.type, self.value, self.traceback""")
 
     def catch(self, *errors):
@@ -258,6 +258,8 @@ class Deferred(object):
         if self.called:
             self._next()
 
+        return self
+
     def add_errback(self, func, *args, **kwargs):
         """Add a callable (function or method) to the errback chain only.
 
@@ -288,8 +290,8 @@ class Deferred(object):
         >>> deferred.result
         'ignored'
         """
-        self.add_callbacks(_passthrough, func, errback_args=args,
-                           errback_kwargs=kwargs)
+        return self.add_callbacks(_passthrough, func, errback_args=args,
+                                  errback_kwargs=kwargs)
 
     def add_callback(self, func, *args, **kwargs):
         """Add a callable (function or method) to the callback chain only.
@@ -312,8 +314,8 @@ class Deferred(object):
         >>> deferred.result
         2
         """
-        self.add_callbacks(func, _passthrough, callback_args=args,
-                           callback_kwargs=kwargs)
+        return self.add_callbacks(func, _passthrough, callback_args=args,
+                                  callback_kwargs=kwargs)
 
     def errback(self, error=None):
         """Start processing the errorback chain starting with the
@@ -339,6 +341,7 @@ class Deferred(object):
         elif not isinstance(error, DeferredException):
             assert isinstance(error, Exception)
             error = DeferredException(error.__class__, error, None)
+
         self.called = True
         self.result = error
         self._next()
@@ -358,15 +361,27 @@ class Deferred(object):
         if self.called:
             raise AlreadyCalledDeferred()
         self.called = True
+
+        if isinstance(result, Deferred):
+            self.paused = True
+            return result.add_callbacks(self._continue, self._continue)
+
         self.result = result
         self._next()
 
     def _continue(self, result):
         """Continue processing the Deferred with the given result."""
+        # If the result of the deferred is another deferred, we will need to wait for
+        # it to resolve again.
+        if isinstance(result, Deferred):
+            return result.add_callbacks(self._continue, self._continue)
+
         self.result = result
         self.paused = False
         if self.called:
             self._next()
+
+        return result
 
     def _next(self):
         """Process the next callback."""
@@ -380,18 +395,19 @@ class Deferred(object):
             callback, args, kwargs = next_pair[isinstance(self.result,
                                                           DeferredException)]
 
-            if callback is _passthrough:
-                continue
+            if callback is not _passthrough:
+                self._running = True
+                try:
+                    self.result = callback(self.result, *args, **kwargs)
 
-            self._running = True
-            try:
-                self.result = callback(self.result, *args, **kwargs)
+                except:
+                    self.result = DeferredException()
 
-            except:
-                self.result = DeferredException()
+                finally:
+                    self._running = False
 
-            finally:
-                self._running = False
+                if isinstance(self.result, Exception):
+                    self.result = DeferredException(self.result)
 
             if isinstance(self.result, Deferred):
                 # If a Deferred was returned add this deferred as callbacks to
@@ -428,12 +444,15 @@ def defer(func, *args, **kwargs):
     True
     """
     assert isinstance(func, collections.Callable)
+
     try:
         result = func(*args, **kwargs)
     except:
         result = DeferredException()
+
     if isinstance(result, Deferred):
         return result
+
     deferred = Deferred()
     deferred.callback(result)
     return deferred

@@ -61,14 +61,13 @@ class Executor(object):
     def _execute_graphql_query(self, root, ast, operation_name, args, execute_serially=False):
         ctx = ExecutionContext(self.schema, root, ast, operation_name, args)
 
-        d = defer(self._execute_operation, ctx, root, ctx.operation, execute_serially)
-        d.add_errback(
+        return defer(self._execute_operation, ctx, root, ctx.operation, execute_serially) \
+            .add_errback(
             lambda error: ctx.errors.append(error)
-        )
-        d.add_callback(
+        ) \
+            .add_callback(
             lambda data: ExecutionResult(data, list(map(format_error, ctx.errors))),
         )
-        return d
 
     def _execute_operation(self, ctx, root, operation, execute_serially):
         type = get_operation_root_type(ctx.schema, operation)
@@ -91,15 +90,13 @@ class Executor(object):
                 return results
 
             if isinstance(result, Deferred):
-                result.add_callback(collect_result)
-                return result
+                return result.add_callback(collect_result)
 
             else:
                 return collect_result(result)
 
         def execute_field(prev_deferred, response_name):
-            prev_deferred.add_callback(execute_field_callback, response_name)
-            return prev_deferred
+            return prev_deferred.add_callback(execute_field_callback, response_name)
 
         return functools.reduce(execute_field, fields.keys(), succeed({}))
 
@@ -169,8 +166,7 @@ class Executor(object):
                     ctx.errors.append(error)
                     return None
 
-                completed.add_errback(handle_error)
-                return completed
+                return completed.add_errback(handle_error)
 
             return completed
         except Exception as e:
@@ -196,7 +192,7 @@ class Executor(object):
         """
         # If field type is NonNull, complete for inner type, and throw field error if result is null.
         if isinstance(result, Deferred):
-            result.add_callbacks(
+            return result.add_callbacks(
                 lambda resolved: self.complete_value(
                     ctx,
                     return_type,
@@ -206,7 +202,6 @@ class Executor(object):
                 ),
                 lambda error: fail(GraphQLError(str(error), field_asts, error))
             )
-            return result
 
         if isinstance(result, Exception):
             raise GraphQLError(str(result), field_asts, result)
@@ -263,7 +258,7 @@ class Executor(object):
             runtime_type = return_type.resolve_type(result)
             if runtime_type and not return_type.is_possible_type(runtime_type):
                 raise GraphQLError(
-                    'Runtime Object type "{}" is nt a possible type for "{}".'.format(runtime_type, return_type),
+                    'Runtime Object type "{}" is not a possible type for "{}".'.format(runtime_type, return_type),
                     field_asts
                 )
 
