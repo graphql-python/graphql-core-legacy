@@ -16,7 +16,7 @@ def process_future_result(deferred):
 
 
 class AsyncioExecutionMiddleware(object):
-    def run_resolve_fn(self, resolver):
+    def run_resolve_fn(self, resolver, original_resolver):
         result = resolver()
         if isinstance(result, Future) or iscoroutine(result):
             future = ensure_future(result)
@@ -32,7 +32,5 @@ class AsyncioExecutionMiddleware(object):
         assert isinstance(result, Deferred), 'Another middleware has converted the execution result ' \
                                              'away from a Deferred.'
 
-        result.add_callback(future.set_result)
-        result.add_errback(future.set_exception)
-
+        result.add_callbacks(future.set_result, future.set_exception)
         return future

@@ -287,7 +287,7 @@ class Executor(object):
         try:
             for middleware in self.execution_middlewares:
                 if hasattr(middleware, 'run_resolve_fn'):
-                    curried_resolve_fn = functools.partial(middleware.run_resolve_fn, curried_resolve_fn)
+                    curried_resolve_fn = functools.partial(middleware.run_resolve_fn, curried_resolve_fn, resolve_fn)
 
             return curried_resolve_fn()
         except Exception as e:

@@ -3,7 +3,7 @@ from graphql.core.error import GraphQLError
 
 
 class SynchronousExecutionMiddleware(object):
-    def run_resolve_fn(self, resolver):
+    def run_resolve_fn(self, resolver, original_resolver):
         result = resolver()
         if isinstance(result, Deferred):
             raise GraphQLError('You cannot return a Deferred from a resolver when using SynchronousExecutionMiddleware')

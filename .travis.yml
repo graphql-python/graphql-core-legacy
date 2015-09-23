@@ -7,7 +7,7 @@ python:
 - 3.5
 - pypy
 install:
-- pip install pytest-cov coveralls flake8 import-order
+- pip install pytest-cov coveralls flake8 import-order gevent>=1.1b5
 - pip install pytest>=2.7.3 --upgrade
 - pip install -e .
 script:
