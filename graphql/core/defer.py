@@ -460,17 +460,16 @@ class _ResultCollector(Deferred):
     _result = None
 
     def _schedule_callbacks(self, items, result):
-        self.objects_remaining_to_resolve = 0
+        self.objects_remaining_to_resolve = len(items)
         self._result = result
         for key, value in items:
             if isinstance(value, Deferred):
-                self.objects_remaining_to_resolve += 1
-
                 value.add_callbacks(self._cb_deferred, self._cb_deferred,
                                     callback_args=(key, True),
                                     errback_args=(key, False))
 
             else:
+                self.objects_remaining_to_resolve -= 1
                 result[key] = value
 
         if self.objects_remaining_to_resolve == 0 and not self.called:
@@ -480,18 +479,20 @@ class _ResultCollector(Deferred):
     def _cb_deferred(self, result, key, succeeded):
         # If one item fails, we are going to errback right away with the error.
         # This follows the Promise.all(...) spec in ES6.
+        if self.called:
+            return result
 
         if not succeeded:
-            if not self.called:
-                self.errback(result)
-
-            return
+            self.errback(result)
+            self._result = None
+            return result
 
         self.objects_remaining_to_resolve -= 1
         self._result[key] = result
 
-        if not self.called and self.objects_remaining_to_resolve == 0:
+        if self.objects_remaining_to_resolve == 0:
             self.callback(self._result)
+            self._result = None
 
         return result
 
