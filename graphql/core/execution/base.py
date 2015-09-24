@@ -27,7 +27,7 @@ class ExecutionContext(object):
     Namely, schema of the type system that is currently executing,
     and the fragments defined in the query document"""
 
-    def __init__(self, schema, root, document_ast, operation_name, args):
+    def __init__(self, schema, root, document_ast, operation_name, args, request_context):
         """Constructs a ExecutionContext object from the arguments passed
         to execute, which we will pass throughout the other execution
         methods."""
@@ -58,6 +58,7 @@ class ExecutionContext(object):
         self.operation = operation
         self.variables = variables
         self.errors = errors
+        self.request_context = request_context
 
 
 class ExecutionResult(object):
@@ -199,6 +200,10 @@ class ResolveInfo(object):
     @property
     def variable_values(self):
         return self.context.variables
+
+    @property
+    def request_context(self):
+        return self.context.request_context
 
 
 def default_resolve_fn(source, args, info):

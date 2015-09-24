@@ -15,8 +15,9 @@ from .base import ExecutionContext, ExecutionResult, ResolveInfo, Undefined, col
 
 
 class Executor(object):
-    def __init__(self, schema, execution_middlewares=None):
+    def __init__(self, schema, execution_middlewares=None, default_resolver=default_resolve_fn):
         self.execution_middlewares = execution_middlewares or []
+        self.default_resolve_fn = default_resolver
         self.schema = schema
 
     def execute(self, request='', root=None, args=None, operation_name=None, execute_serially=False, validate_ast=True):
@@ -35,8 +36,8 @@ class Executor(object):
 
         return curried_execution_function()
 
-    def _execute(self, request='', root=None, args=None, operation_name=None, execute_serially=False,
-                 validate_ast=True):
+    def _execute(self, request='', root=None, args=None, operation_name=None, request_context=None,
+                 execute_serially=False, validate_ast=True):
         if not isinstance(request, ast.Document):
             if not isinstance(request, Source):
                 request = Source(request, 'GraphQL request')
@@ -56,10 +57,11 @@ class Executor(object):
             request,
             operation_name,
             args or {},
+            request_context or {},
             execute_serially)
 
-    def _execute_graphql_query(self, root, ast, operation_name, args, execute_serially=False):
-        ctx = ExecutionContext(self.schema, root, ast, operation_name, args)
+    def _execute_graphql_query(self, root, ast, operation_name, args, request_context, execute_serially=False):
+        ctx = ExecutionContext(self.schema, root, ast, operation_name, args, request_context)
 
         return defer(self._execute_operation, ctx, root, ctx.operation, execute_serially) \
             .add_errback(
@@ -127,7 +129,7 @@ class Executor(object):
             return Undefined
 
         return_type = field_def.type
-        resolve_fn = field_def.resolver or default_resolve_fn
+        resolve_fn = field_def.resolver or self.default_resolve_fn
 
         # Build a dict of arguments from the field.arguments AST, using the variables scope to
         # fulfill any variable references.
