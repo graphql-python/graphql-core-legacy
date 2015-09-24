@@ -20,15 +20,19 @@ class Executor(object):
         self.default_resolve_fn = default_resolver
         self.schema = schema
 
-    def execute(self, request='', root=None, args=None, operation_name=None, execute_serially=False, validate_ast=True):
+    def execute(self, request='', root=None, args=None, operation_name=None, request_context=None,
+                execute_serially=False, validate_ast=True):
+
         curried_execution_function = functools.partial(
             self._execute,
             request,
             root,
             args,
             operation_name,
+            request_context,
             execute_serially,
-            validate_ast)
+            validate_ast
+        )
 
         for middleware in self.execution_middlewares:
             if hasattr(middleware, 'execution_result'):
@@ -36,8 +40,7 @@ class Executor(object):
 
         return curried_execution_function()
 
-    def _execute(self, request='', root=None, args=None, operation_name=None, request_context=None,
-                 execute_serially=False, validate_ast=True):
+    def _execute(self, request, root, args, operation_name, request_context, execute_serially, validate_ast):
         if not isinstance(request, ast.Document):
             if not isinstance(request, Source):
                 request = Source(request, 'GraphQL request')

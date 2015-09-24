@@ -2,7 +2,8 @@ from __future__ import absolute_import
 
 from gevent import get_hub, spawn
 from gevent.event import AsyncResult
-from graphql.core.defer import Deferred, DeferredException
+from ...defer import Deferred, DeferredException
+from .utils import resolver_has_tag, tag_resolver
 
 
 def _run_resolver_in_greenlet(d, resolver):
@@ -24,13 +25,12 @@ def run_in_greenlet(f):
             return 5
 
     """
-    f._run_in_greenlet = True
-    return f
+    return tag_resolver(f, 'run_in_greenlet')
 
 
 class GeventExecutionMiddleware(object):
     def run_resolve_fn(self, resolver, original_resolver):
-        if hasattr(original_resolver, '_run_in_greenlet'):
+        if resolver_has_tag(original_resolver, 'run_in_greenlet'):
             d = Deferred()
             spawn(_run_resolver_in_greenlet, d, resolver)
             return d
