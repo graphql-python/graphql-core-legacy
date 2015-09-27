@@ -149,7 +149,7 @@ def test_nulls_a_sync_returned_object_that_contains_a_non_nullable_field_that_re
     result = execute(schema, NullingData(), ast, 'Q', {})
     assert len(result.errors) == 1
     # TODO: check error location
-    assert result.errors[0]['message'] == 'Cannot return null for non-nullable type.'
+    assert result.errors[0]['message'] == 'Cannot return null for non-nullable field DataType.nonNullSync.'
     assert result.data == {
         'nest': None
     }
@@ -218,4 +218,4 @@ def test_nulls_the_top_level_if_sync_non_nullable_field_returns_null():
     assert result.data is None
     assert len(result.errors) == 1
     # TODO: check error location
-    assert result.errors[0]['message'] == 'Cannot return null for non-nullable type.'
+    assert result.errors[0]['message'] == 'Cannot return null for non-nullable field DataType.nonNullSync.'
