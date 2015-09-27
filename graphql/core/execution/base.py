@@ -66,7 +66,7 @@ class ExecutionResult(object):
     query, `errors` is null if no errors occurred, and is a
     non-empty array if an error occurred."""
 
-    def __init__(self, data, errors=None, invalid=False):
+    def __init__(self, data=None, errors=None, invalid=False):
         self.data = data
         self.errors = errors
         if invalid:

@@ -10,8 +10,8 @@ def graphql(schema, request='', root=None, vars=None, operation_name=None):
     validation_errors = validate(schema, ast)
     if validation_errors:
         return ExecutionResult(
-            data=None,
             errors=validation_errors,
+            invalid=True,
         )
     return execute(
         schema,
