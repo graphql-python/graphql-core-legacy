@@ -1,3 +1,4 @@
+from graphql.core.error import format_error
 from graphql.core.execution import Executor
 from graphql.core.execution.middlewares.sync import SynchronousExecutionMiddleware
 from graphql.core.defer import succeed, Deferred, fail
@@ -147,9 +148,10 @@ def test_synchronous_executor_doesnt_support_defers_with_nullable_type_getting_s
     result = executor.execute(doc, Data(), operation_name='Example')
     assert not isinstance(result, Deferred)
     assert result.data == {"promise": None, 'notPromise': 'i should work'}
-    assert result.errors == [{'locations': [SourceLocation(line=3, column=9)],
-                              'message': 'You cannot return a Deferred from a resolver '
-                                         'when using SynchronousExecutionMiddleware'}]
+    formatted_errors = list(map(format_error, result.errors))
+    assert formatted_errors == [{'locations': [dict(line=3, column=9)],
+                                 'message': 'You cannot return a Deferred from a resolver '
+                                            'when using SynchronousExecutionMiddleware'}]
 
 
 def test_synchronous_executor_doesnt_support_defers():
@@ -176,9 +178,10 @@ def test_synchronous_executor_doesnt_support_defers():
     result = executor.execute(doc, Data(), operation_name='Example')
     assert not isinstance(result, Deferred)
     assert result.data is None
-    assert result.errors == [{'locations': [SourceLocation(line=3, column=9)],
-                              'message': 'You cannot return a Deferred from a resolver '
-                                         'when using SynchronousExecutionMiddleware'}]
+    formatted_errors = list(map(format_error, result.errors))
+    assert formatted_errors == [{'locations': [dict(line=3, column=9)],
+                                 'message': 'You cannot return a Deferred from a resolver '
+                                            'when using SynchronousExecutionMiddleware'}]
 
 
 def test_executor_defer_failure():
@@ -206,8 +209,9 @@ def test_executor_defer_failure():
     assert result.called
     result = result.result
     assert result.data is None
-    assert result.errors == [{'locations': [SourceLocation(line=3, column=9)],
-                              'message': "Something bad happened! Sucks :("}]
+    formatted_errors = list(map(format_error, result.errors))
+    assert formatted_errors == [{'locations': [dict(line=3, column=9)],
+                                 'message': "Something bad happened! Sucks :("}]
 
 
 def test_synchronous_executor_will_synchronously_resolve():

@@ -2,7 +2,7 @@ import collections
 import functools
 
 from ..defer import Deferred, DeferredDict, DeferredList, defer, succeed
-from ..error import GraphQLError, format_error
+from ..error import GraphQLError
 from ..language import ast
 from ..language.parser import parse
 from ..language.source import Source
@@ -71,7 +71,7 @@ class Executor(object):
             lambda error: ctx.errors.append(error)
         ) \
             .add_callback(
-            lambda data: ExecutionResult(data, list(map(format_error, ctx.errors))),
+            lambda data: ExecutionResult(data, ctx.errors),
         )
 
     def _execute_operation(self, ctx, root, operation, execute_serially):

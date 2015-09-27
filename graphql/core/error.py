@@ -1,4 +1,3 @@
-from .defer import DeferredException
 from .language.location import get_location
 
 
@@ -39,10 +38,10 @@ class GraphQLError(Error):
 
 
 def format_error(error):
-    if isinstance(error, DeferredException):
-        error = error.value
-
     return {
         'message': error.message,
-        'locations': error.locations,
+        'locations': [
+            {'line': loc.line, 'column': loc.column}
+            for loc in error.locations
+        ],
     }

@@ -2,9 +2,9 @@
 
 import asyncio
 import functools
+from graphql.core.error import format_error
 from graphql.core.execution import Executor
 from graphql.core.execution.middlewares.asyncio import AsyncioExecutionMiddleware
-from graphql.core.language.location import SourceLocation
 from graphql.core.type import (
     GraphQLSchema,
     GraphQLObjectType,
@@ -62,5 +62,6 @@ async def test_asyncio_py35_executor_with_error():
 
     executor = Executor(GraphQLSchema(Type), [AsyncioExecutionMiddleware()])
     result = await executor.execute(doc)
-    assert result.errors == [{'locations': [SourceLocation(1, 20)], 'message': 'resolver_2 failed!'}]
+    formatted_errors = list(map(format_error, result.errors))
+    assert formatted_errors == [{'locations': [{'line': 1, 'column': 20}], 'message': 'resolver_2 failed!'}]
     assert result.data == {'a': 'hey', 'b': None}

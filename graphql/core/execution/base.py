@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from ..defer import DeferredException
 from ..error import GraphQLError
 from ..language import ast
 from ..type.definition import (
@@ -68,6 +68,11 @@ class ExecutionResult(object):
 
     def __init__(self, data=None, errors=None, invalid=False):
         self.data = data
+        if errors:
+            errors = [
+                error.value if isinstance(error, DeferredException) else error
+                for error in errors
+            ]
         self.errors = errors
         if invalid:
             assert data is None

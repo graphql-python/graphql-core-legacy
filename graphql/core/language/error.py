@@ -1,25 +1,23 @@
-from ..compat import native_str
-from ..error import Error
+from ..error import GraphQLError
 from .location import get_location
 
 __all__ = ['LanguageError']
 
 
-class LanguageError(Error):
+class LanguageError(GraphQLError):
     def __init__(self, source, position, description):
-        self.source = source
-        self.position = position
-        self.description = description
-
-    def __str__(self):
-        location = get_location(self.source, self.position)
-        return native_str(u'Syntax Error {} ({}:{}) {}\n\n{}'.format(
-            self.source.name,
-            location.line,
-            location.column,
-            self.description,
-            highlight_source_at_location(self.source, location),
-        ), errors='replace')
+        location = get_location(source, position)
+        super(LanguageError, self).__init__(
+            message=u'Syntax Error {} ({}:{}) {}\n\n{}'.format(
+                source.name,
+                location.line,
+                location.column,
+                description,
+                highlight_source_at_location(source, location),
+            ),
+            source=source,
+            positions=[position],
+        )
 
 
 def highlight_source_at_location(source, location):

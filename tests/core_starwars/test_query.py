@@ -1,5 +1,6 @@
 from starwars_schema import StarWarsSchema
 from graphql.core import graphql
+from graphql.core.error import format_error
 
 
 def test_hero_name_query():
@@ -343,3 +344,15 @@ def test_check_type_of_luke():
     result = graphql(StarWarsSchema, query)
     assert not result.errors
     assert result.data == expected
+
+
+def test_parse_error():
+    query = '''
+        qeury
+    '''
+    result = graphql(StarWarsSchema, query)
+    assert result.invalid
+    formatted_error = format_error(result.errors[0])
+    assert formatted_error['locations'] == [{'column': 9, 'line': 2}]
+    assert 'Syntax Error GraphQL request (2:9) Unexpected Name "qeury"' in formatted_error['message']
+    assert result.data is None

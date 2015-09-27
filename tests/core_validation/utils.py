@@ -179,6 +179,11 @@ def sort_lists(value):
 def expect_invalid(schema, rules, query, expected_errors, sort_list=True):
     errors = validate(schema, parse(query), rules)
     assert errors, 'Should not validate'
+    for error in expected_errors:
+        error['locations'] = [
+            {'line': loc.line, 'column': loc.column}
+            for loc in error['locations']
+        ]
     if sort_list:
         assert sort_lists(list(map(format_error, errors))) == sort_lists(expected_errors)
 

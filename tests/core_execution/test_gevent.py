@@ -1,5 +1,5 @@
 # flake8: noqa
-
+from graphql.core.error import format_error
 from graphql.core.execution import Executor
 from graphql.core.execution.middlewares.gevent import GeventExecutionMiddleware, run_in_greenlet
 from graphql.core.language.location import SourceLocation
@@ -57,5 +57,6 @@ def test_gevent_executor_with_error():
 
     executor = Executor(GraphQLSchema(Type), [GeventExecutionMiddleware()])
     result = executor.execute(doc)
-    assert result.errors == [{'locations': [SourceLocation(1, 20)], 'message': 'resolver_2 failed!'}]
+    formatted_errors = list(map(format_error, result.errors))
+    assert formatted_errors == [{'locations': [{'line': 1, 'column': 20}], 'message': 'resolver_2 failed!'}]
     assert result.data == {'a': 'hey', 'b': None}
