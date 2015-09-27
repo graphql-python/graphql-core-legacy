@@ -247,3 +247,25 @@ def test_allows_fragment_conditions_to_be_abstract_types():
             {'__typename': 'Dog', 'name': 'Odie', 'barks': True}
         ]
     }
+
+
+def test_only_include_fields_from_matching_fragment_condition():
+    ast = parse('''
+      {
+        pets { ...PetFields }
+      }
+      fragment PetFields on Pet {
+        __typename
+        ... on Dog {
+          name
+        }
+      }
+    ''')
+    result = execute(schema, john, ast)
+    assert not result.errors
+    assert result.data == {
+        'pets': [
+            {'__typename': 'Cat'},
+            {'__typename': 'Dog', 'name': 'Odie'}
+        ],
+    }

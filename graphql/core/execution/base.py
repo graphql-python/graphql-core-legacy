@@ -167,7 +167,7 @@ def should_include_node(ctx, directives):
 
 def does_fragment_condition_match(ctx, fragment, type_):
     conditional_type = type_from_ast(ctx.schema, fragment.type_condition)
-    if type(conditional_type) == type(type_):
+    if conditional_type == type_:
         return True
     if isinstance(conditional_type, (GraphQLInterfaceType, GraphQLUnionType)):
         return conditional_type.is_possible_type(type_)
