@@ -66,9 +66,12 @@ class ExecutionResult(object):
     query, `errors` is null if no errors occurred, and is a
     non-empty array if an error occurred."""
 
-    def __init__(self, data, errors=None):
+    def __init__(self, data, errors=None, invalid=False):
         self.data = data
         self.errors = errors
+        if invalid:
+            assert data is None
+        self.invalid = invalid
 
 
 def get_operation_root_type(schema, operation):

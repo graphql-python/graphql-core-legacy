@@ -51,8 +51,8 @@ class Executor(object):
             validation_errors = validate(self.schema, request)
             if validation_errors:
                 return succeed(ExecutionResult(
-                    data=None,
                     errors=validation_errors,
+                    invalid=True,
                 ))
 
         return self._execute_graphql_query(
