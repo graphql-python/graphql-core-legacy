@@ -14,11 +14,11 @@ class Token(object):
         self.value = value
 
     def __repr__(self):
-        return '<Token kind={} at {}..{} value={}>'.format(
+        return u'<Token kind={} at {}..{} value={}>'.format(
             get_token_kind_desc(self.kind),
             self.start,
             self.end,
-            self.value if self.value is not None else 'None'
+            repr(self.value)
         )
 
     def __eq__(self, other):
@@ -65,7 +65,7 @@ class TokenKind(object):
 
 def get_token_desc(token):
     if token.value:
-        return '{} "{}"'.format(
+        return u'{} "{}"'.format(
             get_token_kind_desc(token.kind),
             token.value
         )
