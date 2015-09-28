@@ -379,25 +379,16 @@ def parse_array(parser, is_const):
 def parse_object(parser, is_const):
     start = parser.token.start
     expect(parser, TokenKind.BRACE_L)
-    field_names = set()
     fields = []
     while not skip(parser, TokenKind.BRACE_R):
-        fields.append(parse_object_field(parser, is_const, field_names))
+        fields.append(parse_object_field(parser, is_const))
     return ast.ObjectValue(fields=fields, loc=loc(parser, start))
 
 
-def parse_object_field(parser, is_const, field_names):
+def parse_object_field(parser, is_const):
     start = parser.token.start
-    name = parse_name(parser)
-    if name.value in field_names:
-        raise LanguageError(
-            parser.source,
-            start,
-            "Duplicate input object field {}.".format(name.value)
-        )
-    field_names.add(name.value)
     return ast.ObjectField(
-        name=name,
+        name=parse_name(parser),
         value=(
             expect(parser, TokenKind.COLON),
             parse_value(parser, is_const))[1],

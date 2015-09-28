@@ -246,7 +246,7 @@ class NoUnusedFragments(ValidationRule):
             )
             for fragment_definition in self.fragment_definitions
             if fragment_definition.name.value not in fragment_names_used
-            ]
+        ]
 
         if errors:
             return errors
@@ -315,7 +315,7 @@ class NoFragmentCycles(ValidationRule):
             node.name.value: self.gather_spreads(node)
             for node in context.get_ast().definitions
             if isinstance(node, ast.FragmentDefinition)
-            }
+        }
         self.known_to_lead_to_cycle = set()
 
     def enter_FragmentDefinition(self, node, *args):
@@ -450,7 +450,7 @@ class NoUnusedVariables(ValidationRule):
             )
             for variable_definition in self.variable_definitions
             if variable_definition.variable.name.value not in self.variable_name_used
-            ]
+        ]
 
         if errors:
             return errors
@@ -851,7 +851,7 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
             return [
                 GraphQLError(self.fields_conflict_message(reason_name, reason), list(fields)) for
                 (reason_name, reason), fields in conflicts
-                ]
+            ]
 
     @staticmethod
     def same_type(type1, type2):
@@ -967,3 +967,26 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
                                 for reason_name, sub_reason in reason)
 
         return reason
+
+
+class UniqueInputFieldNames(ValidationRule):
+    def __init__(self, context):
+        super(UniqueInputFieldNames, self).__init__(context)
+        self.known_names = {}
+
+    def enter_ObjectValue(self, *args):
+        self.known_names = {}
+
+    def enter_ObjectField(self, node, *args):
+        field_name = node.name.value
+        if field_name in self.known_names:
+            return GraphQLError(
+                self.duplicate_input_field_message(field_name),
+                [self.known_names[field_name], node.name]
+            )
+
+        self.known_names[field_name] = node.name
+
+    @staticmethod
+    def duplicate_input_field_message(field_name):
+        return 'There can only be one input field named "{}"'.format(field_name)

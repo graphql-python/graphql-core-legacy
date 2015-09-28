@@ -28,6 +28,7 @@ specified_rules = [
     Rules.DefaultValuesOfCorrectType,
     Rules.VariablesInAllowedPosition,
     Rules.OverlappingFieldsCanBeMerged,
+    Rules.UniqueInputFieldNames
 ]
 
 
