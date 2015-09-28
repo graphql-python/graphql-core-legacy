@@ -214,7 +214,7 @@ def read_number(source, start, first_code):
     or an int depending on whether a decimal point appears.
 
     Int:   -?(0|[1-9][0-9]*)
-    Float: -?(0|[1-9][0-9]*)\.[0-9]+(e-?[0-9]+)?"""
+    Float: -?(0|[1-9][0-9]*)(\.[0-9]+)?((E|e)(+|-)?[0-9]+)?"""
     code = first_code
     body = source.body
     position = start
