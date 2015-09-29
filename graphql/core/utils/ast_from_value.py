@@ -1,8 +1,8 @@
 import json
 import re
 import sys
-from ..language import ast
 from ..compat import str_type
+from ..language import ast
 from ..type.definition import (
     GraphQLEnumType,
     GraphQLInputObjectType,

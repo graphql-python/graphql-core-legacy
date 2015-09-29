@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from graphql.core.type.definition import GraphQLEnumType, GraphQLList, GraphQLInputObjectType, GraphQLInputObjectField
 from graphql.core.type.scalars import GraphQLFloat
 from graphql.core.utils.ast_from_value import ast_from_value
@@ -62,7 +63,12 @@ def test_converts_list_singletons():
 
 
 def test_converts_input_objects():
-    assert ast_from_value({'foo': 3, 'bar': 'HELLO'}) == ast.ObjectValue(
+    value = OrderedDict([
+        ('foo', 3),
+        ('bar', 'HELLO')
+    ])
+
+    assert ast_from_value(value) == ast.ObjectValue(
         fields=[
             ast.ObjectField(
                 name=ast.Name('foo'),
@@ -80,7 +86,7 @@ def test_converts_input_objects():
         'bar': GraphQLInputObjectField(my_enum)
     })
 
-    assert ast_from_value({'foo': 3, 'bar': 'HELLO'}, input_obj) == ast.ObjectValue(
+    assert ast_from_value(value, input_obj) == ast.ObjectValue(
         fields=[
             ast.ObjectField(
                 name=ast.Name('foo'),

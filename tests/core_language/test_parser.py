@@ -42,12 +42,6 @@ def test_parses_constant_default_values():
     assert 'Syntax Error GraphQL (1:37) Unexpected $' in str(excinfo.value)
 
 
-def test_duplicate_keys_in_input_object_is_syntax_error():
-    with raises(LanguageError) as excinfo:
-        parse('{ field(arg: { a: 1, a: 2 }) }')
-    assert 'Syntax Error GraphQL (1:22) Duplicate input object field a.' in str(excinfo.value)
-
-
 def test_parses_kitchen_sink():
     parse(KITCHEN_SINK)
 

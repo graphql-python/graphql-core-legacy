@@ -1,3 +1,5 @@
+from ..language.printer import print_ast
+from ..utils.ast_from_value import ast_from_value
 from .definition import (
     GraphQLArgument,
     GraphQLEnumType,
@@ -11,8 +13,6 @@ from .definition import (
     GraphQLScalarType,
     GraphQLUnionType,
 )
-from ..language.printer import print_ast
-from ..utils.ast_from_value import ast_from_value
 from .scalars import GraphQLBoolean, GraphQLString
 
 __Schema = GraphQLObjectType(

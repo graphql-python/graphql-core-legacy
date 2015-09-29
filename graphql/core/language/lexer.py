@@ -14,11 +14,11 @@ class Token(object):
         self.value = value
 
     def __repr__(self):
-        return '<Token kind={} at {}..{} value={}>'.format(
+        return u'<Token kind={} at {}..{} value={}>'.format(
             get_token_kind_desc(self.kind),
             self.start,
             self.end,
-            self.value if self.value is not None else 'None'
+            repr(self.value)
         )
 
     def __eq__(self, other):
@@ -65,7 +65,7 @@ class TokenKind(object):
 
 def get_token_desc(token):
     if token.value:
-        return '{} "{}"'.format(
+        return u'{} "{}"'.format(
             get_token_kind_desc(token.kind),
             token.value
         )
@@ -103,7 +103,8 @@ TOKEN_DESCRIPTION = {
 def char_code_at(s, pos):
     if 0 <= pos < len(s):
         return ord(s[pos])
-    return 0
+
+    return None
 
 
 PUNCT_CODE_TO_KIND = {
@@ -122,6 +123,10 @@ PUNCT_CODE_TO_KIND = {
 }
 
 
+def print_char_code(code):
+    return 'EOF' if code is None else json.dumps(unichr(code))
+
+
 def read_token(source, from_position):
     """Gets the next token from the source starting at the given position.
 
@@ -132,30 +137,52 @@ def read_token(source, from_position):
     body_length = len(body)
 
     position = position_after_whitespace(body, from_position)
-    code = char_code_at(body, position)
 
     if position >= body_length:
         return Token(TokenKind.EOF, position, position)
+
+    code = char_code_at(body, position)
+
+    if code < 0x0020 and code not in (0x0009, 0x000A, 0x000D):
+        raise LanguageError(
+            source, position,
+            u'Invalid character {}.'.format(print_char_code(code))
+        )
 
     kind = PUNCT_CODE_TO_KIND.get(code)
     if kind is not None:
         return Token(kind, position, position + 1)
 
     if code == 46:  # .
-        if char_code_at(body, position + 1) == 46 and \
-                        char_code_at(body, position + 2) == 46:
+        if char_code_at(body, position + 1) == char_code_at(body, position + 2) == 46:
             return Token(TokenKind.SPREAD, position, position + 3)
+
     elif 65 <= code <= 90 or code == 95 or 97 <= code <= 122:
         # A-Z, _, a-z
         return read_name(source, position)
+
     elif code == 45 or 48 <= code <= 57:  # -, 0-9
         return read_number(source, position, code)
+
     elif code == 34:  # "
         return read_string(source, position)
 
     raise LanguageError(
         source, position,
-        u'Unexpected character {}'.format(json.dumps(body[position])))
+        u'Unexpected character {}.'.format(print_char_code(code)))
+
+ignored_whitespace_characters = frozenset([
+    # BOM
+    0xFEFF,
+    # White Space
+    0x0009,  # tab
+    0x0020,  # space
+    # Line Terminator
+    0x000A,  # new line
+    0x000D,  # carriage return
+    # Comma
+    0x002C
+])
 
 
 def position_after_whitespace(body, start_position):
@@ -166,20 +193,16 @@ def position_after_whitespace(body, start_position):
     position = start_position
     while position < body_length:
         code = char_code_at(body, position)
-        if code in (
-                32,  # space
-                44,  # comma
-                160,  # '\xa0'
-                0x2028,  # line separator
-                0x2029,  # paragraph separator
-        ) or (code > 8 and code < 14):  # whitespace
+        if code in ignored_whitespace_characters:
             position += 1
+
         elif code == 35:  # #, skip comments
             position += 1
             while position < body_length:
                 code = char_code_at(body, position)
-                if not code or code in (10, 13, 0x2028, 0x2029):
+                if not (code is not None and (code > 0x001F or code == 0x0009) and code not in (0x000A, 0x000D)):
                     break
+
                 position += 1
         else:
             break
@@ -191,7 +214,7 @@ def read_number(source, start, first_code):
     or an int depending on whether a decimal point appears.
 
     Int:   -?(0|[1-9][0-9]*)
-    Float: -?(0|[1-9][0-9]*)\.[0-9]+(e-?[0-9]+)?"""
+    Float: -?(0|[1-9][0-9]*)(\.[0-9]+)?((E|e)(+|-)?[0-9]+)?"""
     code = first_code
     body = source.body
     position = start
@@ -204,49 +227,62 @@ def read_number(source, start, first_code):
     if code == 48:  # 0
         position += 1
         code = char_code_at(body, position)
-    elif 49 <= code <= 57:  # 1 - 9
-        position += 1
-        code = char_code_at(body, position)
-        while 48 <= code <= 57:  # 0 - 9
-            position += 1
-            code = char_code_at(body, position)
+
+        if code is not None and 48 <= code <= 57:
+            raise LanguageError(
+                source,
+                position,
+                u'Invalid number, unexpected digit after 0: {}.'.format(print_char_code(code))
+            )
     else:
-        raise LanguageError(source, position, 'Invalid number')
+        position = read_digits(source, position, code)
+        code = char_code_at(body, position)
 
     if code == 46:  # .
         is_float = True
 
         position += 1
         code = char_code_at(body, position)
-        if 48 <= code <= 57:  # 0 - 9
-            position += 1
-            code = char_code_at(body, position)
-            while 48 <= code <= 57:  # 0 - 9
-                position += 1
-                code = char_code_at(body, position)
-        else:
-            raise LanguageError(source, position, 'Invalid number')
+        position = read_digits(source, position, code)
+        code = char_code_at(body, position)
 
-        if code == 101:  # e
+    if code in (69, 101):  # E e
+        is_float = True
+        position += 1
+        code = char_code_at(body, position)
+        if code in (43, 45):  # + -
             position += 1
             code = char_code_at(body, position)
-            if code == 45:  # -
-                position += 1
-                code = char_code_at(body, position)
-            if 48 <= code <= 57:  # 0 - 9
-                position += 1
-                code = char_code_at(body, position)
-                while 48 <= code <= 57:  # 0 - 9
-                    position += 1
-                    code = char_code_at(body, position)
-            else:
-                raise LanguageError(source, position, 'Invalid number')
+
+        position = read_digits(source, position, code)
 
     return Token(
         TokenKind.FLOAT if is_float else TokenKind.INT,
         start,
         position,
         body[start:position]
+    )
+
+
+def read_digits(source, start, first_code):
+    body = source.body
+    position = start
+    code = first_code
+
+    if code is not None and 48 <= code <= 57:  # 0 - 9
+        while True:
+            position += 1
+            code = char_code_at(body, position)
+
+            if not (code is not None and 48 <= code <= 57):
+                break
+
+        return position
+
+    raise LanguageError(
+        source,
+        position,
+        u'Invalid number, expected digit but got: {}.'.format(print_char_code(code))
     )
 
 
@@ -268,47 +304,73 @@ def read_string(source, start):
     "([^"\\\u000A\u000D\u2028\u2029]|(\\(u[0-9a-fA-F]{4}|["\\/bfnrt])))*"
     """
     body = source.body
+    body_length = len(body)
+
     position = start + 1
     chunk_start = position
-    code = None
-    value = u''
+    code = 0
+    value = []
+    append = value.append
 
-    while position < len(body):
+    while position < body_length:
         code = char_code_at(body, position)
-        if not code or code in (34, 10, 13, 0x2028, 0x2029):
+        if not (
+            code is not None and
+            code not in (
+                # LineTerminator
+                0x000A, 0x000D,
+                # Quote
+                34
+            )
+        ):
             break
+
+        if code < 0x0020 and code != 0x0009:
+            raise LanguageError(
+                source,
+                position,
+                u'Invalid character within String: {}.'.format(print_char_code(code))
+            )
+
         position += 1
         if code == 92:  # \
-            value += body[chunk_start:position - 1]
+            append(body[chunk_start:position - 1])
+
             code = char_code_at(body, position)
             escaped = ESCAPED_CHAR_CODES.get(code)
             if escaped is not None:
-                value += escaped
-            elif code == 117:
+                append(escaped)
+
+            elif code == 117:  # u
                 char_code = uni_char_code(
                     char_code_at(body, position + 1) or 0,
                     char_code_at(body, position + 2) or 0,
                     char_code_at(body, position + 3) or 0,
                     char_code_at(body, position + 4) or 0,
                 )
+
                 if char_code < 0:
                     raise LanguageError(
                         source, position,
-                        'Bad character escape sequence')
-                value += unichr(char_code)
+                        u'Invalid character escape sequence: \\u{}.'.format(body[position + 1: position + 5])
+                    )
+
+                append(unichr(char_code))
                 position += 4
             else:
                 raise LanguageError(
                     source, position,
-                    'Bad character escape sequence')
+                    u'Invalid character escape sequence: \\{}.'.format(unichr(code))
+                )
+
             position += 1
             chunk_start = position
 
-    if code != 34:
+    if code != 34:  # Quote (")
         raise LanguageError(source, position, 'Unterminated string')
 
-    value += body[chunk_start:position]
-    return Token(TokenKind.STRING, start, position + 1, value)
+    append(body[chunk_start:position])
+    return Token(TokenKind.STRING, start, position + 1, u''.join(value))
 
 
 def uni_char_code(a, b, c, d):
@@ -348,15 +410,17 @@ def read_name(source, position):
     body = source.body
     body_length = len(body)
     end = position + 1
-    code = None
+
     while end != body_length:
         code = char_code_at(body, end)
-        if not code or not (
+        if not (code is not None and (
             code == 95 or  # _
             48 <= code <= 57 or  # 0-9
             65 <= code <= 90 or  # A-Z
             97 <= code <= 122  # a-z
-        ):
+        )):
             break
+
         end += 1
+
     return Token(TokenKind.NAME, position, end, body[position:end])
