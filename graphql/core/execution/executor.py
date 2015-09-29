@@ -260,19 +260,21 @@ class Executor(object):
             runtime_type = return_type
 
         elif isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
-            runtime_type = return_type.resolve_type(result)
+            runtime_type = return_type.resolve_type(result, info)
             if runtime_type and not return_type.is_possible_type(runtime_type):
                 raise GraphQLError(
-                    'Runtime Object type "{}" is not a possible type for "{}".'.format(runtime_type, return_type),
+                    u'Runtime Object type "{}" is not a possible type for "{}".'.format(runtime_type, return_type),
                     field_asts
                 )
 
         if not runtime_type:
             return None
 
-        # Todo: Implement Properly
-        # if hasattr(runtime_type, 'is_type_of') and not runtime_type.is_type_of(result):
-        # pass
+        if hasattr(runtime_type, 'is_type_of') and not runtime_type.is_type_of(result, info):
+            raise GraphQLError(
+                u'Expected value of type "{}" but got {}.'.format(return_type, result),
+                field_asts
+            )
 
         # Collect sub-fields to execute to complete this value.
         subfield_asts = {}
