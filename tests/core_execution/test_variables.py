@@ -254,19 +254,6 @@ def test_allows_nullable_inputs_to_be_set_to_null_in_a_variable():
            {"fieldWithNullableStringInput": "null"}
 
 
-def test_allows_nullable_inputs_to_be_set_to_null_directly():
-    doc = '''
-    {
-        fieldWithNullableStringInput(input: null)
-    }
-    '''
-    ast = parse(doc)
-    result = execute(schema, None, ast)
-    assert not result.errors
-    assert result.data == \
-           {"fieldWithNullableStringInput": "null"}
-
-
 def test_allows_nullable_inputs_to_be_set_to_a_value_in_a_variable():
     doc = '''
     query SetsNullable($value: String) {
