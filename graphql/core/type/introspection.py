@@ -1,4 +1,3 @@
-import json
 from .definition import (
     GraphQLArgument,
     GraphQLEnumType,
@@ -12,6 +11,8 @@ from .definition import (
     GraphQLScalarType,
     GraphQLUnionType,
 )
+from ..language.printer import print_ast
+from ..utils.ast_from_value import ast_from_value
 from .scalars import GraphQLBoolean, GraphQLString
 
 __Schema = GraphQLObjectType(
@@ -186,7 +187,7 @@ __InputValue = GraphQLObjectType('__InputValue', lambda: {
         type=GraphQLString,
         resolver=lambda input_val, *_:
             None if input_val.default_value is None
-            else json.dumps(input_val.default_value)
+            else print_ast(ast_from_value(input_val.default_value, input_val))
     )
 })
 

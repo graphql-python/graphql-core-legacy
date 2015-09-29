@@ -143,7 +143,7 @@ def read_token(source, from_position):
 
     if code == 46:  # .
         if char_code_at(body, position + 1) == 46 and \
-                char_code_at(body, position + 2) == 46:
+                        char_code_at(body, position + 2) == 46:
             return Token(TokenKind.SPREAD, position, position + 3)
     elif 65 <= code <= 90 or code == 95 or 97 <= code <= 122:
         # A-Z, _, a-z
@@ -167,11 +167,11 @@ def position_after_whitespace(body, start_position):
     while position < body_length:
         code = char_code_at(body, position)
         if code in (
-            32,  # space
-            44,  # comma
-            160,  # '\xa0'
-            0x2028,  # line separator
-            0x2029,  # paragraph separator
+                32,  # space
+                44,  # comma
+                160,  # '\xa0'
+                0x2028,  # line separator
+                0x2029,  # paragraph separator
         ) or (code > 8 and code < 14):  # whitespace
             position += 1
         elif code == 35:  # #, skip comments

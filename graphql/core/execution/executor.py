@@ -8,7 +8,7 @@ from ..language.parser import parse
 from ..language.source import Source
 from ..type import GraphQLEnumType, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, \
     GraphQLScalarType, GraphQLUnionType
-from ..utils import is_nullish
+from ..utils.is_nullish import is_nullish
 from ..validation import validate
 from .base import ExecutionContext, ExecutionResult, ResolveInfo, Undefined, collect_fields, default_resolve_fn, \
     get_argument_values, get_field_def, get_operation_root_type

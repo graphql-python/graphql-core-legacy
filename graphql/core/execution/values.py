@@ -11,7 +11,8 @@ from ..type import (
     GraphQLScalarType,
     is_input_type
 )
-from ..utils import is_nullish, type_from_ast
+from ..utils.is_nullish import is_nullish
+from ..utils.type_from_ast import type_from_ast
 
 __all__ = ['get_variable_values', 'get_argument_values']
 

@@ -14,7 +14,8 @@ from ..type.definition import (
     is_input_type,
     is_leaf_type,
 )
-from ..utils import is_valid_literal_value, type_from_ast
+from ..utils.is_valid_literal_value import is_valid_literal_value
+from ..utils.type_from_ast import type_from_ast
 from .utils import DefaultOrderedDict, PairSet
 
 
