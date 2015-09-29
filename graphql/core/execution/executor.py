@@ -270,7 +270,7 @@ class Executor(object):
         if not runtime_type:
             return None
 
-        if hasattr(runtime_type, 'is_type_of') and not runtime_type.is_type_of(result, info):
+        if not runtime_type.is_type_of(result, info):
             raise GraphQLError(
                 u'Expected value of type "{}" but got {}.'.format(return_type, result),
                 field_asts
