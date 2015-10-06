@@ -324,22 +324,16 @@ class NoFragmentCycles(ValidationRule):
         initial_name = node.name.value
         spread_path = []
 
-        # This will convert the ast.FragmentDefinition to something that we can add
-        # to a set. Otherwise we get a `unhashable type: dict` error.
-        # This makes it so that we can define a way to uniquely identify a FragmentDefinition
-        # within a set.
-        fragment_node_to_hashable = lambda fs: (fs.loc['start'], fs.loc['end'], fs.name.value)
-
         def detect_cycle_recursive(fragment_name):
             spread_nodes = self.spreads_in_fragment[fragment_name]
 
             for spread_node in spread_nodes:
-                if fragment_node_to_hashable(spread_node) in self.known_to_lead_to_cycle:
+                if spread_node in self.known_to_lead_to_cycle:
                     continue
 
                 if spread_node.name.value == initial_name:
                     cycle_path = spread_path + [spread_node]
-                    self.known_to_lead_to_cycle |= set(map(fragment_node_to_hashable, cycle_path))
+                    self.known_to_lead_to_cycle |= set(cycle_path)
 
                     errors.append(GraphQLError(
                         self.cycle_error_message(initial_name, [s.name.value for s in spread_path]),
@@ -762,28 +756,14 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
 
         return conflicts
 
-    @staticmethod
-    def ast_to_hashable(ast):
-        """
-        This function will take an AST, and return a portion of it that is unique enough to identify the AST,
-        but without the unhashable bits.
-        """
-        if not ast:
-            return None
-
-        return ast.__class__, ast.loc['start'], ast.loc['end']
-
     def find_conflict(self, response_name, pair1, pair2):
         ast1, def1 = pair1
         ast2, def2 = pair2
 
-        ast1_hashable = self.ast_to_hashable(ast1)
-        ast2_hashable = self.ast_to_hashable(ast2)
-
-        if ast1 is ast2 or self.compared_set.has(ast1_hashable, ast2_hashable):
+        if ast1 is ast2 or self.compared_set.has(ast1, ast2):
             return
 
-        self.compared_set.add(ast1_hashable, ast2_hashable)
+        self.compared_set.add(ast1, ast2)
 
         name1 = ast1.name.value
         name2 = ast2.name.value

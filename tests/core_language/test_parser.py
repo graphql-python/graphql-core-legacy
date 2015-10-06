@@ -2,7 +2,7 @@ from pytest import raises
 from graphql.core.language.error import LanguageError
 from graphql.core.language.location import SourceLocation
 from graphql.core.language.source import Source
-from graphql.core.language.parser import parse
+from graphql.core.language.parser import parse, Loc
 from graphql.core.language import ast
 from fixtures import KITCHEN_SINK
 
@@ -104,12 +104,12 @@ def test_parses_multi_byte_characters():
 
 def tesst_allows_non_keywords_anywhere_a_name_is_allowed():
     non_keywords = [
-      'on',
-      'fragment',
-      'query',
-      'mutation',
-      'true',
-      'false'
+        'on',
+        'fragment',
+        'query',
+        'mutation',
+        'true',
+        'false'
     ]
 
     query_template = '''
@@ -146,48 +146,48 @@ def test_parse_creates_ast():
 
     assert result == \
            ast.Document(
-               loc={'start': 0, 'end': 41, 'source': source},
+               loc=Loc(start=0, end=41, source=source),
                definitions=
                [ast.OperationDefinition(
-                   loc={'start': 0, 'end': 40, 'source': source},
+                   loc=Loc(start=0, end=40, source=source),
                    operation='query',
                    name=None,
                    variable_definitions=None,
                    directives=[],
                    selection_set=ast.SelectionSet(
-                       loc={'start': 0, 'end': 40, 'source': source},
+                       loc=Loc(start=0, end=40, source=source),
                        selections=
                        [ast.Field(
-                           loc={'start': 4, 'end': 38, 'source': source},
+                           loc=Loc(start=4, end=38, source=source),
                            alias=None,
                            name=ast.Name(
-                               loc={'start': 4, 'end': 8, 'source': source},
+                               loc=Loc(start=4, end=8, source=source),
                                value='node'),
                            arguments=[ast.Argument(
-                               name=ast.Name(loc={'start': 9, 'end': 11, 'source': source},
+                               name=ast.Name(loc=Loc(start=9, end=11, source=source),
                                              value='id'),
                                value=ast.IntValue(
-                                   loc={'start': 13, 'end': 14, 'source': source},
+                                   loc=Loc(start=13, end=14, source=source),
                                    value='4'),
-                               loc={'start': 9, 'end': 14, 'source': source})],
+                               loc=Loc(start=9, end=14, source=source))],
                            directives=[],
                            selection_set=ast.SelectionSet(
-                               loc={'start': 16, 'end': 38, 'source': source},
+                               loc=Loc(start=16, end=38, source=source),
                                selections=
                                [ast.Field(
-                                   loc={'start': 22, 'end': 24, 'source': source},
+                                   loc=Loc(start=22, end=24, source=source),
                                    alias=None,
                                    name=ast.Name(
-                                       loc={'start': 22, 'end': 24, 'source': source},
+                                       loc=Loc(start=22, end=24, source=source),
                                        value='id'),
                                    arguments=[],
                                    directives=[],
                                    selection_set=None),
                                    ast.Field(
-                                       loc={'start': 30, 'end': 34, 'source': source},
+                                       loc=Loc(start=30, end=34, source=source),
                                        alias=None,
                                        name=ast.Name(
-                                           loc={'start': 30, 'end': 34, 'source': source},
+                                           loc=Loc(start=30, end=34, source=source),
                                            value='name'),
                                        arguments=[],
                                        directives=[],

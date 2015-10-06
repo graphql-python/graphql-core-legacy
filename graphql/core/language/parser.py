@@ -19,6 +19,8 @@ def parse(source, **kwargs):
 
 
 class Parser(object):
+    __slots__ = 'lexer', 'source', 'options', 'prev_end', 'token'
+
     def __init__(self, source, options):
         self.lexer = Lexer(source)
         self.source = source
@@ -27,21 +29,37 @@ class Parser(object):
         self.token = self.lexer.next_token()
 
 
+class Loc(object):
+    __slots__ = 'start', 'end', 'source'
+
+    def __init__(self, start, end, source=None):
+        self.start = start
+        self.end = end
+        self.source = source
+
+    def __repr__(self):
+        source = ' source={}'.format(self.source) if self.source else ''
+        return '<Loc start={} end={}{}>'.format(self.start, self.end, source)
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, Loc) and
+            self.start == other.start and
+            self.end == other.end and
+            self.source == other.source
+        )
+
+
 def loc(parser, start):
     """Returns a location object, used to identify the place in
     the source that created a given parsed object."""
     if parser.options['no_location']:
         return None
+
     if parser.options['no_source']:
-        return {
-            'start': start,
-            'end': parser.prev_end
-        }
-    return {
-        'start': start,
-        'end': parser.prev_end,
-        'source': parser.source
-    }
+        return Loc(start, parser.prev_end)
+
+    return Loc(start, parser.prev_end, parser.source)
 
 
 def advance(parser):

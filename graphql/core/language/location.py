@@ -1,8 +1,22 @@
-from collections import namedtuple
-
 __all__ = ['get_location', 'SourceLocation']
 
-SourceLocation = namedtuple('SourceLocation', 'line column')
+
+class SourceLocation(object):
+    __slots__ = 'line', 'column'
+
+    def __init__(self, line, column):
+        self.line = line
+        self.column = column
+
+    def __repr__(self):
+        return '<SourceLocation line={} column={}>'.format(self.line, self.column)
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, SourceLocation) and
+            self.line == other.line and
+            self.column == other.column
+        )
 
 
 def get_location(source, position):

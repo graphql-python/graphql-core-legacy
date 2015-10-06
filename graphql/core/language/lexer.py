@@ -7,6 +7,8 @@ __all__ = ['Token', 'Lexer', 'TokenKind',
 
 
 class Token(object):
+    __slots__ = 'kind', 'start', 'end', 'value'
+
     def __init__(self, kind, start, end, value=None):
         self.kind = kind
         self.start = start
@@ -29,6 +31,8 @@ class Token(object):
 
 
 class Lexer(object):
+    __slots__ = 'source', 'prev_position'
+
     def __init__(self, source):
         self.source = source
         self.prev_position = 0

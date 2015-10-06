@@ -11,7 +11,8 @@ class Definition(Node):
 
 
 class Document(Node):
-    __slots__ = ('loc', 'definitions')
+    __slots__ = ('loc', 'definitions',)
+    _fields = ('definitions',)
 
     def __init__(self, definitions, loc=None):
         self.loc = loc
@@ -19,9 +20,11 @@ class Document(Node):
 
     def __eq__(self, other):
         return (
-            isinstance(other, Document) and
-            self.loc == other.loc and
-            self.definitions == other.definitions
+            self is other or (
+                isinstance(other, Document) and
+                self.loc == other.loc and
+                self.definitions == other.definitions
+            )
         )
 
     def __repr__(self):
@@ -29,9 +32,13 @@ class Document(Node):
                 'definitions={self.definitions!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class OperationDefinition(Definition):
-    __slots__ = ('loc', 'operation', 'name', 'variable_definitions', 'directives', 'selection_set')
+    __slots__ = ('loc', 'operation', 'name', 'variable_definitions', 'directives', 'selection_set',)
+    _fields = ('operation', 'name', 'variable_definitions', 'directives', 'selection_set',)
 
     def __init__(self, operation, selection_set, name=None, variable_definitions=None, directives=None, loc=None):
         self.loc = loc
@@ -43,13 +50,15 @@ class OperationDefinition(Definition):
 
     def __eq__(self, other):
         return (
-            isinstance(other, OperationDefinition) and
-            self.loc == other.loc and
-            self.operation == other.operation and
-            self.name == other.name and
-            self.variable_definitions == other.variable_definitions and
-            self.directives == other.directives and
-            self.selection_set == other.selection_set
+            self is other or (
+                isinstance(other, OperationDefinition) and
+                self.loc == other.loc and
+                self.operation == other.operation and
+                self.name == other.name and
+                self.variable_definitions == other.variable_definitions and
+                self.directives == other.directives and
+                self.selection_set == other.selection_set
+            )
         )
 
     def __repr__(self):
@@ -61,9 +70,13 @@ class OperationDefinition(Definition):
                 ', selection_set={self.selection_set!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class VariableDefinition(Node):
-    __slots__ = ('loc', 'variable', 'type', 'default_value')
+    __slots__ = ('loc', 'variable', 'type', 'default_value',)
+    _fields = ('variable', 'type', 'default_value',)
 
     def __init__(self, variable, type, default_value=None, loc=None):
         self.loc = loc
@@ -73,11 +86,13 @@ class VariableDefinition(Node):
 
     def __eq__(self, other):
         return (
-            isinstance(other, VariableDefinition) and
-            self.loc == other.loc and
-            self.variable == other.variable and
-            self.type == other.type and
-            self.default_value == other.default_value
+            self is other or (
+                isinstance(other, VariableDefinition) and
+                self.loc == other.loc and
+                self.variable == other.variable and
+                self.type == other.type and
+                self.default_value == other.default_value
+            )
         )
 
     def __repr__(self):
@@ -87,9 +102,13 @@ class VariableDefinition(Node):
                 ', default_value={self.default_value!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class SelectionSet(Node):
-    __slots__ = ('loc', 'selections')
+    __slots__ = ('loc', 'selections',)
+    _fields = ('selections',)
 
     def __init__(self, selections, loc=None):
         self.loc = loc
@@ -97,9 +116,11 @@ class SelectionSet(Node):
 
     def __eq__(self, other):
         return (
-            isinstance(other, SelectionSet) and
-            self.loc == other.loc and
-            self.selections == other.selections
+            self is other or (
+                isinstance(other, SelectionSet) and
+                self.loc == other.loc and
+                self.selections == other.selections
+            )
         )
 
     def __repr__(self):
@@ -107,13 +128,17 @@ class SelectionSet(Node):
                 'selections={self.selections!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class Selection(Node):
     pass
 
 
 class Field(Selection):
-    __slots__ = ('loc', 'alias', 'name', 'arguments', 'directives', 'selection_set')
+    __slots__ = ('loc', 'alias', 'name', 'arguments', 'directives', 'selection_set',)
+    _fields = ('alias', 'name', 'arguments', 'directives', 'selection_set',)
 
     def __init__(self, name, alias=None, arguments=None, directives=None, selection_set=None, loc=None):
         self.loc = loc
@@ -125,13 +150,15 @@ class Field(Selection):
 
     def __eq__(self, other):
         return (
-            isinstance(other, Field) and
-            self.loc == other.loc and
-            self.alias == other.alias and
-            self.name == other.name and
-            self.arguments == other.arguments and
-            self.directives == other.directives and
-            self.selection_set == other.selection_set
+            self is other or (
+                isinstance(other, Field) and
+                self.loc == other.loc and
+                self.alias == other.alias and
+                self.name == other.name and
+                self.arguments == other.arguments and
+                self.directives == other.directives and
+                self.selection_set == other.selection_set
+            )
         )
 
     def __repr__(self):
@@ -143,9 +170,13 @@ class Field(Selection):
                 ', selection_set={self.selection_set!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class Argument(Node):
-    __slots__ = ('loc', 'name', 'value')
+    __slots__ = ('loc', 'name', 'value',)
+    _fields = ('name', 'value',)
 
     def __init__(self, name, value, loc=None):
         self.loc = loc
@@ -154,10 +185,12 @@ class Argument(Node):
 
     def __eq__(self, other):
         return (
-            isinstance(other, Argument) and
-            self.loc == other.loc and
-            self.name == other.name and
-            self.value == other.value
+            self is other or (
+                isinstance(other, Argument) and
+                self.loc == other.loc and
+                self.name == other.name and
+                self.value == other.value
+            )
         )
 
     def __repr__(self):
@@ -166,9 +199,13 @@ class Argument(Node):
                 ', value={self.value!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class FragmentSpread(Selection):
-    __slots__ = ('loc', 'name', 'directives')
+    __slots__ = ('loc', 'name', 'directives',)
+    _fields = ('name', 'directives',)
 
     def __init__(self, name, directives=None, loc=None):
         self.loc = loc
@@ -177,10 +214,12 @@ class FragmentSpread(Selection):
 
     def __eq__(self, other):
         return (
-            isinstance(other, FragmentSpread) and
-            self.loc == other.loc and
-            self.name == other.name and
-            self.directives == other.directives
+            self is other or (
+                isinstance(other, FragmentSpread) and
+                self.loc == other.loc and
+                self.name == other.name and
+                self.directives == other.directives
+            )
         )
 
     def __repr__(self):
@@ -189,9 +228,13 @@ class FragmentSpread(Selection):
                 ', directives={self.directives!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class InlineFragment(Selection):
-    __slots__ = ('loc', 'type_condition', 'directives', 'selection_set')
+    __slots__ = ('loc', 'type_condition', 'directives', 'selection_set',)
+    _fields = ('type_condition', 'directives', 'selection_set',)
 
     def __init__(self, type_condition, selection_set, directives=None, loc=None):
         self.loc = loc
@@ -201,11 +244,13 @@ class InlineFragment(Selection):
 
     def __eq__(self, other):
         return (
-            isinstance(other, InlineFragment) and
-            self.loc == other.loc and
-            self.type_condition == other.type_condition and
-            self.directives == other.directives and
-            self.selection_set == other.selection_set
+            self is other or (
+                isinstance(other, InlineFragment) and
+                self.loc == other.loc and
+                self.type_condition == other.type_condition and
+                self.directives == other.directives and
+                self.selection_set == other.selection_set
+            )
         )
 
     def __repr__(self):
@@ -215,9 +260,13 @@ class InlineFragment(Selection):
                 ', selection_set={self.selection_set!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class FragmentDefinition(Definition):
-    __slots__ = ('loc', 'name', 'type_condition', 'directives', 'selection_set')
+    __slots__ = ('loc', 'name', 'type_condition', 'directives', 'selection_set',)
+    _fields = ('name', 'type_condition', 'directives', 'selection_set',)
 
     def __init__(self, name, type_condition, selection_set, directives=None, loc=None):
         self.loc = loc
@@ -228,12 +277,14 @@ class FragmentDefinition(Definition):
 
     def __eq__(self, other):
         return (
-            isinstance(other, FragmentDefinition) and
-            self.loc == other.loc and
-            self.name == other.name and
-            self.type_condition == other.type_condition and
-            self.directives == other.directives and
-            self.selection_set == other.selection_set
+            self is other or (
+                isinstance(other, FragmentDefinition) and
+                self.loc == other.loc and
+                self.name == other.name and
+                self.type_condition == other.type_condition and
+                self.directives == other.directives and
+                self.selection_set == other.selection_set
+            )
         )
 
     def __repr__(self):
@@ -244,13 +295,17 @@ class FragmentDefinition(Definition):
                 ', selection_set={self.selection_set!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class Value(Node):
     pass
 
 
 class Variable(Value):
-    __slots__ = ('loc', 'name')
+    __slots__ = ('loc', 'name',)
+    _fields = ('name',)
 
     def __init__(self, name, loc=None):
         self.loc = loc
@@ -258,9 +313,11 @@ class Variable(Value):
 
     def __eq__(self, other):
         return (
-            isinstance(other, Variable) and
-            self.loc == other.loc and
-            self.name == other.name
+            self is other or (
+                isinstance(other, Variable) and
+                self.loc == other.loc and
+                self.name == other.name
+            )
         )
 
     def __repr__(self):
@@ -268,9 +325,13 @@ class Variable(Value):
                 'name={self.name!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class IntValue(Value):
-    __slots__ = ('loc', 'value')
+    __slots__ = ('loc', 'value',)
+    _fields = ('value',)
 
     def __init__(self, value, loc=None):
         self.loc = loc
@@ -278,9 +339,11 @@ class IntValue(Value):
 
     def __eq__(self, other):
         return (
-            isinstance(other, IntValue) and
-            self.loc == other.loc and
-            self.value == other.value
+            self is other or (
+                isinstance(other, IntValue) and
+                self.loc == other.loc and
+                self.value == other.value
+            )
         )
 
     def __repr__(self):
@@ -288,9 +351,13 @@ class IntValue(Value):
                 'value={self.value!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class FloatValue(Value):
-    __slots__ = ('loc', 'value')
+    __slots__ = ('loc', 'value',)
+    _fields = ('value',)
 
     def __init__(self, value, loc=None):
         self.loc = loc
@@ -298,9 +365,11 @@ class FloatValue(Value):
 
     def __eq__(self, other):
         return (
-            isinstance(other, FloatValue) and
-            self.loc == other.loc and
-            self.value == other.value
+            self is other or (
+                isinstance(other, FloatValue) and
+                self.loc == other.loc and
+                self.value == other.value
+            )
         )
 
     def __repr__(self):
@@ -308,9 +377,13 @@ class FloatValue(Value):
                 'value={self.value!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class StringValue(Value):
-    __slots__ = ('loc', 'value')
+    __slots__ = ('loc', 'value',)
+    _fields = ('value',)
 
     def __init__(self, value, loc=None):
         self.loc = loc
@@ -318,9 +391,11 @@ class StringValue(Value):
 
     def __eq__(self, other):
         return (
-            isinstance(other, StringValue) and
-            self.loc == other.loc and
-            self.value == other.value
+            self is other or (
+                isinstance(other, StringValue) and
+                self.loc == other.loc and
+                self.value == other.value
+            )
         )
 
     def __repr__(self):
@@ -328,9 +403,13 @@ class StringValue(Value):
                 'value={self.value!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class BooleanValue(Value):
-    __slots__ = ('loc', 'value')
+    __slots__ = ('loc', 'value',)
+    _fields = ('value',)
 
     def __init__(self, value, loc=None):
         self.loc = loc
@@ -338,9 +417,11 @@ class BooleanValue(Value):
 
     def __eq__(self, other):
         return (
-            isinstance(other, BooleanValue) and
-            self.loc == other.loc and
-            self.value == other.value
+            self is other or (
+                isinstance(other, BooleanValue) and
+                self.loc == other.loc and
+                self.value == other.value
+            )
         )
 
     def __repr__(self):
@@ -348,9 +429,13 @@ class BooleanValue(Value):
                 'value={self.value!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class EnumValue(Value):
-    __slots__ = ('loc', 'value')
+    __slots__ = ('loc', 'value',)
+    _fields = ('value',)
 
     def __init__(self, value, loc=None):
         self.loc = loc
@@ -358,9 +443,11 @@ class EnumValue(Value):
 
     def __eq__(self, other):
         return (
-            isinstance(other, EnumValue) and
-            self.loc == other.loc and
-            self.value == other.value
+            self is other or (
+                isinstance(other, EnumValue) and
+                self.loc == other.loc and
+                self.value == other.value
+            )
         )
 
     def __repr__(self):
@@ -368,9 +455,13 @@ class EnumValue(Value):
                 'value={self.value!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class ListValue(Value):
-    __slots__ = ('loc', 'values')
+    __slots__ = ('loc', 'values',)
+    _fields = ('values',)
 
     def __init__(self, values, loc=None):
         self.loc = loc
@@ -378,9 +469,11 @@ class ListValue(Value):
 
     def __eq__(self, other):
         return (
-            isinstance(other, ListValue) and
-            self.loc == other.loc and
-            self.values == other.values
+            self is other or (
+                isinstance(other, ListValue) and
+                self.loc == other.loc and
+                self.values == other.values
+            )
         )
 
     def __repr__(self):
@@ -388,9 +481,13 @@ class ListValue(Value):
                 'values={self.values!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class ObjectValue(Value):
-    __slots__ = ('loc', 'fields')
+    __slots__ = ('loc', 'fields',)
+    _fields = ('fields',)
 
     def __init__(self, fields, loc=None):
         self.loc = loc
@@ -398,9 +495,11 @@ class ObjectValue(Value):
 
     def __eq__(self, other):
         return (
-            isinstance(other, ObjectValue) and
-            self.loc == other.loc and
-            self.fields == other.fields
+            self is other or (
+                isinstance(other, ObjectValue) and
+                self.loc == other.loc and
+                self.fields == other.fields
+            )
         )
 
     def __repr__(self):
@@ -408,9 +507,13 @@ class ObjectValue(Value):
                 'fields={self.fields!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class ObjectField(Node):
-    __slots__ = ('loc', 'name', 'value')
+    __slots__ = ('loc', 'name', 'value',)
+    _fields = ('name', 'value',)
 
     def __init__(self, name, value, loc=None):
         self.loc = loc
@@ -419,10 +522,12 @@ class ObjectField(Node):
 
     def __eq__(self, other):
         return (
-            isinstance(other, ObjectField) and
-            self.loc == other.loc and
-            self.name == other.name and
-            self.value == other.value
+            self is other or (
+                isinstance(other, ObjectField) and
+                self.loc == other.loc and
+                self.name == other.name and
+                self.value == other.value
+            )
         )
 
     def __repr__(self):
@@ -431,9 +536,13 @@ class ObjectField(Node):
                 ', value={self.value!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class Directive(Node):
-    __slots__ = ('loc', 'name', 'arguments')
+    __slots__ = ('loc', 'name', 'arguments',)
+    _fields = ('name', 'arguments',)
 
     def __init__(self, name, arguments=None, loc=None):
         self.loc = loc
@@ -442,10 +551,12 @@ class Directive(Node):
 
     def __eq__(self, other):
         return (
-            isinstance(other, Directive) and
-            self.loc == other.loc and
-            self.name == other.name and
-            self.arguments == other.arguments
+            self is other or (
+                isinstance(other, Directive) and
+                self.loc == other.loc and
+                self.name == other.name and
+                self.arguments == other.arguments
+            )
         )
 
     def __repr__(self):
@@ -454,13 +565,17 @@ class Directive(Node):
                 ', arguments={self.arguments!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class Type(Node):
     pass
 
 
 class NamedType(Type):
-    __slots__ = ('loc', 'name')
+    __slots__ = ('loc', 'name',)
+    _fields = ('name',)
 
     def __init__(self, name, loc=None):
         self.loc = loc
@@ -468,9 +583,11 @@ class NamedType(Type):
 
     def __eq__(self, other):
         return (
-            isinstance(other, NamedType) and
-            self.loc == other.loc and
-            self.name == other.name
+            self is other or (
+                isinstance(other, NamedType) and
+                self.loc == other.loc and
+                self.name == other.name
+            )
         )
 
     def __repr__(self):
@@ -478,9 +595,13 @@ class NamedType(Type):
                 'name={self.name!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class ListType(Type):
-    __slots__ = ('loc', 'type')
+    __slots__ = ('loc', 'type',)
+    _fields = ('type',)
 
     def __init__(self, type, loc=None):
         self.loc = loc
@@ -488,9 +609,11 @@ class ListType(Type):
 
     def __eq__(self, other):
         return (
-            isinstance(other, ListType) and
-            self.loc == other.loc and
-            self.type == other.type
+            self is other or (
+                isinstance(other, ListType) and
+                self.loc == other.loc and
+                self.type == other.type
+            )
         )
 
     def __repr__(self):
@@ -498,9 +621,13 @@ class ListType(Type):
                 'type={self.type!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class NonNullType(Type):
-    __slots__ = ('loc', 'type')
+    __slots__ = ('loc', 'type',)
+    _fields = ('type',)
 
     def __init__(self, type, loc=None):
         self.loc = loc
@@ -508,9 +635,11 @@ class NonNullType(Type):
 
     def __eq__(self, other):
         return (
-            isinstance(other, NonNullType) and
-            self.loc == other.loc and
-            self.type == other.type
+            self is other or (
+                isinstance(other, NonNullType) and
+                self.loc == other.loc and
+                self.type == other.type
+            )
         )
 
     def __repr__(self):
@@ -518,9 +647,13 @@ class NonNullType(Type):
                 'type={self.type!r}'
                 ')').format(self=self)
 
+    def __hash__(self):
+        return id(self)
+
 
 class Name(Node):
-    __slots__ = ('loc', 'value')
+    __slots__ = ('loc', 'value',)
+    _fields = ('value',)
 
     def __init__(self, value, loc=None):
         self.loc = loc
@@ -528,12 +661,17 @@ class Name(Node):
 
     def __eq__(self, other):
         return (
-            isinstance(other, Name) and
-            self.loc == other.loc and
-            self.value == other.value
+            self is other or (
+                isinstance(other, Name) and
+                self.loc == other.loc and
+                self.value == other.value
+            )
         )
 
     def __repr__(self):
         return ('Name('
                 'value={self.value!r}'
                 ')').format(self=self)
+
+    def __hash__(self):
+        return id(self)

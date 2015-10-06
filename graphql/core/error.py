@@ -20,14 +20,14 @@ class GraphQLError(Error):
             return self._source
         if self.nodes:
             node = self.nodes[0]
-            return node and node.loc and node.loc['source']
+            return node and node.loc and node.loc.source
 
     @property
     def positions(self):
         if self._positions:
             return self._positions
         if self.nodes is not None:
-            node_positions = [node.loc and node.loc['start'] for node in self.nodes]
+            node_positions = [node.loc and node.loc.start for node in self.nodes]
             if any(node_positions):
                 return node_positions
 

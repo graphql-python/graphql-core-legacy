@@ -55,57 +55,70 @@ class {name}({parent_type}):'''.format(name=name, parent_type=parent_type)
     def end_type(self, typename):
         typename = remap_type(typename)
         self._print_slots()
+        self._print_fields()
         self._print_ctor()
         self._print_comparator(typename)
         self._print_repr(typename)
+        self._print_hash()
         self._fields = []
+
+    def _print_fields(self):
+        fields = ', '.join("'" + snake(name) + "'" for (type, name, nullable, plural) in self._fields)
+        print('''    _fields = ({},)'''.format(fields))
 
     def _print_slots(self):
         slots = ', '.join("'" + snake(name) + "'" for (type, name, nullable, plural) in self._fields)
-        print '''    __slots__ = ('loc', {slots})'''.format(slots=slots)
+        print('''    __slots__ = ('loc', {slots},)'''.format(slots=slots))
 
     def _print_ctor(self):
         fields = (
             [field for field in self._fields if not field[2]] +
             [field for field in self._fields if field[2]])
         ctor_args = ', '.join(snake(name) + ('=None' if nullable else '') for (type, name, nullable, plural) in fields)
-        print '''
+        print('''
     def __init__(self, {ctor_args}, loc=None):
-        self.loc = loc'''.format(ctor_args=ctor_args)
+        self.loc = loc'''.format(ctor_args=ctor_args))
         for type, name, nullable, plural in self._fields:
-            print '''        self.{name} = {name}'''.format(name=snake(name))
+            print('''        self.{name} = {name}'''.format(name=snake(name)))
 
     def _print_comparator(self, typename):
-        print '''
+        print('''
     def __eq__(self, other):
         return (
-            isinstance(other, {typename}) and
-            self.loc == other.loc and'''.format(typename=typename)
-        print ' and\n'.join(
-            '''            self.{name} == other.{name}'''.format(name=snake(name))
+            self is other or (
+                isinstance(other, {typename}) and
+                self.loc == other.loc and'''.format(typename=typename))
+        print(' and\n'.join(
+            '''                self.{name} == other.{name}'''.format(name=snake(name))
             for type, name, nullable, plural in self._fields
-        )
-        print '        )'
+        ))
+        print('            )')
+        print('        )')
 
     def _print_repr(self, typename):
-        print '''
+        print('''
     def __repr__(self):
-        return ('{typename}(' '''.rstrip().format(typename=typename)
+        return ('{typename}(' '''.rstrip().format(typename=typename))
         first = True
         for type, name, nullable, plural in self._fields:
-            print "                '{comma}{name}={{self.{name}!r}}'".format(
+            print("                '{comma}{name}={{self.{name}!r}}'".format(
                 comma=', ' if not first else '',
                 name=snake(name)
-            )
+            ))
             first = False
-        print '''                ')').format(self=self)'''
+        print('''                ')').format(self=self)''')
+
+    def _print_hash(self):
+        print('''
+    def __hash__(self):
+        return id(self)''')
 
     def start_union(self, name):
         self._current_union = name
-        print '''
+        print('''
 
 class {name}(Node):
-    pass'''.format(name=name)
+    pass'''.format(name=name))
 
     def union_option(self, option):
         option = remap_type(option)
