@@ -42,7 +42,7 @@ DogType = GraphQLObjectType(
         'name': GraphQLField(GraphQLString),
         'barks': GraphQLField(GraphQLBoolean),
     },
-    is_type_of=lambda value: isinstance(value, Dog)
+    is_type_of=lambda value, info: isinstance(value, Dog)
 )
 
 CatType = GraphQLObjectType(
@@ -52,7 +52,7 @@ CatType = GraphQLObjectType(
         'name': GraphQLField(GraphQLString),
         'meows': GraphQLField(GraphQLBoolean),
     },
-    is_type_of=lambda value: isinstance(value, Cat)
+    is_type_of=lambda value, info: isinstance(value, Cat)
 )
 
 
@@ -73,7 +73,7 @@ PersonType = GraphQLObjectType(
         'pets': GraphQLField(GraphQLList(PetType)),
         'friends': GraphQLField(GraphQLList(NamedType)),
     },
-    is_type_of=lambda value: isinstance(value, Person)
+    is_type_of=lambda value, info: isinstance(value, Person)
 )
 
 schema = GraphQLSchema(PersonType)

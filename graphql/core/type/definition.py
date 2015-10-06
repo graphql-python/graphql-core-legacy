@@ -138,9 +138,13 @@ class GraphQLObjectType(GraphQLType):
     def get_interfaces(self):
         return self._interfaces
 
-    def is_type_of(self, value):
+    def is_type_of(self, value, info):
         if self._is_type_of:
-            return self._is_type_of(value)
+            return self._is_type_of(value, info)
+
+        # If we don't have a is_type_of function defined, we will default to
+        # passing the check always.
+        return True
 
 
 def define_field_map(fields):
@@ -218,16 +222,16 @@ class GraphQLInterfaceType(GraphQLType):
             )
         return type.name in self._possible_type_names
 
-    def resolve_type(self, value):
+    def resolve_type(self, value, info):
         if self._resolver:
             return self._resolver(value)
-        return get_type_of(value, self)
+        return get_type_of(value, info, self)
 
 
-def get_type_of(value, abstract_type):
+def get_type_of(value, info, abstract_type):
     possible_types = abstract_type.get_possible_types()
     for type in possible_types:
-        is_type_of = type.is_type_of(value)
+        is_type_of = type.is_type_of(value, info)
         if is_type_of is None:
             raise Error(
                 'Non-Object Type {} does not implement resolve_type and '
@@ -287,10 +291,10 @@ class GraphQLUnionType(GraphQLType):
             )
         return type.name in self._possible_type_names
 
-    def resolve_type(self, value):
+    def resolve_type(self, value, info):
         if self._resolve_type:
             return self._resolve_type(value)
-        return get_type_of(value, self)
+        return get_type_of(value, info, self)
 
 
 class GraphQLEnumType(GraphQLType):
