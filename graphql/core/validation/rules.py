@@ -83,7 +83,7 @@ class FragmentsOnCompositeTypes(ValidationRule):
     def enter_InlineFragment(self, node, *args):
         type = self.context.get_type()
 
-        if type and not is_composite_type(type):
+        if node.type_condition and type and not is_composite_type(type):
             return GraphQLError(
                 self.inline_fragment_on_non_composite_error_message(print_ast(node.type_condition)),
                 [node.type_condition]
@@ -910,8 +910,13 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
                 ast_and_defs[response_name].append((selection, field_def))
 
             elif isinstance(selection, ast.InlineFragment):
+                type_condition = selection.type_condition
+                inline_fragment_type = \
+                    type_from_ast(self.context.get_schema(), type_condition) \
+                    if type_condition else parent_type
+
                 self.collect_field_asts_and_defs(
-                    type_from_ast(self.context.get_schema(), selection.type_condition),
+                    inline_fragment_type,
                     selection.selection_set,
                     visited_fragment_names,
                     ast_and_defs

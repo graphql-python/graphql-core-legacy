@@ -344,6 +344,17 @@ def test_same_wrapped_scalar_return_types():
     ''')
 
 
+def test_allows_inline_typeless_fragments():
+    expect_passes_rule_with_schema(schema, OverlappingFieldsCanBeMerged, '''
+    {
+        a
+        ... {
+            a
+        }
+    }
+    ''')
+
+
 def test_compares_deep_types_including_list():
     expect_fails_rule_with_schema(schema, OverlappingFieldsCanBeMerged, '''
     {

@@ -43,6 +43,16 @@ def test_object_is_valid_inline_fragment_type():
     ''')
 
 
+def test_inline_fragment_without_type_is_valid():
+    expect_passes_rule(FragmentsOnCompositeTypes, '''
+    fragment validFragment on Pet {
+      ... {
+        name
+      }
+    }
+    ''')
+
+
 def test_union_is_valid_fragment_type():
     expect_passes_rule(FragmentsOnCompositeTypes, '''
       fragment validFragment on CatOrDog {
