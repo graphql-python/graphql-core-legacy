@@ -17,21 +17,21 @@ class PyTest(TestCommand):
         self.test_suite = True
 
     def run_tests(self):
-        #import here, cause outside the eggs aren't loaded
+        # import here, cause outside the eggs aren't loaded
         import pytest
         errno = pytest.main(self.pytest_args)
         sys.exit(errno)
 
-setup(
-    name='graphqllib',
-    version='0.1a0',
 
+setup(
+    name='graphql-core',
+    version='0.1a0',
     description='GraphQL implementation for Python',
 
-    url='https://github.com/dittos/graphqllib',
+    url='https://github.com/graphql-python/graphql-core',
 
-    author='Taeho Kim',
-    author_email='dittos' '@' 'gmail.com',
+    author='GraphQL Python  ',
+    author_email='me' '@' 'jh.gg',
 
     license='MIT',
 
@@ -53,7 +53,7 @@ setup(
     packages=find_packages(exclude=['tests']),
 
     install_requires=[],
-    tests_require=['pytest>=2.7.3'],
+    tests_require=['pytest>=2.7.3', 'gevent==1.1b5'],
 
     cmdclass={'test': PyTest},
 )
