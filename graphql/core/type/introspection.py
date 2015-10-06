@@ -1,4 +1,5 @@
-import json
+from ..language.printer import print_ast
+from ..utils.ast_from_value import ast_from_value
 from .definition import (
     GraphQLArgument,
     GraphQLEnumType,
@@ -186,7 +187,7 @@ __InputValue = GraphQLObjectType('__InputValue', lambda: {
         type=GraphQLString,
         resolver=lambda input_val, *_:
             None if input_val.default_value is None
-            else json.dumps(input_val.default_value)
+            else print_ast(ast_from_value(input_val.default_value, input_val))
     )
 })
 

@@ -1,39 +1,14 @@
-from .language import ast
-from .type.definition import (
-    GraphQLEnumType,
+from ..language import ast
+from ..type.definition import (
     GraphQLInputObjectType,
-    GraphQLInterfaceType,
     GraphQLList,
-    GraphQLNonNull,
-    GraphQLObjectType,
-    GraphQLScalarType,
-    GraphQLUnionType,
     get_named_type,
     get_nullable_type,
     is_composite_type,
 )
-from .type.introspection import SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef
 
-
-def type_from_ast(schema, input_type_ast):
-    if isinstance(input_type_ast, ast.ListType):
-        inner_type = type_from_ast(schema, input_type_ast.type)
-        if inner_type:
-            return GraphQLList(inner_type)
-        else:
-            return None
-    if isinstance(input_type_ast, ast.NonNullType):
-        inner_type = type_from_ast(schema, input_type_ast.type)
-        if inner_type:
-            return GraphQLNonNull(inner_type)
-        else:
-            return None
-    assert isinstance(input_type_ast, ast.NamedType), 'Must be a type name.'
-    return schema.get_type(input_type_ast.name.value)
-
-
-def is_nullish(value):
-    return value is None or value != value
+from .get_field_def import get_field_def
+from .type_from_ast import type_from_ast
 
 
 def pop(lst):
@@ -149,66 +124,3 @@ class TypeInfo(object):
             pop(self._input_type_stack)
         elif isinstance(node, (ast.ListType, ast.ObjectField)):
             pop(self._input_type_stack)
-
-
-def get_field_def(schema, parent_type, field_ast):
-    """Not exactly the same as the executor's definition of get_field_def, in this
-    statically evaluated environment we do not always have an Object type,
-    and need to handle Interface and Union types."""
-    name = field_ast.name.value
-    if name == SchemaMetaFieldDef.name and schema.get_query_type() == parent_type:
-        return SchemaMetaFieldDef
-    elif name == TypeMetaFieldDef.name and schema.get_query_type() == parent_type:
-        return TypeMetaFieldDef
-    elif name == TypeNameMetaFieldDef.name and \
-            isinstance(parent_type, (
-                GraphQLObjectType,
-                GraphQLInterfaceType,
-                GraphQLUnionType,
-            )):
-        return TypeNameMetaFieldDef
-    elif isinstance(parent_type, (GraphQLObjectType, GraphQLInterfaceType)):
-        return parent_type.get_fields().get(name)
-
-
-def is_valid_literal_value(type, value_ast):
-    if isinstance(type, GraphQLNonNull):
-        if not value_ast:
-            return False
-
-        of_type = type.of_type
-        return is_valid_literal_value(of_type, value_ast)
-
-    if not value_ast:
-        return True
-
-    if isinstance(value_ast, ast.Variable):
-        return True
-
-    if isinstance(type, GraphQLList):
-        item_type = type.of_type
-        if isinstance(value_ast, ast.ListValue):
-            return all(is_valid_literal_value(item_type, item_ast) for item_ast in value_ast.values)
-
-        return is_valid_literal_value(item_type, value_ast)
-
-    if isinstance(type, GraphQLInputObjectType):
-        if not isinstance(value_ast, ast.ObjectValue):
-            return False
-
-        fields = type.get_fields()
-        field_asts = value_ast.fields
-
-        if any(not fields.get(field_ast.name.value, None) for field_ast in field_asts):
-            return False
-
-        field_ast_map = {field_ast.name.value: field_ast for field_ast in field_asts}
-        get_field_ast_value = lambda field_name: field_ast_map[
-            field_name].value if field_name in field_ast_map else None
-
-        return all(is_valid_literal_value(field.type, get_field_ast_value(field_name))
-                   for field_name, field in fields.items())
-
-    assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), 'Must be input type'
-
-    return not is_nullish(type.parse_literal(value_ast))

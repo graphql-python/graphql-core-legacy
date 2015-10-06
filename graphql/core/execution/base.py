@@ -15,7 +15,7 @@ from ..type.introspection import (
     TypeMetaFieldDef,
     TypeNameMetaFieldDef,
 )
-from ..utils import type_from_ast
+from ..utils.type_from_ast import type_from_ast
 from .values import get_argument_values, get_variable_values
 
 Undefined = object()

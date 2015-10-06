@@ -3,7 +3,7 @@ from ..error import GraphQLError
 from ..language.ast import FragmentDefinition, FragmentSpread
 from ..language.visitor import Visitor, visit
 from ..type import GraphQLSchema
-from ..utils import TypeInfo
+from ..utils.type_info import TypeInfo
 
 specified_rules = [
     Rules.UniqueOperationNames,
