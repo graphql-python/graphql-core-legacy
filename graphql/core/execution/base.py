@@ -32,24 +32,33 @@ class ExecutionContext(object):
         to execute, which we will pass throughout the other execution
         methods."""
         errors = []
-        operations = {}
+        operation = None
         fragments = {}
-        for statement in document_ast.definitions:
-            if isinstance(statement, ast.OperationDefinition):
-                name = ''
-                if statement.name:
-                    name = statement.name.value
-                operations[name] = statement
-            elif isinstance(statement, ast.FragmentDefinition):
-                fragments[statement.name.value] = statement
-        if not operation_name and len(operations) != 1:
-            raise GraphQLError(
-                'Must provide operation name '
-                'if query contains multiple operations')
-        op_name = operation_name or next(iter(operations.keys()))
-        operation = operations.get(op_name)
+
+        for definition in document_ast.definitions:
+            if isinstance(definition, ast.OperationDefinition):
+                if not operation_name and operation:
+                    raise GraphQLError('Must provide operation name if query contains multiple operations')
+
+                if not operation_name or definition.name and definition.name.value == operation_name:
+                    operation = definition
+
+            elif isinstance(definition, ast.FragmentDefinition):
+                fragments[definition.name.value] = definition
+
+            else:
+                raise GraphQLError(
+                    u'GraphQL cannot execute a request containing a {}.'.format(definition.__class__.__name__),
+                    definition
+                )
+
         if not operation:
-            raise GraphQLError('Unknown operation name: {}'.format(op_name))
+            if operation_name:
+                raise GraphQLError(u'Unknown operation named "{}".'.format(operation_name))
+
+            else:
+                raise GraphQLError('Must provide an operation.')
+
         variables = get_variable_values(schema, operation.variable_definitions or [], args)
 
         self.schema = schema

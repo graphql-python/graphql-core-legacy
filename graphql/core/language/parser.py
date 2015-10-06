@@ -199,11 +199,17 @@ def parse_operation_definition(parser):
             selection_set=parse_selection_set(parser),
             loc=loc(parser, start)
         )
+
     operation_token = expect(parser, TokenKind.NAME)
     operation = operation_token.value
+
+    name = None
+    if peek(parser, TokenKind.NAME):
+        name = parse_name(parser)
+
     return ast.OperationDefinition(
         operation=operation,
-        name=parse_name(parser),
+        name=name,
         variable_definitions=parse_variable_definitions(parser),
         directives=parse_directives(parser),
         selection_set=parse_selection_set(parser),

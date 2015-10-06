@@ -43,7 +43,7 @@ fragment MissingOn Type
 def test_parse_provides_useful_error_when_using_source():
     with raises(LanguageError) as excinfo:
         parse(Source('query', 'MyQuery.graphql'))
-    assert 'Syntax Error MyQuery.graphql (1:6) Expected Name, found EOF' in str(excinfo.value)
+    assert 'Syntax Error MyQuery.graphql (1:6) Expected {, found EOF' in str(excinfo.value)
 
 
 def test_parses_variable_inline_values():
@@ -132,6 +132,14 @@ def tesst_allows_non_keywords_anywhere_a_name_is_allowed():
 
 def test_parses_kitchen_sink():
     parse(KITCHEN_SINK)
+
+
+def test_parses_anonymous_operations():
+    parse('''
+        mutation {
+            mutationField
+        }
+    ''')
 
 
 def test_parse_creates_ast():
