@@ -6,6 +6,7 @@ python:
 - 3.4
 - 3.5
 - pypy
+cache: pip
 install:
 - pip install pytest-cov coveralls flake8 import-order gevent==1.1b5
 - pip install pytest>=2.7.3 --upgrade
