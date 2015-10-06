@@ -50,9 +50,12 @@ class PrintingVisitor(Visitor):
         return '...' + node.name + wrap(' ', join(node.directives, ' '))
 
     def leave_InlineFragment(self, node, *args):
-        return ('... on ' + node.type_condition + ' ' +
-                wrap('', join(node.directives, ' '), ' ') +
-                node.selection_set)
+        return join([
+            '...',
+            wrap('on ', node.type_condition),
+            join(node.directives, ''),
+            node.selection_set
+        ], ' ')
 
     def leave_FragmentDefinition(self, node, *args):
         return ('fragment {} on {} '.format(node.name, node.type_condition) +

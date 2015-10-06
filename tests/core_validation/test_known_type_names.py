@@ -28,7 +28,7 @@ def test_unknown_type_names_are_invalid():
       query Foo($var: JumbledUpLetters) {
         user(id: 4) {
           name
-          pets { ... on Badger { name }, ...PetFields }
+          pets { ... on Badger { name }, ...PetFields, ... { name } }
         }
       }
       fragment PetFields on Peettt {

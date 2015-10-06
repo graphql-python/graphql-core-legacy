@@ -181,5 +181,8 @@ def test_valid_field_in_inline_fragment():
         ... on Dog {
           name
         }
+        ... {
+          name
+        }
       }
     ''')

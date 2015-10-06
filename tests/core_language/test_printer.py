@@ -40,6 +40,12 @@ def test_prints_kitchen_sink():
         }
       }
     }
+    ... @skip(unless: $foo) {
+      id
+    }
+    ... {
+      id
+    }
   }
 }
 

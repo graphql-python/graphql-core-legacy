@@ -73,7 +73,8 @@ class TypeInfo(object):
                 type = schema.get_mutation_type()
             self._type_stack.append(type)
         elif isinstance(node, (ast.InlineFragment, ast.FragmentDefinition)):
-            type = type_from_ast(schema, node.type_condition)
+            type_condition_ast = node.type_condition
+            type = type_from_ast(schema, type_condition_ast) if type_condition_ast else self.get_type()
             self._type_stack.append(type)
         elif isinstance(node, ast.VariableDefinition):
             self._input_type_stack.append(type_from_ast(schema, node.type))

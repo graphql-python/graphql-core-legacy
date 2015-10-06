@@ -18,6 +18,12 @@ query queryName($foo: ComplexType, $site: Site = MOBILE) {
         }
       }
     }
+    ... @skip(unless: $foo) {
+      id
+    }
+    ... {
+      id
+    }
   }
 }
 

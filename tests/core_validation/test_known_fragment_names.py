@@ -18,6 +18,9 @@ def test_known_fragment_names_are_valid():
             ... on Human {
                 ...HumanFields2
             }
+            ... {
+                name
+            }
         }
     }
     fragment HumanFields1 on Human {
