@@ -316,7 +316,7 @@ def parse_fragment_definition(parser):
     start = parser.token.start
     expect_keyword(parser, 'fragment')
     return ast.FragmentDefinition(
-        name=parse_name(parser),
+        name=parse_fragment_name(parser),
         type_condition=(
             expect_keyword(parser, 'on'),
             parse_named_type(parser))[1],
@@ -326,8 +326,14 @@ def parse_fragment_definition(parser):
     )
 
 
-# Implements the parsing rules in the Values section.
+def parse_fragment_name(parser):
+    if parser.token.value == 'on':
+        raise unexpected(parser)
 
+    return parse_name(parser)
+
+
+# Implements the parsing rules in the Values section.
 def parse_variable_value(parser):
     return parse_value(parser, False)
 
@@ -352,10 +358,13 @@ def parse_value(parser, is_const):
         advance(parser)
         return ast.StringValue(value=token.value, loc=loc(parser, token.start))
     elif token.kind == TokenKind.NAME:
-        advance(parser)
         if token.value in ('true', 'false'):
+            advance(parser)
             return ast.BooleanValue(value=token.value == 'true', loc=loc(parser, token.start))
-        return ast.EnumValue(value=token.value, loc=loc(parser, token.start))
+        if token.value != 'null':
+            advance(parser)
+            return ast.EnumValue(value=token.value, loc=loc(parser, token.start))
+
     elif token.kind == TokenKind.DOLLAR:
         if not is_const:
             return parse_variable(parser)
