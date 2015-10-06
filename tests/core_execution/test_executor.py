@@ -1,8 +1,10 @@
+import json
 from pytest import raises
 from graphql.core.execution import execute
 from graphql.core.language.parser import parse
 from graphql.core.type import (GraphQLSchema, GraphQLObjectType, GraphQLField,
-    GraphQLArgument, GraphQLList, GraphQLInt, GraphQLString)
+                               GraphQLArgument, GraphQLList, GraphQLInt, GraphQLString,
+                               GraphQLBoolean)
 from graphql.core.error import GraphQLError
 
 
@@ -29,7 +31,7 @@ def test_executes_arbitary_code():
         a = 'Already Been Done'
         b = 'Boring'
         c = ['Contrived', None, 'Confusing']
-        
+
         def deeper(self):
             return [Data(), None, Data()]
 
@@ -71,15 +73,15 @@ def test_executes_arbitary_code():
         'e': 'Egg',
         'f': 'Fish',
         'pic': 'Pic of size: 100',
-        'promise': { 'a': 'Apple' },
+        'promise': {'a': 'Apple'},
         'deep': {
-          'a': 'Already Been Done',
-          'b': 'Boring',
-          'c': [ 'Contrived', None, 'Confusing' ],
-          'deeper': [
-            { 'a': 'Apple', 'b': 'Banana' },
-            None,
-            { 'a': 'Apple', 'b': 'Banana' } ] }
+            'a': 'Already Been Done',
+            'b': 'Boring',
+            'c': ['Contrived', None, 'Confusing'],
+            'deeper': [
+                {'a': 'Apple', 'b': 'Banana'},
+                None,
+                {'a': 'Apple', 'b': 'Banana'}]}
     }
 
     DataType = GraphQLObjectType('DataType', lambda: {
@@ -141,17 +143,17 @@ def test_merges_parallel_fragments():
     result = execute(schema, None, ast)
     assert not result.errors
     assert result.data == \
-        {
-            'a': 'Apple',
-            'b': 'Banana',
-            'c': 'Cherry',
-            'deep': {
-              'b': 'Banana',
-              'c': 'Cherry',
-              'deeper': {
-                'b': 'Banana',
-                'c': 'Cherry' } }
-        }
+           {
+               'a': 'Apple',
+               'b': 'Banana',
+               'c': 'Cherry',
+               'deep': {
+                   'b': 'Banana',
+                   'c': 'Cherry',
+                   'deeper': {
+                       'b': 'Banana',
+                       'c': 'Cherry'}}
+           }
 
 
 def test_threads_context_correctly():
@@ -165,7 +167,7 @@ def test_threads_context_correctly():
     def resolver(context, *_):
         assert context.context_thing == 'thing'
         resolver.got_here = True
-    
+
     resolver.got_here = False
 
     Type = GraphQLObjectType('Type', {
@@ -237,8 +239,10 @@ def test_nulls_out_error_subtrees():
 
 def test_uses_the_inline_operation_if_no_operation_is_provided():
     doc = '{ a }'
+
     class Data(object):
         a = 'b'
+
     ast = parse(doc)
     Type = GraphQLObjectType('Type', {
         'a': GraphQLField(GraphQLString)
@@ -250,8 +254,10 @@ def test_uses_the_inline_operation_if_no_operation_is_provided():
 
 def test_uses_the_only_operation_if_no_operation_is_provided():
     doc = 'query Example { a }'
+
     class Data(object):
         a = 'b'
+
     ast = parse(doc)
     Type = GraphQLObjectType('Type', {
         'a': GraphQLField(GraphQLString)
@@ -263,8 +269,10 @@ def test_uses_the_only_operation_if_no_operation_is_provided():
 
 def test_raises_the_inline_operation_if_no_operation_is_provided():
     doc = 'query Example { a } query OtherExample { a }'
+
     class Data(object):
         a = 'b'
+
     ast = parse(doc)
     Type = GraphQLObjectType('Type', {
         'a': GraphQLField(GraphQLString)
@@ -276,9 +284,11 @@ def test_raises_the_inline_operation_if_no_operation_is_provided():
 
 def test_uses_the_query_schema_for_queries():
     doc = 'query Q { a } mutation M { c }'
+
     class Data(object):
         a = 'b'
         c = 'd'
+
     ast = parse(doc)
     Q = GraphQLObjectType('Q', {
         'a': GraphQLField(GraphQLString)
@@ -293,9 +303,11 @@ def test_uses_the_query_schema_for_queries():
 
 def test_uses_the_mutation_schema_for_queries():
     doc = 'query Q { a } mutation M { c }'
+
     class Data(object):
         a = 'b'
         c = 'd'
+
     ast = parse(doc)
     Q = GraphQLObjectType('Q', {
         'a': GraphQLField(GraphQLString)
@@ -320,8 +332,10 @@ def test_avoids_recursion():
             ...Frag
         }
     '''
+
     class Data(object):
         a = 'b'
+
     ast = parse(doc)
     Type = GraphQLObjectType('Type', {
         'a': GraphQLField(GraphQLString)
@@ -343,3 +357,28 @@ def test_does_not_include_illegal_fields_in_output():
     result = execute(GraphQLSchema(Q, M), None, ast)
     assert not result.errors
     assert result.data == {}
+
+
+def test_does_not_include_arguments_that_were_not_set():
+    schema = GraphQLSchema(GraphQLObjectType(
+        'Type',
+        {
+            'field': GraphQLField(
+                GraphQLString,
+                resolver=lambda data, args, *_: args and json.dumps(args, sort_keys=True, separators=(',',':')),
+                args={
+                    'a': GraphQLArgument(GraphQLBoolean),
+                    'b': GraphQLArgument(GraphQLBoolean),
+                    'c': GraphQLArgument(GraphQLBoolean),
+                    'd': GraphQLArgument(GraphQLInt),
+                    'e': GraphQLArgument(GraphQLInt),
+                }
+            )
+        }
+    ))
+
+    ast = parse('{ field(a: true, c: false, e: 0) }')
+    result = execute(schema, None, ast)
+    assert result.data == {
+        'field': '{"a":true,"c":false,"e":0}'
+    }

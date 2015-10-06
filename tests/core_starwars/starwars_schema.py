@@ -125,7 +125,7 @@ queryType = GraphQLObjectType(
                     type=episodeEnum,
                 )
             },
-            resolver=lambda root, args, *_: starwars_fixtures.getHero(args['episode']),
+            resolver=lambda root, args, *_: starwars_fixtures.getHero(args.get('episode')),
         ),
         'human': GraphQLField(
             humanType,

@@ -24,41 +24,41 @@ TestType = GraphQLObjectType('TestType', {
     'fieldWithObjectInput': GraphQLField(
         GraphQLString,
         args={'input': GraphQLArgument(TestInputObject)},
-        resolver=lambda obj, args, *_: json.dumps(args['input'])),
+        resolver=lambda obj, args, *_: json.dumps(args.get('input'))),
     'fieldWithNullableStringInput': GraphQLField(
         GraphQLString,
         args={'input': GraphQLArgument(GraphQLString)},
-        resolver=lambda obj, args, *_: json.dumps(args['input'])),
+        resolver=lambda obj, args, *_: json.dumps(args.get('input'))),
     'fieldWithNonNullableStringInput': GraphQLField(
         GraphQLString,
         args={'input': GraphQLArgument(GraphQLNonNull(GraphQLString))},
-        resolver=lambda obj, args, *_: json.dumps(args['input'])),
+        resolver=lambda obj, args, *_: json.dumps(args.get('input'))),
     'fieldWithDefaultArgumentValue': GraphQLField(
         GraphQLString,
         args={'input': GraphQLArgument(GraphQLString, 'Hello World')},
-        resolver=lambda obj, args, *_: json.dumps(args['input'])),
+        resolver=lambda obj, args, *_: json.dumps(args.get('input'))),
     'list': GraphQLField(
         GraphQLString,
         args={'input': GraphQLArgument(GraphQLList(GraphQLString))},
-        resolver=lambda obj, args, *_: json.dumps(args['input'])),
+        resolver=lambda obj, args, *_: json.dumps(args.get('input'))),
     'nnList': GraphQLField(
         GraphQLString,
         args={'input': GraphQLArgument(
             GraphQLNonNull(GraphQLList(GraphQLString))
         )},
-        resolver=lambda obj, args, *_: json.dumps(args['input'])),
+        resolver=lambda obj, args, *_: json.dumps(args.get('input'))),
     'listNN': GraphQLField(
         GraphQLString,
         args={'input': GraphQLArgument(
             GraphQLList(GraphQLNonNull(GraphQLString))
         )},
-        resolver=lambda obj, args, *_: json.dumps(args['input'])),
+        resolver=lambda obj, args, *_: json.dumps(args.get('input'))),
     'nnListNN': GraphQLField(
         GraphQLString,
         args={'input': GraphQLArgument(
             GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString)))
         )},
-        resolver=lambda obj, args, *_: json.dumps(args['input'])),
+        resolver=lambda obj, args, *_: json.dumps(args.get('input'))),
     })
 
 schema = GraphQLSchema(TestType)

@@ -1,7 +1,6 @@
 import collections
 from ..compat import str_type
 from ..error import GraphQLError
-from ..language import ast
 from ..language.printer import print_ast
 from ..type import (
     GraphQLEnumType,
@@ -13,6 +12,7 @@ from ..type import (
 )
 from ..utils.is_nullish import is_nullish
 from ..utils.type_from_ast import type_from_ast
+from ..utils.value_from_ast import value_from_ast
 
 __all__ = ['get_variable_values', 'get_argument_values']
 
@@ -33,29 +33,37 @@ def get_variable_values(schema, definition_asts, inputs):
 def get_argument_values(arg_defs, arg_asts, variables):
     """Prepares an object map of argument values given a list of argument
     definitions and list of argument AST nodes."""
-    arg_ast_map = {}
     if arg_asts:
-        for arg in arg_asts:
-            arg_ast_map[arg.name.value] = arg
+        arg_ast_map = {arg.name.value: arg for arg in arg_asts}
+
+    else:
+        arg_ast_map = {}
+
     result = {}
     for arg_def in arg_defs:
         name = arg_def.name
         value_ast = arg_ast_map.get(name)
         if value_ast:
             value_ast = value_ast.value
-        value = coerce_value_ast(
+
+        value = value_from_ast(
             arg_def.type,
             value_ast,
             variables
         )
-        if is_nullish(value) and not is_nullish(arg_def.default_value):
+
+        if is_nullish(value):
             value = arg_def.default_value
-        result[name] = value
+
+        if not is_nullish(value):
+            result[name] = value
+
     return result
 
 
 def get_variable_value(schema, definition_ast, input):
-    """Given a variable definition, and any value of input, return a value which adheres to the variable definition, or throw an error."""
+    """Given a variable definition, and any value of input, return a value which adheres to the variable definition,
+    or throw an error."""
     type = type_from_ast(schema, definition_ast.type)
     if not type or not is_input_type(type):
         raise GraphQLError(
@@ -65,12 +73,14 @@ def get_variable_value(schema, definition_ast, input):
             ),
             [definition_ast]
         )
+
     if is_valid_value(type, input):
         if is_nullish(input):
             default_value = definition_ast.default_value
             if default_value:
-                return coerce_value_ast(type, default_value, None)
+                return value_from_ast(type, default_value, None)
         return coerce_value(type, input)
+
     raise GraphQLError(
         'Variable ${} expected value of type {} but got: {}'.format(
             definition_ast.variable.name.value,
@@ -152,64 +162,6 @@ def coerce_value(type, value):
         'Must be input type'
 
     parsed = type.parse_value(value)
-    if not is_nullish(parsed):
-        return parsed
-
-    return None
-
-
-def coerce_value_ast(type, value_ast, variables):
-    """Given a type and a value AST node known to match this type, build a
-    runtime value."""
-    if isinstance(type, GraphQLNonNull):
-        # Note: we're not checking that the result of coerceValueAST is non-null.
-        # We're assuming that this query has been validated and the value used here is of the correct type.
-        return coerce_value_ast(type.of_type, value_ast, variables)
-
-    if not value_ast:
-        return None
-
-    if isinstance(value_ast, ast.Variable):
-        variable_name = value_ast.name.value
-        if not variables or variable_name not in variables:
-            return None
-        # Note: we're not doing any checking that this variable is correct. We're assuming that this query
-        # has been validated and the variable usage here is of the correct type.
-        return variables[variable_name]
-
-    if isinstance(type, GraphQLList):
-        item_type = type.of_type
-        if isinstance(value_ast, ast.ListValue):
-            return [coerce_value_ast(item_type, item_ast, variables)
-                    for item_ast in value_ast.values]
-        else:
-            return [coerce_value_ast(item_type, value_ast, variables)]
-
-    if isinstance(type, GraphQLInputObjectType):
-        fields = type.get_fields()
-        if not isinstance(value_ast, ast.ObjectValue):
-            return None
-        field_asts = {}
-        for field in value_ast.fields:
-            field_asts[field.name.value] = field
-        obj = {}
-        for field_name, field in fields.items():
-            field_ast = field_asts.get(field_name)
-            field_value_ast = None
-            if field_ast:
-                field_value_ast = field_ast.value
-            field_value = coerce_value_ast(
-                field.type, field_value_ast, variables
-            )
-            if field_value is None:
-                field_value = field.default_value
-            obj[field_name] = field_value
-        return obj
-
-    assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
-        'Must be input type'
-
-    parsed = type.parse_literal(value_ast)
     if not is_nullish(parsed):
         return parsed
 
