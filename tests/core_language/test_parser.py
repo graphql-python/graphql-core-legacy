@@ -4,7 +4,7 @@ from graphql.core.language.location import SourceLocation
 from graphql.core.language.source import Source
 from graphql.core.language.parser import parse, Loc
 from graphql.core.language import ast
-from fixtures import KITCHEN_SINK
+from .fixtures import KITCHEN_SINK
 
 
 def test_parse_provides_useful_errors():

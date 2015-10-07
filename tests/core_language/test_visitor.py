@@ -1,7 +1,7 @@
 from graphql.core.language.ast import Field, Name, SelectionSet
 from graphql.core.language.parser import parse
 from graphql.core.language.visitor import visit, Visitor, REMOVE, BREAK
-from fixtures import KITCHEN_SINK
+from .fixtures import KITCHEN_SINK
 
 
 def test_allows_for_editing_on_enter():
