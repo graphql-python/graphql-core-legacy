@@ -32,6 +32,12 @@ class Document(Node):
                 'definitions={self.definitions!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.definitions,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -70,6 +76,16 @@ class OperationDefinition(Definition):
                 ', selection_set={self.selection_set!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.operation,
+            self.selection_set,
+            self.name,
+            self.variable_definitions,
+            self.directives,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -102,6 +118,14 @@ class VariableDefinition(Node):
                 ', default_value={self.default_value!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.variable,
+            self.type,
+            self.default_value,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -127,6 +151,12 @@ class SelectionSet(Node):
         return ('SelectionSet('
                 'selections={self.selections!r}'
                 ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.selections,
+            self.loc
+        )
 
     def __hash__(self):
         return id(self)
@@ -170,6 +200,16 @@ class Field(Selection):
                 ', selection_set={self.selection_set!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.alias,
+            self.arguments,
+            self.directives,
+            self.selection_set,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -199,6 +239,13 @@ class Argument(Node):
                 ', value={self.value!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.value,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -227,6 +274,13 @@ class FragmentSpread(Selection):
                 'name={self.name!r}'
                 ', directives={self.directives!r}'
                 ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.directives,
+            self.loc
+        )
 
     def __hash__(self):
         return id(self)
@@ -259,6 +313,14 @@ class InlineFragment(Selection):
                 ', directives={self.directives!r}'
                 ', selection_set={self.selection_set!r}'
                 ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.type_condition,
+            self.selection_set,
+            self.directives,
+            self.loc
+        )
 
     def __hash__(self):
         return id(self)
@@ -295,6 +357,15 @@ class FragmentDefinition(Definition):
                 ', selection_set={self.selection_set!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.type_condition,
+            self.selection_set,
+            self.directives,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -325,6 +396,12 @@ class Variable(Value):
                 'name={self.name!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -350,6 +427,12 @@ class IntValue(Value):
         return ('IntValue('
                 'value={self.value!r}'
                 ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.value,
+            self.loc
+        )
 
     def __hash__(self):
         return id(self)
@@ -377,6 +460,12 @@ class FloatValue(Value):
                 'value={self.value!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.value,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -402,6 +491,12 @@ class StringValue(Value):
         return ('StringValue('
                 'value={self.value!r}'
                 ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.value,
+            self.loc
+        )
 
     def __hash__(self):
         return id(self)
@@ -429,6 +524,12 @@ class BooleanValue(Value):
                 'value={self.value!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.value,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -454,6 +555,12 @@ class EnumValue(Value):
         return ('EnumValue('
                 'value={self.value!r}'
                 ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.value,
+            self.loc
+        )
 
     def __hash__(self):
         return id(self)
@@ -481,6 +588,12 @@ class ListValue(Value):
                 'values={self.values!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.values,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -506,6 +619,12 @@ class ObjectValue(Value):
         return ('ObjectValue('
                 'fields={self.fields!r}'
                 ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.fields,
+            self.loc
+        )
 
     def __hash__(self):
         return id(self)
@@ -536,6 +655,13 @@ class ObjectField(Node):
                 ', value={self.value!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.value,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -564,6 +690,13 @@ class Directive(Node):
                 'name={self.name!r}'
                 ', arguments={self.arguments!r}'
                 ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.arguments,
+            self.loc
+        )
 
     def __hash__(self):
         return id(self)
@@ -595,6 +728,12 @@ class NamedType(Type):
                 'name={self.name!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -620,6 +759,12 @@ class ListType(Type):
         return ('ListType('
                 'type={self.type!r}'
                 ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.type,
+            self.loc
+        )
 
     def __hash__(self):
         return id(self)
@@ -647,6 +792,12 @@ class NonNullType(Type):
                 'type={self.type!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.type,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -672,6 +823,12 @@ class Name(Node):
         return ('Name('
                 'value={self.value!r}'
                 ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.value,
+            self.loc
+        )
 
     def __hash__(self):
         return id(self)
@@ -709,6 +866,14 @@ class ObjectTypeDefinition(TypeDefinition):
                 ', fields={self.fields!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.fields,
+            self.interfaces,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -740,6 +905,14 @@ class FieldDefinition(Node):
                 ', arguments={self.arguments!r}'
                 ', type={self.type!r}'
                 ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.arguments,
+            self.type,
+            self.loc
+        )
 
     def __hash__(self):
         return id(self)
@@ -773,6 +946,14 @@ class InputValueDefinition(Node):
                 ', default_value={self.default_value!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.type,
+            self.default_value,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -801,6 +982,13 @@ class InterfaceTypeDefinition(TypeDefinition):
                 'name={self.name!r}'
                 ', fields={self.fields!r}'
                 ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.fields,
+            self.loc
+        )
 
     def __hash__(self):
         return id(self)
@@ -831,6 +1019,13 @@ class UnionTypeDefinition(TypeDefinition):
                 ', types={self.types!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.types,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -856,6 +1051,12 @@ class ScalarTypeDefinition(TypeDefinition):
         return ('ScalarTypeDefinition('
                 'name={self.name!r}'
                 ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.loc
+        )
 
     def __hash__(self):
         return id(self)
@@ -886,6 +1087,13 @@ class EnumTypeDefinition(TypeDefinition):
                 ', values={self.values!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.values,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -911,6 +1119,12 @@ class EnumValueDefinition(Node):
         return ('EnumValueDefinition('
                 'name={self.name!r}'
                 ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.loc
+        )
 
     def __hash__(self):
         return id(self)
@@ -941,6 +1155,13 @@ class InputObjectTypeDefinition(TypeDefinition):
                 ', fields={self.fields!r}'
                 ')').format(self=self)
 
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.fields,
+            self.loc
+        )
+
     def __hash__(self):
         return id(self)
 
@@ -966,6 +1187,12 @@ class TypeExtensionDefinition(TypeDefinition):
         return ('TypeExtensionDefinition('
                 'definition={self.definition!r}'
                 ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.definition,
+            self.loc
+        )
 
     def __hash__(self):
         return id(self)

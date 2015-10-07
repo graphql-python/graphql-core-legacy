@@ -1,5 +1,5 @@
-from ..language.parser import Loc
 from ..language.ast import Node
+from ..language.parser import Loc
 
 
 def ast_to_code(ast, indent=0):
