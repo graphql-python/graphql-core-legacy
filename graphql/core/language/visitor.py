@@ -36,6 +36,8 @@ def visit(root, visitor, key_map=None):
     enter = visitor.enter
     path_pop = path.pop
     ancestors_pop = ancestors.pop
+    path_append = path.append
+    ancestors_append = ancestors.append
 
     while True:
         index += 1
@@ -92,7 +94,7 @@ def visit(root, visitor, key_map=None):
                 continue
 
             if parent:
-                path.append(key)
+                path_append(key)
 
         result = None
 
@@ -135,7 +137,7 @@ def visit(root, visitor, key_map=None):
             edits = []
 
             if parent:
-                ancestors.append(parent)
+                ancestors_append(parent)
 
             parent = node
 
