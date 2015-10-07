@@ -5,7 +5,7 @@ if __name__ == '__main__':
     project_root = os.path.join(os.path.dirname(__file__), '..')
     with open(os.path.join(project_root, 'graphql/core/language/ast.py'), 'w') as fp:
         process = subprocess.Popen(
-            ['python', '../libgraphqlparser/ast/ast.py', 'generate_ast', '../libgraphqlparser/ast/ast.ast'],
+            ['python', '../libgraphqlparser/ast/ast.py', 'generate_ast', './ast.ast'],
             stdout=fp,
             cwd=os.path.join(project_root, 'scripts'),
             env={'PYTHONPATH': '.'}
@@ -59,6 +59,7 @@ class {name}({parent_type}):'''.format(name=name, parent_type=parent_type)
         self._print_ctor()
         self._print_comparator(typename)
         self._print_repr(typename)
+        self._print_copy(typename)
         self._print_hash()
         self._fields = []
 
@@ -94,6 +95,18 @@ class {name}({parent_type}):'''.format(name=name, parent_type=parent_type)
         ))
         print('            )')
         print('        )')
+
+    def _print_copy(self, typename):
+        fields = (
+            [field for field in self._fields if not field[2]] +
+            [field for field in self._fields if field[2]])
+        args = '\n'.join('''            self.{},'''.format(snake(name)) for (type, name, nullable, plural) in fields)
+        print ('''
+    def __copy__(self):
+        return type(self)(
+{}
+            self.loc
+        )'''.format(args))
 
     def _print_repr(self, typename):
         print('''

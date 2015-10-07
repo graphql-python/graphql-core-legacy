@@ -52,8 +52,8 @@ setup(
 
     packages=find_packages(exclude=['tests']),
 
-    install_requires=[],
-    tests_require=['pytest>=2.7.3', 'gevent==1.1b5'],
+    install_requires=['six>=1.10.0'],
+    tests_require=['pytest>=2.7.3', 'gevent==1.1b5', 'six>=1.10.0'],
 
     cmdclass={'test': PyTest},
 )

@@ -23,9 +23,11 @@ class PrintingVisitor(Visitor):
         selection_set = node.selection_set
         if not name:
             return selection_set
+
         op = node.operation
         defs = wrap('(', join(node.variable_definitions, ', '), ')')
         directives = join(node.directives, ' ')
+
         return join([op, join([name, defs]), directives, selection_set], ' ')
 
     def leave_VariableDefinition(self, node, *args):
@@ -103,6 +105,42 @@ class PrintingVisitor(Visitor):
 
     def leave_NonNullType(self, node, *args):
         return node.type + '!'
+
+    # Type Definitions:
+
+    def leave_ObjectTypeDefinition(self, node, *args):
+        return (
+            'type ' + node.name + ' ' +
+            wrap('implements ', join(node.interfaces, ', '), ' ') +
+            block(node.fields)
+        )
+
+    def leave_FieldDefinition(self, node, *args):
+        return node.name + wrap('(', join(node.arguments, ', '), ')') + ': ' + node.type
+
+    def leave_InputValueDefinition(self, node, *args):
+        return node.name + ': ' + node.type + wrap(' = ', node.default_value)
+
+    def leave_InterfaceTypeDefinition(self, node, *args):
+        return 'interface ' + node.name + ' ' + block(node.fields)
+
+    def leave_UnionTypeDefinition(self, node, *args):
+        return 'union ' + node.name + ' = ' + join(node.types, ' | ')
+
+    def leave_ScalarTypeDefinition(self, node, *args):
+        return 'scalar ' + node.name
+
+    def leave_EnumTypeDefinition(self, node, *args):
+        return 'enum ' + node.name + ' ' + block(node.values)
+
+    def leave_EnumValueDefinition(self, node, *args):
+        return node.name
+
+    def leave_InputObjectTypeDefinition(self, node, *args):
+        return 'input ' + node.name + ' ' + block(node.fields)
+
+    def leave_TypeExtensionDefinition(self, node, *args):
+        return 'extend ' + node.definition
 
 
 def join(maybe_list, separator=''):

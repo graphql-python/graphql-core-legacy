@@ -1,42 +1,23 @@
-from collections import namedtuple
-from copy import copy, deepcopy
+from copy import copy
+
+import six
 from . import ast
+from .visitor_meta import QUERY_DOCUMENT_KEYS, VisitorMeta
 
-QUERY_DOCUMENT_KEYS = {
-    ast.Name: (),
-
-    ast.Document: ('definitions', ),
-    ast.OperationDefinition: ('name', 'variable_definitions', 'directives', 'selection_set'),
-    ast.VariableDefinition: ('variable', 'type', 'default_value'),
-    ast.Variable: ('name', ),
-    ast.SelectionSet: ('selections', ),
-    ast.Field: ('alias', 'name', 'arguments', 'directives', 'selection_set'),
-    ast.Argument: ('name', 'value'),
-
-    ast.FragmentSpread: ('name', 'directives'),
-    ast.InlineFragment: ('type_condition', 'directives', 'selection_set'),
-    ast.FragmentDefinition: ('name', 'type_condition', 'directives', 'selection_set'),
-
-    ast.IntValue: (),
-    ast.FloatValue: (),
-    ast.StringValue: (),
-    ast.BooleanValue: (),
-    ast.EnumValue: (),
-    ast.ListValue: ('values', ),
-    ast.ObjectValue: ('fields', ),
-    ast.ObjectField: ('name', 'value'),
-
-    ast.Directive: ('name', 'arguments'),
-
-    ast.NamedType: ('name', ),
-    ast.ListType: ('type', ),
-    ast.NonNullType: ('type', ),
-}
 
 BREAK = object()
 REMOVE = object()
 
-Stack = namedtuple('Stack', 'in_array index keys edits prev')
+
+class Stack(object):
+    __slots__ = 'in_array', 'index', 'keys', 'edits', 'prev'
+
+    def __init__(self, in_array, index, keys, edits, prev):
+        self.in_array = in_array
+        self.index = index
+        self.keys = keys
+        self.edits = edits
+        self.prev = prev
 
 
 def visit(root, visitor, key_map=None):
@@ -51,90 +32,111 @@ def visit(root, visitor, key_map=None):
     path = []
     ancestors = []
     new_root = root
+    leave = visitor.leave
+    enter = visitor.enter
+    path_pop = path.pop
+    ancestors_pop = ancestors.pop
 
     while True:
         index += 1
         is_leaving = index == len(keys)
-        key = None
-        node = None
-        is_edited = is_leaving and len(edits) != 0
+        is_edited = is_leaving and edits
         if is_leaving:
-            key = path.pop() if len(ancestors) != 0 else None
+            key = path_pop() if ancestors else None
             node = parent
-            parent = ancestors.pop() if len(ancestors) != 0 else None
+            parent = ancestors_pop() if ancestors else None
+
             if is_edited:
                 if in_array:
                     node = list(node)
+
                 else:
                     node = copy(node)
+
                 edit_offset = 0
                 for edit_key, edit_value in edits:
                     if in_array:
                         edit_key -= edit_offset
+
                     if in_array and edit_value is REMOVE:
                         node.pop(edit_key)
                         edit_offset += 1
+
                     else:
                         if isinstance(node, list):
                             node[edit_key] = edit_value
+
                         else:
-                            node = deepcopy(node)
                             setattr(node, edit_key, edit_value)
+
             index = stack.index
             keys = stack.keys
             edits = stack.edits
             in_array = stack.in_array
             stack = stack.prev
+
         else:
             if parent:
                 key = index if in_array else keys[index]
                 if isinstance(parent, list):
                     node = parent[key]
+
                 else:
                     node = getattr(parent, key, None)
+
             else:
                 key = None
                 node = new_root
+
             if node is None:
                 continue
+
             if parent:
                 path.append(key)
 
         result = None
+
         if not isinstance(node, list):
             assert isinstance(node, ast.Node), 'Invalid AST Node: ' + repr(node)
+
             if is_leaving:
-                result = visitor.leave(node, key, parent, path, ancestors)
+                result = leave(node, key, parent, path, ancestors)
+
             else:
-                result = visitor.enter(node, key, parent, path, ancestors)
+                result = enter(node, key, parent, path, ancestors)
+
             if result is BREAK:
                 break
 
             if result is False:
                 if not is_leaving:
-                    path.pop()
+                    path_pop()
                     continue
+
             elif result is not None:
                 edits.append((key, result))
                 if not is_leaving:
                     if result is not REMOVE:
                         # TODO: check result is valid node
                         node = result
+
                     else:
-                        path.pop()
+                        path_pop()
                         continue
 
         if result is None and is_edited:
             edits.append((key, node))
 
         if not is_leaving:
-            stack = Stack(in_array, index, keys, edits, prev=stack)
+            stack = Stack(in_array, index, keys, edits, stack)
             in_array = isinstance(node, list)
-            keys = node if in_array else visitor_keys.get(type(node), [])
+            keys = node if in_array else visitor_keys.get(type(node), None) or []
             index = -1
             edits = []
+
             if parent:
                 ancestors.append(parent)
+
             parent = node
 
         if not stack:
@@ -146,16 +148,14 @@ def visit(root, visitor, key_map=None):
     return new_root
 
 
+@six.add_metaclass(VisitorMeta)
 class Visitor(object):
     def enter(self, node, key, parent, path, ancestors):
-        return self._call_kind_specific_visitor('enter_', node, key, parent, path, ancestors)
+        method = self._get_enter_handler(type(node))
+        if method:
+            return method(self, node, key, parent, path, ancestors)
 
     def leave(self, node, key, parent, path, ancestors):
-        return self._call_kind_specific_visitor('leave_', node, key, parent, path, ancestors)
-
-    def _call_kind_specific_visitor(self, prefix, node, key, parent, path, ancestors):
-        node_kind = type(node).__name__
-        method_name = prefix + node_kind
-        method = getattr(self, method_name, None)
+        method = self._get_leave_handler(type(node))
         if method:
-            return method(node, key, parent, path, ancestors)
+            return method(self, node, key, parent, path, ancestors)
