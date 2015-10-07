@@ -1,7 +1,6 @@
 import json
 from graphql.core import graphql
 from graphql.core.error import format_error
-from graphql.core.language.location import SourceLocation
 from graphql.core.language.parser import parse
 from graphql.core.execution import execute
 from graphql.core.type import (
@@ -17,78 +16,7 @@ from graphql.core.type import (
     GraphQLEnumValue,
 )
 from graphql.core.validation.rules import ProvidedNonNullArguments
-
-introspection_query = '''
-  query IntrospectionQuery {
-    __schema {
-      queryType { name }
-      mutationType { name }
-      types {
-        ...FullType
-      }
-      directives {
-        name
-        args {
-          name
-          type { ...TypeRef }
-          defaultValue
-        }
-        onOperation
-        onFragment
-        onField
-      }
-    }
-  }
-  fragment FullType on __Type {
-    kind
-    name
-    fields {
-      name
-      args {
-        name
-        type { ...TypeRef }
-        defaultValue
-      }
-      type {
-        ...TypeRef
-      }
-      isDeprecated
-      deprecationReason
-    }
-    inputFields {
-      name
-      type { ...TypeRef }
-      defaultValue
-    }
-    interfaces {
-      ...TypeRef
-    }
-    enumValues {
-      name
-      isDeprecated
-      deprecationReason
-    }
-    possibleTypes {
-      ...TypeRef
-    }
-  }
-  fragment TypeRef on __Type {
-    kind
-    name
-    ofType {
-      kind
-      name
-      ofType {
-        kind
-        name
-        ofType {
-          kind
-          name
-        }
-      }
-    }
-  }
-'''
+from graphql.core.utils.introspection_query import introspection_query
 
 
 def sort_lists(value):
