@@ -365,7 +365,7 @@ def test_does_not_include_arguments_that_were_not_set():
         {
             'field': GraphQLField(
                 GraphQLString,
-                resolver=lambda data, args, *_: args and json.dumps(args, sort_keys=True, separators=(',',':')),
+                resolver=lambda data, args, *_: args and json.dumps(args, sort_keys=True, separators=(',', ':')),
                 args={
                     'a': GraphQLArgument(GraphQLBoolean),
                     'b': GraphQLArgument(GraphQLBoolean),
@@ -382,3 +382,71 @@ def test_does_not_include_arguments_that_were_not_set():
     assert result.data == {
         'field': '{"a":true,"c":false,"e":0}'
     }
+
+
+def test_fails_when_an_is_type_of_check_is_not_met():
+    class Special(object):
+        def __init__(self, value):
+            self.value = value
+
+    class NotSpecial(object):
+        def __init__(self, value):
+            self.value = value
+
+    SpecialType = GraphQLObjectType(
+        'SpecialType',
+        fields={
+            'value': GraphQLField(GraphQLString),
+        },
+        is_type_of=lambda obj, info: isinstance(obj, Special)
+    )
+
+    schema = GraphQLSchema(
+        GraphQLObjectType(
+            name='Query',
+            fields={
+                'specials': GraphQLField(
+                    GraphQLList(SpecialType),
+                    resolver=lambda root, *_: root['specials']
+                )
+            }
+        )
+    )
+
+    query = parse('{ specials { value } }')
+    value = {
+        'specials': [Special('foo'), NotSpecial('bar')]
+    }
+
+    result = execute(schema, value, query)
+
+    assert result.data == {
+        'specials': [
+            {'value': 'foo'},
+            None
+        ]
+    }
+
+    assert 'Expected value of type "SpecialType" but got NotSpecial.' in str(result.errors)
+
+
+def test_fails_to_execute_a_query_containing_a_type_definition():
+    query = parse('''
+    { foo }
+
+    type Query { foo: String }
+    ''')
+
+    schema = GraphQLSchema(
+        GraphQLObjectType(
+            name='Query',
+            fields={
+                'foo': GraphQLField(GraphQLString)
+            }
+        )
+    )
+
+    with raises(GraphQLError) as excinfo:
+        result = execute(schema, None, query)
+
+    assert excinfo.value.message == 'GraphQL cannot execute a request containing a ObjectTypeDefinition.'

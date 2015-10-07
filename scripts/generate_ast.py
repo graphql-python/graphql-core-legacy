@@ -5,7 +5,7 @@ if __name__ == '__main__':
     project_root = os.path.join(os.path.dirname(__file__), '..')
     with open(os.path.join(project_root, 'graphql/core/language/ast.py'), 'w') as fp:
         process = subprocess.Popen(
-            ['python', '../libgraphqlparser/ast/ast.py', 'generate_ast', '../libgraphqlparser/ast/ast.ast'],
+            ['python', '../libgraphqlparser/ast/ast.py', 'generate_ast', './ast.ast'],
             stdout=fp,
             cwd=os.path.join(project_root, 'scripts'),
             env={'PYTHONPATH': '.'}

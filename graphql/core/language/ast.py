@@ -675,3 +675,297 @@ class Name(Node):
 
     def __hash__(self):
         return id(self)
+
+
+class TypeDefinition(Node):
+    pass
+
+
+class ObjectTypeDefinition(TypeDefinition):
+    __slots__ = ('loc', 'name', 'interfaces', 'fields',)
+    _fields = ('name', 'interfaces', 'fields',)
+
+    def __init__(self, name, fields, interfaces=None, loc=None):
+        self.loc = loc
+        self.name = name
+        self.interfaces = interfaces
+        self.fields = fields
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, ObjectTypeDefinition) and
+                self.loc == other.loc and
+                self.name == other.name and
+                self.interfaces == other.interfaces and
+                self.fields == other.fields
+            )
+        )
+
+    def __repr__(self):
+        return ('ObjectTypeDefinition('
+                'name={self.name!r}'
+                ', interfaces={self.interfaces!r}'
+                ', fields={self.fields!r}'
+                ')').format(self=self)
+
+    def __hash__(self):
+        return id(self)
+
+
+class FieldDefinition(Node):
+    __slots__ = ('loc', 'name', 'arguments', 'type',)
+    _fields = ('name', 'arguments', 'type',)
+
+    def __init__(self, name, arguments, type, loc=None):
+        self.loc = loc
+        self.name = name
+        self.arguments = arguments
+        self.type = type
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, FieldDefinition) and
+                self.loc == other.loc and
+                self.name == other.name and
+                self.arguments == other.arguments and
+                self.type == other.type
+            )
+        )
+
+    def __repr__(self):
+        return ('FieldDefinition('
+                'name={self.name!r}'
+                ', arguments={self.arguments!r}'
+                ', type={self.type!r}'
+                ')').format(self=self)
+
+    def __hash__(self):
+        return id(self)
+
+
+class InputValueDefinition(Node):
+    __slots__ = ('loc', 'name', 'type', 'default_value',)
+    _fields = ('name', 'type', 'default_value',)
+
+    def __init__(self, name, type, default_value=None, loc=None):
+        self.loc = loc
+        self.name = name
+        self.type = type
+        self.default_value = default_value
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, InputValueDefinition) and
+                self.loc == other.loc and
+                self.name == other.name and
+                self.type == other.type and
+                self.default_value == other.default_value
+            )
+        )
+
+    def __repr__(self):
+        return ('InputValueDefinition('
+                'name={self.name!r}'
+                ', type={self.type!r}'
+                ', default_value={self.default_value!r}'
+                ')').format(self=self)
+
+    def __hash__(self):
+        return id(self)
+
+
+class InterfaceTypeDefinition(TypeDefinition):
+    __slots__ = ('loc', 'name', 'fields',)
+    _fields = ('name', 'fields',)
+
+    def __init__(self, name, fields, loc=None):
+        self.loc = loc
+        self.name = name
+        self.fields = fields
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, InterfaceTypeDefinition) and
+                self.loc == other.loc and
+                self.name == other.name and
+                self.fields == other.fields
+            )
+        )
+
+    def __repr__(self):
+        return ('InterfaceTypeDefinition('
+                'name={self.name!r}'
+                ', fields={self.fields!r}'
+                ')').format(self=self)
+
+    def __hash__(self):
+        return id(self)
+
+
+class UnionTypeDefinition(TypeDefinition):
+    __slots__ = ('loc', 'name', 'types',)
+    _fields = ('name', 'types',)
+
+    def __init__(self, name, types, loc=None):
+        self.loc = loc
+        self.name = name
+        self.types = types
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, UnionTypeDefinition) and
+                self.loc == other.loc and
+                self.name == other.name and
+                self.types == other.types
+            )
+        )
+
+    def __repr__(self):
+        return ('UnionTypeDefinition('
+                'name={self.name!r}'
+                ', types={self.types!r}'
+                ')').format(self=self)
+
+    def __hash__(self):
+        return id(self)
+
+
+class ScalarTypeDefinition(TypeDefinition):
+    __slots__ = ('loc', 'name',)
+    _fields = ('name',)
+
+    def __init__(self, name, loc=None):
+        self.loc = loc
+        self.name = name
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, ScalarTypeDefinition) and
+                self.loc == other.loc and
+                self.name == other.name
+            )
+        )
+
+    def __repr__(self):
+        return ('ScalarTypeDefinition('
+                'name={self.name!r}'
+                ')').format(self=self)
+
+    def __hash__(self):
+        return id(self)
+
+
+class EnumTypeDefinition(TypeDefinition):
+    __slots__ = ('loc', 'name', 'values',)
+    _fields = ('name', 'values',)
+
+    def __init__(self, name, values, loc=None):
+        self.loc = loc
+        self.name = name
+        self.values = values
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, EnumTypeDefinition) and
+                self.loc == other.loc and
+                self.name == other.name and
+                self.values == other.values
+            )
+        )
+
+    def __repr__(self):
+        return ('EnumTypeDefinition('
+                'name={self.name!r}'
+                ', values={self.values!r}'
+                ')').format(self=self)
+
+    def __hash__(self):
+        return id(self)
+
+
+class EnumValueDefinition(Node):
+    __slots__ = ('loc', 'name',)
+    _fields = ('name',)
+
+    def __init__(self, name, loc=None):
+        self.loc = loc
+        self.name = name
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, EnumValueDefinition) and
+                self.loc == other.loc and
+                self.name == other.name
+            )
+        )
+
+    def __repr__(self):
+        return ('EnumValueDefinition('
+                'name={self.name!r}'
+                ')').format(self=self)
+
+    def __hash__(self):
+        return id(self)
+
+
+class InputObjectTypeDefinition(TypeDefinition):
+    __slots__ = ('loc', 'name', 'fields',)
+    _fields = ('name', 'fields',)
+
+    def __init__(self, name, fields, loc=None):
+        self.loc = loc
+        self.name = name
+        self.fields = fields
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, InputObjectTypeDefinition) and
+                self.loc == other.loc and
+                self.name == other.name and
+                self.fields == other.fields
+            )
+        )
+
+    def __repr__(self):
+        return ('InputObjectTypeDefinition('
+                'name={self.name!r}'
+                ', fields={self.fields!r}'
+                ')').format(self=self)
+
+    def __hash__(self):
+        return id(self)
+
+
+class TypeExtensionDefinition(TypeDefinition):
+    __slots__ = ('loc', 'definition',)
+    _fields = ('definition',)
+
+    def __init__(self, definition, loc=None):
+        self.loc = loc
+        self.definition = definition
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, TypeExtensionDefinition) and
+                self.loc == other.loc and
+                self.definition == other.definition
+            )
+        )
+
+    def __repr__(self):
+        return ('TypeExtensionDefinition('
+                'definition={self.definition!r}'
+                ')').format(self=self)
+
+    def __hash__(self):
+        return id(self)
