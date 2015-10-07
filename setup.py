@@ -54,6 +54,10 @@ setup(
 
     install_requires=['six>=1.10.0'],
     tests_require=['pytest>=2.7.3', 'gevent==1.1b5', 'six>=1.10.0'],
-
+    extras_require={
+        'gevent': [
+            'gevent==1.1b5'
+        ]
+    },
     cmdclass={'test': PyTest},
 )
