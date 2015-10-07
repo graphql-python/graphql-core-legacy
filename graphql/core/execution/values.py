@@ -1,4 +1,5 @@
 import collections
+import json
 from six import string_types
 from ..error import GraphQLError
 from ..language.printer import print_ast
@@ -11,6 +12,7 @@ from ..type import (
     is_input_type
 )
 from ..utils.is_nullish import is_nullish
+from ..utils.is_valid_value import is_valid_value
 from ..utils.type_from_ast import type_from_ast
 from ..utils.value_from_ast import value_from_ast
 
@@ -22,11 +24,13 @@ def get_variable_values(schema, definition_asts, inputs):
     If the input cannot be parsed to match the variable definitions, a GraphQLError will be thrown."""
     if inputs is None:
         inputs = {}
+
     values = {}
     for def_ast in definition_asts:
         var_name = def_ast.variable.name.value
         value = get_variable_value(schema, def_ast, inputs.get(var_name))
         values[var_name] = value
+
     return values
 
 
@@ -65,10 +69,12 @@ def get_variable_value(schema, definition_ast, input):
     """Given a variable definition, and any value of input, return a value which adheres to the variable definition,
     or throw an error."""
     type = type_from_ast(schema, definition_ast.type)
+    variable = definition_ast.variable
+
     if not type or not is_input_type(type):
         raise GraphQLError(
-            'Variable ${} expected value of type {} which cannot be used as an input type.'.format(
-                definition_ast.variable.name.value,
+            'Variable "${}" expected value of type "{}" which cannot be used as an input type.'.format(
+                variable.name.value,
                 print_ast(definition_ast.type),
             ),
             [definition_ast]
@@ -81,53 +87,23 @@ def get_variable_value(schema, definition_ast, input):
                 return value_from_ast(type, default_value, None)
         return coerce_value(type, input)
 
+    if is_nullish(input):
+        raise GraphQLError(
+            'Variable "${}" of required type "{}" was not provided.'.format(
+                variable.name.value,
+                print_ast(definition_ast.type)
+            ),
+            [definition_ast]
+        )
+
     raise GraphQLError(
-        'Variable ${} expected value of type {} but got: {}'.format(
-            definition_ast.variable.name.value,
+        'Variable "${}" expected value of type "{}" but got: {}'.format(
+            variable.name.value,
             print_ast(definition_ast.type),
-            repr(input)
+            json.dumps(input)
         ),
         [definition_ast]
     )
-
-
-def is_valid_value(type, value):
-    """Given a type and any value, return True if that value is valid."""
-    if isinstance(type, GraphQLNonNull):
-        if is_nullish(value):
-            return False
-        return is_valid_value(type.of_type, value)
-
-    if is_nullish(value):
-        return True
-
-    if isinstance(type, GraphQLList):
-        item_type = type.of_type
-        if not isinstance(value, string_types) and \
-                isinstance(value, collections.Iterable):
-            return all(is_valid_value(item_type, item) for item in value)
-        else:
-            return is_valid_value(item_type, value)
-
-    if isinstance(type, GraphQLInputObjectType):
-        if not isinstance(value, collections.Mapping):
-            return False
-        fields = type.get_fields()
-
-        # Ensure every provided field is defined.
-        if any(field_name not in fields for field_name in value.keys()):
-            return False
-
-        # Ensure every defined field is valid.
-        return all(
-            is_valid_value(fields[field_name].type, value.get(field_name))
-            for field_name in fields
-        )
-
-    assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
-        'Must be input type'
-
-    return not is_nullish(type.parse_value(value))
 
 
 def coerce_value(type, value):
@@ -153,9 +129,12 @@ def coerce_value(type, value):
         obj = {}
         for field_name, field in fields.items():
             field_value = coerce_value(field.type, value[field_name])
-            if field_value is None:
+            if is_nullish(field_value):
                 field_value = field.default_value
-            obj[field_name] = field_value
+
+            if not is_nullish(field_value):
+                obj[field_name] = field_value
+
         return obj
 
     assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
