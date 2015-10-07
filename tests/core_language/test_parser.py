@@ -134,6 +134,14 @@ def test_parses_kitchen_sink():
     parse(KITCHEN_SINK)
 
 
+def parses_experimental_subscription_feature():
+    parse('''
+        subscription Foo {
+            subscriptionField
+        }
+    ''')
+
+
 def test_parses_anonymous_operations():
     parse('''
         mutation {
