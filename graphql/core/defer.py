@@ -61,7 +61,7 @@
 # THE SOFTWARE.
 import collections
 import sys
-from graphql.core.compat import PY3
+from six import reraise
 
 __all__ = ("Deferred", "AlreadyCalledDeferred", "DeferredException",
            "defer", "succeed", "fail", "DeferredDict", "DeferredList")
@@ -107,14 +107,9 @@ class DeferredException(object):
         elif not type or not value:
             self.type, self.value, self.traceback = sys.exc_info()
 
-    if PY3:
-        def raise_exception(self):
-            """Raise the stored exception."""
-            raise self.type(self.value).with_traceback(self.traceback)
-
-    else:
-        exec("""def raise_exception(self):
-    raise self.type, self.value, self.traceback""")
+    def raise_exception(self):
+        """Raise the stored exception."""
+        reraise(self.type, self.value, self.traceback)
 
     def catch(self, *errors):
         """Check if the stored exception is a subclass of one of the

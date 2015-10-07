@@ -1,5 +1,5 @@
 import json
-from ..compat import unichr
+from six import unichr
 from .error import LanguageError
 
 __all__ = ['Token', 'Lexer', 'TokenKind',

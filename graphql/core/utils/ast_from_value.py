@@ -1,7 +1,8 @@
 import json
 import re
 import sys
-from ..compat import str_type
+
+from six import string_types
 from ..language import ast
 from ..type.definition import (
     GraphQLEnumType,
@@ -43,7 +44,7 @@ def ast_from_value(value, type=None):
 
         return ast.FloatValue(string_num)
 
-    if isinstance(value, str_type):
+    if isinstance(value, string_types):
         if isinstance(type, GraphQLEnumType) and re.match(r'^[_a-zA-Z][_a-zA-Z0-9]*$', value):
             return ast.EnumValue(value)
 
