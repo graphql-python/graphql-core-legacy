@@ -1,6 +1,6 @@
 import six
 
-from ..language import ast, visitor_meta
+from ..language import visitor_meta
 from ..type.definition import (
     GraphQLInputObjectType,
     GraphQLList,

@@ -32,7 +32,7 @@ QUERY_DOCUMENT_KEYS = {
 
     ast.ObjectTypeDefinition: ('name', 'interfaces', 'fields'),
     ast.FieldDefinition: ('name', 'arguments', 'type'),
-    ast.InputValueDefinition: ('name', 'type', 'defaultValue'),
+    ast.InputValueDefinition: ('name', 'type', 'default_value'),
     ast.InterfaceTypeDefinition: ('name', 'fields'),
     ast.UnionTypeDefinition: ('name', 'types'),
     ast.ScalarTypeDefinition: ('name',),
