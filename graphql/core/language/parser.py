@@ -639,7 +639,7 @@ def parse_scalar_type_definition(parser):
 
 
 def parse_enum_type_definition(parser):
-    start = parser.tokens.start
+    start = parser.token.start
     expect_keyword(parser, 'enum')
 
     return ast.EnumTypeDefinition(
