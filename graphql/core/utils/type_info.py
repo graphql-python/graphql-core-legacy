@@ -1,4 +1,6 @@
-from ..language import ast
+import six
+
+from ..language import ast, visitor_meta
 from ..type.definition import (
     GraphQLInputObjectType,
     GraphQLList,
@@ -16,6 +18,8 @@ def pop(lst):
         lst.pop()
 
 
+# noinspection PyPep8Naming
+@six.add_metaclass(visitor_meta.VisitorMeta)
 class TypeInfo(object):
     def __init__(self, schema):
         self._schema = schema
@@ -48,80 +52,105 @@ class TypeInfo(object):
     def get_argument(self):
         return self._argument
 
-    def enter(self, node):
-        schema = self._schema
-        type = None
-        if isinstance(node, ast.SelectionSet):
-            named_type = get_named_type(self.get_type())
-            composite_type = None
-            if is_composite_type(named_type):
-                composite_type = named_type
-            self._parent_type_stack.append(composite_type)
-        elif isinstance(node, ast.Field):
-            parent_type = self.get_parent_type()
-            field_def = None
-            if parent_type:
-                field_def = get_field_def(schema, parent_type, node)
-            self._field_def_stack.append(field_def)
-            self._type_stack.append(field_def and field_def.type)
-        elif isinstance(node, ast.Directive):
-            self._directive = schema.get_directive(node.name.value)
-        elif isinstance(node, ast.OperationDefinition):
-            if node.operation == 'query':
-                type = schema.get_query_type()
-            elif node.operation == 'mutation':
-                type = schema.get_mutation_type()
-            self._type_stack.append(type)
-        elif isinstance(node, (ast.InlineFragment, ast.FragmentDefinition)):
-            type_condition_ast = node.type_condition
-            type = type_from_ast(schema, type_condition_ast) if type_condition_ast else self.get_type()
-            self._type_stack.append(type)
-        elif isinstance(node, ast.VariableDefinition):
-            self._input_type_stack.append(type_from_ast(schema, node.type))
-        elif isinstance(node, ast.Argument):
-            arg_def = None
-            arg_type = None
-            field_or_directive = self.get_directive() or self.get_field_def()
-            if field_or_directive:
-                arg_def = [arg for arg in field_or_directive.args if arg.name == node.name.value]
-                if arg_def:
-                    arg_def = arg_def[0]
-                    arg_type = arg_def.type
-                else:
-                    arg_def = None
-            self._argument = arg_def
-            self._input_type_stack.append(arg_type)
-        elif isinstance(node, ast.ListValue):
-            list_type = get_nullable_type(self.get_input_type())
-            self._input_type_stack.append(
-                list_type.of_type if isinstance(list_type, GraphQLList) else None
-            )
-        elif isinstance(node, ast.ObjectField):
-            object_type = get_named_type(self.get_input_type())
-            field_type = None
-            if isinstance(object_type, GraphQLInputObjectType):
-                input_field = object_type.get_fields().get(node.name.value)
-                field_type = input_field.type if input_field else None
-            self._input_type_stack.append(field_type)
-
     def leave(self, node):
-        if isinstance(node, ast.SelectionSet):
-            pop(self._parent_type_stack)
-        elif isinstance(node, ast.Field):
-            pop(self._field_def_stack)
-            pop(self._type_stack)
-        elif isinstance(node, ast.Directive):
-            self._directive = None
-        elif isinstance(node, (
-                ast.OperationDefinition,
-                ast.InlineFragment,
-                ast.FragmentDefinition,
-        )):
-            pop(self._type_stack)
-        elif isinstance(node, ast.VariableDefinition):
-            pop(self._input_type_stack)
-        elif isinstance(node, ast.Argument):
-            self._argument = None
-            pop(self._input_type_stack)
-        elif isinstance(node, (ast.ListType, ast.ObjectField)):
-            pop(self._input_type_stack)
+        method = self._get_leave_handler(type(node))
+        if method:
+            return method(self)
+
+    def enter(self, node):
+        method = self._get_enter_handler(type(node))
+        if method:
+            return method(self, node)
+
+    def enter_SelectionSet(self, node):
+        named_type = get_named_type(self.get_type())
+        composite_type = None
+        if is_composite_type(named_type):
+            composite_type = named_type
+        self._parent_type_stack.append(composite_type)
+
+    def enter_Field(self, node):
+        parent_type = self.get_parent_type()
+        field_def = None
+        if parent_type:
+            field_def = get_field_def(self._schema, parent_type, node)
+        self._field_def_stack.append(field_def)
+        self._type_stack.append(field_def and field_def.type)
+
+    def enter_Directive(self, node):
+        self._directive = self._schema.get_directive(node.name.value)
+
+    def enter_OperationDefinition(self, node):
+        definition_type = None
+        if node.operation == 'query':
+            definition_type = self._schema.get_query_type()
+        elif node.operation == 'mutation':
+            definition_type = self._schema.get_mutation_type()
+
+        self._type_stack.append(definition_type)
+
+    def enter_InlineFragment(self, node):
+        type_condition_ast = node.type_condition
+        type = type_from_ast(self._schema, type_condition_ast) if type_condition_ast else self.get_type()
+        self._type_stack.append(type)
+
+    enter_FragmentDefinition = enter_InlineFragment
+
+    def enter_VariableDefinition(self, node):
+        self._input_type_stack.append(type_from_ast(self._schema, node.type))
+
+    def enter_Argument(self, node):
+        arg_def = None
+        arg_type = None
+        field_or_directive = self.get_directive() or self.get_field_def()
+        if field_or_directive:
+            arg_def = [arg for arg in field_or_directive.args if arg.name == node.name.value]
+            if arg_def:
+                arg_def = arg_def[0]
+                arg_type = arg_def.type
+            else:
+                arg_def = None
+        self._argument = arg_def
+        self._input_type_stack.append(arg_type)
+
+    def enter_ListValue(self, node):
+        list_type = get_nullable_type(self.get_input_type())
+        self._input_type_stack.append(
+            list_type.of_type if isinstance(list_type, GraphQLList) else None
+        )
+
+    def enter_ObjectField(self, node):
+        object_type = get_named_type(self.get_input_type())
+        field_type = None
+        if isinstance(object_type, GraphQLInputObjectType):
+            input_field = object_type.get_fields().get(node.name.value)
+            field_type = input_field.type if input_field else None
+        self._input_type_stack.append(field_type)
+
+    def leave_SelectionSet(self):
+        pop(self._parent_type_stack)
+
+    def leave_Field(self):
+        pop(self._field_def_stack)
+        pop(self._type_stack)
+
+    def leave_Directive(self):
+        self._directive = None
+
+    def leave_OperationDefinition(self):
+        pop(self._type_stack)
+
+    leave_InlineFragment = leave_OperationDefinition
+    leave_FragmentDefinition = leave_OperationDefinition
+
+    def leave_VariableDefinition(self):
+        pop(self._input_type_stack)
+
+    def leave_Argument(self):
+        self._argument = None
+        pop(self._input_type_stack)
+
+    def leave_ListType(self):
+        pop(self._input_type_stack)
+
+    leave_ObjectField = leave_ListType
