@@ -265,13 +265,12 @@ class GraphQLUnionType(GraphQLType):
     """
     def __init__(self, name, types=None, resolve_type=None, description=None):
         assert name, 'Type must be named.'
+        assert types, 'Must provide types for Union {}.'.format(name)
+
         self.name = name
         self.description = description
-        assert types, \
-            'Must provide types for Union {}.'.format(name)
-        self._possible_type_names = None
-        non_obj_types = [t for t in types
-                         if not isinstance(t, GraphQLObjectType)]
+
+        non_obj_types = [t for t in types if not isinstance(t, GraphQLObjectType)]
         if non_obj_types:
             raise Error(
                 'Union {} may only contain object types, it cannot '
@@ -280,6 +279,8 @@ class GraphQLUnionType(GraphQLType):
                     ', '.join(str(t) for t in non_obj_types)
                 )
             )
+
+        self._possible_type_names = None
         self._types = types
         self._resolve_type = resolve_type
 
@@ -291,6 +292,7 @@ class GraphQLUnionType(GraphQLType):
             self._possible_type_names = set(
                 t.name for t in self.get_possible_types()
             )
+
         return type.name in self._possible_type_names
 
     def resolve_type(self, value, info):
@@ -326,37 +328,46 @@ class GraphQLEnumType(GraphQLType):
     def get_values(self):
         if self._value_map is None:
             self._value_map = self._define_value_map()
+
         return self._value_map
 
     def serialize(self, value):
         if isinstance(value, collections.Hashable):
             enum_value = self._get_value_lookup().get(value)
+
             if enum_value:
                 return enum_value.name
+
         return None
 
     def parse_value(self, value):
         if isinstance(value, collections.Hashable):
             enum_value = self._get_value_lookup().get(value)
+
             if enum_value:
                 return enum_value.name
+
         return None
 
     def parse_literal(self, value_ast):
         if isinstance(value_ast, ast.EnumValue):
             enum_value = self._get_name_lookup().get(value_ast.value)
+
             if enum_value:
                 return enum_value.value
 
     def _define_value_map(self):
-        value_map = {}
+        value_map = collections.OrderedDict()
         for value_name, value in self._values.items():
             if not isinstance(value, GraphQLEnumValue):
                 value = GraphQLEnumValue(value)
+
             value.name = value_name
             if value.value is None:
                 value.value = value_name
+
             value_map[value_name] = value
+
         return value_map
 
     def _get_value_lookup(self):
@@ -364,7 +375,9 @@ class GraphQLEnumType(GraphQLType):
             lookup = {}
             for value_name, value in self.get_values().items():
                 lookup[value.value] = value
+
             self._value_lookup = lookup
+
         return self._value_lookup
 
     def _get_name_lookup(self):
@@ -372,7 +385,9 @@ class GraphQLEnumType(GraphQLType):
             lookup = {}
             for value_name, value in self.get_values().items():
                 lookup[value.name] = value
+
             self._name_lookup = lookup
+
         return self._name_lookup
 
 
