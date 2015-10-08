@@ -7,6 +7,7 @@ from graphql.core.type import (
     GraphQLObjectType,
     GraphQLField,
     GraphQLArgument,
+    GraphQLInputObjectField,
     GraphQLInputObjectType,
     GraphQLList,
     GraphQLString,
@@ -15,9 +16,9 @@ from graphql.core.type import (
 from graphql.core.error import GraphQLError
 
 TestInputObject = GraphQLInputObjectType('TestInputObject', {
-    'a': GraphQLField(GraphQLString),
-    'b': GraphQLField(GraphQLList(GraphQLString)),
-    'c': GraphQLField(GraphQLNonNull(GraphQLString)),
+    'a': GraphQLInputObjectField(GraphQLString),
+    'b': GraphQLInputObjectField(GraphQLList(GraphQLString)),
+    'c': GraphQLInputObjectField(GraphQLNonNull(GraphQLString)),
 })
 
 TestType = GraphQLObjectType('TestType', {

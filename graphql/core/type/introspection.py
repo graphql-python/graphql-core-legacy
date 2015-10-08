@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from ..language.printer import print_ast
 from ..utils.ast_from_value import ast_from_value
 from .definition import (
@@ -21,67 +22,83 @@ __Schema = GraphQLObjectType(
                 'server. It exposes all available types and directives on '
                 'the server, as well as the entry points for query and '
                 'mutation operations.',
-    fields=lambda: {
-        'types': GraphQLField(
+    fields=lambda: OrderedDict([
+        ('types', GraphQLField(
             description='A list of all types supported by this server.',
             type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__Type))),
             resolver=lambda schema, *_: schema.get_type_map().values(),
-        ),
-        'queryType': GraphQLField(
+        )),
+        ('queryType', GraphQLField(
             description='The type that query operations will be rooted at.',
             type=GraphQLNonNull(__Type),
             resolver=lambda schema, *_: schema.get_query_type(),
-        ),
-        'mutationType': GraphQLField(
+        )),
+        ('mutationType', GraphQLField(
             description='If this server supports mutation, the type that '
                         'mutation operations will be rooted at.',
             type=__Type,
             resolver=lambda schema, *_: schema.get_mutation_type(),
-        ),
-        'directives': GraphQLField(
+        )),
+        ('directives', GraphQLField(
             description='A list of all directives supported by this server.',
             type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__Directive))),
             resolver=lambda schema, *_: schema.get_directives(),
-        ),
-    })
+        )),
+    ]))
 
-__Directive = GraphQLObjectType('__Directive', lambda: {
-    'name': GraphQLField(GraphQLNonNull(GraphQLString)),
-    'description': GraphQLField(GraphQLString),
-    'args': GraphQLField(
-        type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
-        resolver=lambda directive, *args: directive.args or [],
-    ),
-    'onOperation': GraphQLField(
-        type=GraphQLBoolean,
-        resolver=lambda directive, *args: directive.on_operation,
-    ),
-    'onFragment': GraphQLField(
-        type=GraphQLBoolean,
-        resolver=lambda directive, *args: directive.on_fragment,
-    ),
-    'onField': GraphQLField(
-        type=GraphQLBoolean,
-        resolver=lambda directive, *args: directive.on_field,
-    ),
-})
+__Directive = GraphQLObjectType(
+    '__Directive',
+    fields=lambda: OrderedDict([
+        ('name', GraphQLField(GraphQLNonNull(GraphQLString))),
+        ('description', GraphQLField(GraphQLString)),
+        ('args', GraphQLField(
+            type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
+            resolver=lambda directive, *args: directive.args or [],
+        )),
+        ('onOperation', GraphQLField(
+            type=GraphQLNonNull(GraphQLBoolean),
+            resolver=lambda directive, *args: directive.on_operation,
+        )),
+        ('onFragment', GraphQLField(
+            type=GraphQLNonNull(GraphQLBoolean),
+            resolver=lambda directive, *args: directive.on_fragment,
+        )),
+        ('onField', GraphQLField(
+            type=GraphQLNonNull(GraphQLBoolean),
+            resolver=lambda directive, *args: directive.on_field,
+        ))
+    ]))
+
+
+class TypeKind(object):
+    SCALAR = 0
+    OBJECT = 1
+    INTERFACE = 2
+    UNION = 3
+    ENUM = 4
+    INPUT_OBJECT = 5
+    LIST = 6
+    NON_NULL = 7
 
 
 class TypeFieldResolvers(object):
-    @staticmethod
-    def kind(type, *_):
-        for cls, kind in (
-            (GraphQLScalarType, TypeKind.SCALAR),
-            (GraphQLObjectType, TypeKind.OBJECT),
-            (GraphQLInterfaceType, TypeKind.INTERFACE),
-            (GraphQLUnionType, TypeKind.UNION),
-            (GraphQLEnumType, TypeKind.ENUM),
-            (GraphQLInputObjectType, TypeKind.INPUT_OBJECT),
-            (GraphQLList, TypeKind.LIST),
-            (GraphQLNonNull, TypeKind.NON_NULL),
-        ):
-            if isinstance(type, cls):
+    _kinds = (
+        (GraphQLScalarType, TypeKind.SCALAR),
+        (GraphQLObjectType, TypeKind.OBJECT),
+        (GraphQLInterfaceType, TypeKind.INTERFACE),
+        (GraphQLUnionType, TypeKind.UNION),
+        (GraphQLEnumType, TypeKind.ENUM),
+        (GraphQLInputObjectType, TypeKind.INPUT_OBJECT),
+        (GraphQLList, TypeKind.LIST),
+        (GraphQLNonNull, TypeKind.NON_NULL),
+    )
+
+    @classmethod
+    def kind(cls, type, *_):
+        for klass, kind in cls._kinds:
+            if isinstance(type, klass):
                 return kind
+
         raise Exception('Unknown kind of type: {}'.format(type))
 
     @staticmethod
@@ -116,149 +133,148 @@ class TypeFieldResolvers(object):
         if isinstance(type, GraphQLInputObjectType):
             return type.get_fields().values()
 
-__Type = GraphQLObjectType('__Type', lambda: {
-    'kind': GraphQLField(
-        type=GraphQLNonNull(__TypeKind),
-        resolver=TypeFieldResolvers.kind
-    ),
-    'name': GraphQLField(GraphQLString),
-    'description': GraphQLField(GraphQLString),
-    'fields': GraphQLField(
-        type=GraphQLList(GraphQLNonNull(__Field)),
-        args={
-            'includeDeprecated': GraphQLArgument(
-                GraphQLBoolean,
-                default_value=False
-            )
-        },
-        resolver=TypeFieldResolvers.fields
-    ),
-    'interfaces': GraphQLField(
-        type=GraphQLList(GraphQLNonNull(__Type)),
-        resolver=TypeFieldResolvers.interfaces
-    ),
-    'possibleTypes': GraphQLField(
-        type=GraphQLList(GraphQLNonNull(__Type)),
-        resolver=TypeFieldResolvers.possible_types
-    ),
-    'enumValues': GraphQLField(
-        type=GraphQLList(GraphQLNonNull(__EnumValue)),
-        args={
-            'includeDeprecated': GraphQLArgument(
-                GraphQLBoolean,
-                default_value=False
-            )
-        },
-        resolver=TypeFieldResolvers.enum_values
-    ),
-    'inputFields': GraphQLField(
-        type=GraphQLList(GraphQLNonNull(__InputValue)),
-        resolver=TypeFieldResolvers.input_fields
-    ),
-    'ofType': GraphQLField(
-        type=__Type,
-        resolver=lambda type, *_: getattr(type, 'of_type', None)
-    ),
-})
 
-__Field = GraphQLObjectType('__Field', lambda: {
-    'name': GraphQLField(GraphQLNonNull(GraphQLString)),
-    'description': GraphQLField(GraphQLString),
-    'args': GraphQLField(
-        type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
-        resolver=lambda field, *_: field.args or []
-    ),
-    'type': GraphQLField(GraphQLNonNull(__Type)),
-    'isDeprecated': GraphQLField(
-        type=GraphQLNonNull(GraphQLBoolean),
-        resolver=lambda field, *_: bool(field.deprecation_reason)
-    ),
-    'deprecationReason': GraphQLField(
-        type=GraphQLString,
-        resolver=lambda field, *_: field.deprecation_reason
-    )
-})
+__Type = GraphQLObjectType(
+    '__Type',
+    fields=lambda: OrderedDict([
+        ('kind', GraphQLField(
+            type=GraphQLNonNull(__TypeKind),
+            resolver=TypeFieldResolvers.kind
+        )),
+        ('name', GraphQLField(GraphQLString)),
+        ('description', GraphQLField(GraphQLString)),
+        ('fields', GraphQLField(
+            type=GraphQLList(GraphQLNonNull(__Field)),
+            args={
+                'includeDeprecated': GraphQLArgument(
+                    GraphQLBoolean,
+                    default_value=False
+                )
+            },
+            resolver=TypeFieldResolvers.fields
+        )),
+        ('interfaces', GraphQLField(
+            type=GraphQLList(GraphQLNonNull(__Type)),
+            resolver=TypeFieldResolvers.interfaces
+        )),
+        ('possibleTypes', GraphQLField(
+            type=GraphQLList(GraphQLNonNull(__Type)),
+            resolver=TypeFieldResolvers.possible_types
+        )),
+        ('enumValues', GraphQLField(
+            type=GraphQLList(GraphQLNonNull(__EnumValue)),
+            args={
+                'includeDeprecated': GraphQLArgument(
+                    GraphQLBoolean,
+                    default_value=False
+                )
+            },
+            resolver=TypeFieldResolvers.enum_values
+        )),
+        ('inputFields', GraphQLField(
+            type=GraphQLList(GraphQLNonNull(__InputValue)),
+            resolver=TypeFieldResolvers.input_fields
+        )),
+        ('ofType', GraphQLField(
+            type=__Type,
+            resolver=lambda type, *_: getattr(type, 'of_type', None)
+        )),
+    ]))
 
-__InputValue = GraphQLObjectType('__InputValue', lambda: {
-    'name': GraphQLField(GraphQLNonNull(GraphQLString)),
-    'description': GraphQLField(GraphQLString),
-    'type': GraphQLField(GraphQLNonNull(__Type)),
-    'defaultValue': GraphQLField(
-        type=GraphQLString,
-        resolver=lambda input_val, *_:
+__Field = GraphQLObjectType(
+    '__Field',
+    fields=lambda: OrderedDict([
+        ('name', GraphQLField(GraphQLNonNull(GraphQLString))),
+        ('description', GraphQLField(GraphQLString)),
+        ('args', GraphQLField(
+            type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
+            resolver=lambda field, *_: field.args or []
+        )),
+        ('type', GraphQLField(GraphQLNonNull(__Type))),
+        ('isDeprecated', GraphQLField(
+            type=GraphQLNonNull(GraphQLBoolean),
+            resolver=lambda field, *_: bool(field.deprecation_reason)
+        )),
+        ('deprecationReason', GraphQLField(
+            type=GraphQLString,
+            resolver=lambda field, *_: field.deprecation_reason
+        ))
+    ])
+)
+
+__InputValue = GraphQLObjectType(
+    '__InputValue',
+    fields=lambda: OrderedDict([
+        ('name', GraphQLField(GraphQLNonNull(GraphQLString))),
+        ('description', GraphQLField(GraphQLString)),
+        ('type', GraphQLField(GraphQLNonNull(__Type))),
+        ('defaultValue', GraphQLField(
+            type=GraphQLString,
+            resolver=lambda input_val, *_:
             None if input_val.default_value is None
             else print_ast(ast_from_value(input_val.default_value, input_val))
-    )
-})
+        ))
+    ]))
 
-__EnumValue = GraphQLObjectType('__EnumValue', lambda: {
-    'name': GraphQLField(GraphQLNonNull(GraphQLString)),
-    'description': GraphQLField(GraphQLString),
-    'isDeprecated': GraphQLField(
-        type=GraphQLNonNull(GraphQLBoolean),
-        resolver=lambda field, *_: bool(field.deprecation_reason)
-    ),
-    'deprecationReason': GraphQLField(
-        type=GraphQLString,
-        resolver=lambda enum_value, *_: enum_value.deprecation_reason,
-    )
-})
-
-
-class TypeKind(object):
-    SCALAR = 0
-    OBJECT = 1
-    INTERFACE = 2
-    UNION = 3
-    ENUM = 4
-    INPUT_OBJECT = 5
-    LIST = 6
-    NON_NULL = 7
+__EnumValue = GraphQLObjectType(
+    '__EnumValue',
+    fields=lambda: OrderedDict([
+        ('name', GraphQLField(GraphQLNonNull(GraphQLString))),
+        ('description', GraphQLField(GraphQLString)),
+        ('isDeprecated', GraphQLField(
+            type=GraphQLNonNull(GraphQLBoolean),
+            resolver=lambda field, *_: bool(field.deprecation_reason)
+        )),
+        ('deprecationReason', GraphQLField(
+            type=GraphQLString,
+            resolver=lambda enum_value, *_: enum_value.deprecation_reason,
+        ))
+    ]))
 
 __TypeKind = GraphQLEnumType(
     '__TypeKind',
     description='An enum describing what kind of type a given __Type is',
-    values={
-        'SCALAR': GraphQLEnumValue(
+    values=OrderedDict([
+        ('SCALAR', GraphQLEnumValue(
             TypeKind.SCALAR,
             description='Indicates this type is a scalar.'
-        ),
-        'OBJECT': GraphQLEnumValue(
+        )),
+        ('OBJECT', GraphQLEnumValue(
             TypeKind.OBJECT,
             description='Indicates this type is an object. '
                         '`fields` and `interfaces` are valid fields.'
-        ),
-        'INTERFACE': GraphQLEnumValue(
+        )),
+        ('INTERFACE', GraphQLEnumValue(
             TypeKind.INTERFACE,
             description='Indicates this type is an interface. '
                         '`fields` and `possibleTypes` are valid fields.'
-        ),
-        'UNION': GraphQLEnumValue(
+        )),
+        ('UNION', GraphQLEnumValue(
             TypeKind.UNION,
             description='Indicates this type is a union. '
                         '`possibleTypes` is a valid field.'
-        ),
-        'ENUM': GraphQLEnumValue(
+        )),
+        ('ENUM', GraphQLEnumValue(
             TypeKind.ENUM,
             description='Indicates this type is an enum. '
                         '`enumValues` is a valid field.'
-        ),
-        'INPUT_OBJECT': GraphQLEnumValue(
+        )),
+        ('INPUT_OBJECT', GraphQLEnumValue(
             TypeKind.INPUT_OBJECT,
             description='Indicates this type is an input object. '
                         '`inputFields` is a valid field.'
-        ),
-        'LIST': GraphQLEnumValue(
+        )),
+        ('LIST', GraphQLEnumValue(
             TypeKind.LIST,
             description='Indicates this type is a list. '
                         '`ofType` is a valid field.'
-        ),
-        'NON_NULL': GraphQLEnumValue(
+        )),
+        ('NON_NULL', GraphQLEnumValue(
             TypeKind.NON_NULL,
             description='Indicates this type is a non-null. '
                         '`ofType` is a valid field.'
-        ),
-    })
+        )),
+    ]))
 
 IntrospectionSchema = __Schema
 
