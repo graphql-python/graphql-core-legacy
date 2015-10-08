@@ -11,7 +11,6 @@ from ..type import (
     GraphQLScalarType,
     is_input_type
 )
-from ..utils.is_nullish import is_nullish
 from ..utils.is_valid_value import is_valid_value
 from ..utils.type_from_ast import type_from_ast
 from ..utils.value_from_ast import value_from_ast
@@ -56,10 +55,10 @@ def get_argument_values(arg_defs, arg_asts, variables):
             variables
         )
 
-        if is_nullish(value):
+        if value is None:
             value = arg_def.default_value
 
-        if not is_nullish(value):
+        if value is not None:
             result[name] = value
 
     return result
@@ -81,14 +80,14 @@ def get_variable_value(schema, definition_ast, input):
         )
 
     if is_valid_value(type, input):
-        if is_nullish(input):
+        if input is None:
             default_value = definition_ast.default_value
             if default_value:
                 return value_from_ast(default_value, type)
 
         return coerce_value(type, input)
 
-    if is_nullish(input):
+    if input is None:
         raise GraphQLError(
             'Variable "${}" of required type "{}" was not provided.'.format(
                 variable.name.value,
@@ -115,7 +114,7 @@ def coerce_value(type, value):
         # We only call this function after calling isValidValue.
         return coerce_value(type.of_type, value)
 
-    if is_nullish(value):
+    if value is None:
         return None
 
     if isinstance(type, GraphQLList):
@@ -130,10 +129,10 @@ def coerce_value(type, value):
         obj = {}
         for field_name, field in fields.items():
             field_value = coerce_value(field.type, value[field_name])
-            if is_nullish(field_value):
+            if field_value is None:
                 field_value = field.default_value
 
-            if not is_nullish(field_value):
+            if field_value is not None:
                 obj[field_name] = field_value
 
         return obj
@@ -141,8 +140,4 @@ def coerce_value(type, value):
     assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
         'Must be input type'
 
-    parsed = type.parse_value(value)
-    if not is_nullish(parsed):
-        return parsed
-
-    return None
+    return type.parse_value(value)

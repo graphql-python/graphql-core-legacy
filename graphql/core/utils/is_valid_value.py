@@ -11,18 +11,17 @@ from ..type import (
     GraphQLNonNull,
     GraphQLScalarType,
 )
-from .is_nullish import is_nullish
 
 
 def is_valid_value(type, value):
     """Given a type and any value, return True if that value is valid."""
     if isinstance(type, GraphQLNonNull):
-        if is_nullish(value):
+        if value is None:
             return False
 
         return is_valid_value(type.of_type, value)
 
-    if is_nullish(value):
+    if value is None:
         return True
 
     if isinstance(type, GraphQLList):
@@ -54,4 +53,4 @@ def is_valid_value(type, value):
 
     # Scalar/Enum input checks to ensure the type can parse the value to
     # a non-null value.
-    return not is_nullish(type.parse_value(value))
+    return type.parse_value(value) is not None

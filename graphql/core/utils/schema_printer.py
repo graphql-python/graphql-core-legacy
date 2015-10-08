@@ -8,7 +8,6 @@ from ..type.definition import (
     GraphQLUnionType
 )
 from .ast_from_value import ast_from_value
-from .is_nullish import is_nullish
 
 
 def print_schema(schema):
@@ -118,7 +117,7 @@ def _print_args(field):
 
 
 def _print_input_value(arg):
-    if not is_nullish(arg.default_value):
+    if arg.default_value is not None:
         default_value = ' = ' + print_ast(ast_from_value(arg.default_value, arg.type))
     else:
         default_value = ''

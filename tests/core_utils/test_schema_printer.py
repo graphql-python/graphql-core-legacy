@@ -1,8 +1,6 @@
 from collections import OrderedDict
 from graphql.core.type.definition import GraphQLField, GraphQLArgument, GraphQLInputObjectField, GraphQLEnumValue
 from graphql.core.utils.schema_printer import print_schema, print_introspection_schema
-from graphql.core.utils.is_nullish import is_nullish
-from graphql.core.language.printer import print_ast
 from graphql.core.type import (
     GraphQLSchema,
     GraphQLInputObjectType,

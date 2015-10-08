@@ -11,14 +11,13 @@ from ..type.definition import (
     GraphQLNonNull,
 )
 from ..type.scalars import GraphQLFloat
-from .is_nullish import is_nullish
 
 
 def ast_from_value(value, type=None):
     if isinstance(type, GraphQLNonNull):
         return ast_from_value(value, type.of_type)
 
-    if is_nullish(value):
+    if value is None:
         return None
 
     if isinstance(value, list):

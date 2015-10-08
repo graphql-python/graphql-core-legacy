@@ -1,6 +1,5 @@
 from ..language import ast
 from ..type import (GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLScalarType)
-from .is_nullish import is_nullish
 
 
 def value_from_ast(value_ast, type, variables=None):
@@ -63,8 +62,4 @@ def value_from_ast(value_ast, type, variables=None):
     assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
         'Must be input type'
 
-    parsed = type.parse_literal(value_ast)
-    if not is_nullish(parsed):
-        return parsed
-
-    return None
+    return type.parse_literal(value_ast)

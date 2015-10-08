@@ -6,7 +6,6 @@ from ..type.definition import (
     GraphQLNonNull,
     GraphQLScalarType,
 )
-from .is_nullish import is_nullish
 
 
 def is_valid_literal_value(type, value_ast):
@@ -49,4 +48,4 @@ def is_valid_literal_value(type, value_ast):
 
     assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), 'Must be input type'
 
-    return not is_nullish(type.parse_literal(value_ast))
+    return type.parse_literal(value_ast) is not None
