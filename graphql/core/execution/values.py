@@ -51,8 +51,8 @@ def get_argument_values(arg_defs, arg_asts, variables):
             value_ast = value_ast.value
 
         value = value_from_ast(
-            arg_def.type,
             value_ast,
+            arg_def.type,
             variables
         )
 
@@ -84,7 +84,8 @@ def get_variable_value(schema, definition_ast, input):
         if is_nullish(input):
             default_value = definition_ast.default_value
             if default_value:
-                return value_from_ast(type, default_value, None)
+                return value_from_ast(default_value, type)
+
         return coerce_value(type, input)
 
     if is_nullish(input):
