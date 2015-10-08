@@ -81,8 +81,8 @@ class Executor(object):
         if operation.operation == 'mutation' or execute_serially:
             execute_serially = True
 
-        field_map = DefaultOrderedDict(list) if execute_serially else collections.defaultdict(list)
-        fields = collect_fields(ctx, type, operation.selection_set, field_map, set())
+        fields = DefaultOrderedDict(list) if execute_serially else collections.defaultdict(list)
+        fields = collect_fields(ctx, type, operation.selection_set, fields, set())
 
         if execute_serially:
             return self._execute_fields_serially(ctx, type, root, fields)
