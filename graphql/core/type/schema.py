@@ -1,4 +1,3 @@
-from functools import reduce
 from .definition import (
     GraphQLInputObjectType,
     GraphQLInterfaceType,
@@ -24,6 +23,7 @@ class GraphQLSchema(object):
             mutation=MyAppMutationRootType
         )
     """
+
     def __init__(self, query, mutation=None):
         self.query = query
         self.mutation = mutation
@@ -56,15 +56,15 @@ class GraphQLSchema(object):
         for directive in self.get_directives():
             if directive.name == name:
                 return directive
+
         return None
 
     def _build_type_map(self):
-        # TODO: make pythonic
-        return reduce(type_map_reducer, [
-            self.get_query_type(),
-            self.get_mutation_type(),
-            IntrospectionSchema,
-        ], {})
+        type_map = {}
+        for type in (self.get_query_type(), self.get_mutation_type(), IntrospectionSchema):
+            type_map = type_map_reducer(type_map, type)
+
+        return type_map
 
 
 def type_map_reducer(map, type):
@@ -80,28 +80,26 @@ def type_map_reducer(map, type):
             .format(type.name)
         )
         return map
+
     map[type.name] = type
 
     reduced_map = map
 
     if isinstance(type, (GraphQLUnionType, GraphQLInterfaceType)):
-        reduced_map = reduce(
-            type_map_reducer, type.get_possible_types(), reduced_map
-        )
+        for t in type.get_possible_types():
+            reduced_map = type_map_reducer(reduced_map, t)
 
     if isinstance(type, GraphQLObjectType):
-        reduced_map = reduce(
-            type_map_reducer, type.get_interfaces(), reduced_map
-        )
+        for t in type.get_interfaces():
+            reduced_map = type_map_reducer(reduced_map, t)
 
     if isinstance(type, (GraphQLObjectType, GraphQLInterfaceType, GraphQLInputObjectType)):
         field_map = type.get_fields()
-        for field_name, field in field_map.items():
+        for field in field_map.values():
             if hasattr(field, 'args'):
                 field_arg_types = [arg.type for arg in field.args]
-                reduced_map = reduce(
-                    type_map_reducer, field_arg_types, reduced_map
-                )
+                for t in field_arg_types:
+                    reduced_map = type_map_reducer(reduced_map, t)
 
             reduced_map = type_map_reducer(reduced_map, getattr(field, 'type', None))
 

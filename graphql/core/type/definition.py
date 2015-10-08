@@ -167,8 +167,10 @@ class GraphQLField(object):
         self.args = []
         if args:
             for arg_name, arg in args.items():
+                assert isinstance(arg, GraphQLArgument)
                 arg.name = arg_name
                 self.args.append(arg)
+
         self.resolver = resolver
         self.deprecation_reason = deprecation_reason
         self.description = description

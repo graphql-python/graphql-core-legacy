@@ -77,7 +77,7 @@ Alien = GraphQLObjectType(
     fields={
         'iq': GraphQLField(GraphQLInt),
         'name': GraphQLField(GraphQLString, {
-            'surname': GraphQLField(GraphQLBoolean),
+            'surname': GraphQLArgument(GraphQLBoolean),
         }),
         'numEyes': GraphQLField(GraphQLInt),
     },
