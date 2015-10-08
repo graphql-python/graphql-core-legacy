@@ -27,7 +27,7 @@ class GraphQLSchema(object):
     def __init__(self, query, mutation=None):
         self.query = query
         self.mutation = mutation
-        self._type_map = None
+        self._type_map = self._build_type_map()
         self._directives = None
 
     def get_query_type(self):
@@ -37,12 +37,10 @@ class GraphQLSchema(object):
         return self.mutation
 
     def get_type_map(self):
-        if self._type_map is None:
-            self._type_map = self._build_type_map()
         return self._type_map
 
     def get_type(self, name):
-        return self.get_type_map().get(name)
+        return self._type_map.get(name)
 
     def get_directives(self):
         if self._directives is None:
