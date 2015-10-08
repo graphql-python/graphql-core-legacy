@@ -56,10 +56,10 @@ def _print_type(type):
         return _print_union(type)
 
     elif isinstance(type, GraphQLEnumType):
-        return _print_enum(GraphQLEnumType)
+        return _print_enum(type)
 
     assert isinstance(type, GraphQLInputObjectType)
-    return _print_input_object(GraphQLInputObjectType)
+    return _print_input_object(type)
 
 
 def _print_scalar(type):
@@ -95,7 +95,7 @@ def _print_enum(type):
         'enum {} {{\n'
         '{}\n'
         '}}'
-    ).format(type.name, '\n'.join('  ' + v.name for v in type.get_values()))
+    ).format(type.name, '\n'.join('  ' + v.name for v in type.get_values().values()))
 
 
 def _print_input_object(type):
