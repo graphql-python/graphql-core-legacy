@@ -3,6 +3,8 @@ import itertools
 from ...error import GraphQLError
 from ...language import ast
 from ...language.printer import print_ast
+from ...pyutils.default_ordered_dict import DefaultOrderedDict
+from ...pyutils.pair_set import PairSet
 from ...type.definition import (
     GraphQLInterfaceType,
     GraphQLObjectType,
@@ -10,7 +12,6 @@ from ...type.definition import (
 )
 from ...utils.type_from_ast import type_from_ast
 from .base import ValidationRule
-from .utils import DefaultOrderedDict, PairSet
 
 
 class OverlappingFieldsCanBeMerged(ValidationRule):

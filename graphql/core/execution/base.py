@@ -82,9 +82,12 @@ class ExecutionResult(object):
                 error.value if isinstance(error, DeferredException) else error
                 for error in errors
             ]
+
         self.errors = errors
+
         if invalid:
             assert data is None
+
         self.invalid = invalid
 
 
@@ -92,14 +95,18 @@ def get_operation_root_type(schema, operation):
     op = operation.operation
     if op == 'query':
         return schema.get_query_type()
+
     elif op == 'mutation':
         mutation_type = schema.get_mutation_type()
+
         if not mutation_type:
             raise GraphQLError(
                 'Schema is not configured for mutations',
                 [operation]
             )
+
         return mutation_type
+
     raise GraphQLError(
         'Can only execute queries and mutations',
         [operation]
@@ -109,35 +116,36 @@ def get_operation_root_type(schema, operation):
 def collect_fields(ctx, type, selection_set, fields, prev_fragment_names):
     for selection in selection_set.selections:
         directives = selection.directives
+
         if isinstance(selection, ast.Field):
             if not should_include_node(ctx, directives):
                 continue
+
             name = get_field_entry_key(selection)
-            if name not in fields:
-                fields[name] = []
             fields[name].append(selection)
+
         elif isinstance(selection, ast.InlineFragment):
-            if not should_include_node(ctx, directives) or \
-                    not does_fragment_condition_match(ctx, selection, type):
+            if not should_include_node(ctx, directives) or not does_fragment_condition_match(ctx, selection, type):
                 continue
-            collect_fields(
-                ctx, type, selection.selection_set,
-                fields, prev_fragment_names)
+
+            collect_fields(ctx, type, selection.selection_set, fields, prev_fragment_names)
+
         elif isinstance(selection, ast.FragmentSpread):
             frag_name = selection.name.value
-            if frag_name in prev_fragment_names or \
-                    not should_include_node(ctx, directives):
+
+            if frag_name in prev_fragment_names or not should_include_node(ctx, directives):
                 continue
+
             prev_fragment_names.add(frag_name)
             fragment = ctx.fragments.get(frag_name)
             frag_directives = fragment.directives
-            if not fragment or \
-                    not should_include_node(ctx, frag_directives) or \
-                    not does_fragment_condition_match(ctx, fragment, type):
+            if not fragment or not \
+                    should_include_node(ctx, frag_directives) or not \
+                    does_fragment_condition_match(ctx, fragment, type):
                 continue
-            collect_fields(
-                ctx, type, fragment.selection_set,
-                fields, prev_fragment_names)
+
+            collect_fields(ctx, type, fragment.selection_set, fields, prev_fragment_names)
+
     return fields
 
 
@@ -146,10 +154,12 @@ def should_include_node(ctx, directives):
     @skip directives, where @skip has higher precidence than @include."""
     if directives:
         skip_ast = None
+
         for directive in directives:
             if directive.name.value == GraphQLSkipDirective.name:
                 skip_ast = directive
                 break
+
         if skip_ast:
             args = get_argument_values(
                 GraphQLSkipDirective.args,
@@ -159,16 +169,19 @@ def should_include_node(ctx, directives):
             return not args.get('if')
 
         include_ast = None
+
         for directive in directives:
             if directive.name.value == GraphQLIncludeDirective.name:
                 include_ast = directive
                 break
+
         if include_ast:
             args = get_argument_values(
                 GraphQLIncludeDirective.args,
                 include_ast.arguments,
                 ctx.variables,
             )
+
             return bool(args.get('if'))
 
     return True
