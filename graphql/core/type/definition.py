@@ -425,15 +425,16 @@ class GraphQLInputObjectType(GraphQLType):
         self.name = name
         self.description = description
 
-        for field in fields.values():
-            assert isinstance(field, GraphQLInputObjectField)
-
         self._fields = fields
         self._field_map = None
 
     def get_fields(self):
         if self._field_map is None:
             self._field_map = define_field_map(self._fields)
+
+            for field in self._field_map.values():
+                assert isinstance(field, GraphQLInputObjectField)
+
         return self._field_map
 
 
