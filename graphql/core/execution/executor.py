@@ -6,6 +6,7 @@ from ..error import GraphQLError
 from ..language import ast
 from ..language.parser import parse
 from ..language.source import Source
+from ..pyutils.default_ordered_dict import DefaultOrderedDict
 from ..type import GraphQLEnumType, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, \
     GraphQLScalarType, GraphQLUnionType
 from ..utils.is_nullish import is_nullish
@@ -76,9 +77,14 @@ class Executor(object):
 
     def _execute_operation(self, ctx, root, operation, execute_serially):
         type = get_operation_root_type(ctx.schema, operation)
-        fields = collect_fields(ctx, type, operation.selection_set, {}, set())
 
         if operation.operation == 'mutation' or execute_serially:
+            execute_serially = True
+
+        field_map = DefaultOrderedDict(list) if execute_serially else collections.defaultdict(list)
+        fields = collect_fields(ctx, type, operation.selection_set, field_map, set())
+
+        if execute_serially:
             return self._execute_fields_serially(ctx, type, root, fields)
 
         return self._execute_fields(ctx, type, root, fields)
@@ -277,7 +283,7 @@ class Executor(object):
             )
 
         # Collect sub-fields to execute to complete this value.
-        subfield_asts = {}
+        subfield_asts = collections.defaultdict(list)
         visited_fragment_names = set()
         for field_ast in field_asts:
             selection_set = field_ast.selection_set
