@@ -2,7 +2,6 @@ from graphql.core.execution import execute
 from graphql.core.language.parser import parse
 from graphql.core.type import GraphQLSchema, GraphQLObjectType, GraphQLField, GraphQLString
 
-
 schema = GraphQLSchema(
     query=GraphQLObjectType(
         name='TestType',
@@ -239,3 +238,59 @@ def test_skip_true_omits_fragment():
     result = execute_test_query(q)
     assert not result.errors
     assert result.data == {'a': 'a'}
+
+
+def test_skip_on_inline_anonymous_fragment_omits_field():
+    q = '''
+        query Q {
+          a
+          ... @skip(if: true) {
+            b
+          }
+        }
+    '''
+    result = execute_test_query(q)
+    assert not result.errors
+    assert result.data == {'a': 'a'}
+
+
+def test_skip_on_inline_anonymous_fragment_does_not_omit_field():
+    q = '''
+        query Q {
+          a
+          ... @skip(if: false) {
+            b
+          }
+        }
+    '''
+    result = execute_test_query(q)
+    assert not result.errors
+    assert result.data == {'a': 'a', 'b': 'b'}
+
+
+def test_include_on_inline_anonymous_fragment_omits_field():
+    q = '''
+        query Q {
+          a
+          ... @include(if: false) {
+            b
+          }
+        }
+    '''
+    result = execute_test_query(q)
+    assert not result.errors
+    assert result.data == {'a': 'a'}
+
+
+def test_include_on_inline_anonymous_fragment_does_not_omit_field():
+    q = '''
+        query Q {
+          a
+          ... @include(if: true) {
+            b
+          }
+        }
+    '''
+    result = execute_test_query(q)
+    assert not result.errors
+    assert result.data == {'a': 'a', 'b': 'b'}
