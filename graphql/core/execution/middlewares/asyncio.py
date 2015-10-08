@@ -1,6 +1,7 @@
 # flake8: noqa
 from asyncio import Future, ensure_future, iscoroutine
-from graphql.core.defer import Deferred
+
+from ...pyutils.defer import Deferred
 
 
 def process_future_result(deferred):

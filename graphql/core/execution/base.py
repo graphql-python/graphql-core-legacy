@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from ..defer import DeferredException
 from ..error import GraphQLError
 from ..language import ast
+from ..pyutils.defer import DeferredException
 from ..type.definition import (
     GraphQLInterfaceType,
     GraphQLUnionType,

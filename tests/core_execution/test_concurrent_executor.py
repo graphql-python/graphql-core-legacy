@@ -1,8 +1,7 @@
 from graphql.core.error import format_error
 from graphql.core.execution import Executor
 from graphql.core.execution.middlewares.sync import SynchronousExecutionMiddleware
-from graphql.core.defer import succeed, Deferred, fail
-from graphql.core.language.location import SourceLocation
+from graphql.core.pyutils.defer import succeed, Deferred, fail
 from graphql.core.language.parser import parse
 from graphql.core.type import (GraphQLSchema, GraphQLObjectType, GraphQLField,
                                GraphQLArgument, GraphQLList, GraphQLInt, GraphQLString)

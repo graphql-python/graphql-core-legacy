@@ -1,12 +1,12 @@
 import collections
 import functools
 
-from ..defer import Deferred, DeferredDict, DeferredList, defer, succeed
 from ..error import GraphQLError
 from ..language import ast
 from ..language.parser import parse
 from ..language.source import Source
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
+from ..pyutils.defer import Deferred, DeferredDict, DeferredList, defer, succeed
 from ..type import GraphQLEnumType, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, \
     GraphQLScalarType, GraphQLUnionType
 from ..validation import validate

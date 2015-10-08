@@ -1,5 +1,6 @@
 from pytest import raises
-from graphql.core.defer import Deferred, DeferredException, succeed, fail, DeferredList, DeferredDict, \
+
+from graphql.core.pyutils.defer import Deferred, DeferredException, succeed, fail, DeferredList, DeferredDict, \
     AlreadyCalledDeferred
 
 

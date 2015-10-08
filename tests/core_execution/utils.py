@@ -1,4 +1,4 @@
-from graphql.core.defer import Deferred, DeferredException
+from graphql.core.pyutils.defer import Deferred, DeferredException
 
 
 class RaisingDeferred(Deferred):

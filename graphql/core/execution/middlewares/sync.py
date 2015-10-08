@@ -1,5 +1,5 @@
-from graphql.core.defer import Deferred
-from graphql.core.error import GraphQLError
+from ...error import GraphQLError
+from ...pyutils.defer import Deferred
 
 
 class SynchronousExecutionMiddleware(object):

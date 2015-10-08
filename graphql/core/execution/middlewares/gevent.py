@@ -2,7 +2,8 @@ from __future__ import absolute_import
 
 from gevent import get_hub, spawn
 from gevent.event import AsyncResult
-from ...defer import Deferred, DeferredException
+
+from ...pyutils.defer import Deferred, DeferredException
 from .utils import resolver_has_tag, tag_resolver
 
 
