@@ -409,6 +409,10 @@ class GraphQLInputObjectType(GraphQLType):
         assert name, 'Type must be named.'
         self.name = name
         self.description = description
+
+        for field in fields.values():
+            assert isinstance(field, GraphQLInputObjectField)
+
         self._fields = fields
         self._field_map = None
 

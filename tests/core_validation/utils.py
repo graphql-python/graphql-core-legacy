@@ -14,6 +14,7 @@ from graphql.core.type import (
     GraphQLInterfaceType,
     GraphQLEnumType,
     GraphQLEnumValue,
+    GraphQLInputObjectField,
     GraphQLInputObjectType,
     GraphQLUnionType,
     GraphQLList)
@@ -95,11 +96,11 @@ FurColor = GraphQLEnumType('FurColor', {
 })
 
 ComplexInput = GraphQLInputObjectType('ComplexInput', {
-    'requiredField': GraphQLField(GraphQLNonNull(GraphQLBoolean)),
-    'intField': GraphQLField(GraphQLInt),
-    'stringField': GraphQLField(GraphQLString),
-    'booleanField': GraphQLField(GraphQLBoolean),
-    'stringListField': GraphQLField(GraphQLList(GraphQLString)),
+    'requiredField': GraphQLInputObjectField(GraphQLNonNull(GraphQLBoolean)),
+    'intField': GraphQLInputObjectField(GraphQLInt),
+    'stringField': GraphQLInputObjectField(GraphQLString),
+    'booleanField': GraphQLInputObjectField(GraphQLBoolean),
+    'stringListField': GraphQLInputObjectField(GraphQLList(GraphQLString)),
 })
 
 ComplicatedArgs = GraphQLObjectType('ComplicatedArgs', {
