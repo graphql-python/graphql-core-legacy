@@ -30,7 +30,8 @@ def run_in_greenlet(f):
 
 
 class GeventExecutionMiddleware(object):
-    def run_resolve_fn(self, resolver, original_resolver):
+    @staticmethod
+    def run_resolve_fn(resolver, original_resolver):
         if resolver_has_tag(original_resolver, 'run_in_greenlet'):
             d = Deferred()
             spawn(_run_resolver_in_greenlet, d, resolver)
@@ -38,7 +39,8 @@ class GeventExecutionMiddleware(object):
 
         return resolver()
 
-    def execution_result(self, executor):
+    @staticmethod
+    def execution_result(executor):
         result = AsyncResult()
         deferred = executor()
         assert isinstance(deferred, Deferred), 'Another middleware has converted the execution result ' \
