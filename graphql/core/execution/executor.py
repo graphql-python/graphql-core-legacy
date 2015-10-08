@@ -8,7 +8,6 @@ from ..language.parser import parse
 from ..language.source import Source
 from ..type import GraphQLEnumType, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, \
     GraphQLScalarType, GraphQLUnionType
-from ..utils.is_nullish import is_nullish
 from ..validation import validate
 from .base import ExecutionContext, ExecutionResult, ResolveInfo, Undefined, collect_fields, default_resolve_fn, \
     get_argument_values, get_field_def, get_operation_root_type
@@ -224,7 +223,7 @@ class Executor(object):
             return completed
 
         # If result is null-like, return null.
-        if is_nullish(result):
+        if result is None:
             return None
 
         # If field type is List, complete each item in the list with the inner type
@@ -248,7 +247,7 @@ class Executor(object):
         if isinstance(return_type, (GraphQLScalarType, GraphQLEnumType)):
             serialized_result = return_type.serialize(result)
 
-            if is_nullish(serialized_result):
+            if serialized_result is None:
                 return None
 
             return serialized_result
