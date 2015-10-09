@@ -474,10 +474,10 @@ def test_executor_can_enforce_strict_ordering():
 
     data = result.data
     assert isinstance(data, OrderedDict)
-    assert data.keys() == ['a', 'b', 'c', 'aa', 'cc', 'bb', 'aaz', 'bbz', 'deep', 'ccz', 'zzz', 'aaa']
+    assert list(data.keys()) == ['a', 'b', 'c', 'aa', 'cc', 'bb', 'aaz', 'bbz', 'deep', 'ccz', 'zzz', 'aaa']
     deep = data['deep']
     assert isinstance(deep, OrderedDict)
-    assert deep.keys() == ['b', 'a', 'c', 'deeper']
+    assert list(deep.keys()) == ['b', 'a', 'c', 'deeper']
     deeper = deep['deeper']
     assert isinstance(deeper, OrderedDict)
-    assert deeper.keys() == ['c', 'a', 'b']
+    assert list(deeper.keys()) == ['c', 'a', 'b']
