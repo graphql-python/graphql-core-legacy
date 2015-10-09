@@ -116,7 +116,7 @@ class Executor(object):
                 return results
 
             if isinstance(result, Deferred):
-                return result.add_callback(collect_result)
+                return succeed(result).add_callback(collect_result)
 
             else:
                 return collect_result(result)

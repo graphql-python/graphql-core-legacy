@@ -466,18 +466,21 @@ def test_executor_can_enforce_strict_ordering():
     })
     schema = GraphQLSchema(query=Type)
     executor = Executor(execution_middlewares=[SynchronousExecutionMiddleware], map_type=OrderedDict)
+    query = '{ a b c aa: c cc: c bb: b aaz: a bbz: b deep { b a c deeper: deep { c a b } } ' \
+            'ccz: c zzz: c aaa: a }'
 
-    result = executor.execute(schema, '{ a b c aa: c cc: c bb: b aaz: a bbz: b deep { b a c deeper: deep { c a b } } '
-                                      'ccz: c zzz: c aaa: a }')
+    def check_result(result):
+        assert not result.errors
 
-    assert not result.errors
+        data = result.data
+        assert isinstance(data, OrderedDict)
+        assert list(data.keys()) == ['a', 'b', 'c', 'aa', 'cc', 'bb', 'aaz', 'bbz', 'deep', 'ccz', 'zzz', 'aaa']
+        deep = data['deep']
+        assert isinstance(deep, OrderedDict)
+        assert list(deep.keys()) == ['b', 'a', 'c', 'deeper']
+        deeper = deep['deeper']
+        assert isinstance(deeper, OrderedDict)
+        assert list(deeper.keys()) == ['c', 'a', 'b']
 
-    data = result.data
-    assert isinstance(data, OrderedDict)
-    assert list(data.keys()) == ['a', 'b', 'c', 'aa', 'cc', 'bb', 'aaz', 'bbz', 'deep', 'ccz', 'zzz', 'aaa']
-    deep = data['deep']
-    assert isinstance(deep, OrderedDict)
-    assert list(deep.keys()) == ['b', 'a', 'c', 'deeper']
-    deeper = deep['deeper']
-    assert isinstance(deeper, OrderedDict)
-    assert list(deeper.keys()) == ['c', 'a', 'b']
+    check_result(executor.execute(schema, query))
+    check_result(executor.execute(schema, query, execute_serially=True))

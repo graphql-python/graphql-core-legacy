@@ -472,13 +472,13 @@ class _ResultCollector(Deferred):
         self._result = result
         for key, value in items:
             if isinstance(value, Deferred):
-                value.add_callbacks(self._cb_deferred, self._cb_deferred,
-                                    callback_args=(key, True),
-                                    errback_args=(key, False))
-
                 # We will place a value in place of the resolved key, so that insert order is preserved.
                 if preserve_insert_ordering:
                     result[key] = None
+
+                value.add_callbacks(self._cb_deferred, self._cb_deferred,
+                                    callback_args=(key, True),
+                                    errback_args=(key, False))
             else:
                 self.objects_remaining_to_resolve -= 1
                 result[key] = value
