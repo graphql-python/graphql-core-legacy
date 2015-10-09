@@ -1,6 +1,8 @@
+from collections import OrderedDict
 import json
 from pytest import raises
-from graphql.core.execution import execute
+from graphql.core.execution import execute, Executor
+from graphql.core.execution.middlewares.sync import SynchronousExecutionMiddleware
 from graphql.core.language.parser import parse
 from graphql.core.type import (GraphQLSchema, GraphQLObjectType, GraphQLField,
                                GraphQLArgument, GraphQLList, GraphQLInt, GraphQLString,
@@ -450,3 +452,32 @@ def test_fails_to_execute_a_query_containing_a_type_definition():
         result = execute(schema, None, query)
 
     assert excinfo.value.message == 'GraphQL cannot execute a request containing a ObjectTypeDefinition.'
+
+
+def test_executor_can_enforce_strict_ordering():
+    Type = GraphQLObjectType('Type', lambda: {
+        'a': GraphQLField(GraphQLString,
+                          resolver=lambda *_: 'Apple'),
+        'b': GraphQLField(GraphQLString,
+                          resolver=lambda *_: 'Banana'),
+        'c': GraphQLField(GraphQLString,
+                          resolver=lambda *_: 'Cherry'),
+        'deep': GraphQLField(Type, resolver=lambda *_: {}),
+    })
+    schema = GraphQLSchema(query=Type)
+    executor = Executor(execution_middlewares=[SynchronousExecutionMiddleware], map_type=OrderedDict)
+
+    result = executor.execute(schema, '{ a b c aa: c cc: c bb: b aaz: a bbz: b deep { b a c deeper: deep { c a b } } '
+                                      'ccz: c zzz: c aaa: a }')
+
+    assert not result.errors
+
+    data = result.data
+    assert isinstance(data, OrderedDict)
+    assert data.keys() == ['a', 'b', 'c', 'aa', 'cc', 'bb', 'aaz', 'bbz', 'deep', 'ccz', 'zzz', 'aaa']
+    deep = data['deep']
+    assert isinstance(deep, OrderedDict)
+    assert deep.keys() == ['b', 'a', 'c', 'deeper']
+    deeper = deep['deeper']
+    assert isinstance(deeper, OrderedDict)
+    assert deeper.keys() == ['c', 'a', 'b']
