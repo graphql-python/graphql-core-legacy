@@ -28,8 +28,32 @@ def execute(schema, root, ast, operation_name='', args=None):
     """
     Executes an AST synchronously. Assumes that the AST is already validated.
     """
-    e = Executor(schema, [SynchronousExecutionMiddleware()])
-    return e.execute(ast, root, args, operation_name, validate_ast=False)
+    return get_default_executor().execute(schema, ast, root, args, operation_name, validate_ast=False)
 
 
-__all__ = ['ExecutionResult', 'Executor', 'execute']
+_default_executor = None
+
+
+def get_default_executor():
+    """
+        Gets the default executor to be used in the `execute` function above.
+    """
+    global _default_executor
+    if _default_executor is None:
+        _default_executor = Executor([SynchronousExecutionMiddleware()])
+
+    return _default_executor
+
+
+def set_default_executor(executor):
+    """
+        Sets the default executor to be used in the `execute` function above.
+
+        If passed `None` will reset to the original default synchronous executor.
+    """
+    assert isinstance(executor, Executor) or executor is None
+    global _default_executor
+    _default_executor = executor
+
+
+__all__ = ['ExecutionResult', 'Executor', 'execute', 'get_default_executor', 'set_default_executor']

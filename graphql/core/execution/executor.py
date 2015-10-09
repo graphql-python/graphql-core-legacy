@@ -15,16 +15,16 @@ from .base import ExecutionContext, ExecutionResult, ResolveInfo, Undefined, col
 
 
 class Executor(object):
-    def __init__(self, schema, execution_middlewares=None, default_resolver=default_resolve_fn):
+    def __init__(self, execution_middlewares=None, default_resolver=default_resolve_fn):
         self.execution_middlewares = execution_middlewares or []
         self.default_resolve_fn = default_resolver
-        self.schema = schema
 
-    def execute(self, request='', root=None, args=None, operation_name=None, request_context=None,
+    def execute(self, schema, request='', root=None, args=None, operation_name=None, request_context=None,
                 execute_serially=False, validate_ast=True):
 
         curried_execution_function = functools.partial(
             self._execute,
+            schema,
             request,
             root,
             args,
@@ -40,7 +40,7 @@ class Executor(object):
 
         return curried_execution_function()
 
-    def _execute(self, request, root, args, operation_name, request_context, execute_serially, validate_ast):
+    def _execute(self, schema, request, root, args, operation_name, request_context, execute_serially, validate_ast):
         if not isinstance(request, ast.Document):
             if not isinstance(request, Source):
                 request = Source(request, 'GraphQL request')
@@ -48,7 +48,7 @@ class Executor(object):
             request = parse(request)
 
         if validate_ast:
-            validation_errors = validate(self.schema, request)
+            validation_errors = validate(schema, request)
             if validation_errors:
                 return succeed(ExecutionResult(
                     errors=validation_errors,
@@ -56,6 +56,7 @@ class Executor(object):
                 ))
 
         return self._execute_graphql_query(
+            schema,
             root or object(),
             request,
             operation_name,
@@ -63,8 +64,8 @@ class Executor(object):
             request_context or {},
             execute_serially)
 
-    def _execute_graphql_query(self, root, ast, operation_name, args, request_context, execute_serially=False):
-        ctx = ExecutionContext(self.schema, root, ast, operation_name, args, request_context)
+    def _execute_graphql_query(self, schema, root, ast, operation_name, args, request_context, execute_serially=False):
+        ctx = ExecutionContext(schema, root, ast, operation_name, args, request_context)
 
         return defer(self._execute_operation, ctx, root, ctx.operation, execute_serially) \
             .add_errback(

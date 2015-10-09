@@ -31,8 +31,8 @@ def test_gevent_executor():
         'b': GraphQLField(GraphQLString, resolver=resolver_2)
     })
 
-    executor = Executor(GraphQLSchema(Type), [GeventExecutionMiddleware()])
-    result = executor.execute(doc)
+    executor = Executor([GeventExecutionMiddleware()])
+    result = executor.execute(GraphQLSchema(Type), doc)
     assert not result.errors
     assert result.data == {'a': 'hey', 'b': 'hey2'}
 
@@ -55,8 +55,8 @@ def test_gevent_executor_with_error():
         'b': GraphQLField(GraphQLString, resolver=resolver_2)
     })
 
-    executor = Executor(GraphQLSchema(Type), [GeventExecutionMiddleware()])
-    result = executor.execute(doc)
+    executor = Executor([GeventExecutionMiddleware()])
+    result = executor.execute(GraphQLSchema(Type), doc)
     formatted_errors = list(map(format_error, result.errors))
     assert formatted_errors == [{'locations': [{'line': 1, 'column': 20}], 'message': 'resolver_2 failed!'}]
     assert result.data == {'a': 'hey', 'b': None}

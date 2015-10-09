@@ -112,14 +112,14 @@ def test_executes_arbitary_code():
     })
 
     schema = GraphQLSchema(query=DataType)
-    executor = Executor(schema)
+    executor = Executor()
 
     def handle_result(result):
         assert not result.errors
         assert result.data == expected
 
-    raise_callback_results(executor.execute(doc, Data(), {'size': 100}, 'Example'), handle_result)
-    raise_callback_results(executor.execute(doc, Data(), {'size': 100}, 'Example', execute_serially=True),
+    raise_callback_results(executor.execute(schema, doc, Data(), {'size': 100}, 'Example'), handle_result)
+    raise_callback_results(executor.execute(schema, doc, Data(), {'size': 100}, 'Example', execute_serially=True),
                            handle_result)
 
 
@@ -142,9 +142,9 @@ def test_synchronous_executor_doesnt_support_defers_with_nullable_type_getting_s
     }
     '''
     schema = GraphQLSchema(query=DataType)
-    executor = Executor(schema, [SynchronousExecutionMiddleware()])
+    executor = Executor([SynchronousExecutionMiddleware()])
 
-    result = executor.execute(doc, Data(), operation_name='Example')
+    result = executor.execute(schema, doc, Data(), operation_name='Example')
     assert not isinstance(result, Deferred)
     assert result.data == {"promise": None, 'notPromise': 'i should work'}
     formatted_errors = list(map(format_error, result.errors))
@@ -172,9 +172,9 @@ def test_synchronous_executor_doesnt_support_defers():
     }
     '''
     schema = GraphQLSchema(query=DataType)
-    executor = Executor(schema, [SynchronousExecutionMiddleware()])
+    executor = Executor([SynchronousExecutionMiddleware()])
 
-    result = executor.execute(doc, Data(), operation_name='Example')
+    result = executor.execute(schema, doc, Data(), operation_name='Example')
     assert not isinstance(result, Deferred)
     assert result.data is None
     formatted_errors = list(map(format_error, result.errors))
@@ -202,9 +202,9 @@ def test_executor_defer_failure():
     }
     '''
     schema = GraphQLSchema(query=DataType)
-    executor = Executor(schema)
+    executor = Executor()
 
-    result = executor.execute(doc, Data(), operation_name='Example')
+    result = executor.execute(schema, doc, Data(), operation_name='Example')
     assert result.called
     result = result.result
     assert result.data is None
@@ -227,9 +227,9 @@ def test_synchronous_executor_will_synchronously_resolve():
     }
     '''
     schema = GraphQLSchema(query=DataType)
-    executor = Executor(schema, [SynchronousExecutionMiddleware()])
+    executor = Executor([SynchronousExecutionMiddleware()])
 
-    result = executor.execute(doc, Data(), operation_name='Example')
+    result = executor.execute(schema, doc, Data(), operation_name='Example')
     assert not isinstance(result, Deferred)
     assert result.data == {"promise": 'I should work'}
     assert not result.errors
