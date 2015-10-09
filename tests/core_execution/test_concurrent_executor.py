@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from graphql.core.error import format_error
 from graphql.core.execution import Executor
 from graphql.core.execution.middlewares.sync import SynchronousExecutionMiddleware
@@ -233,3 +234,36 @@ def test_synchronous_executor_will_synchronously_resolve():
     assert not isinstance(result, Deferred)
     assert result.data == {"promise": 'I should work'}
     assert not result.errors
+
+
+def test_executor_can_enforce_strict_ordering():
+    Type = GraphQLObjectType('Type', lambda: {
+        'a': GraphQLField(GraphQLString,
+                          resolver=lambda *_: succeed('Apple')),
+        'b': GraphQLField(GraphQLString,
+                          resolver=lambda *_: succeed('Banana')),
+        'c': GraphQLField(GraphQLString,
+                          resolver=lambda *_: succeed('Cherry')),
+        'deep': GraphQLField(Type, resolver=lambda *_: succeed({})),
+    })
+    schema = GraphQLSchema(query=Type)
+    executor = Executor(map_type=OrderedDict)
+
+    query = '{ a b c aa: c cc: c bb: b aaz: a bbz: b deep { b a c deeper: deep { c a b } } ' \
+            'ccz: c zzz: c aaa: a }'
+
+    def handle_results(result):
+        assert not result.errors
+
+        data = result.data
+        assert isinstance(data, OrderedDict)
+        assert list(data.keys()) == ['a', 'b', 'c', 'aa', 'cc', 'bb', 'aaz', 'bbz', 'deep', 'ccz', 'zzz', 'aaa']
+        deep = data['deep']
+        assert isinstance(deep, OrderedDict)
+        assert list(deep.keys()) == ['b', 'a', 'c', 'deeper']
+        deeper = deep['deeper']
+        assert isinstance(deeper, OrderedDict)
+        assert list(deeper.keys()) == ['c', 'a', 'b']
+
+    raise_callback_results(executor.execute(schema, query), handle_results)
+    raise_callback_results(executor.execute(schema, query, execute_serially=True), handle_results)

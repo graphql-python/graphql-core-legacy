@@ -68,7 +68,6 @@ def build_ast_schema(document, query_type_name, mutation_type_name=None):
 
     def produce_type_def(type_ast):
         type_name = _get_inner_type_name(type_ast)
-        print('ptd', type_name)
         if type_name in inner_type_map:
             return _build_wrapped_type(inner_type_map[type_name], type_ast)
 

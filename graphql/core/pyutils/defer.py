@@ -466,16 +466,19 @@ class _ResultCollector(Deferred):
     objects_remaining_to_resolve = 0
     _result = None
 
-    def _schedule_callbacks(self, items, result, objects_remaining_to_resolve=None):
+    def _schedule_callbacks(self, items, result, objects_remaining_to_resolve=None, preserve_insert_ordering=False):
         self.objects_remaining_to_resolve = \
             objects_remaining_to_resolve if objects_remaining_to_resolve is not None else len(items)
         self._result = result
         for key, value in items:
             if isinstance(value, Deferred):
+                # We will place a value in place of the resolved key, so that insert order is preserved.
+                if preserve_insert_ordering:
+                    result[key] = None
+
                 value.add_callbacks(self._cb_deferred, self._cb_deferred,
                                     callback_args=(key, True),
                                     errback_args=(key, False))
-
             else:
                 self.objects_remaining_to_resolve -= 1
                 result[key] = value
@@ -509,7 +512,8 @@ class DeferredDict(_ResultCollector):
     def __init__(self, mapping):
         super(DeferredDict, self).__init__()
         assert isinstance(mapping, collections.Mapping)
-        self._schedule_callbacks(mapping.items(), {})
+        self._schedule_callbacks(mapping.items(), type(mapping)(),
+                                 preserve_insert_ordering=isinstance(mapping, collections.OrderedDict))
 
 
 class DeferredList(_ResultCollector):

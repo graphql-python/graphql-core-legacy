@@ -15,9 +15,21 @@ from .base import ExecutionContext, ExecutionResult, ResolveInfo, Undefined, col
 
 
 class Executor(object):
-    def __init__(self, execution_middlewares=None, default_resolver=default_resolve_fn):
-        self.execution_middlewares = execution_middlewares or []
-        self.default_resolve_fn = default_resolver
+    def __init__(self, execution_middlewares=None, default_resolver=default_resolve_fn, map_type=dict):
+        assert issubclass(map_type, collections.MutableMapping)
+
+        self._execution_middlewares = execution_middlewares or []
+        self._default_resolve_fn = default_resolver
+        self._map_type = map_type
+        self._enforce_strict_ordering = issubclass(map_type, collections.OrderedDict)
+
+    @property
+    def enforce_strict_ordering(self):
+        return self._enforce_strict_ordering
+
+    @property
+    def map_type(self):
+        return self._map_type
 
     def execute(self, schema, request='', root=None, args=None, operation_name=None, request_context=None,
                 execute_serially=False, validate_ast=True):
@@ -34,7 +46,7 @@ class Executor(object):
             validate_ast
         )
 
-        for middleware in self.execution_middlewares:
+        for middleware in self._execution_middlewares:
             if hasattr(middleware, 'execution_result'):
                 curried_execution_function = functools.partial(middleware.execution_result, curried_execution_function)
 
@@ -81,7 +93,10 @@ class Executor(object):
         if operation.operation == 'mutation' or execute_serially:
             execute_serially = True
 
-        fields = DefaultOrderedDict(list) if execute_serially else collections.defaultdict(list)
+        fields = DefaultOrderedDict(list) \
+            if (execute_serially or self._enforce_strict_ordering) \
+            else collections.defaultdict(list)
+
         fields = collect_fields(ctx, type, operation.selection_set, fields, set())
 
         if execute_serially:
@@ -101,7 +116,7 @@ class Executor(object):
                 return results
 
             if isinstance(result, Deferred):
-                return result.add_callback(collect_result)
+                return succeed(result).add_callback(collect_result)
 
             else:
                 return collect_result(result)
@@ -109,12 +124,12 @@ class Executor(object):
         def execute_field(prev_deferred, response_name):
             return prev_deferred.add_callback(execute_field_callback, response_name)
 
-        return functools.reduce(execute_field, fields.keys(), succeed({}))
+        return functools.reduce(execute_field, fields.keys(), succeed(self._map_type()))
 
     def _execute_fields(self, execution_context, parent_type, source_value, fields):
         contains_deferred = False
 
-        results = {}
+        results = self._map_type()
         for response_name, field_asts in fields.items():
             result = self._resolve_field(execution_context, parent_type, source_value, field_asts)
             if result is Undefined:
@@ -138,7 +153,7 @@ class Executor(object):
             return Undefined
 
         return_type = field_def.type
-        resolve_fn = field_def.resolver or self.default_resolve_fn
+        resolve_fn = field_def.resolver or self._default_resolve_fn
 
         # Build a dict of arguments from the field.arguments AST, using the variables scope to
         # fulfill any variable references.
@@ -283,7 +298,7 @@ class Executor(object):
             )
 
         # Collect sub-fields to execute to complete this value.
-        subfield_asts = collections.defaultdict(list)
+        subfield_asts = DefaultOrderedDict(list) if self._enforce_strict_ordering else collections.defaultdict(list)
         visited_fragment_names = set()
         for field_ast in field_asts:
             selection_set = field_ast.selection_set
@@ -298,7 +313,7 @@ class Executor(object):
         curried_resolve_fn = functools.partial(resolve_fn, source, args, info)
 
         try:
-            for middleware in self.execution_middlewares:
+            for middleware in self._execution_middlewares:
                 if hasattr(middleware, 'run_resolve_fn'):
                     curried_resolve_fn = functools.partial(middleware.run_resolve_fn, curried_resolve_fn, resolve_fn)
 
