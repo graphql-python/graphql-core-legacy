@@ -454,6 +454,16 @@ def test_fails_to_execute_a_query_containing_a_type_definition():
     assert excinfo.value.message == 'GraphQL cannot execute a request containing a ObjectTypeDefinition.'
 
 
+def test_executor_detects_strict_ordering():
+    executor = Executor()
+    assert not executor.enforce_strict_ordering
+    assert executor.map_type is dict
+
+    executor = Executor(map_type=OrderedDict)
+    assert executor.enforce_strict_ordering
+    assert executor.map_type is OrderedDict
+
+
 def test_executor_can_enforce_strict_ordering():
     Type = GraphQLObjectType('Type', lambda: {
         'a': GraphQLField(GraphQLString,
