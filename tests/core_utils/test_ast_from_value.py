@@ -1,5 +1,6 @@
 from collections import OrderedDict
-from graphql.core.type.definition import GraphQLEnumType, GraphQLList, GraphQLInputObjectType, GraphQLInputObjectField
+from graphql.core.type.definition import GraphQLEnumType, GraphQLEnumValue, GraphQLList, GraphQLInputObjectType, \
+    GraphQLInputObjectField
 from graphql.core.type.scalars import GraphQLFloat
 from graphql.core.utils.ast_from_value import ast_from_value
 from graphql.core.language import ast
@@ -36,8 +37,8 @@ def test_it_converts_string_values_to_asts():
 
 my_enum = GraphQLEnumType(
     'MyEnum', {
-        'HELLO': 1,
-        'GOODBYE': 2
+        'HELLO': GraphQLEnumValue(1),
+        'GOODBYE': GraphQLEnumValue(2)
     }
 )
 

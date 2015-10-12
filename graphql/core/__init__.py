@@ -4,7 +4,7 @@ from .language.source import Source
 from .validation import validate
 
 
-def graphql(schema, request='', root=None, vars=None, operation_name=None):
+def graphql(schema, request='', root=None, args=None, operation_name=None):
     try:
         source = Source(request, 'GraphQL request')
         ast = parse(source)
@@ -19,7 +19,7 @@ def graphql(schema, request='', root=None, vars=None, operation_name=None):
             root or object(),
             ast,
             operation_name,
-            vars or {},
+            args or {},
         )
     except Exception as e:
         return ExecutionResult(

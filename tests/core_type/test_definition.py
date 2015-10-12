@@ -2,6 +2,7 @@ from py.test import raises
 from graphql.core.type import (
     GraphQLSchema,
     GraphQLEnumType,
+    GraphQLEnumValue,
     GraphQLInputObjectType,
     GraphQLInterfaceType,
     GraphQLObjectType,
@@ -56,8 +57,8 @@ BlogMutation = GraphQLObjectType('Mutation', {
 
 ObjectType = GraphQLObjectType('Object', {})
 InterfaceType = GraphQLInterfaceType('Interface')
-UnionType = GraphQLUnionType('Union', [ObjectType])
-EnumType = GraphQLEnumType('Enum', {})
+UnionType = GraphQLUnionType('Union', [ObjectType], resolve_type=lambda: None)
+EnumType = GraphQLEnumType('Enum', {'foo': GraphQLEnumValue()})
 InputObjectType = GraphQLInputObjectType('InputObject', {})
 
 
@@ -103,14 +104,14 @@ def test_defines_a_mutation_schema():
 
 
 def test_includes_interfaces_subtypes_in_the_type_map():
-    SomeInterface = GraphQLInterfaceType('SomeInterface')
+    SomeInterface = GraphQLInterfaceType('SomeInterface', fields={'f': GraphQLField(GraphQLInt)})
     SomeSubtype = GraphQLObjectType(
         name='SomeSubtype',
-        fields={},
-        interfaces=[SomeInterface]
+        fields={'f': GraphQLField(GraphQLInt)},
+        interfaces=[SomeInterface],
+        is_type_of=lambda: None
     )
-    schema = GraphQLSchema(SomeInterface)
-
+    schema = GraphQLSchema(query=GraphQLObjectType(name='Query', fields={'iface': GraphQLField(SomeInterface)}))
     assert schema.get_type_map()['SomeSubtype'] == SomeSubtype
 
 
@@ -129,17 +130,17 @@ def test_stringifies_simple_types():
 
 
 def test_identifies_input_types():
-    pass # TODO
+    pass  # TODO
 
 
 def test_identifies_output_types():
-    pass # TODO
+    pass  # TODO
 
 
 def test_prohibits_nesting_nonnull_inside_nonnull():
     with raises(Exception) as excinfo:
         GraphQLNonNull(GraphQLNonNull(GraphQLInt))
-    assert 'nest' in str(excinfo.value)
+    assert 'Can only create NonNull of a Nullable GraphQLType but got: Int!.' in str(excinfo.value)
 
 
 def test_prohibits_putting_non_object_types_in_unions():
@@ -155,5 +156,6 @@ def test_prohibits_putting_non_object_types_in_unions():
     for x in bad_union_types:
         with raises(Exception) as excinfo:
             GraphQLUnionType('BadUnion', [x])
-        assert 'Union BadUnion may only contain object types, it cannot contain: ' + str(x) + '.' \
-            == str(excinfo.value)
+
+        assert 'BadUnion may only contain Object types, it cannot contain: ' + str(x) + '.' \
+               == str(excinfo.value)

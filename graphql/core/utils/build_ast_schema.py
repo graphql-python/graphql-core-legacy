@@ -58,13 +58,13 @@ def build_ast_schema(document, query_type_name, mutation_type_name=None):
     if mutation_type_name and mutation_type_name not in ast_map:
         raise Exception('Specified mutation type {} not found in document.'.format(mutation_type_name))
 
-    inner_type_map = {
-        'String': GraphQLString,
-        'Int': GraphQLInt,
-        'Float': GraphQLFloat,
-        'Boolean': GraphQLBoolean,
-        'ID': GraphQLID
-    }
+    inner_type_map = OrderedDict([
+        ('String', GraphQLString),
+        ('Int', GraphQLInt),
+        ('Float', GraphQLFloat),
+        ('Boolean', GraphQLBoolean),
+        ('ID', GraphQLID)
+    ])
 
     def produce_type_def(type_ast):
         type_name = _get_inner_type_name(type_ast)

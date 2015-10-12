@@ -123,9 +123,10 @@ class TypeFieldResolvers(object):
     @staticmethod
     def enum_values(type, args, *_):
         if isinstance(type, GraphQLEnumType):
-            values = type.get_values().values()
+            values = type.get_values()
             if not args.get('includeDeprecated'):
                 values = [v for v in values if not v.deprecation_reason]
+
             return values
 
     @staticmethod
@@ -281,22 +282,25 @@ IntrospectionSchema = __Schema
 SchemaMetaFieldDef = GraphQLField(
     type=GraphQLNonNull(__Schema),
     description='Access the current type schema of this server.',
-    resolver=lambda source, args, info: info.schema
+    resolver=lambda source, args, info: info.schema,
+    args=[]
 )
 SchemaMetaFieldDef.name = '__schema'
 
+TypeMetaFieldDef_args_name = GraphQLArgument(GraphQLNonNull(GraphQLString))
+TypeMetaFieldDef_args_name.name = 'name'
 TypeMetaFieldDef = GraphQLField(
     type=__Type,
     description='Request the type information of a single type.',
-    args={
-        'name': GraphQLArgument(GraphQLNonNull(GraphQLString))
-    },
+    args=[TypeMetaFieldDef_args_name],
     resolver=lambda source, args, info: info.schema.get_type(args['name'])
 )
 TypeMetaFieldDef.name = '__type'
+del TypeMetaFieldDef_args_name
 
 TypeNameMetaFieldDef = GraphQLField(
     GraphQLNonNull(GraphQLString),
-    resolver=lambda source, args, info: info.parent_type.name
+    resolver=lambda source, args, info: info.parent_type.name,
+    args=[]
 )
 TypeNameMetaFieldDef.name = '__typename'

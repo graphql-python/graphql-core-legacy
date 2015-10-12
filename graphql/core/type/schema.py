@@ -23,18 +23,24 @@ class GraphQLSchema(object):
             mutation=MyAppMutationRootType
         )
     """
+    __slots__ = '_query', '_mutation', '_type_map', '_directives'
 
     def __init__(self, query, mutation=None):
-        self.query = query
-        self.mutation = mutation
+        assert isinstance(query, GraphQLObjectType), 'Schema query must be Object Type but got: {}.'.format(query)
+        if mutation:
+            assert isinstance(mutation, GraphQLObjectType), \
+                'Schema mutation must be Object Type but got: {}.'.format(mutation)
+
+        self._query = query
+        self._mutation = mutation
         self._type_map = self._build_type_map()
         self._directives = None
 
     def get_query_type(self):
-        return self.query
+        return self._query
 
     def get_mutation_type(self):
-        return self.mutation
+        return self._mutation
 
     def get_type_map(self):
         return self._type_map
@@ -48,6 +54,7 @@ class GraphQLSchema(object):
                 GraphQLIncludeDirective,
                 GraphQLSkipDirective
             ]
+
         return self._directives
 
     def get_directive(self, name):
@@ -94,7 +101,8 @@ def type_map_reducer(map, type):
     if isinstance(type, (GraphQLObjectType, GraphQLInterfaceType, GraphQLInputObjectType)):
         field_map = type.get_fields()
         for field in field_map.values():
-            if hasattr(field, 'args'):
+            args = getattr(field, 'args', None)
+            if args:
                 field_arg_types = [arg.type for arg in field.args]
                 for t in field_arg_types:
                     reduced_map = type_map_reducer(reduced_map, t)

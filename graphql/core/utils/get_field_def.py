@@ -13,8 +13,10 @@ def get_field_def(schema, parent_type, field_ast):
     name = field_ast.name.value
     if name == SchemaMetaFieldDef.name and schema.get_query_type() == parent_type:
         return SchemaMetaFieldDef
+
     elif name == TypeMetaFieldDef.name and schema.get_query_type() == parent_type:
         return TypeMetaFieldDef
+
     elif name == TypeNameMetaFieldDef.name and \
             isinstance(parent_type, (
                 GraphQLObjectType,
@@ -22,5 +24,6 @@ def get_field_def(schema, parent_type, field_ast):
                 GraphQLUnionType,
             )):
         return TypeNameMetaFieldDef
+
     elif isinstance(parent_type, (GraphQLObjectType, GraphQLInterfaceType)):
         return parent_type.get_fields().get(name)

@@ -39,7 +39,7 @@ class VariablesInAllowedPosition(ValidationRule):
 
     @staticmethod
     def effective_type(var_type, var_def):
-        if not var_def.default_value or isinstance(var_def, GraphQLNonNull):
+        if not var_def.default_value or isinstance(var_type, GraphQLNonNull):
             return var_type
 
         return GraphQLNonNull(var_type)

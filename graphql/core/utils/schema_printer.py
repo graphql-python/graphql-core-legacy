@@ -94,7 +94,7 @@ def _print_enum(type):
         'enum {} {{\n'
         '{}\n'
         '}}'
-    ).format(type.name, '\n'.join('  ' + v.name for v in type.get_values().values()))
+    ).format(type.name, '\n'.join('  ' + v.name for v in type.get_values()))
 
 
 def _print_input_object(type):
