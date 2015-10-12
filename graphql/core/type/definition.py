@@ -237,7 +237,7 @@ def define_field_map(type, field_map):
             for arg_name, arg in field_args.items():
                 assert_valid_name(arg_name)
                 assert isinstance(arg, GraphQLArgument), (
-                    '{}.{}({}:) argument must be an instance of GraphQLArgument'.format(type, field_name, arg_name)
+                    '{}.{}({}:) argument must be an instance of GraphQLArgument.'.format(type, field_name, arg_name)
                 )
                 assert is_input_type(arg.type), (
                     '{}.{}({}:) argument type must be Input Type but got: {}.'.format(type, field_name, arg_name,

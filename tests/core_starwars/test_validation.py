@@ -1,7 +1,7 @@
 from graphql.core.language.source import Source
 from graphql.core.language.parser import parse
 from graphql.core.validation import validate
-from starwars_schema import StarWarsSchema
+from .starwars_schema import StarWarsSchema
 
 
 def validation_errors(query):

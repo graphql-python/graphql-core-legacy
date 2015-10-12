@@ -1,4 +1,4 @@
-from starwars_schema import StarWarsSchema
+from .starwars_schema import StarWarsSchema
 from graphql.core import graphql
 from graphql.core.error import format_error
 

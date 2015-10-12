@@ -10,7 +10,7 @@ from graphql.core.type import (
     GraphQLSchema,
     GraphQLString,
 )
-import starwars_fixtures
+from .starwars_fixtures import getHero, getHuman, getFriends, getDroid
 
 episodeEnum = GraphQLEnumType(
     'Episode',
@@ -52,7 +52,7 @@ characterInterface = GraphQLInterfaceType(
             description='Which movies they appear in.'
         ),
     },
-    resolve_type=lambda character, *_: humanType if starwars_fixtures.getHuman(character.id) else droidType,
+    resolve_type=lambda character, *_: humanType if getHuman(character.id) else droidType,
 )
 
 humanType = GraphQLObjectType(
@@ -70,7 +70,7 @@ humanType = GraphQLObjectType(
         'friends': GraphQLField(
             GraphQLList(characterInterface),
             description='The friends of the human, or an empty list if they have none.',
-            resolver=lambda human, *_: starwars_fixtures.getFriends(human),
+            resolver=lambda human, *_: getFriends(human),
         ),
         'appearsIn': GraphQLField(
             GraphQLList(episodeEnum),
@@ -99,7 +99,7 @@ droidType = GraphQLObjectType(
         'friends': GraphQLField(
             GraphQLList(characterInterface),
             description='The friends of the droid, or an empty list if they have none.',
-            resolver=lambda droid, *_: starwars_fixtures.getFriends(droid),
+            resolver=lambda droid, *_: getFriends(droid),
         ),
         'appearsIn': GraphQLField(
             GraphQLList(episodeEnum),
@@ -125,7 +125,7 @@ queryType = GraphQLObjectType(
                     type=episodeEnum,
                 )
             },
-            resolver=lambda root, args, *_: starwars_fixtures.getHero(args.get('episode')),
+            resolver=lambda root, args, *_: getHero(args.get('episode')),
         ),
         'human': GraphQLField(
             humanType,
@@ -135,7 +135,7 @@ queryType = GraphQLObjectType(
                     type=GraphQLNonNull(GraphQLString),
                 )
             },
-            resolver=lambda root, args, *_: starwars_fixtures.getHuman(args['id']),
+            resolver=lambda root, args, *_: getHuman(args['id']),
         ),
         'droid': GraphQLField(
             droidType,
@@ -145,7 +145,7 @@ queryType = GraphQLObjectType(
                     type=GraphQLNonNull(GraphQLString),
                 )
             },
-            resolver=lambda root, args, *_: starwars_fixtures.getDroid(args['id']),
+            resolver=lambda root, args, *_: getDroid(args['id']),
         ),
     }
 )
