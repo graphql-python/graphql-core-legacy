@@ -384,11 +384,286 @@ class TestTypeSystem_FieldArgsMustBeObjects:
 
         assert str(excinfo.value) == 'SomeObject.badField(badArg:) argument must be an instance of GraphQLArgument.'
 
-# describe('Type System: Object interfaces must be array', () => {
-# describe('Type System: Union types must be array', () => {
-# describe('Type System: Input Objects must have fields', () => {
-# describe('Type System: Object types must be assertable', () => {
-# describe('Type System: Interface types must be resolvable', () => {
+
+# noinspection PyMethodMayBeStatic,PyPep8Naming
+class TestTypeSystem_ObjectInterfacesMustBeArray:
+    def test_accepts_an_object_type_with_array_interface(self):
+        AnotherInterfaceType = GraphQLInterfaceType(
+            name='AnotherInterface',
+            resolve_type=_none,
+            fields={'f': GraphQLField(GraphQLString)}
+        )
+
+        assert schema_with_field_type(GraphQLObjectType(
+            name='SomeObject',
+            interfaces=[AnotherInterfaceType],
+            fields={'f': GraphQLField(GraphQLString)}
+        ))
+
+    def test_accepts_an_object_type_with_interfaces_as_a_function_returning_an_array(self):
+        AnotherInterfaceType = GraphQLInterfaceType(
+            name='AnotherInterface',
+            resolve_type=_none,
+            fields={'f': GraphQLField(GraphQLString)}
+        )
+
+        assert schema_with_field_type(GraphQLObjectType(
+            name='SomeObject',
+            interfaces=lambda: [AnotherInterfaceType],
+            fields={'f': GraphQLField(GraphQLString)}
+        ))
+
+    def test_rejects_an_object_type_with_incorrectly_typed_interfaces(self):
+        with raises(AssertionError) as excinfo:
+            schema_with_field_type(GraphQLObjectType(
+                name='SomeObject',
+                interfaces={},
+                fields={'f': GraphQLField(GraphQLString)}
+            ))
+
+        assert str(excinfo.value) == 'SomeObject interfaces must be a list/tuple or a function which returns a ' \
+                                     'list/tuple.'
+
+    def test_rejects_an_object_type_with_interfaces_as_a_function_returning_an_incorrect_type(self):
+        with raises(AssertionError) as excinfo:
+            schema_with_field_type(GraphQLObjectType(
+                name='SomeObject',
+                interfaces=lambda: {},
+                fields={'f': GraphQLField(GraphQLString)}
+            ))
+
+        assert str(excinfo.value) == 'SomeObject interfaces must be a list/tuple or a function which returns a ' \
+                                     'list/tuple.'
+
+
+# noinspection PyMethodMayBeStatic,PyPep8Naming
+class TestTypeSystem_UnionTypesMustBeArray:
+    def test_accepts_a_union_type_with_aray_types(self):
+        assert schema_with_field_type(GraphQLUnionType(
+            name='SomeUnion',
+            resolve_type=_none,
+            types=[SomeObjectType]
+        ))
+
+    def test_rejects_a_union_without_types(self):
+        with raises(AssertionError) as excinfo:
+            schema_with_field_type(GraphQLUnionType(
+                name='SomeUnion',
+                resolve_type=_none
+            ))
+
+        assert str(excinfo.value) == 'Must provide types for Union SomeUnion.'
+
+    def test_rejects_a_union_type_with_empty_types(self):
+        with raises(AssertionError) as excinfo:
+            schema_with_field_type(GraphQLUnionType(
+                name='SomeUnion',
+                resolve_type=_none,
+                types=[]
+            ))
+
+        assert str(excinfo.value) == 'Must provide types for Union SomeUnion.'
+
+    def test_rejects_a_union_type_with_incorrectly_typed_types(self):
+        with raises(AssertionError) as excinfo:
+            schema_with_field_type(GraphQLUnionType(
+                name='SomeUnion',
+                resolve_type=_none,
+                types={'SomeObjectType': SomeObjectType}
+            ))
+
+        assert str(excinfo.value) == 'Must provide types for Union SomeUnion.'
+
+
+def schema_with_input_object(input_object_type):
+    return GraphQLSchema(
+        query=GraphQLObjectType(
+            name='Query',
+            fields={
+                'f': GraphQLField(GraphQLString, args={
+                    'badArg': GraphQLArgument(input_object_type)
+                })
+            }
+        )
+    )
+
+
+# noinspection PyMethodMayBeStatic,PyPep8Naming
+class TestTypeSystem_InputObjectsMustHaveFields:
+    def test_accepts_an_input_object_type_with_fields(self):
+        assert schema_with_input_object(GraphQLInputObjectType(
+            name='SomeInputObject',
+            fields={
+                'f': GraphQLInputObjectField(GraphQLString)
+            }
+        ))
+
+    def test_accepts_an_input_object_type_with_field_function(self):
+        assert schema_with_input_object(GraphQLInputObjectType(
+            name='SomeInputObject',
+            fields=lambda: {
+                'f': GraphQLInputObjectField(GraphQLString)
+            }
+        ))
+
+    def test_rejects_an_input_object_type_with_missing_fields(self):
+        with raises(AssertionError) as excinfo:
+            schema_with_input_object(GraphQLInputObjectType(
+                name='SomeInputObject',
+                fields=None
+            ))
+
+        assert str(excinfo.value) == 'SomeInputObject fields must be a mapping (dict / OrderedDict) with ' \
+                                     'field names as keys or a function which returns such a mapping.'
+
+    def test_rejects_an_input_object_type_with_incorrectly_typed_fields(self):
+        with raises(AssertionError) as excinfo:
+            schema_with_input_object(GraphQLInputObjectType(
+                name='SomeInputObject',
+                fields=[GraphQLInputObjectField(GraphQLString)]
+            ))
+
+        assert str(excinfo.value) == 'SomeInputObject fields must be a mapping (dict / OrderedDict) with ' \
+                                     'field names as keys or a function which returns such a mapping.'
+
+    def test_rejects_an_input_object_type_with_incorrectly_typed_field_value(self):
+        with raises(AssertionError) as excinfo:
+            schema_with_input_object(GraphQLInputObjectType(
+                name='SomeInputObject',
+                fields={'f': GraphQLField(GraphQLString)}
+            ))
+
+        assert str(excinfo.value) == 'SomeInputObject.f must be an instance of GraphQLInputObjectField.'
+
+    def test_rejects_an_input_object_type_with_fields_function_returning_incorrectly_typed_field_value(self):
+        with raises(AssertionError) as excinfo:
+            schema_with_input_object(GraphQLInputObjectType(
+                name='SomeInputObject',
+                fields=lambda: {'f': GraphQLField(GraphQLString)}
+            ))
+
+        assert str(excinfo.value) == 'SomeInputObject.f must be an instance of GraphQLInputObjectField.'
+
+    def test_rejects_an_input_object_type_with_empty_fields(self):
+        with raises(AssertionError) as excinfo:
+            schema_with_input_object(GraphQLInputObjectType(
+                name='SomeInputObject',
+                fields={}
+            ))
+
+        assert str(excinfo.value) == 'SomeInputObject fields must be a mapping (dict / OrderedDict) with ' \
+                                     'field names as keys or a function which returns such a mapping.'
+
+    def test_rejects_an_input_object_type_with_a_field_function_that_returns_nothing(self):
+        with raises(AssertionError) as excinfo:
+            schema_with_input_object(GraphQLInputObjectType(
+                name='SomeInputObject',
+                fields=_none
+            ))
+
+        assert str(excinfo.value) == 'SomeInputObject fields must be a mapping (dict / OrderedDict) with ' \
+                                     'field names as keys or a function which returns such a mapping.'
+
+    def test_rejects_an_input_object_type_with_a_field_function_that_returns_empty(self):
+        with raises(AssertionError) as excinfo:
+            schema_with_input_object(GraphQLInputObjectType(
+                name='SomeInputObject',
+                fields=lambda: {}
+            ))
+
+        assert str(excinfo.value) == 'SomeInputObject fields must be a mapping (dict / OrderedDict) with ' \
+                                     'field names as keys or a function which returns such a mapping.'
+
+
+# noinspection PyMethodMayBeStatic,PyPep8Naming
+class TestTypeSystem_ObjectTypesMustBeAssertable:
+    def test_accepts_an_object_type_with_an_is_type_of_function(self):
+        assert schema_with_field_type(GraphQLObjectType(
+            name='AnotherObject',
+            is_type_of=_true,
+            fields={'f': GraphQLField(GraphQLString)}
+        ))
+
+    def test_rejects_an_object_type_with_an_incorrect_type_for_is_type_of(self):
+        with raises(AssertionError) as excinfo:
+            schema_with_field_type(GraphQLObjectType(
+                name='AnotherObject',
+                is_type_of={},
+                fields={'f': GraphQLField(GraphQLString)}
+            ))
+
+        assert str(excinfo.value) == 'AnotherObject must provide "is_type_of" as a function.'
+
+
+# noinspection PyMethodMayBeStatic,PyPep8Naming
+class TestTypeSystem_InterfaceTypesMustBeResolvable:
+    def test_accepts_an_interface_type_defining_resolve_type(self):
+        AnotherInterfaceType = GraphQLInterfaceType(
+            name='AnotherInterface',
+            resolve_type=_none,
+            fields={'f': GraphQLField(GraphQLString)}
+        )
+
+        assert schema_with_field_type(GraphQLObjectType(
+            name='SomeObject',
+            interfaces=[AnotherInterfaceType],
+            fields={'f': GraphQLField(GraphQLString)}
+        ))
+
+    def test_accepts_an_interface_with_implementing_type_defining_is_type_of(self):
+        AnotherInterfaceType = GraphQLInterfaceType(
+            name='AnotherInterface',
+            fields={'f': GraphQLField(GraphQLString)}
+        )
+
+        assert schema_with_field_type(GraphQLObjectType(
+            name='SomeObject',
+            is_type_of=_true,
+            interfaces=[AnotherInterfaceType],
+            fields={'f': GraphQLField(GraphQLString)}
+        ))
+
+    def test_accepts_an_interface_type_defining_resolve_type_with_implementing_type_defining_is_type_of(self):
+        AnotherInterfaceType = GraphQLInterfaceType(
+            name='AnotherInterface',
+            resolve_type=_none,
+            fields={'f': GraphQLField(GraphQLString)}
+        )
+        assert schema_with_field_type(GraphQLObjectType(
+            name='SomeObject',
+            is_type_of=_true,
+            interfaces=[AnotherInterfaceType],
+            fields={'f': GraphQLField(GraphQLString)}
+        ))
+
+    def test_rejects_an_interface_type_with_an_incorrect_type_for_resolve_type(self):
+        with raises(AssertionError) as excinfo:
+            GraphQLInterfaceType(
+                name='AnotherInterface',
+                resolve_type={},
+                fields={'f': GraphQLField(GraphQLString)}
+            )
+
+        assert str(excinfo.value) == 'AnotherInterface must provide "resolve_type" as a function.'
+
+    def test_rejects_an_interface_type_not_defining_resolve_type_with_implementing_type_not_defining_is_type_of(self):
+        AnotherInterfaceType = GraphQLInterfaceType(
+            name='AnotherInterface',
+            fields={'f': GraphQLField(GraphQLString)}
+        )
+
+        with raises(AssertionError) as excinfo:
+            schema_with_field_type(GraphQLObjectType(
+                name='SomeObject',
+                interfaces=[AnotherInterfaceType],
+                fields={'f': GraphQLField(GraphQLString)}
+            ))
+
+        assert str(excinfo.value) == 'Interface Type AnotherInterface does not provide a "resolve_type" function and ' \
+                                     'implementing Type SomeObject does not provide a "is_type_of" function. ' \
+                                     'There is no way to resolve this implementing type during execution.'
+
+# describe('Type System: Union types must be resolvable', () => {
 # describe('Type System: Scalar types must be serializable', () => {
 # describe('Type System: Enum types must be well defined', () => {
 # describe('Type System: Object fields must have output types', () => {

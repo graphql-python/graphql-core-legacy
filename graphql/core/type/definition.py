@@ -178,7 +178,7 @@ class GraphQLObjectType(GraphQLType):
         self.name = name
         self.description = description
 
-        if is_type_of:
+        if is_type_of is not None:
             assert callable(is_type_of), '{} must provide "is_type_of" as a function.'.format(self)
 
         self.is_type_of = is_type_of
@@ -331,7 +331,7 @@ class GraphQLInterfaceType(GraphQLType):
         self.name = name
         self.description = description
 
-        if resolve_type:
+        if resolve_type is not None:
             assert callable(resolve_type), '{} must provide "resolve_type" as a function.'.format(self)
 
         self.type_resolver = resolve_type
@@ -397,12 +397,12 @@ class GraphQLUnionType(GraphQLType):
         self.name = name
         self.description = description
 
-        if resolve_type:
+        if resolve_type is not None:
             assert callable(resolve_type), '{} must provide "resolve_type" as a function.'.format(self)
 
         self._resolve_type = resolve_type
 
-        assert types, 'Must provide types for Union {}.'.format(name)
+        assert isinstance(types, (list, tuple)) and len(types) > 0, 'Must provide types for Union {}.'.format(name)
         has_resolve_type_fn = callable(self._resolve_type)
 
         for type in types:
@@ -590,14 +590,14 @@ class GraphQLInputObjectType(GraphQLType):
         for field_name, field in fields.items():
             assert_valid_name(field_name)
             assert isinstance(field, GraphQLInputObjectField), (
-                '{}.{} must be an instance of GraphQLInputObjectField.'.format(type, field_name)
+                '{}.{} must be an instance of GraphQLInputObjectField.'.format(self, field_name)
             )
 
             field = copy.copy(field)
             field.name = field_name
 
             assert is_input_type(field.type), (
-                '{}.{} field type must be Input Type but got: {}.'.format(type, field_name, field.type)
+                '{}.{} field type must be Input Type but got: {}.'.format(self, field_name, field.type)
             )
 
             field_map[field_name] = field
