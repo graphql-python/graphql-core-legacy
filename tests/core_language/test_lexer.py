@@ -199,6 +199,10 @@ def test_lex_reports_useful_unknown_character_error():
         lex_one(u'\u203B')
     assert u'Syntax Error GraphQL (1:1) Unexpected character "\\u203b"' in excinfo.value.message
 
+    with raises(LanguageError) as excinfo:
+        lex_one(u'\u200b')
+    assert u'Syntax Error GraphQL (1:1) Unexpected character "\\u200b"' in excinfo.value.message
+
 
 def test_lex_reports_useful_information_for_dashes_in_names():
     q = u'a-b'
