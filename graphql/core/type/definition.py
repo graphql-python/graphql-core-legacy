@@ -519,6 +519,7 @@ def define_enum_values(type, value_map):
         assert isinstance(value, GraphQLEnumValue), (
             '{}.{} must be an instance of GraphQLEnumValue, but got: {}'.format(type, value_name, value)
         )
+        value = copy.copy(value)
         value.name = value_name
         if value.value is None:
             value.value = value_name

@@ -50,7 +50,10 @@ Dog = GraphQLObjectType('Dog', {
 }, interfaces=[Being, Pet], is_type_of=lambda: None)
 
 Cat = GraphQLObjectType('Cat', lambda: {
-    'furColor': GraphQLField(FurColor)
+    'furColor': GraphQLField(FurColor),
+    'name': GraphQLField(GraphQLString, {
+        'surname': GraphQLArgument(GraphQLBoolean),
+    })
 }, interfaces=[Being, Pet], is_type_of=lambda: None)
 
 CatOrDog = GraphQLUnionType('CatOrDog', [Dog, Cat])
@@ -185,7 +188,7 @@ def expect_invalid(schema, rules, query, expected_errors, sort_list=True):
         error['locations'] = [
             {'line': loc.line, 'column': loc.column}
             for loc in error['locations']
-        ]
+            ]
     if sort_list:
         assert sort_lists(list(map(format_error, errors))) == sort_lists(expected_errors)
 

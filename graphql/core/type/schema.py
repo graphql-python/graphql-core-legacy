@@ -36,6 +36,11 @@ class GraphQLSchema(object):
         self._type_map = self._build_type_map()
         self._directives = None
 
+        for type in self._type_map.values():
+            if isinstance(type, GraphQLObjectType):
+                for interface in type.get_interfaces():
+                    assert_object_implements_interface(type, interface)
+
     def get_query_type(self):
         return self._query
 
@@ -82,8 +87,8 @@ def type_map_reducer(map, type):
     if type.name in map:
         assert map[type.name] == type, (
             'Schema must contain unique named types but contains multiple types named "{}".'
-            .format(type.name)
-        )
+        ).format(type.name)
+
         return map
 
     map[type.name] = type
@@ -110,3 +115,50 @@ def type_map_reducer(map, type):
             reduced_map = type_map_reducer(reduced_map, getattr(field, 'type', None))
 
     return reduced_map
+
+
+def assert_object_implements_interface(object, interface):
+    object_field_map = object.get_fields()
+    interface_field_map = interface.get_fields()
+
+    for field_name, interface_field in interface_field_map.items():
+        object_field = object_field_map.get(field_name)
+
+        assert object_field, '"{}" expects field "{}" but "{}" does not provide it.'.format(
+            interface, field_name, object
+        )
+
+        assert is_equal_type(interface_field.type, object_field.type), (
+            '{}.{} expects type "{}" but {}.{} provides type "{}".'
+        ).format(interface, field_name, interface_field.type, object, field_name, object_field.type)
+
+        object_arg_map = {arg.name: arg for arg in object_field.args}
+        for interface_arg in interface_field.args:
+            arg_name = interface_arg.name
+            object_arg = object_arg_map.get(arg_name)
+
+            assert object_arg, (
+                '{}.{} expects argument "{}" but {}.{} does not provide it.'
+            ).format(interface, field_name, arg_name, object, field_name)
+
+            assert is_equal_type(interface_arg.type, object_arg.type), (
+                '{}.{}({}:) expects type "{}" but {}.{}({}:) provides type "{}".'
+            ).format(interface, field_name, arg_name, interface_arg.type, object, field_name, arg_name, object_arg.type)
+
+        interface_arg_map = {arg.name: arg for arg in interface_field.args}
+        for object_arg in object_field.args:
+            arg_name = object_arg.name
+            interface_arg = interface_arg_map.get(arg_name)
+            assert interface_arg, (
+                '{}.{} does not define argument "{}" but {}.{} provides it.'
+            ).format(interface, field_name, arg_name, object, field_name)
+
+
+def is_equal_type(type_a, type_b):
+    if isinstance(type_a, GraphQLNonNull) and isinstance(type_b, GraphQLNonNull):
+        return is_equal_type(type_a.of_type, type_b.of_type)
+
+    if isinstance(type_a, GraphQLList) and isinstance(type_b, GraphQLList):
+        return is_equal_type(type_a.of_type, type_b.of_type)
+
+    return type_a is type_b
