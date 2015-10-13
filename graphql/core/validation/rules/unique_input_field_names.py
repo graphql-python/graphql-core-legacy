@@ -3,6 +3,8 @@ from .base import ValidationRule
 
 
 class UniqueInputFieldNames(ValidationRule):
+    __slots__ = 'known_names',
+
     def __init__(self, context):
         super(UniqueInputFieldNames, self).__init__(context)
         self.known_names = {}

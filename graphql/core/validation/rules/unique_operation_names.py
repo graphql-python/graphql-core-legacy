@@ -3,6 +3,8 @@ from .base import ValidationRule
 
 
 class UniqueOperationNames(ValidationRule):
+    __slots__ = 'known_operation_names',
+
     def __init__(self, context):
         super(UniqueOperationNames, self).__init__(context)
         self.known_operation_names = {}

@@ -21,6 +21,9 @@ def pop(lst):
 # noinspection PyPep8Naming
 @six.add_metaclass(visitor_meta.VisitorMeta)
 class TypeInfo(object):
+    __slots__ = '_schema', '_type_stack', '_parent_type_stack', '_input_type_stack', '_field_def_stack', '_directive', \
+                '_argument'
+
     def __init__(self, schema):
         self._schema = schema
         self._type_stack = []

@@ -4,6 +4,8 @@ from ..language.visitor import Visitor, visit
 
 
 class ValidationVisitor(Visitor):
+    __slots__ = 'context', 'rules', 'total_rules', 'type_info', 'errors', 'ignore_children'
+
     def __init__(self, rules, context, type_info, errors):
         self.context = context
         self.rules = rules

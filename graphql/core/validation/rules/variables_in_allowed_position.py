@@ -9,6 +9,7 @@ from .base import ValidationRule
 
 class VariablesInAllowedPosition(ValidationRule):
     visit_spread_fragments = True
+    __slots__ = 'var_def_map', 'visited_fragment_names'
 
     def __init__(self, context):
         super(VariablesInAllowedPosition, self).__init__(context)

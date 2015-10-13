@@ -3,12 +3,13 @@ from .base import ValidationRule
 
 
 class NoUnusedVariables(ValidationRule):
-    visited_fragment_names = None
-    variable_definitions = None
-    variable_name_used = None
-    visit_spread_fragments = True
+    __slots__ = 'visited_fragment_names', 'variable_definitions', 'variable_name_used', 'visit_spread_fragments'
 
     def __init__(self, context):
+        self.visited_fragment_names = None
+        self.variable_definitions = None
+        self.variable_name_used = None
+        self.visit_spread_fragments = True
         super(NoUnusedVariables, self).__init__(context)
 
     def enter_OperationDefinition(self, node, key, parent, path, ancestors):
@@ -24,7 +25,7 @@ class NoUnusedVariables(ValidationRule):
             )
             for variable_definition in self.variable_definitions
             if variable_definition.variable.name.value not in self.variable_name_used
-        ]
+            ]
 
         if errors:
             return errors

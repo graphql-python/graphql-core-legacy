@@ -4,12 +4,14 @@ from .base import ValidationRule
 
 
 class NoUndefinedVariables(ValidationRule):
+    __slots__ = 'visited_fragment_names', 'defined_variable_names', 'operation',
     visit_spread_fragments = True
-    operation = None
 
     def __init__(self, context):
         self.visited_fragment_names = set()
         self.defined_variable_names = set()
+        self.operation = None
+
         super(NoUndefinedVariables, self).__init__(context)
 
     @staticmethod

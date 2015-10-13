@@ -3,6 +3,8 @@ from .base import ValidationRule
 
 
 class UniqueArgumentNames(ValidationRule):
+    __slots__ = 'known_arg_names',
+
     def __init__(self, context):
         super(UniqueArgumentNames, self).__init__(context)
         self.known_arg_names = {}

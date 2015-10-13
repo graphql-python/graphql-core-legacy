@@ -6,12 +6,10 @@ from .rules import specified_rules
 from .visitor import ValidationVisitor
 
 
-def validate(schema, ast, rules=None):
+def validate(schema, ast, rules=specified_rules):
     assert schema, 'Must provide schema'
     assert ast, 'Must provide document'
     assert isinstance(schema, GraphQLSchema)
-    if rules is None:
-        rules = specified_rules
     return visit_using_rules(schema, ast, rules)
 
 

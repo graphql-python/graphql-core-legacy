@@ -2,6 +2,8 @@ from ..language.ast import FragmentDefinition
 
 
 class ValidationContext(object):
+    __slots__ = '_schema', '_ast', '_type_info', '_fragments'
+
     def __init__(self, schema, ast, type_info):
         self._schema = schema
         self._ast = ast

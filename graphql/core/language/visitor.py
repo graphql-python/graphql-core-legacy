@@ -152,6 +152,8 @@ def visit(root, visitor, key_map=None):
 
 @six.add_metaclass(VisitorMeta)
 class Visitor(object):
+    __slots__ = ()
+
     def enter(self, node, key, parent, path, ancestors):
         method = self._get_enter_handler(type(node))
         if method:

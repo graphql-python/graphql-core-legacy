@@ -5,6 +5,8 @@ from .base import ValidationRule
 
 
 class NoFragmentCycles(ValidationRule):
+    __slots__ = 'spreads_in_fragment', 'known_to_lead_to_cycle'
+
     def __init__(self, context):
         super(NoFragmentCycles, self).__init__(context)
         self.spreads_in_fragment = {
@@ -59,6 +61,8 @@ class NoFragmentCycles(ValidationRule):
         return visitor.collect_fragment_spread_nodes()
 
     class CollectFragmentSpreadNodesVisitor(Visitor):
+        __slots__ = 'spread_nodes',
+
         def __init__(self):
             self.spread_nodes = []
 

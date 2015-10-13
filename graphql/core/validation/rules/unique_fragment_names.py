@@ -3,6 +3,8 @@ from .base import ValidationRule
 
 
 class UniqueFragmentNames(ValidationRule):
+    __slots__ = 'known_fragment_names',
+
     def __init__(self, context):
         super(UniqueFragmentNames, self).__init__(context)
         self.known_fragment_names = {}

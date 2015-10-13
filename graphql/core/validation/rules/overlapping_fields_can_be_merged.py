@@ -15,6 +15,8 @@ from .base import ValidationRule
 
 
 class OverlappingFieldsCanBeMerged(ValidationRule):
+    __slots__ = 'compared_set',
+
     def __init__(self, context):
         super(OverlappingFieldsCanBeMerged, self).__init__(context)
         self.compared_set = PairSet()

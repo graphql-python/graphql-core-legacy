@@ -3,6 +3,8 @@ from .base import ValidationRule
 
 
 class NoUnusedFragments(ValidationRule):
+    __slots__ = 'fragment_definitions', 'spreads_within_operation', 'fragment_adjacencies', 'spread_names'
+
     def __init__(self, context):
         super(NoUnusedFragments, self).__init__(context)
         self.fragment_definitions = []
