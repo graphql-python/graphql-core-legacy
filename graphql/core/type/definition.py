@@ -116,7 +116,7 @@ class GraphQLScalarType(GraphQLType):
             'functions are also provided.'
         ).format(self)
 
-        if parse_value or parse_literal:
+        if parse_value is not None or parse_literal is not None:
             assert callable(parse_value) and callable(parse_literal), (
                 '{} must provide both "parse_value" and "parse_literal" functions.'.format(self)
             )
@@ -268,7 +268,7 @@ def define_interfaces(type, interfaces):
 
     for interface in interfaces:
         assert isinstance(interface, GraphQLInterfaceType), (
-            '{} may only implement Interface types, it cannot implement: {}'.format(type, interface)
+            '{} may only implement Interface types, it cannot implement: {}.'.format(type, interface)
         )
 
         if not callable(interface.type_resolver):
@@ -413,7 +413,7 @@ class GraphQLUnionType(GraphQLType):
             if not has_resolve_type_fn:
                 assert callable(type.is_type_of), (
                     'Union Type {} does not provide a "resolve_type" function '
-                    'and possible type Type {} does not provide a "is_type_of" '
+                    'and possible Type {} does not provide a "is_type_of" '
                     'function. There is no way to resolve this possible type '
                     'during execution.'
                 ).format(self, type)
