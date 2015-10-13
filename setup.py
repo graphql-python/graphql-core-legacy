@@ -7,7 +7,7 @@ setup(
 
     url='https://github.com/graphql-python/graphql-core',
 
-    author='GraphQL Python  ',
+    author='GraphQL Python',
     author_email='me' '@' 'jh.gg',
 
     license='MIT',
