@@ -9,6 +9,8 @@ def print_ast(ast):
 
 
 class PrintingVisitor(Visitor):
+    __slots__ = ()
+
     def leave_Name(self, node, *args):
         return node.value
 

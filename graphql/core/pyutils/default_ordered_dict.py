@@ -2,6 +2,8 @@ from collections import Callable, OrderedDict
 
 
 class DefaultOrderedDict(OrderedDict):
+    __slots__ = 'default_factory',
+
     # Source: http://stackoverflow.com/a/6190500/562769
     def __init__(self, default_factory=None, *a, **kw):
         if (default_factory is not None and

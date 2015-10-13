@@ -73,6 +73,7 @@ class AlreadyCalledDeferred(Exception):
 
 class DeferredException(object):
     """Allows to defer exceptions."""
+    __slots__ = 'type', 'value', 'traceback'
 
     def __init__(self, type=None, value=None, traceback=None):
         """Return a new DeferredException instance.
@@ -189,6 +190,8 @@ class Deferred(object):
          |      /     \      |
         CALLBACK3      ERRBACK3
       """
+
+    __slots__ = 'callbacks', 'errbacks', 'called', 'paused', '_running', 'result'
 
     def __init__(self):
         """Return a new Deferred instance."""

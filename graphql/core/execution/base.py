@@ -27,6 +27,8 @@ class ExecutionContext(object):
     Namely, schema of the type system that is currently executing,
     and the fragments defined in the query document"""
 
+    __slots__ = 'schema', 'fragments', 'root', 'operation', 'variables', 'errors', 'request_context'
+
     def __init__(self, schema, root, document_ast, operation_name, args, request_context):
         """Constructs a ExecutionContext object from the arguments passed
         to execute, which we will pass throughout the other execution
@@ -75,13 +77,15 @@ class ExecutionResult(object):
     query, `errors` is null if no errors occurred, and is a
     non-empty array if an error occurred."""
 
+    __slots__ = 'data', 'errors', 'invalid'
+
     def __init__(self, data=None, errors=None, invalid=False):
         self.data = data
         if errors:
             errors = [
                 error.value if isinstance(error, DeferredException) else error
                 for error in errors
-            ]
+                ]
 
         self.errors = errors
 

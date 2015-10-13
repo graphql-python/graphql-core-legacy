@@ -1,4 +1,6 @@
 class PairSet(object):
+    __slots__ = '_data',
+
     def __init__(self):
         self._data = set()
 

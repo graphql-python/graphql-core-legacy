@@ -3,11 +3,11 @@
 
 
 class Node(object):
-    pass
+    __slots__ = ()
 
 
 class Definition(Node):
-    pass
+    __slots__ = ()
 
 
 class Document(Node):
@@ -163,7 +163,7 @@ class SelectionSet(Node):
 
 
 class Selection(Node):
-    pass
+    __slots__ = ()
 
 
 class Field(Selection):
@@ -371,7 +371,7 @@ class FragmentDefinition(Definition):
 
 
 class Value(Node):
-    pass
+    __slots__ = ()
 
 
 class Variable(Value):
@@ -703,7 +703,7 @@ class Directive(Node):
 
 
 class Type(Node):
-    pass
+    __slots__ = ()
 
 
 class NamedType(Type):
@@ -835,7 +835,7 @@ class Name(Node):
 
 
 class TypeDefinition(Node):
-    pass
+    __slots__ = ()
 
 
 class ObjectTypeDefinition(TypeDefinition):

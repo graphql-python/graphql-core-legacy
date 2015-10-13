@@ -36,7 +36,7 @@ class Printer(object):
 
 
 class Node(object):
-    pass''')
+    __slots__ = ()''')
 
     def end_file(self):
         pass
@@ -131,7 +131,7 @@ class {name}({parent_type}):'''.format(name=name, parent_type=parent_type))
         print('''
 
 class {name}(Node):
-    pass'''.format(name=name))
+    __slots__ = ()'''.format(name=name))
 
     def union_option(self, option):
         option = remap_type(option)

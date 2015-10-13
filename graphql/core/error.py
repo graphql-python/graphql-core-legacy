@@ -6,6 +6,8 @@ class Error(Exception):
 
 
 class GraphQLError(Error):
+    __slots__ = 'message', 'nodes', 'stack', '_source', '_positions'
+
     def __init__(self, message, nodes=None, stack=None, source=None, positions=None):
         super(GraphQLError, self).__init__(message)
         self.message = message
@@ -43,5 +45,5 @@ def format_error(error):
         'locations': [
             {'line': loc.line, 'column': loc.column}
             for loc in error.locations
-        ],
+            ],
     }
