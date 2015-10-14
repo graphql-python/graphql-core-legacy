@@ -56,7 +56,7 @@ CatType = GraphQLObjectType(
 )
 
 
-def resolve_pet_type(value):
+def resolve_pet_type(value, info):
     if isinstance(value, Dog):
         return DogType
     if isinstance(value, Cat):
