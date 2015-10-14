@@ -97,7 +97,7 @@ def get_variable_value(schema, definition_ast, input):
         )
 
     raise GraphQLError(
-        'Variable "${}" expected value of type "{}" but got: {}'.format(
+        'Variable "${}" expected value of type "{}" but got: {}.'.format(
             variable.name.value,
             print_ast(definition_ast.type),
             json.dumps(input)

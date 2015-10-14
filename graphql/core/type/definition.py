@@ -481,10 +481,10 @@ class GraphQLEnumType(GraphQLType):
 
     def parse_value(self, value):
         if isinstance(value, collections.Hashable):
-            enum_value = self._get_value_lookup().get(value)
+            enum_value = self._get_name_lookup().get(value)
 
             if enum_value:
-                return enum_value.name
+                return enum_value.value
 
         return None
 
