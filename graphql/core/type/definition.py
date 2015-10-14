@@ -298,6 +298,19 @@ class GraphQLField(object):
         self.deprecation_reason = deprecation_reason
         self.description = description
 
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, GraphQLField) and
+                self.name == other.name and
+                self.type == other.type and
+                self.args == other.args and
+                self.resolver == other.resolver and
+                self.deprecation_reason == other.deprecation_reason and
+                self.description == other.description
+            )
+        )
+
 
 class GraphQLArgument(object):
     __slots__ = 'name', 'type', 'default_value', 'description'
@@ -307,6 +320,17 @@ class GraphQLArgument(object):
         self.type = type
         self.default_value = default_value
         self.description = description
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, GraphQLArgument) and
+                self.name == other.name and
+                self.type == other.type and
+                self.default_value == other.default_value and
+                self.description == other.description
+            )
+        )
 
 
 class GraphQLInterfaceType(GraphQLType):
@@ -613,6 +637,16 @@ class GraphQLInputObjectField(object):
         self.type = type
         self.default_value = default_value
         self.description = description
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, GraphQLInputObjectField) and
+                self.name == other.name and
+                self.type == other.type and
+                self.description == other.description
+            )
+        )
 
 
 class GraphQLList(GraphQLType):

@@ -3,6 +3,7 @@ from graphql.core.type import (
     GraphQLSchema,
     GraphQLEnumType,
     GraphQLEnumValue,
+    GraphQLInputObjectField,
     GraphQLInputObjectType,
     GraphQLInterfaceType,
     GraphQLObjectType,
@@ -15,6 +16,7 @@ from graphql.core.type import (
     GraphQLField,
     GraphQLArgument,
 )
+from graphql.core.type.definition import is_input_type, is_output_type
 
 BlogImage = GraphQLObjectType('Image', {
     'url': GraphQLField(GraphQLString),
@@ -103,6 +105,64 @@ def test_defines_a_mutation_schema():
     assert write_mutation.name == 'writeArticle'
 
 
+def test_includes_nested_input_objects_in_the_map():
+    NestedInputObject = GraphQLInputObjectType(
+        name='NestedInputObject',
+        fields={'value': GraphQLInputObjectField(GraphQLString)}
+    )
+
+    SomeInputObject = GraphQLInputObjectType(
+        name='SomeInputObject',
+        fields={'nested': GraphQLInputObjectField(NestedInputObject)}
+    )
+
+    SomeMutation = GraphQLObjectType(
+        name='SomeMutation',
+        fields={
+            'mutateSomething': GraphQLField(
+                type=BlogArticle,
+                args={
+                    'input': GraphQLArgument(SomeInputObject)
+                }
+            )
+        }
+    )
+
+    schema = GraphQLSchema(
+        query=BlogQuery,
+        mutation=SomeMutation
+    )
+
+    assert schema.get_type_map()['NestedInputObject'] is NestedInputObject
+
+
+def test_includes_interfaces_thunk_subtypes_in_the_type_map():
+    SomeInterface = GraphQLInterfaceType(
+        name='SomeInterface',
+        fields={
+            'f': GraphQLField(GraphQLInt)
+        }
+    )
+
+    SomeSubtype = GraphQLObjectType(
+        name='SomeSubtype',
+        fields={
+            'f': GraphQLField(GraphQLInt)
+        },
+        interfaces=lambda: [SomeInterface],
+        is_type_of=lambda: True
+    )
+
+    schema = GraphQLSchema(query=GraphQLObjectType(
+        name='Query',
+        fields={
+            'iface': GraphQLField(SomeInterface)
+        }
+    ))
+
+    assert schema.get_type_map()['SomeSubtype'] is SomeSubtype
+
+
 def test_includes_interfaces_subtypes_in_the_type_map():
     SomeInterface = GraphQLInterfaceType('SomeInterface', fields={'f': GraphQLField(GraphQLInt)})
     SomeSubtype = GraphQLObjectType(
@@ -130,16 +190,41 @@ def test_stringifies_simple_types():
 
 
 def test_identifies_input_types():
-    pass  # TODO
+    expected = (
+        (GraphQLInt, True),
+        (ObjectType, False),
+        (InterfaceType, False),
+        (UnionType, False),
+        (EnumType, True),
+        (InputObjectType, True)
+    )
+
+    for type, answer in expected:
+        assert is_input_type(type) == answer
+        assert is_input_type(GraphQLList(type)) == answer
+        assert is_input_type(GraphQLNonNull(type)) == answer
 
 
 def test_identifies_output_types():
-    pass  # TODO
+    expected = (
+        (GraphQLInt, True),
+        (ObjectType, True),
+        (InterfaceType, True),
+        (UnionType, True),
+        (EnumType, True),
+        (InputObjectType, False)
+    )
+
+    for type, answer in expected:
+        assert is_output_type(type) == answer
+        assert is_output_type(GraphQLList(type)) == answer
+        assert is_output_type(GraphQLNonNull(type)) == answer
 
 
 def test_prohibits_nesting_nonnull_inside_nonnull():
     with raises(Exception) as excinfo:
         GraphQLNonNull(GraphQLNonNull(GraphQLInt))
+
     assert 'Can only create NonNull of a Nullable GraphQLType but got: Int!.' in str(excinfo.value)
 
 
@@ -159,3 +244,34 @@ def test_prohibits_putting_non_object_types_in_unions():
 
         assert 'BadUnion may only contain Object types, it cannot contain: ' + str(x) + '.' \
                == str(excinfo.value)
+
+
+def test_does_not_mutate_passed_field_definitions():
+    fields = {
+        'field1': GraphQLField(GraphQLString),
+        'field2': GraphQLField(GraphQLString, args={'id': GraphQLArgument(GraphQLString)}),
+    }
+
+    TestObject1 = GraphQLObjectType(name='Test1', fields=fields)
+    TestObject2 = GraphQLObjectType(name='Test1', fields=fields)
+
+    assert TestObject1.get_fields() == TestObject2.get_fields()
+    assert fields == {
+        'field1': GraphQLField(GraphQLString),
+        'field2': GraphQLField(GraphQLString, args={'id': GraphQLArgument(GraphQLString)}),
+    }
+
+    input_fields = {
+        'field1': GraphQLInputObjectField(GraphQLString),
+        'field2': GraphQLInputObjectField(GraphQLString),
+    }
+
+    TestInputObject1 = GraphQLInputObjectType(name='Test1', fields=input_fields)
+    TestInputObject2 = GraphQLInputObjectType(name='Test2', fields=input_fields)
+
+    assert TestInputObject1.get_fields() == TestInputObject2.get_fields()
+
+    assert input_fields == {
+        'field1': GraphQLInputObjectField(GraphQLString),
+        'field2': GraphQLInputObjectField(GraphQLString),
+    }
