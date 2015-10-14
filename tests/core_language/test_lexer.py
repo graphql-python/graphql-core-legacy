@@ -8,6 +8,11 @@ def lex_one(s):
     return Lexer(Source(s)).next_token()
 
 
+def test_repr_token():
+    token = lex_one('500')
+    assert repr(token) == "<Token kind=Int at 0..3 value='500'>"
+
+
 def test_disallows_uncommon_control_characters():
     with raises(LanguageError) as excinfo:
         lex_one(u'\u0007')
@@ -213,4 +218,3 @@ def test_lex_reports_useful_information_for_dashes_in_names():
         lexer.next_token()
 
     assert u'Syntax Error GraphQL (1:3) Invalid number, expected digit but got: "b".' in excinfo.value.message
-

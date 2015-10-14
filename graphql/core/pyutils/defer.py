@@ -243,8 +243,8 @@ class Deferred(object):
         >>> deferred.result
         'Got: catched'
         """
-        assert isinstance(callback, collections.Callable)
-        assert errback is None or isinstance(errback, collections.Callable)
+        assert callback is _passthrough or isinstance(callback, collections.Callable)
+        assert errback is None or errback is _passthrough or isinstance(errback, collections.Callable)
         if errback is None:
             errback = _passthrough
         self.callbacks.append(((callback,
@@ -449,8 +449,7 @@ def defer(func, *args, **kwargs):
     return deferred
 
 
-def _passthrough(arg):
-    return arg
+_passthrough = object()
 
 
 def succeed(result):

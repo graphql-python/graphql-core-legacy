@@ -7,6 +7,11 @@ from graphql.core.language import ast
 from .fixtures import KITCHEN_SINK
 
 
+def test_repr_loc():
+    loc = Loc(start=10, end=25, source='foo')
+    assert repr(loc) == '<Loc start=10 end=25 source=foo>'
+
+
 def test_parse_provides_useful_errors():
     with raises(LanguageError) as excinfo:
         parse("""{""")

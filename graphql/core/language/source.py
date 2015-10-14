@@ -9,6 +9,10 @@ class Source(object):
         self.name = name
 
     def __eq__(self, other):
-        if isinstance(other, Source):
-            return self.body == other.body and self.name == other.name
-        return False
+        return (
+            self is other or (
+                isinstance(other, Source) and
+                self.body == other.body and
+                self.name == other.name
+            )
+        )
