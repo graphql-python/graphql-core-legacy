@@ -62,6 +62,7 @@ def resolve_pet_type(value, info):
     if isinstance(value, Cat):
         return CatType
 
+
 PetType = GraphQLUnionType('Pet', [DogType, CatType],
                            resolve_type=resolve_pet_type)
 
@@ -83,11 +84,53 @@ odie = Dog('Odie', True)
 liz = Person('Liz', [], [])
 john = Person('John', [garfield, odie], [liz, odie])
 
+
 # Execute: Union and intersection types
 
-def test_can_introspect_on_union_and_intersetion_types():
-    # TODO
-    pass
+def test_can_introspect_on_union_and_intersection_types():
+    ast = parse('''
+    {
+        Named: __type(name: "Named") {
+            kind
+            name
+            fields { name }
+            interfaces { name }
+            possibleTypes { name }
+            enumValues { name }
+            inputFields { name }
+        }
+        Pet: __type(name: "Pet") {
+            kind
+            name
+            fields { name }
+            interfaces { name }
+            possibleTypes { name }
+            enumValues { name }
+            inputFields { name }
+        }
+    }''')
+
+    result = execute(schema, None, ast)
+    assert result.data == {
+        'Named': {
+            'enumValues': None,
+            'name': 'Named',
+            'kind': 'INTERFACE',
+            'interfaces': None,
+            'fields': [{'name': 'name'}],
+            'possibleTypes': [{'name': 'Dog'}, {'name': 'Cat'}, {'name': 'Person'}],
+            'inputFields': None
+        },
+        'Pet': {
+            'enumValues': None,
+            'name': 'Pet',
+            'kind': 'UNION',
+            'interfaces': None,
+            'fields': None,
+            'possibleTypes': [{'name': 'Dog'}, {'name': 'Cat'}],
+            'inputFields': None
+        }
+    }
 
 
 def test_executes_using_union_types():
@@ -113,7 +156,7 @@ def test_executes_using_union_types():
             {'__typename': 'Cat', 'name': 'Garfield', 'meows': False},
             {'__typename': 'Dog', 'name': 'Odie', 'barks': True}
         ]
-   }
+    }
 
 
 def test_executes_union_types_with_inline_fragment():
@@ -269,3 +312,42 @@ def test_only_include_fields_from_matching_fragment_condition():
             {'__typename': 'Dog', 'name': 'Odie'}
         ],
     }
+
+
+def test_gets_execution_info_in_resolver():
+    encountered_schema = [None]
+    encountered_root_value = [None]
+
+    def resolve_type(obj, info):
+        encountered_schema[0] = info.schema
+        encountered_root_value[0] = info.root_value
+        return PersonType2
+
+    NamedType2 = GraphQLInterfaceType(
+        name='Named',
+        fields={
+            'name': GraphQLField(GraphQLString)
+        },
+        resolve_type=resolve_type
+    )
+
+    PersonType2 = GraphQLObjectType(
+        name='Person',
+        interfaces=[NamedType2],
+        fields={
+            'name': GraphQLField(GraphQLString),
+            'friends': GraphQLField(GraphQLList(NamedType2))
+        }
+    )
+
+    schema2 = GraphQLSchema(query=PersonType2)
+    john2 = Person('John', [], [liz])
+    ast = parse('''{ name, friends { name } }''')
+
+    result = execute(schema2, john2, ast)
+    assert result.data == {
+        'name': 'John', 'friends': [{'name': 'Liz'}]
+    }
+
+    assert encountered_schema[0] == schema2
+    assert encountered_root_value[0] == john2

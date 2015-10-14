@@ -231,7 +231,7 @@ class ResolveInfo(object):
 
     @property
     def root_value(self):
-        return self.context.root_value
+        return self.context.root
 
     @property
     def operation(self):
