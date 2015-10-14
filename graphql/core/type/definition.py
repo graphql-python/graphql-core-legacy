@@ -383,7 +383,7 @@ class GraphQLInterfaceType(GraphQLType):
 
     def resolve_type(self, value, info):
         if self.type_resolver:
-            return self.type_resolver(value)
+            return self.type_resolver(value, info)
 
         return get_type_of(value, info, self)
 
@@ -458,7 +458,7 @@ class GraphQLUnionType(GraphQLType):
 
     def resolve_type(self, value, info):
         if self._resolve_type:
-            return self._resolve_type(value)
+            return self._resolve_type(value, info)
 
         return get_type_of(value, info, self)
 
