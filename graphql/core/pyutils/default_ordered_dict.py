@@ -1,4 +1,5 @@
-from collections import Callable, OrderedDict
+from collections import OrderedDict
+import copy
 
 
 class DefaultOrderedDict(OrderedDict):
@@ -6,17 +7,11 @@ class DefaultOrderedDict(OrderedDict):
 
     # Source: http://stackoverflow.com/a/6190500/562769
     def __init__(self, default_factory=None, *a, **kw):
-        if (default_factory is not None and
-                not isinstance(default_factory, Callable)):
+        if default_factory is not None and not callable(default_factory):
             raise TypeError('first argument must be callable')
+
         OrderedDict.__init__(self, *a, **kw)
         self.default_factory = default_factory
-
-    def __getitem__(self, key):
-        try:
-            return OrderedDict.__getitem__(self, key)
-        except KeyError:
-            return self.__missing__(key)
 
     def __missing__(self, key):
         if self.default_factory is None:
@@ -29,7 +24,7 @@ class DefaultOrderedDict(OrderedDict):
             args = tuple()
         else:
             args = self.default_factory,
-        return type(self), args, None, None, self.items()
+        return type(self), args, None, None, iter(self.items())
 
     def copy(self):
         return self.__copy__()
@@ -38,13 +33,8 @@ class DefaultOrderedDict(OrderedDict):
         return type(self)(self.default_factory, self)
 
     def __deepcopy__(self, memo):
-        import copy
-        return type(self)(self.default_factory,
-                          copy.deepcopy(self.items()))
+        return self.__class__(self.default_factory, copy.deepcopy(list(self.items())))
 
-    def __repr__(self, _repr_running=None):
-        if _repr_running is None:
-            _repr_running = {}
-
-        return 'OrderedDefaultDict(%s, %s)' % (self.default_factory,
-                                               OrderedDict.__repr__(self, _repr_running))
+    def __repr__(self):
+        return 'DefaultOrderedDict(%s, %s)' % (self.default_factory,
+                                               OrderedDict.__repr__(self)[19:-1])

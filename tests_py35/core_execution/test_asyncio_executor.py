@@ -23,7 +23,7 @@ def run_until_complete(fun):
 
 @run_until_complete
 async def test_asyncio_py35_executor():
-    doc = 'query Example { a, b }'
+    doc = 'query Example { a, b, c }'
 
     async def resolver(context, *_):
         await asyncio.sleep(0.001)
@@ -33,15 +33,19 @@ async def test_asyncio_py35_executor():
         await asyncio.sleep(0.003)
         return 'hey2'
 
+    def resolver_3(context, *_):
+        return 'hey3'
+
     Type = GraphQLObjectType('Type', {
         'a': GraphQLField(GraphQLString, resolver=resolver),
-        'b': GraphQLField(GraphQLString, resolver=resolver_2)
+        'b': GraphQLField(GraphQLString, resolver=resolver_2),
+        'c': GraphQLField(GraphQLString, resolver=resolver_3)
     })
 
     executor = Executor([AsyncioExecutionMiddleware()])
     result = await executor.execute(GraphQLSchema(Type), doc)
     assert not result.errors
-    assert result.data == {'a': 'hey', 'b': 'hey2'}
+    assert result.data == {'a': 'hey', 'b': 'hey2', 'c': 'hey3'}
 
 @run_until_complete
 async def test_asyncio_py35_executor_with_error():

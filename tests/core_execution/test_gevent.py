@@ -14,8 +14,6 @@ import gevent
 
 
 def test_gevent_executor():
-    doc = 'query Example { a, b }'
-
     @run_in_greenlet
     def resolver(context, *_):
         gevent.sleep(0.001)
@@ -26,15 +24,20 @@ def test_gevent_executor():
         gevent.sleep(0.003)
         return 'hey2'
 
+    def resolver_3(contest, *_):
+        return 'hey3'
+
     Type = GraphQLObjectType('Type', {
         'a': GraphQLField(GraphQLString, resolver=resolver),
-        'b': GraphQLField(GraphQLString, resolver=resolver_2)
+        'b': GraphQLField(GraphQLString, resolver=resolver_2),
+        'c': GraphQLField(GraphQLString, resolver=resolver_3)
     })
 
+    doc = '{ a b c }'
     executor = Executor([GeventExecutionMiddleware()])
     result = executor.execute(GraphQLSchema(Type), doc)
     assert not result.errors
-    assert result.data == {'a': 'hey', 'b': 'hey2'}
+    assert result.data == {'a': 'hey', 'b': 'hey2', 'c': 'hey3'}
 
 
 def test_gevent_executor_with_error():
