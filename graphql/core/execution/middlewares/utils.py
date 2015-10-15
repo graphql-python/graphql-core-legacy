@@ -22,7 +22,7 @@ def resolver_has_tag(f, tag):
     return tag in f._resolver_tags
 
 
-def merge_resolver_resolver_tags(source_resolver, target_resolver):
+def merge_resolver_tags(source_resolver, target_resolver):
     if not hasattr(source_resolver, '_resolver_tags'):
         return target_resolver
 
