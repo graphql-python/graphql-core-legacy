@@ -1,6 +1,6 @@
 from collections import OrderedDict
-from graphql.core.type.definition import get_named_type
-from graphql.core.type import (
+from ..language.parser import parse_value
+from ..type import (
     GraphQLArgument,
     GraphQLBoolean,
     GraphQLEnumType,
@@ -8,8 +8,8 @@ from graphql.core.type import (
     GraphQLField,
     GraphQLFloat,
     GraphQLID,
-    GraphQLInputObjectType,
     GraphQLInputObjectField,
+    GraphQLInputObjectType,
     GraphQLInt,
     GraphQLInterfaceType,
     GraphQLList,
@@ -20,10 +20,9 @@ from graphql.core.type import (
     GraphQLString,
     GraphQLUnionType,
     is_input_type,
-    is_output_type,
+    is_output_type
 )
-from graphql.core.type.introspection import TypeKind
-from ..language.parser import parse_value
+from ..type.introspection import TypeKind
 from .value_from_ast import value_from_ast
 
 _none = lambda *_: None
