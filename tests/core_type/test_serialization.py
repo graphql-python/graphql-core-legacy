@@ -40,6 +40,7 @@ def test_serializes_output_string():
     assert GraphQLString.serialize(-1.1) == '-1.1'
     assert GraphQLString.serialize(True) == 'true'
     assert GraphQLString.serialize(False) == 'false'
+    assert GraphQLString.serialize(u'\U0001F601') == u'\U0001F601'
 
 
 def test_serializes_output_boolean():

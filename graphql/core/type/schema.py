@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from .definition import (
     GraphQLInputObjectType,
     GraphQLInterfaceType,
@@ -70,7 +71,7 @@ class GraphQLSchema(object):
         return None
 
     def _build_type_map(self):
-        type_map = {}
+        type_map = OrderedDict()
         for type in (self.get_query_type(), self.get_mutation_type(), IntrospectionSchema):
             type_map = type_map_reducer(type_map, type)
 

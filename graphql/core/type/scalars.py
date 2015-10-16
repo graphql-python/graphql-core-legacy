@@ -1,3 +1,4 @@
+from six import text_type
 from ..language.ast import (
     BooleanValue,
     FloatValue,
@@ -61,13 +62,15 @@ GraphQLFloat = GraphQLScalarType(name='Float',
 
 def coerce_string(value):
     if isinstance(value, bool):
-        return 'true' if value else 'false'
-    return str(value)
+        return u'true' if value else u'false'
+
+    return text_type(value)
 
 
 def parse_string_literal(ast):
     if isinstance(ast, StringValue):
         return ast.value
+
     return None
 
 GraphQLString = GraphQLScalarType(name='String',
