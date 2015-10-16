@@ -128,7 +128,7 @@ def coerce_value(type, value):
         fields = type.get_fields()
         obj = {}
         for field_name, field in fields.items():
-            field_value = coerce_value(field.type, value[field_name])
+            field_value = coerce_value(field.type, value.get(field_name))
             if field_value is None:
                 field_value = field.default_value
 

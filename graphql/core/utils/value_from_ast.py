@@ -55,7 +55,8 @@ def value_from_ast(value_ast, type, variables=None):
             if field_value is None:
                 field_value = field.default_value
 
-            obj[field_name] = field_value
+            if field_value is not None:
+                obj[field_name] = field_value
 
         return obj
 
