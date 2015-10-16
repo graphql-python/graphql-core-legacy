@@ -100,7 +100,7 @@ def get_variable_value(schema, definition_ast, input):
         'Variable "${}" expected value of type "{}" but got: {}.'.format(
             variable.name.value,
             print_ast(definition_ast.type),
-            json.dumps(input)
+            json.dumps(input, sort_keys=True)
         ),
         [definition_ast]
     )
