@@ -210,6 +210,9 @@ def define_field_map(type, field_map):
         'function which returns such a mapping.'
     ).format(type)
 
+    if not isinstance(field_map, collections.OrderedDict):
+        field_map = collections.OrderedDict(sorted(list(field_map.items())))
+
     result_field_map = collections.OrderedDict()
     for field_name, field in field_map.items():
         assert_valid_name(field_name)
@@ -234,6 +237,9 @@ def define_field_map(type, field_map):
                                                                                                         field_name)
             )
             args = []
+            if not isinstance(field_args, collections.OrderedDict):
+                field_args = collections.OrderedDict(sorted(list(field_args.items())))
+
             for arg_name, arg in field_args.items():
                 assert_valid_name(arg_name)
                 assert isinstance(arg, GraphQLArgument), (
@@ -538,6 +544,9 @@ def define_enum_values(type, value_map):
     )
 
     values = []
+    if not isinstance(value_map, collections.OrderedDict):
+        value_map = collections.OrderedDict(sorted(list(value_map.items())))
+
     for value_name, value in value_map.items():
         assert_valid_name(value_name)
         assert isinstance(value, GraphQLEnumValue), (

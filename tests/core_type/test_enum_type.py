@@ -159,3 +159,25 @@ def test_enum_inputs_may_be_nullable():
     result = graphql(Schema, '{ colorEnum colorInt }')
     assert not result.errors
     assert result.data == {'colorEnum': None, 'colorInt': None}
+
+
+def test_sorts_values_if_not_using_ordered_dict():
+    enum = GraphQLEnumType(name='Test', values={
+        'c': GraphQLEnumValue(),
+        'b': GraphQLEnumValue(),
+        'a': GraphQLEnumValue(),
+        'd': GraphQLEnumValue()
+    })
+
+    assert [v.name for v in enum.get_values()] == ['a', 'b', 'c', 'd']
+
+
+def test_does_not_sort_values_when_using_ordered_dict():
+    enum = GraphQLEnumType(name='Test', values=OrderedDict([
+        ('c', GraphQLEnumValue()),
+        ('b', GraphQLEnumValue()),
+        ('a', GraphQLEnumValue()),
+        ('d', GraphQLEnumValue()),
+    ]))
+
+    assert [v.name for v in enum.get_values()] == ['c', 'b', 'a', 'd']
