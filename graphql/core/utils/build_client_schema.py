@@ -97,7 +97,8 @@ def build_client_schema(introspection):
 
     def get_interface_type(type_ref):
         interface_type = get_type(type_ref)
-        assert isinstance(interface_type, GraphQLInterfaceType), 'Introspection must provide interface type for interfaces.'
+        assert isinstance(interface_type, GraphQLInterfaceType), \
+            'Introspection must provide interface type for interfaces.'
         return interface_type
 
     def build_type(type):
@@ -158,8 +159,9 @@ def build_client_schema(introspection):
         return GraphQLInputObjectType(
             name=input_object_introspection['name'],
             description=input_object_introspection['description'],
-            fields=lambda: build_input_value_def_map(input_object_introspection['inputFields'],
-                                                     GraphQLInputObjectField)
+            fields=lambda: build_input_value_def_map(
+                input_object_introspection['inputFields'], GraphQLInputObjectField
+            )
         )
 
     type_builders = {
@@ -177,7 +179,7 @@ def build_client_schema(introspection):
                 type=get_output_type(f['type']),
                 description=f['description'],
                 resolver=no_execution,
-                args=build_input_value_def_map(f['args'])))
+                args=build_input_value_def_map(f['args'], GraphQLArgument)))
             for f in type_introspection['fields']
         ])
 
@@ -188,7 +190,7 @@ def build_client_schema(introspection):
 
         return value_from_ast(parse_value(default_value), get_input_type(f['type']))
 
-    def build_input_value_def_map(input_value_introspection, argument_type=GraphQLArgument):
+    def build_input_value_def_map(input_value_introspection, argument_type):
         return OrderedDict([
             (f['name'], argument_type(
                 description=f['description'],
@@ -202,4 +204,5 @@ def build_client_schema(introspection):
 
     query_type = get_type(schema_introspection['queryType'])
     mutation_type = get_type(schema_introspection['mutationType']) if schema_introspection.get('mutationType') else None
+
     return GraphQLSchema(query_type, mutation_type)
