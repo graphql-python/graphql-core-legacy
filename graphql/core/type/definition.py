@@ -556,11 +556,22 @@ def define_enum_values(type, value_map):
 class GraphQLEnumValue(object):
     __slots__ = 'name', 'value', 'deprecation_reason', 'description'
 
-    def __init__(self, value=None, deprecation_reason=None, description=None):
-        self.name = None
+    def __init__(self, value=None, deprecation_reason=None, description=None, name=None):
+        self.name = name
         self.value = value
         self.deprecation_reason = deprecation_reason
         self.description = description
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, GraphQLEnumValue) and
+                self.name == other.name and
+                self.value == other.value and
+                self.deprecation_reason == other.deprecation_reason and
+                self.description == other.description
+            )
+        )
 
 
 class GraphQLInputObjectType(GraphQLType):

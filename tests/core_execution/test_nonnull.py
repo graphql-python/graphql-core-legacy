@@ -49,9 +49,6 @@ class NullingData(object):
     def promise(self):
         return succeed(None)
 
-    def non_null_promise(self):
-        return succeed(None)
-
     def nest(self):
         return NullingData()
 
@@ -94,9 +91,6 @@ def check(doc, data, expected):
         result = {
             'data': response.data
         }
-
-    import pprint
-    pprint.pprint(result)
 
     assert result == expected
 

@@ -94,6 +94,16 @@ class ExecutionResult(object):
 
         self.invalid = invalid
 
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, ExecutionResult) and
+                self.data == other.data and
+                self.errors == other.errors and
+                self.invalid == other.invalid
+            )
+        )
+
 
 def get_operation_root_type(schema, operation):
     op = operation.operation

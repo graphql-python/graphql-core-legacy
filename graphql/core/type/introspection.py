@@ -71,14 +71,14 @@ __Directive = GraphQLObjectType(
 
 
 class TypeKind(object):
-    SCALAR = 0
-    OBJECT = 1
-    INTERFACE = 2
-    UNION = 3
-    ENUM = 4
-    INPUT_OBJECT = 5
-    LIST = 6
-    NON_NULL = 7
+    SCALAR = 'SCALAR'
+    OBJECT = 'OBJECT'
+    INTERFACE = 'INTERFACE'
+    UNION = 'UNION'
+    ENUM = 'ENUM'
+    INPUT_OBJECT = 'INPUT_OBJECT'
+    LIST = 'LIST'
+    NON_NULL = 'NON_NULL'
 
 
 class TypeFieldResolvers(object):
