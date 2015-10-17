@@ -35,15 +35,36 @@ Install from pip:
 pip install graphql-core
 ```
 
+### Supported Python Versions
+`graphql-core` supports the following Python versions:
+ 
+* `2.7.x`
+* `3.3.x`
+* `3.4.x`
+* `3.5.0`
+* `pypy-2.6.1`
+
+### Built-in Concurrency Support
+Support for `3.5.0`'s `asyncio` module for concurrent execution is available via an executor middleware at 
+`graphql.core.execution.middlewares.asyncio.AsyncioExecutionMiddleware`.
+
+Additionally, support for `gevent` is available via 
+`graphql.core.execution.middlewares.gevent.GeventExecutionMiddleware`.
+
+Otherwise, by default, the executor will use execute with no concurrency.
+
+## Documentation
+
+Documentation is in the works but not available yet. See #14 for additional information.
+
+## Pythonic GraphQL Library
+`graphql-core` provides a more low-level API for building a GraphQL API and schema. For a more refined and Pythonic interface to build graphql APIs, check out [`graphene`](https://github.com/graphql-python/graphene).
+
 ## Current Maintainer
  * [@jhgg](https://github.com/jhgg/)
 
-## Contributors
- * [@dittos](https://github.com/dittos/)
- * [@jhgg](https://github.com/jhgg/)
- * [@rawls238](https://github.com/rawls238/)
- * [@woodb](https://github.com/woodb/)
- * [@gabriel-laet](https://github.com/gabriel-laet/)
+## Contributions
+For an up to date list of contributors, check the contributor list [here](https://github.com/graphql-python/graphql-core/graphs/contributors). 
 
 ## License
 
