@@ -11,7 +11,7 @@ from ..type import GraphQLEnumType, GraphQLInterfaceType, GraphQLList, GraphQLNo
     GraphQLScalarType, GraphQLUnionType
 from ..validation import validate
 from .base import ExecutionContext, ExecutionResult, ResolveInfo, Undefined, collect_fields, default_resolve_fn, \
-    get_argument_values, get_field_def, get_operation_root_type
+    get_field_def, get_operation_root_type
 
 
 class Executor(object):

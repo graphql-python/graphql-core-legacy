@@ -317,6 +317,9 @@ class GraphQLField(object):
             )
         )
 
+    def __hash__(self):
+        return id(self)
+
 
 class GraphQLArgument(object):
     __slots__ = 'name', 'type', 'default_value', 'description'
@@ -337,6 +340,9 @@ class GraphQLArgument(object):
                 self.description == other.description
             )
         )
+
+    def __hash__(self):
+        return id(self)
 
 
 class GraphQLInterfaceType(GraphQLType):
