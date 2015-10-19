@@ -27,7 +27,8 @@ class ExecutionContext(object):
     Namely, schema of the type system that is currently executing,
     and the fragments defined in the query document"""
 
-    __slots__ = 'schema', 'fragments', 'root', 'operation', 'variables', 'errors', 'request_context'
+    __slots__ = 'schema', 'fragments', 'root', 'operation', 'variables', 'errors', 'request_context', \
+                'argument_values_cache'
 
     def __init__(self, schema, root, document_ast, operation_name, args, request_context):
         """Constructs a ExecutionContext object from the arguments passed
@@ -70,6 +71,17 @@ class ExecutionContext(object):
         self.variables = variables
         self.errors = errors
         self.request_context = request_context
+        self.argument_values_cache = {}
+
+    def get_argument_values(self, field_def, field_ast):
+        k = field_def, field_ast
+        result = self.argument_values_cache.get(k)
+
+        if not result:
+            result = self.argument_values_cache[k] = get_argument_values(field_def.args, field_ast.arguments,
+                                                                         self.variables)
+
+        return result
 
 
 class ExecutionResult(object):

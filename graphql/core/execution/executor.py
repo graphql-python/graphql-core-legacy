@@ -157,10 +157,7 @@ class Executor(object):
 
         # Build a dict of arguments from the field.arguments AST, using the variables scope to
         # fulfill any variable references.
-        # TODO: find a way to memoize, in case this field is within a list type.
-        args = get_argument_values(
-            field_def.args, field_ast.arguments, execution_context.variables
-        )
+        args = execution_context.get_argument_values(field_def, field_ast)
 
         # The resolve function's optional third argument is a collection of
         # information about the current execution state.
