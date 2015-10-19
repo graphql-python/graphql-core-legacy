@@ -118,8 +118,7 @@ def visit(root, visitor, key_map=None):
             elif result is not None:
                 edits.append((key, result))
                 if not is_leaving:
-                    if result is not REMOVE:
-                        # TODO: check result is valid node
+                    if isinstance(result, ast.Node):
                         node = result
 
                     else:
