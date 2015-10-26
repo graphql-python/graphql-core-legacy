@@ -476,6 +476,36 @@ class TestTypeSystem_UnionTypesMustBeArray:
         assert str(excinfo.value) == 'Must provide types for Union SomeUnion.'
 
 
+# noinspection PyMethodMayBeStatic,PyPep8Naming
+class TestTypeSystem_UnionTypesMustBeCallableThatReturnsArray:
+    def test_accepts_a_union_type_with_aray_types(self):
+        assert schema_with_field_type(GraphQLUnionType(
+            name='SomeUnion',
+            resolve_type=_none,
+            types=lambda: [SomeObjectType]
+        ))
+
+    def test_rejects_a_union_type_with_empty_types(self):
+        with raises(AssertionError) as excinfo:
+            schema_with_field_type(GraphQLUnionType(
+                name='SomeUnion',
+                resolve_type=_none,
+                types=lambda: []
+            ))
+
+        assert str(excinfo.value) == 'Must provide types for Union SomeUnion.'
+
+    def test_rejects_a_union_type_with_incorrectly_typed_types(self):
+        with raises(AssertionError) as excinfo:
+            schema_with_field_type(GraphQLUnionType(
+                name='SomeUnion',
+                resolve_type=_none,
+                types=lambda: {'SomeObjectType': SomeObjectType}
+            ))
+
+        assert str(excinfo.value) == 'Must provide types for Union SomeUnion.'
+
+
 def schema_with_input_object(input_object_type):
     return GraphQLSchema(
         query=GraphQLObjectType(

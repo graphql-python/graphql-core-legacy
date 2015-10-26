@@ -425,7 +425,7 @@ class GraphQLUnionType(GraphQLType):
                 if isinstance(value, Cat):
                     return CatType()
     """
-    __slots__ = 'name', 'description', '_resolve_type', '_types', '_possible_type_names'
+    __slots__ = 'name', 'description', '_resolve_type', '_types', '_possible_type_names', '_possible_types'
 
     def __init__(self, name, types=None, resolve_type=None, description=None):
         assert name, 'Type must be named.'
@@ -437,28 +437,15 @@ class GraphQLUnionType(GraphQLType):
             assert callable(resolve_type), '{} must provide "resolve_type" as a function.'.format(self)
 
         self._resolve_type = resolve_type
-
-        assert isinstance(types, (list, tuple)) and len(types) > 0, 'Must provide types for Union {}.'.format(name)
-        has_resolve_type_fn = callable(self._resolve_type)
-
-        for type in types:
-            assert isinstance(type, GraphQLObjectType), (
-                '{} may only contain Object types, it cannot contain: {}.'.format(self, type)
-            )
-
-            if not has_resolve_type_fn:
-                assert callable(type.is_type_of), (
-                    'Union Type {} does not provide a "resolve_type" function '
-                    'and possible Type {} does not provide a "is_type_of" '
-                    'function. There is no way to resolve this possible type '
-                    'during execution.'
-                ).format(self, type)
-
         self._types = types
+        self._possible_types = None
         self._possible_type_names = None
 
     def get_possible_types(self):
-        return self._types
+        if self._possible_types is None:
+            self._possible_types = define_types(self, self._types)
+
+        return self._possible_types
 
     def is_possible_type(self, type):
         if self._possible_type_names is None:
@@ -473,6 +460,29 @@ class GraphQLUnionType(GraphQLType):
             return self._resolve_type(value, info)
 
         return get_type_of(value, info, self)
+
+
+def define_types(union_type, types):
+    if callable(types):
+        types = types()
+
+    assert isinstance(types, (list, tuple)) and len(types) > 0, 'Must provide types for Union {}.'.format(union_type.name)
+    has_resolve_type_fn = callable(union_type._resolve_type)
+
+    for type in types:
+        assert isinstance(type, GraphQLObjectType), (
+            '{} may only contain Object types, it cannot contain: {}.'.format(union_type, type)
+        )
+
+        if not has_resolve_type_fn:
+            assert callable(type.is_type_of), (
+                'Union Type {} does not provide a "resolve_type" function '
+                'and possible Type {} does not provide a "is_type_of" '
+                'function. There is no way to resolve this possible type '
+                'during execution.'
+            ).format(union_type, type)
+
+    return types
 
 
 class GraphQLEnumType(GraphQLType):

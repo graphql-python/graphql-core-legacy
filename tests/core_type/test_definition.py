@@ -241,7 +241,7 @@ def test_prohibits_putting_non_object_types_in_unions():
     ]
     for x in bad_union_types:
         with raises(Exception) as excinfo:
-            GraphQLUnionType('BadUnion', [x])
+            GraphQLSchema(GraphQLObjectType('Root', fields={'union': GraphQLField(GraphQLUnionType('BadUnion', [x]))}))
 
         assert 'BadUnion may only contain Object types, it cannot contain: ' + str(x) + '.' \
                == str(excinfo.value)
