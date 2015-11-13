@@ -41,7 +41,7 @@ class ExecutionContext(object):
         for definition in document_ast.definitions:
             if isinstance(definition, ast.OperationDefinition):
                 if not operation_name and operation:
-                    raise GraphQLError('Must provide operation name if query contains multiple operations')
+                    raise GraphQLError('Must provide operation name if query contains multiple operations.')
 
                 if not operation_name or definition.name and definition.name.value == operation_name:
                     operation = definition

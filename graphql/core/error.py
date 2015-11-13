@@ -40,10 +40,13 @@ class GraphQLError(Error):
 
 
 def format_error(error):
-    return {
+    formatted_error = {
         'message': error.message,
-        'locations': [
+    }
+    if error.locations is not None:
+        formatted_error['locations'] = [
             {'line': loc.line, 'column': loc.column}
             for loc in error.locations
-            ],
-    }
+        ]
+
+    return formatted_error
