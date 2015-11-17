@@ -10,7 +10,6 @@ from graphql.core.type import (
     GraphQLString,
     GraphQLSchema
 )
-
 from graphql.core import graphql
 
 ColorType = GraphQLEnumType(
@@ -67,7 +66,20 @@ MutationType = GraphQLObjectType(
     }
 )
 
-Schema = GraphQLSchema(query=QueryType, mutation=MutationType)
+SubscriptionType = GraphQLObjectType(
+    name='Subscription',
+    fields={
+        'subscribeToEnum': GraphQLField(
+            type=ColorType,
+            args={
+                'color': GraphQLArgument(ColorType)
+            },
+            resolver=lambda value, args, info: args.get('color')
+        )
+    }
+)
+
+Schema = GraphQLSchema(query=QueryType, mutation=MutationType, subscription=SubscriptionType)
 
 
 def test_accepts_enum_literals_as_input():
@@ -129,6 +141,12 @@ def test_accepts_enum_literals_as_input_arguments_to_mutations():
     result = graphql(Schema, 'mutation x($color: Color!) { favoriteEnum(color: $color) }', None, {'color': 'GREEN'})
     assert not result.errors
     assert result.data == {'favoriteEnum': 'GREEN'}
+
+
+def test_accepts_enum_literals_as_input_arguments_to_subscriptions():
+    result = graphql(Schema, 'subscription x($color: Color!) { subscribeToEnum(color: $color) }', None, {'color': 'GREEN'})
+    assert not result.errors
+    assert result.data == {'subscribeToEnum': 'GREEN'}
 
 
 def test_does_not_accept_internal_value_as_enum_variable():

@@ -142,6 +142,8 @@ def get_operation_root_type(schema, operation):
                 [operation]
             )
 
+        return subscription_type
+
     raise GraphQLError(
         'Can only execute queries, mutations and subscriptions',
         [operation]

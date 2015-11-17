@@ -58,6 +58,13 @@ BlogMutation = GraphQLObjectType('Mutation', {
     'writeArticle': GraphQLField(BlogArticle)
 })
 
+BlogSubscription = GraphQLObjectType('Subscription', {
+    'articleSubscribe': GraphQLField(
+        args={'id': GraphQLArgument(GraphQLString)},
+        type=BlogArticle
+    )
+})
+
 ObjectType = GraphQLObjectType('Object', {})
 InterfaceType = GraphQLInterfaceType('Interface')
 UnionType = GraphQLUnionType('Union', [ObjectType], resolve_type=lambda: None)
@@ -106,6 +113,20 @@ def test_defines_a_mutation_schema():
     assert write_mutation.name == 'writeArticle'
 
 
+def test_defines_a_subscription_schema():
+    BlogSchema = GraphQLSchema(
+        query=BlogQuery,
+        subscription=BlogSubscription
+    )
+
+    assert BlogSchema.get_subscription_type() == BlogSubscription
+
+    subscription = BlogSubscription.get_fields()['articleSubscribe']
+    assert subscription.type == BlogArticle
+    assert subscription.type.name == 'Article'
+    assert subscription.name == 'articleSubscribe'
+
+
 def test_includes_nested_input_objects_in_the_map():
     NestedInputObject = GraphQLInputObjectType(
         name='NestedInputObject',
@@ -128,10 +149,22 @@ def test_includes_nested_input_objects_in_the_map():
             )
         }
     )
+    SomeSubscription = GraphQLObjectType(
+        name='SomeSubscription',
+        fields={
+            'subscribeToSomething': GraphQLField(
+                type=BlogArticle,
+                args={
+                    'input': GraphQLArgument(SomeInputObject)
+                }
+            )
+        }
+    )
 
     schema = GraphQLSchema(
         query=BlogQuery,
-        mutation=SomeMutation
+        mutation=SomeMutation,
+        subscription=SomeSubscription
     )
 
     assert schema.get_type_map()['NestedInputObject'] is NestedInputObject

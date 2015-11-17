@@ -132,6 +132,14 @@ class TestTypeSystem_ASchemaMustHaveObjectRootTypes:
 
         assert GraphQLSchema(query=SomeObjectType, mutation=MutationType)
 
+    def test_accepts_a_schema_whose_query_and_subscription_types_are_object_types(self):
+        SubscriptionType = GraphQLObjectType(
+            name='Subscription',
+            fields={'subscribe': GraphQLField(GraphQLString)}
+        )
+
+        assert GraphQLSchema(query=SomeObjectType, subscription=SubscriptionType)
+
     def test_rejects_a_schema_without_a_query_type(self):
         with raises(AssertionError) as excinfo:
             GraphQLSchema(query=None)
@@ -149,6 +157,12 @@ class TestTypeSystem_ASchemaMustHaveObjectRootTypes:
             GraphQLSchema(query=SomeObjectType, mutation=SomeInputObjectType)
 
         assert str(excinfo.value) == 'Schema mutation must be Object Type but got: SomeInputObject.'
+
+    def test_rejects_a_schema_whose_subscription_type_is_an_input_type(self):
+        with raises(AssertionError) as excinfo:
+            GraphQLSchema(query=SomeObjectType, subscription=SomeInputObjectType)
+
+        assert str(excinfo.value) == 'Schema subscription must be Object Type but got: SomeInputObject.'
 
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming

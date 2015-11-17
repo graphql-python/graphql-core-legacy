@@ -48,7 +48,7 @@ def test_it_builds_a_simple_schema():
     _test_schema(schema)
 
 
-def test_builds_a_simple_schema_with_a_mutation_type():
+def test_builds_a_simple_schema_with_both_operation_types():
     QueryType = GraphQLObjectType(
         name='QueryType',
         description='This is a simple query type',
@@ -65,8 +65,18 @@ def test_builds_a_simple_schema_with_a_mutation_type():
             })
         }
     )
+    SubscriptionType = GraphQLObjectType(
+        name='SubscriptionType',
+        description='This is a simple subscription type',
+        fields={
+            'string': GraphQLField(
+                type=GraphQLString,
+                description='This is a string field'
+            )
+        }
+    )
 
-    schema = GraphQLSchema(QueryType, MutationType)
+    schema = GraphQLSchema(QueryType, MutationType, SubscriptionType)
     _test_schema(schema)
 
 

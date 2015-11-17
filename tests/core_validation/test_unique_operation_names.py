@@ -55,6 +55,10 @@ def test_multiple_operations_of_different_types():
       mutation Bar {
         field
       }
+
+      subscription Baz {
+        field
+      }
     ''')
 
 
@@ -82,7 +86,7 @@ def test_multiple_operations_of_same_name():
     ])
 
 
-def test_multiple_operations_of_same_name_of_different_types():
+def test_multiple_ops_of_same_name_of_different_types_mutation():
     expect_fails_rule(UniqueOperationNames, '''
       query Foo {
         fieldA
@@ -92,4 +96,17 @@ def test_multiple_operations_of_same_name_of_different_types():
       }
     ''', [
         duplicate_op('Foo', 2, 13, 5, 16),
+    ])
+
+
+def test_multiple_ops_of_same_name_of_different_types_subscription():
+    expect_fails_rule(UniqueOperationNames, '''
+      query Foo {
+        fieldA
+      }
+      subscription Foo {
+        fieldB
+      }
+    ''', [
+        duplicate_op('Foo', 2, 13, 5, 20),
     ])

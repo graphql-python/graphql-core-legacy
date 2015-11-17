@@ -4,9 +4,9 @@ from graphql.core.utils.schema_printer import print_schema
 from pytest import raises
 
 
-def cycle_output(body, query_type, mutation_type=None):
+def cycle_output(body, query_type, mutation_type=None, subscription_type=None):
     ast = parse(body)
-    schema = build_ast_schema(ast, query_type, mutation_type)
+    schema = build_ast_schema(ast, query_type, mutation_type, subscription_type)
     return '\n' + print_schema(schema)
 
 
@@ -234,6 +234,22 @@ type Mutation {
     assert output == body
 
 
+def test_simple_type_with_subscription():
+    body = '''
+type HelloScalars {
+  str: String
+  int: Int
+  bool: Boolean
+}
+
+type Subscription {
+  subscribeHelloScalars(str: String, int: Int, bool: Boolean): HelloScalars
+}
+'''
+    output = cycle_output(body, 'HelloScalars', None, 'Subscription')
+    assert output == body
+
+
 def test_unreferenced_type_implementing_referenced_interface():
     body = '''
 type Concrete implements Iface {
@@ -317,6 +333,23 @@ type Hello {
         build_ast_schema(doc, 'Hello', 'Wat')
 
     assert 'Specified mutation type Wat not found in document' in str(excinfo.value)
+
+
+def test_unknown_subscription_type():
+    body = '''
+type Hello {
+  str: String
+}
+
+type Wat {
+  str: String
+}
+'''
+    doc = parse(body)
+    with raises(Exception) as excinfo:
+        build_ast_schema(doc, 'Hello', 'Wat', 'Awesome')
+
+    assert 'Specified subscription type Awesome not found in document' in str(excinfo.value)
 
 
 def test_rejects_query_names():

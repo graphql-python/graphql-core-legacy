@@ -113,6 +113,7 @@ def tesst_allows_non_keywords_anywhere_a_name_is_allowed():
         'fragment',
         'query',
         'mutation',
+        'subscription',
         'true',
         'false'
     ]
@@ -139,18 +140,34 @@ def test_parses_kitchen_sink():
     parse(KITCHEN_SINK)
 
 
-def parses_experimental_subscription_feature():
+def test_parses_anonymous_mutation_operations():
     parse('''
-        subscription Foo {
-            subscriptionField
+        mutation {
+            mutationField
         }
     ''')
 
 
-def test_parses_anonymous_operations():
+def test_parses_anonymous_subscription_operations():
     parse('''
-        mutation {
+        subscription {
             mutationField
+        }
+    ''')
+
+
+def test_parses_named_mutation_operations():
+    parse('''
+        mutation Foo {
+            mutationField
+        }
+    ''')
+
+
+def test_parses_named_subscription_operations():
+    parse('''
+        subscription Foo {
+            subscriptionField
         }
     ''')
 

@@ -285,7 +285,7 @@ def test_raises_the_inline_operation_if_no_operation_is_provided():
 
 
 def test_uses_the_query_schema_for_queries():
-    doc = 'query Q { a } mutation M { c }'
+    doc = 'query Q { a } mutation M { c } subscription S { a }'
 
     class Data(object):
         a = 'b'
@@ -298,7 +298,10 @@ def test_uses_the_query_schema_for_queries():
     M = GraphQLObjectType('M', {
         'c': GraphQLField(GraphQLString)
     })
-    result = execute(GraphQLSchema(Q, M), Data(), ast, 'Q')
+    S = GraphQLObjectType('S', {
+        'a': GraphQLField(GraphQLString)
+    })
+    result = execute(GraphQLSchema(Q, M, S), Data(), ast, 'Q')
     assert not result.errors
     assert result.data == {'a': 'b'}
 
@@ -320,6 +323,25 @@ def test_uses_the_mutation_schema_for_queries():
     result = execute(GraphQLSchema(Q, M), Data(), ast, 'M')
     assert not result.errors
     assert result.data == {'c': 'd'}
+
+
+def test_uses_the_subscription_schema_for_subscriptions():
+    doc = 'query Q { a } subscription S { a }'
+
+    class Data(object):
+        a = 'b'
+        c = 'd'
+
+    ast = parse(doc)
+    Q = GraphQLObjectType('Q', {
+        'a': GraphQLField(GraphQLString)
+    })
+    S = GraphQLObjectType('S', {
+        'a': GraphQLField(GraphQLString)
+    })
+    result = execute(GraphQLSchema(Q, subscription=S), Data(), ast, 'S')
+    assert not result.errors
+    assert result.data == {'a': 'b'}
 
 
 def test_avoids_recursion():

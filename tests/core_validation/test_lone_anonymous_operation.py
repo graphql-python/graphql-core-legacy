@@ -63,12 +63,25 @@ def test_multiple_anon_operations():
     ])
 
 
-def test_anon_operation_with_another_operation():
+def test_anon_operation_with_a_mutation():
     expect_fails_rule(LoneAnonymousOperation, '''
       {
         fieldA
       }
       mutation Foo {
+        fieldB
+      }
+    ''', [
+        anon_not_alone(2, 7)
+    ])
+
+
+def test_anon_operation_with_a_subscription():
+    expect_fails_rule(LoneAnonymousOperation, '''
+      {
+        fieldA
+      }
+      subscription Foo {
         fieldB
       }
     ''', [

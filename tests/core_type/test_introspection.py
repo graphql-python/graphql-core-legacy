@@ -80,7 +80,7 @@ def test_executes_an_introspection_query():
                                    'name': u'String',
                                    'possibleTypes': None},
                                {
-                                   'description': u'A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query and mutation operations.',
+                                   'description': u'A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation and subscription operations.',
                                    'enumValues': None,
                                    'fields': [{'args': [],
                                                'deprecationReason': None,
@@ -746,7 +746,7 @@ def test_exposes_descriptions_on_types_and_fields():
         'description': 'A GraphQL Schema defines the capabilities of a ' +
                        'GraphQL server. It exposes all available types and ' +
                        'directives on the server, as well as the entry ' +
-                       'points for query and mutation operations.',
+                       'points for query, mutation and subscription operations.',
         'fields': [
             {
                 'name': 'types',
