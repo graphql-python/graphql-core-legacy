@@ -14,7 +14,7 @@ def test_known_type_names_are_valid():
     expect_passes_rule(KnownTypeNames, '''
       query Foo($var: String, $required: [String!]!) {
         user(id: 4) {
-          pets { ... on Pet { name }, ...PetFields }
+          pets { ... on Pet { name }, ...PetFields, ... { name } }
         }
       }
       fragment PetFields on Pet {
