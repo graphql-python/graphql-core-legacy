@@ -3,11 +3,9 @@ from graphql.core.error import format_error
 from graphql.core.execution import Executor
 from graphql.core.execution.middlewares.sync import SynchronousExecutionMiddleware
 from graphql.core.pyutils.defer import succeed, Deferred, fail
-from graphql.core.language.parser import parse
 from graphql.core.type import (GraphQLSchema, GraphQLObjectType, GraphQLField,
                                GraphQLArgument, GraphQLList, GraphQLInt, GraphQLString)
 from graphql.core.type.definition import GraphQLNonNull
-
 from .utils import raise_callback_results
 
 
@@ -69,7 +67,6 @@ def test_executes_arbitary_code():
         }
     '''
 
-    ast = parse(doc)
     expected = {
         'a': 'Apple',
         'b': 'Banana',
@@ -234,6 +231,92 @@ def test_synchronous_executor_will_synchronously_resolve():
     assert not isinstance(result, Deferred)
     assert result.data == {"promise": 'I should work'}
     assert not result.errors
+
+
+def test_synchronous_error_nulls_out_error_subtrees():
+    doc = '''
+    {
+        sync
+        syncError
+        syncReturnError
+        syncReturnErrorList
+        async
+        asyncReject
+        asyncEmptyReject
+        asyncReturnError
+    }
+    '''
+
+    class Data:
+        def sync(self):
+            return 'sync'
+
+        def syncError(self):
+            raise Exception('Error getting syncError')
+
+        def syncReturnError(self):
+            return Exception("Error getting syncReturnError")
+
+        def syncReturnErrorList(self):
+            return [
+                'sync0',
+                Exception('Error getting syncReturnErrorList1'),
+                'sync2',
+                Exception('Error getting syncReturnErrorList3')
+            ]
+
+        def async(self):
+            return succeed('async')
+
+        def asyncReject(self):
+            return fail(Exception('Error getting asyncReject'))
+
+        def asyncEmptyReject(self):
+            return fail()
+
+        def asyncReturnError(self):
+            return succeed(Exception('Error getting asyncReturnError'))
+
+    schema = GraphQLSchema(
+        query=GraphQLObjectType(
+            name='Type',
+            fields={
+                'sync': GraphQLField(GraphQLString),
+                'syncError': GraphQLField(GraphQLString),
+                'syncReturnError': GraphQLField(GraphQLString),
+                'syncReturnErrorList': GraphQLField(GraphQLList(GraphQLString)),
+                'async': GraphQLField(GraphQLString),
+                'asyncReject': GraphQLField(GraphQLString),
+                'asyncEmptyReject': GraphQLField(GraphQLString),
+                'asyncReturnError': GraphQLField(GraphQLString),
+            }
+        )
+    )
+
+    executor = Executor(map_type=OrderedDict)
+
+    def handle_results(result):
+        assert result.data == {
+            'async': 'async',
+            'asyncEmptyReject': None,
+            'asyncReject': None,
+            'asyncReturnError': None,
+            'sync': 'sync',
+            'syncError': None,
+            'syncReturnError': None,
+            'syncReturnErrorList': ['sync0', None, 'sync2', None]
+        }
+        assert list(map(format_error, result.errors)) == [
+            {'locations': [{'line': 4, 'column': 9}], 'message': 'Error getting syncError'},
+            {'locations': [{'line': 5, 'column': 9}], 'message': 'Error getting syncReturnError'},
+            {'locations': [{'line': 6, 'column': 9}], 'message': 'Error getting syncReturnErrorList1'},
+            {'locations': [{'line': 6, 'column': 9}], 'message': 'Error getting syncReturnErrorList3'},
+            {'locations': [{'line': 8, 'column': 9}], 'message': 'Error getting asyncReject'},
+            {'locations': [{'line': 9, 'column': 9}], 'message': 'An unknown error occurred.'},
+            {'locations': [{'line': 10, 'column': 9}], 'message': 'Error getting asyncReturnError'}
+        ]
+
+    raise_callback_results(executor.execute(schema, doc, Data()), handle_results)
 
 
 def test_executor_can_enforce_strict_ordering():

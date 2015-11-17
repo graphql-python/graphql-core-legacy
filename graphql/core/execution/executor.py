@@ -169,7 +169,7 @@ class Executor(object):
             execution_context
         )
 
-        result = self.run_resolve_fn(resolve_fn, source, args, info)
+        result = self.resolve_or_error(resolve_fn, source, args, info)
         return self.complete_value_catching_error(
             execution_context, return_type, field_asts, info, result
         )
@@ -223,7 +223,7 @@ class Executor(object):
                     info,
                     resolved
                 ),
-                lambda error: GraphQLError(str(error.value), field_asts, error)
+                lambda error: GraphQLError(error.value and str(error.value), field_asts, error)
             )
 
         if isinstance(result, Exception):
@@ -307,7 +307,7 @@ class Executor(object):
 
         return self._execute_fields(ctx, runtime_type, result, subfield_asts)
 
-    def run_resolve_fn(self, resolve_fn, source, args, info):
+    def resolve_or_error(self, resolve_fn, source, args, info):
         curried_resolve_fn = functools.partial(resolve_fn, source, args, info)
 
         try:
