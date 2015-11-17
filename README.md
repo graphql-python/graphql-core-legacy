@@ -56,7 +56,16 @@ Otherwise, by default, the executor will use execute with no concurrency.
 Documentation is in the works but not available yet. See #14 for additional information.
 
 ## Pythonic GraphQL Library
-`graphql-core` provides a more low-level API for building a GraphQL API and schema. For a more refined and Pythonic interface to build graphql APIs, check out [`graphene`](https://github.com/graphql-python/graphene).
+For a more refined and Pythonic interface to build graphql APIs, check out
+ * [`graphene`](https://github.com/graphql-python/graphene)
+    - **Easy to use:** Graphene helps you use GraphQL in Python without effort.
+    - **Relay:** Graphene has builtin support for Relay
+    - **Django:** Automatic *Django model* mapping to Graphene Types. Check a fully working [Django](http://github.com/graphql-python/swapi-graphene) implementation
+ * [`graphql-epoxy`](https://github.com/graphql-python/graphql-epoxy)
+    - **Minimal Boilerplate**: You can create a GraphQL schema and execute it in less than 5 lines of code.
+    - **Definition Ordering**: It doesn't matter. Define your objects in any order you want. Epoxy will take care of the rest.
+    - **Quick**: Once you create your schema, epoxy doesn't get in the way. Your resolvers will be called directly by 
+   `graphql-core` with no additional indirection.
 
 ## Current Maintainer
  * [@jhgg](https://github.com/jhgg/)
