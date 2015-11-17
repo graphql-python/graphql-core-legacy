@@ -128,7 +128,13 @@ PUNCT_CODE_TO_KIND = {
 
 
 def print_char_code(code):
-    return 'EOF' if code is None else json.dumps(unichr(code))
+    if code is None:
+        return '<EOF>'
+
+    if code < 0x007F:
+        return json.dumps(unichr(code))
+
+    return '"\\u%04X"' % code
 
 
 def read_token(source, from_position):

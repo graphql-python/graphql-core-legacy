@@ -152,7 +152,7 @@ def test_lex_reports_useful_number_errors():
 
     with raises(LanguageError) as excinfo:
         lex_one(u'1.')
-    assert u'Syntax Error GraphQL (1:3) Invalid number, expected digit but got: EOF.' in excinfo.value.message
+    assert u'Syntax Error GraphQL (1:3) Invalid number, expected digit but got: <EOF>.' in excinfo.value.message
 
     with raises(LanguageError) as excinfo:
         lex_one(u'.123')
@@ -168,7 +168,7 @@ def test_lex_reports_useful_number_errors():
 
     with raises(LanguageError) as excinfo:
         lex_one(u'1.0e')
-    assert u'Syntax Error GraphQL (1:5) Invalid number, expected digit but got: EOF.' in excinfo.value.message
+    assert u'Syntax Error GraphQL (1:5) Invalid number, expected digit but got: <EOF>.' in excinfo.value.message
 
     with raises(LanguageError) as excinfo:
         lex_one(u'1.0eA')
@@ -202,11 +202,11 @@ def test_lex_reports_useful_unknown_character_error():
 
     with raises(LanguageError) as excinfo:
         lex_one(u'\u203B')
-    assert u'Syntax Error GraphQL (1:1) Unexpected character "\\u203b"' in excinfo.value.message
+    assert u'Syntax Error GraphQL (1:1) Unexpected character "\\u203B"' in excinfo.value.message
 
     with raises(LanguageError) as excinfo:
         lex_one(u'\u200b')
-    assert u'Syntax Error GraphQL (1:1) Unexpected character "\\u200b"' in excinfo.value.message
+    assert u'Syntax Error GraphQL (1:1) Unexpected character "\\u200B"' in excinfo.value.message
 
 
 def test_lex_reports_useful_information_for_dashes_in_names():
