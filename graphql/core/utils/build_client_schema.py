@@ -204,5 +204,7 @@ def build_client_schema(introspection):
 
     query_type = get_type(schema_introspection['queryType'])
     mutation_type = get_type(schema_introspection['mutationType']) if schema_introspection.get('mutationType') else None
+    subscription_type = get_type(schema_introspection['subscriptionType']) if \
+        schema_introspection.get('subscriptionType') else None
 
-    return GraphQLSchema(query_type, mutation_type)
+    return GraphQLSchema(query=query_type, mutation=mutation_type, subscription=subscription_type)

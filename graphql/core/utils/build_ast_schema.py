@@ -45,7 +45,7 @@ _false = lambda *_: False
 _none = lambda *_: None
 
 
-def build_ast_schema(document, query_type_name, mutation_type_name=None):
+def build_ast_schema(document, query_type_name, mutation_type_name=None, subscription_type_name=None):
     assert isinstance(document, ast.Document), 'must pass in Document ast.'
     assert query_type_name, 'must pass in query type'
 
@@ -57,6 +57,9 @@ def build_ast_schema(document, query_type_name, mutation_type_name=None):
 
     if mutation_type_name and mutation_type_name not in ast_map:
         raise Exception('Specified mutation type {} not found in document.'.format(mutation_type_name))
+
+    if subscription_type_name and subscription_type_name not in ast_map:
+        raise Exception('Specified subscription type {} not found in document.'.format(subscription_type_name))
 
     inner_type_map = OrderedDict([
         ('String', GraphQLString),
@@ -174,5 +177,8 @@ def build_ast_schema(document, query_type_name, mutation_type_name=None):
 
     if mutation_type_name:
         schema_kwargs['mutation'] = produce_type_def(ast_map[mutation_type_name])
+
+    if subscription_type_name:
+        schema_kwargs['subscription'] = produce_type_def(ast_map[subscription_type_name])
 
     return GraphQLSchema(**schema_kwargs)

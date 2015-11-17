@@ -133,8 +133,17 @@ def get_operation_root_type(schema, operation):
 
         return mutation_type
 
+    elif op == 'subscription':
+        subscription_type = schema.get_subscription_type()
+
+        if not subscription_type:
+            raise GraphQLError(
+                'Schema is not configured for subscriptions',
+                [operation]
+            )
+
     raise GraphQLError(
-        'Can only execute queries and mutations',
+        'Can only execute queries, mutations and subscriptions',
         [operation]
     )
 

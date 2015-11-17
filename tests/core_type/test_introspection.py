@@ -53,6 +53,7 @@ def test_executes_an_introspection_query():
                                      'onFragment': True,
                                      'onOperation': False}],
                      'mutationType': None,
+                     'subscriptionType': None,
                      'queryType': {'name': u'QueryRoot'},
                      'types': [{'description': None,
                                 'enumValues': None,
@@ -108,6 +109,14 @@ def test_executes_an_introspection_query():
                                                'description': u'If this server supports mutation, the type that mutation operations will be rooted at.',
                                                'isDeprecated': False,
                                                'name': u'mutationType',
+                                               'type': {'kind': 'OBJECT',
+                                                        'name': u'__Type',
+                                                        'ofType': None}},
+                                              {'args': [],
+                                               'deprecationReason': None,
+                                               'description': u'If this server support subscription, the type that subscription operations will be rooted at.',
+                                               'isDeprecated': False,
+                                               'name': u'subscriptionType',
                                                'type': {'kind': 'OBJECT',
                                                         'name': u'__Type',
                                                         'ofType': None}},
@@ -744,8 +753,13 @@ def test_exposes_descriptions_on_types_and_fields():
             },
             {
                 'name': 'mutationType',
-                'description': 'If this server supports mutation, the type that ' +
+                'description': 'If this server supports mutation, the type that '
                                'mutation operations will be rooted at.'
+            },
+            {
+                'name': 'subscriptionType',
+                'description': 'If this server support subscription, the type '
+                               'that subscription operations will be rooted at.'
             },
             {
                 'name': 'directives',

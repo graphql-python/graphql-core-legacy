@@ -39,6 +39,12 @@ __Schema = GraphQLObjectType(
             type=__Type,
             resolver=lambda schema, *_: schema.get_mutation_type(),
         )),
+        ('subscriptionType', GraphQLField(
+            description='If this server support subscription, the type '
+                        'that subscription operations will be rooted at.',
+            type=__Type,
+            resolver=lambda schema, *_: schema.get_subscription_type(),
+        )),
         ('directives', GraphQLField(
             description='A list of all directives supported by this server.',
             type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__Directive))),

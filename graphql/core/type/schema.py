@@ -24,16 +24,21 @@ class GraphQLSchema(object):
             mutation=MyAppMutationRootType
         )
     """
-    __slots__ = '_query', '_mutation', '_type_map', '_directives'
+    __slots__ = '_query', '_mutation', '_subscription', '_type_map', '_directives',
 
-    def __init__(self, query, mutation=None):
+    def __init__(self, query, mutation=None, subscription=None):
         assert isinstance(query, GraphQLObjectType), 'Schema query must be Object Type but got: {}.'.format(query)
         if mutation:
             assert isinstance(mutation, GraphQLObjectType), \
                 'Schema mutation must be Object Type but got: {}.'.format(mutation)
 
+        if subscription:
+            assert isinstance(subscription, GraphQLObjectType), \
+                'Schema subscription must be Object Type but got: {}.'.format(subscription)
+
         self._query = query
         self._mutation = mutation
+        self._subscription = subscription
         self._type_map = self._build_type_map()
         self._directives = None
 
@@ -47,6 +52,9 @@ class GraphQLSchema(object):
 
     def get_mutation_type(self):
         return self._mutation
+
+    def get_subscription_type(self):
+        return self._subscription
 
     def get_type_map(self):
         return self._type_map
@@ -72,7 +80,8 @@ class GraphQLSchema(object):
 
     def _build_type_map(self):
         type_map = OrderedDict()
-        for type in (self.get_query_type(), self.get_mutation_type(), IntrospectionSchema):
+        types = (self.get_query_type(), self.get_mutation_type(), self.get_subscription_type(), IntrospectionSchema)
+        for type in types:
             type_map = type_map_reducer(type_map, type)
 
         return type_map
