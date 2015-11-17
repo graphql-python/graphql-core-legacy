@@ -302,7 +302,8 @@ class Executor(object):
             if selection_set:
                 subfield_asts = collect_fields(
                     ctx, runtime_type, selection_set,
-                    subfield_asts, visited_fragment_names)
+                    subfield_asts, visited_fragment_names
+                )
 
         return self._execute_fields(ctx, runtime_type, result, subfield_asts)
 
