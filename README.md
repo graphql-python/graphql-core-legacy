@@ -10,11 +10,9 @@ Core GraphQL Library for Python
 
 ## Project Status
 
-**This in Beta status. Use in production at your own caution.**
-
-We are currently focusing on porting [graphql-js](https://github.com/graphql/graphql-js) to Python.
+This library is a port of [graphql-js](https://github.com/graphql/graphql-js) to Python.
 This library includes core features only that other packages within the [graphql-python](https://github.com/graphql-python/) organization shall build upon.
-We are currently targeting feature parity with `v0.4.7` of the reference implementation.
+We are currently targeting feature parity with `v0.4.13` of the reference implementation, and are currently on `v0.4.9`.
 
 Please see [issues](https://github.com/graphql-python/graphql-core/issues) for the progress.
 

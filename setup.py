@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='graphql-core',
-    version='0.4.7b2',
+    version='0.4.9',
     description='GraphQL implementation for Python',
     url='https://github.com/graphql-python/graphql-core',
     download_url='https://github.com/graphql-python/graphql-core/releases',
@@ -10,7 +10,7 @@ setup(
     author_email='me' '@' 'jh.gg',
     license='MIT',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Libraries',
         'Programming Language :: Python :: 2',
