@@ -159,9 +159,12 @@ def assert_object_implements_interface(object, interface):
         for object_arg in object_field.args:
             arg_name = object_arg.name
             interface_arg = interface_arg_map.get(arg_name)
-            assert interface_arg, (
-                '{}.{} does not define argument "{}" but {}.{} provides it.'
-            ).format(interface, field_name, arg_name, object, field_name)
+            if not interface_arg:
+                assert not isinstance(object_arg.type, GraphQLNonNull), (
+                    '{}.{}({}:) is of required type '
+                    '"{}" but is not also provided by the '
+                    'interface {}.{}.'
+                ).format(object, field_name, arg_name, object_arg.type, interface, field_name)
 
 
 def is_equal_type(type_a, type_b):

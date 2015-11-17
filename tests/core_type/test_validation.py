@@ -1288,7 +1288,7 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
 
         assert schema_with_field_type(AnotherObject)
 
-    def test_rejects_an_object_which_implements_an_interface_field_along_with_more_arguments(self):
+    def test_accepts_an_object_which_implements_an_interface_field_along_with_more_arguments(self):
         AnotherInterface = GraphQLInterfaceType(
             name='AnotherInterface',
             resolve_type=_none,
@@ -1316,11 +1316,41 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
             }
         )
 
+        assert schema_with_field_type(AnotherObject)
+
+    def test_rejects_an_object_which_implements_an_interface_field_along_with_additional_required_arguments(self):
+        AnotherInterface = GraphQLInterfaceType(
+            name='AnotherInterface',
+            resolve_type=_none,
+            fields={
+                'field': GraphQLField(
+                    type=GraphQLString,
+                    args={
+                        'input': GraphQLArgument(GraphQLString)
+                    }
+                )
+            }
+        )
+
+        AnotherObject = GraphQLObjectType(
+            name='AnotherObject',
+            interfaces=[AnotherInterface],
+            fields={
+                'field': GraphQLField(
+                    type=GraphQLString,
+                    args={
+                        'input': GraphQLArgument(GraphQLString),
+                        'anotherInput': GraphQLArgument(GraphQLNonNull(GraphQLString)),
+                    }
+                ),
+            }
+        )
+
         with raises(AssertionError) as excinfo:
             schema_with_field_type(AnotherObject)
 
-        assert str(excinfo.value) == 'AnotherInterface.field does not define argument "anotherInput" but ' \
-                                     'AnotherObject.field provides it.'
+        assert str(excinfo.value) == 'AnotherObject.field(anotherInput:) is of required type "String!" but ' \
+                                     'is not also provided by the interface AnotherInterface.field.'
 
     def test_rejects_an_object_missing_an_interface_field(self):
         AnotherInterface = GraphQLInterfaceType(
