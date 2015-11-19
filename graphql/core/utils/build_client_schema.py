@@ -150,7 +150,8 @@ def build_client_schema(introspection):
             name=enum_introspection['name'],
             description=enum_introspection['description'],
             values=OrderedDict([(value_introspection['name'],
-                                 GraphQLEnumValue(description=value_introspection['description']))
+                                 GraphQLEnumValue(description=value_introspection['description'],
+                                                  deprecation_reason=value_introspection['deprecationReason']))
                                 for value_introspection in enum_introspection['enumValues']
                                 ])
         )
@@ -179,6 +180,7 @@ def build_client_schema(introspection):
                 type=get_output_type(f['type']),
                 description=f['description'],
                 resolver=no_execution,
+                deprecation_reason=f['deprecationReason'],
                 args=build_input_value_def_map(f['args'], GraphQLArgument)))
             for f in type_introspection['fields']
         ])

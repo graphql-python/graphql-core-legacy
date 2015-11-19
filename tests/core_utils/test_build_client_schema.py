@@ -291,11 +291,12 @@ def test_builds_a_schema_with_an_enum():
     assert isinstance(clientFoodEnum, GraphQLEnumType)
 
     assert clientFoodEnum.get_values() == [
-        GraphQLEnumValue(name='VEGETABLES', value='VEGETABLES', description='Foods that are vegetables.'),
-        GraphQLEnumValue(name='FRUITS', value='FRUITS', description='Foods that are fruits.'),
-        GraphQLEnumValue(name='OILS', value='OILS', description='Foods that are oils.'),
-        GraphQLEnumValue(name='DAIRY', value='DAIRY', description='Foods that are dairy.'),
-        GraphQLEnumValue(name='MEAT', value='MEAT', description='Foods that are meat.')
+        GraphQLEnumValue(name='VEGETABLES', value='VEGETABLES', description='Foods that are vegetables.',
+                         deprecation_reason=None),
+        GraphQLEnumValue(name='FRUITS', value='FRUITS', description='Foods that are fruits.', deprecation_reason=None),
+        GraphQLEnumValue(name='OILS', value='OILS', description='Foods that are oils.', deprecation_reason=None),
+        GraphQLEnumValue(name='DAIRY', value='DAIRY', description='Foods that are dairy.', deprecation_reason=None),
+        GraphQLEnumValue(name='MEAT', value='MEAT', description='Foods that are meat.', deprecation_reason=None)
     ]
 
 
@@ -373,6 +374,40 @@ def test_builds_a_schema_with_field_arguments_with_default_values():
                             default_value={'lat': 37.485, 'lon': -122.148}
                         )
                     }
+                ))
+            ])
+        )
+    )
+
+    _test_schema(schema)
+
+
+def test_builds_a_schema_aware_of_deprecation():
+    schema = GraphQLSchema(
+        query=GraphQLObjectType(
+            name='Simple',
+            description='This is a simple type',
+            fields=OrderedDict([
+                ('shinyString', GraphQLField(
+                    type=GraphQLString,
+                    description='This is a shiny string field'
+                )),
+                ('deprecatedString', GraphQLField(
+                    type=GraphQLString,
+                    description='This is a deprecated string field',
+                    deprecation_reason='Use shinyString'
+                )),
+                ('color', GraphQLField(
+                    type=GraphQLEnumType(
+                        name='Color',
+                        values=OrderedDict([
+                            ('RED', GraphQLEnumValue(description='So rosy')),
+                            ('GREEN', GraphQLEnumValue(description='So grassy')),
+                            ('BLUE', GraphQLEnumValue(description='So calming')),
+                            ('MAUVE', GraphQLEnumValue(description='So sickening',
+                                                       deprecation_reason='No longer in fashion')),
+                        ])
+                    )
                 ))
             ])
         )
