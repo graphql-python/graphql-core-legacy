@@ -7,7 +7,7 @@ from .definition import (
     GraphQLObjectType,
     GraphQLUnionType,
 )
-from .directives import GraphQLIncludeDirective, GraphQLSkipDirective
+from .directives import GraphQLDirective, GraphQLIncludeDirective, GraphQLSkipDirective
 from .introspection import IntrospectionSchema
 
 
@@ -26,7 +26,7 @@ class GraphQLSchema(object):
     """
     __slots__ = '_query', '_mutation', '_subscription', '_type_map', '_directives',
 
-    def __init__(self, query, mutation=None, subscription=None):
+    def __init__(self, query, mutation=None, subscription=None, directives=None):
         assert isinstance(query, GraphQLObjectType), 'Schema query must be Object Type but got: {}.'.format(query)
         if mutation:
             assert isinstance(mutation, GraphQLObjectType), \
@@ -40,7 +40,19 @@ class GraphQLSchema(object):
         self._mutation = mutation
         self._subscription = subscription
         self._type_map = self._build_type_map()
-        self._directives = None
+
+        if directives is None:
+            directives = [
+                GraphQLIncludeDirective,
+                GraphQLSkipDirective
+            ]
+
+        assert all(isinstance(d, GraphQLDirective) for d in directives), \
+            'Schema directives must be List[GraphQLDirective] if provided but got: {}.'.format(
+                directives
+            )
+
+        self._directives = directives
 
         for type in self._type_map.values():
             if isinstance(type, GraphQLObjectType):
@@ -63,12 +75,6 @@ class GraphQLSchema(object):
         return self._type_map.get(name)
 
     def get_directives(self):
-        if self._directives is None:
-            self._directives = [
-                GraphQLIncludeDirective,
-                GraphQLSkipDirective
-            ]
-
         return self._directives
 
     def get_directive(self, name):

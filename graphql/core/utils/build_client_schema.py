@@ -22,6 +22,7 @@ from ..type import (
     is_input_type,
     is_output_type
 )
+from ..type.directives import GraphQLDirective
 from ..type.introspection import TypeKind
 from .value_from_ast import value_from_ast
 
@@ -194,19 +195,42 @@ def build_client_schema(introspection):
 
     def build_input_value_def_map(input_value_introspection, argument_type):
         return OrderedDict([
-            (f['name'], argument_type(
-                description=f['description'],
-                type=get_input_type(f['type']),
-                default_value=build_default_value(f)
-            )) for f in input_value_introspection
+            (f['name'], build_input_value(f, argument_type)) for f in input_value_introspection
         ])
+
+    def build_input_value(input_value_introspection, argument_type):
+        input_value = argument_type(
+            description=input_value_introspection['description'],
+            type=get_input_type(input_value_introspection['type']),
+            default_value=build_default_value(input_value_introspection)
+        )
+        input_value.name = input_value_introspection['name']
+        return input_value
+
+    def build_directive(directive_introspection):
+        return GraphQLDirective(
+            name=directive_introspection['name'],
+            description=directive_introspection['description'],
+            args=[build_input_value(a, GraphQLArgument) for a in directive_introspection['args']],
+            on_operation=directive_introspection['onOperation'],
+            on_fragment=directive_introspection['onFragment'],
+            on_field=directive_introspection['onField']
+        )
 
     for type_introspection_name in type_introspection_map:
         get_named_type(type_introspection_name)
 
-    query_type = get_type(schema_introspection['queryType'])
-    mutation_type = get_type(schema_introspection['mutationType']) if schema_introspection.get('mutationType') else None
-    subscription_type = get_type(schema_introspection['subscriptionType']) if \
+    query_type = get_object_type(schema_introspection['queryType'])
+    mutation_type = get_object_type(schema_introspection['mutationType']) if schema_introspection.get('mutationType') else None
+    subscription_type = get_object_type(schema_introspection['subscriptionType']) if \
         schema_introspection.get('subscriptionType') else None
 
-    return GraphQLSchema(query=query_type, mutation=mutation_type, subscription=subscription_type)
+    directives = [build_directive(d) for d in schema_introspection['directives']] \
+        if schema_introspection['directives'] else []
+
+    return GraphQLSchema(
+        query=query_type,
+        mutation=mutation_type,
+        subscription=subscription_type,
+        directives=directives
+    )

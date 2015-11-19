@@ -164,6 +164,13 @@ class TestTypeSystem_ASchemaMustHaveObjectRootTypes:
 
         assert str(excinfo.value) == 'Schema subscription must be Object Type but got: SomeInputObject.'
 
+    def test_rejects_a_schema_whose_directives_are_incorrectly_typed(self):
+        with raises(AssertionError) as excinfo:
+            GraphQLSchema(query=SomeObjectType, directives=['somedirective'])
+
+        assert str(excinfo.value) == 'Schema directives must be List[GraphQLDirective] if provided but got: ' \
+                                     '[\'somedirective\'].'
+
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_ASchemaMustContainUniquelyNamedTypes:

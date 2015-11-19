@@ -22,6 +22,7 @@ from graphql.core.type import (
     GraphQLBoolean,
     GraphQLID,
 )
+from graphql.core.type.directives import GraphQLDirective
 from graphql.core.utils.introspection_query import introspection_query
 from graphql.core.utils.build_client_schema import build_client_schema
 
@@ -377,6 +378,30 @@ def test_builds_a_schema_with_field_arguments_with_default_values():
                 ))
             ])
         )
+    )
+
+    _test_schema(schema)
+
+
+def test_builds_a_schema_with_custom_directives():
+    schema = GraphQLSchema(
+        query=GraphQLObjectType(
+            name='Simple',
+            description='This is a simple type',
+            fields={
+                'string': GraphQLField(
+                    type=GraphQLString,
+                    description='This is a string field'
+                )
+            },
+        ),
+        directives=[
+            GraphQLDirective(
+                name='customDirective',
+                description='This is a custom directive',
+                on_field=True
+            )
+        ]
     )
 
     _test_schema(schema)

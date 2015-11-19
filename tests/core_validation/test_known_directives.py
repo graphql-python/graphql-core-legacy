@@ -89,9 +89,12 @@ def test_with_well_placed_directives():
 def test_with_misplaced_directives():
     expect_fails_rule(KnownDirectives, '''
       query Foo @include(if: true) {
-        name
-        ...Frag
+        name @operationOnly
+        ...Frag @operationOnly
       }
     ''', [
-        misplaced_directive('include', 'operation', 2, 17)
+        misplaced_directive('include', 'operation', 2, 17),
+        misplaced_directive('operationOnly', 'field', 3, 14),
+        misplaced_directive('operationOnly', 'fragment', 4, 17),
+
     ])

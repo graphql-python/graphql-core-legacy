@@ -1,3 +1,4 @@
+from graphql.core.type.directives import GraphQLDirective, GraphQLIncludeDirective, GraphQLSkipDirective
 from graphql.core.validation import validate
 from graphql.core.language.parser import parse
 from graphql.core.type import (
@@ -162,7 +163,11 @@ QueryRoot = GraphQLObjectType('QueryRoot', {
     'complicatedArgs': GraphQLField(ComplicatedArgs),
 })
 
-default_schema = GraphQLSchema(query=QueryRoot)
+default_schema = GraphQLSchema(query=QueryRoot, directives=[
+    GraphQLDirective(name='operationOnly', on_operation=True),
+    GraphQLIncludeDirective,
+    GraphQLSkipDirective
+])
 
 
 def expect_valid(schema, rules, query):
