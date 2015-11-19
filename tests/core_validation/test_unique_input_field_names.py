@@ -34,6 +34,22 @@ def test_multiple_input_object_fields():
     ''')
 
 
+def test_it_allows_for_nested_input_objects_with_similar_fields():
+    expect_passes_rule(UniqueInputFieldNames, '''
+    {
+        field(arg: {
+            deep: {
+              deep: {
+                id: 1
+            }
+            id: 1
+            }
+            id: 1
+        })
+    }
+    ''')
+
+
 def test_duplicate_input_object_fields():
     expect_fails_rule(UniqueInputFieldNames, '''
     {
