@@ -22,7 +22,9 @@ class NoFragmentCycles(ValidationRule):
         spread_path = []
 
         def detect_cycle_recursive(fragment_name):
-            spread_nodes = self.spreads_in_fragment[fragment_name]
+            spread_nodes = self.spreads_in_fragment.get(fragment_name)
+            if not spread_nodes:
+                return
 
             for spread_node in spread_nodes:
                 if spread_node in self.known_to_lead_to_cycle:

@@ -45,6 +45,14 @@ def test_double_spread_within_abstract_types():
     ''')
 
 
+def test_does_not_raise_false_positive_on_unknown_fragment():
+    expect_passes_rule(NoFragmentCycles, '''
+      fragment nameFragment on Pet {
+        ...UnknownFragment
+      }
+    ''')
+
+
 def test_spreading_recursively_within_field_fails():
     expect_fails_rule(NoFragmentCycles, '''
     fragment fragA on Human { relatives { ...fragA } },
