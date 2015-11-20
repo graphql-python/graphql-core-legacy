@@ -79,7 +79,8 @@ def get_variable_value(schema, definition_ast, input):
             [definition_ast]
         )
 
-    if is_valid_value(type, input):
+    errors = is_valid_value(input, type)
+    if not errors:
         if input is None:
             default_value = definition_ast.default_value
             if default_value:
@@ -96,11 +97,12 @@ def get_variable_value(schema, definition_ast, input):
             [definition_ast]
         )
 
+    message = (u'\n' + u'\n'.join(errors)) if errors else u''
     raise GraphQLError(
-        'Variable "${}" expected value of type "{}" but got: {}.'.format(
+        'Variable "${}" got invalid value {}.{}'.format(
             variable.name.value,
-            print_ast(definition_ast.type),
-            json.dumps(input, sort_keys=True)
+            json.dumps(input, sort_keys=True),
+            message
         ),
         [definition_ast]
     )

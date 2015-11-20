@@ -3,6 +3,7 @@
 """
 
 import collections
+import json
 from six import string_types
 from ..type import (
     GraphQLEnumType,
@@ -12,45 +13,62 @@ from ..type import (
     GraphQLScalarType,
 )
 
+_empty_list = []
 
-def is_valid_value(type, value):
+
+def is_valid_value(value, type):
     """Given a type and any value, return True if that value is valid."""
     if isinstance(type, GraphQLNonNull):
+        of_type = type.of_type
         if value is None:
-            return False
+            if hasattr(of_type, 'name'):
+                return [u'Expected "{}", found null.'.format(type)]
 
-        return is_valid_value(type.of_type, value)
+            return [u'Expected non-null value, found null.']
+
+        return is_valid_value(value, of_type)
 
     if value is None:
-        return True
+        return _empty_list
 
     if isinstance(type, GraphQLList):
         item_type = type.of_type
-        if not isinstance(value, string_types) and \
-                isinstance(value, collections.Iterable):
-            return all(is_valid_value(item_type, item) for item in value)
+        if not isinstance(value, string_types) and isinstance(value, collections.Iterable):
+            errors = []
+            for i, item in enumerate(value):
+                item_errors = is_valid_value(item, item_type)
+                for error in item_errors:
+                    errors.append(u'In element #{}: {}'.format(i, error))
+
+            return errors
+
         else:
-            return is_valid_value(item_type, value)
+            return is_valid_value(value, item_type)
 
     if isinstance(type, GraphQLInputObjectType):
         if not isinstance(value, collections.Mapping):
-            return False
+            return [u'Expected "{}", found not an object.'.format(type)]
 
         fields = type.get_fields()
+        errors = []
 
-        # Ensure every provided field is defined.
-        if any(field_name not in fields for field_name in value.keys()):
-            return False
+        for provided_field in value.keys():
+            if provided_field not in fields:
+                errors.append(u'In field "{}": Unknown field.'.format(provided_field))
 
-        # Ensure every defined field is valid.
-        return all(
-            is_valid_value(field.type, value.get(field_name))
-            for field_name, field in fields.items()
-        )
+        for field_name, field in fields.items():
+            subfield_errors = is_valid_value(value.get(field_name), field.type)
+            errors.extend(u'In field "{}": {}'.format(field_name, e) for e in subfield_errors)
+
+        return errors
 
     assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
         'Must be input type'
 
     # Scalar/Enum input checks to ensure the type can parse the value to
     # a non-null value.
-    return type.parse_value(value) is not None
+    parse_result = type.parse_value(value)
+    if parse_result is None:
+        return [u'Expected type "{}", found {}.'.format(type, json.dumps(value))]
+
+    return _empty_list

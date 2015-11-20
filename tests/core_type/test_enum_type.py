@@ -110,7 +110,8 @@ def test_enum_may_be_both_input_and_output_type():
 def test_does_not_accept_string_literals():
     result = graphql(Schema, '{ colorEnum(fromEnum: "GREEN") }')
     assert not result.data
-    assert result.errors[0].message == 'Argument "fromEnum" expected type "Color" but got: "GREEN".'
+    assert result.errors[0].message == 'Argument "fromEnum" has invalid value "GREEN".\n' \
+                                       'Expected type "Color", found "GREEN".'
 
 
 def test_does_not_accept_incorrect_internal_value():
@@ -122,13 +123,15 @@ def test_does_not_accept_incorrect_internal_value():
 def test_does_not_accept_internal_value_in_placeof_enum_literal():
     result = graphql(Schema, '{ colorEnum(fromEnum: 1) }')
     assert not result.data
-    assert result.errors[0].message == 'Argument "fromEnum" expected type "Color" but got: 1.'
+    assert result.errors[0].message == 'Argument "fromEnum" has invalid value 1.\n' \
+                                       'Expected type "Color", found 1.'
 
 
 def test_does_not_accept_enum_literal_in_place_of_int():
     result = graphql(Schema, '{ colorEnum(fromInt: GREEN) }')
     assert not result.data
-    assert result.errors[0].message == 'Argument "fromInt" expected type "Int" but got: GREEN.'
+    assert result.errors[0].message == 'Argument "fromInt" has invalid value GREEN.\n' \
+                                       'Expected type "Int", found GREEN.'
 
 
 def test_accepts_json_string_as_enum_variable():
@@ -152,7 +155,8 @@ def test_accepts_enum_literals_as_input_arguments_to_subscriptions():
 def test_does_not_accept_internal_value_as_enum_variable():
     result = graphql(Schema, 'query test($color: Color!) { colorEnum(fromEnum: $color) }', None, {'color': 2})
     assert not result.data
-    assert result.errors[0].message == 'Variable "$color" expected value of type "Color!" but got: 2.'
+    assert result.errors[0].message == 'Variable "$color" got invalid value 2.\n' \
+                                       'Expected type "Color", found 2.'
 
 
 def test_does_not_accept_string_variables_as_enum_input():

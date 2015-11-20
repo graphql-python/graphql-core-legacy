@@ -3,9 +3,12 @@ from graphql.core.validation.rules import ArgumentsOfCorrectType
 from utils import expect_passes_rule, expect_fails_rule
 
 
-def bad_value(arg_name, type_name, value, line, column):
+def bad_value(arg_name, type_name, value, line, column, errors=None):
+    if not errors:
+        errors = [u'Expected type "{}", found {}.'.format(type_name, value)]
+
     return {
-        'message': ArgumentsOfCorrectType.bad_value_message(arg_name, type_name, value),
+        'message': ArgumentsOfCorrectType.bad_value_message(arg_name, type_name, value, errors),
         'locations': [SourceLocation(line, column)]
     }
 
@@ -418,7 +421,9 @@ class TestInvalidListValues(object):
             }
         }
         ''', [
-            bad_value('stringListArg', '[String]', '["one", 2]', 4, 51)
+            bad_value('stringListArg', 'String', '["one", 2]', 4, 51, [
+                'In element #1: Expected type "String", found 2.'
+            ])
         ])
 
     def test_single_value_of_incorrect_type(self):
@@ -429,7 +434,7 @@ class TestInvalidListValues(object):
             }
         }
         ''', [
-            bad_value('stringListArg', '[String]', '1', 4, 51)
+            bad_value('stringListArg', 'String', '1', 4, 51)
         ])
 
 
@@ -527,8 +532,8 @@ class TestInvalidNonNullableValues(object):
             }
         }
         ''', [
-            bad_value('req2', 'Int!', '"two"', 4, 42),
-            bad_value('req1', 'Int!', '"one"', 4, 55),
+            bad_value('req2', 'Int', '"two"', 4, 42),
+            bad_value('req1', 'Int', '"one"', 4, 55),
         ])
 
     def test_incorrect_value_and_missing_argument(self):
@@ -539,7 +544,7 @@ class TestInvalidNonNullableValues(object):
             }
         }
         ''', [
-            bad_value('req1', 'Int!', '"one"', 4, 36)
+            bad_value('req1', 'Int', '"one"', 4, 36)
         ])
 
 
@@ -622,7 +627,9 @@ class TestInvalidInputObjectValue(object):
             }
         }
         ''', [
-            bad_value('complexArg', 'ComplexInput', '{intField: 4}', 4, 45)
+            bad_value('complexArg', 'ComplexInput', '{intField: 4}', 4, 45, [
+                'In field "requiredField": Expected "Boolean!", found null.'
+            ])
         ])
 
     def test_partial_object_invalid_field_type(self):
@@ -637,7 +644,9 @@ class TestInvalidInputObjectValue(object):
         }
         ''', [
             bad_value('complexArg', 'ComplexInput',
-                      '{stringListField: ["one", 2], requiredField: true}', 4, 45)
+                      '{stringListField: ["one", 2], requiredField: true}', 4, 45, [
+                          'In field "stringListField": In element #1: Expected type "String", found 2.'
+                      ])
         ])
 
     def test_partial_object_unknown_field_arg(self):
@@ -652,7 +661,9 @@ class TestInvalidInputObjectValue(object):
         }
         ''', [
             bad_value('complexArg', 'ComplexInput',
-                      '{requiredField: true, unknownField: "value"}', 4, 45)
+                      '{requiredField: true, unknownField: "value"}', 4, 45, [
+                          'In field "unknownField": Unknown field.'
+                      ])
         ])
 
 
@@ -678,6 +689,6 @@ class TestDirectiveArguments(object):
             }
         }
         ''', [
-            bad_value('if', 'Boolean!', '"yes"', 3, 30),
-            bad_value('if', 'Boolean!', 'ENUM', 4, 32),
+            bad_value('if', 'Boolean', '"yes"', 3, 30),
+            bad_value('if', 'Boolean', 'ENUM', 4, 32),
         ])

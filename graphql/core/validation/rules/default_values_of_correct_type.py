@@ -17,17 +17,20 @@ class DefaultValuesOfCorrectType(ValidationRule):
                 [default_value]
             )
 
-        if type and default_value and not is_valid_literal_value(type, default_value):
-            return GraphQLError(
-                self.bad_value_for_default_arg_message(name, type, print_ast(default_value)),
-                [default_value]
-            )
+        if type and default_value:
+            errors = is_valid_literal_value(type, default_value)
+            if errors:
+                return GraphQLError(
+                    self.bad_value_for_default_arg_message(name, type, print_ast(default_value), errors),
+                    [default_value]
+                )
 
     @staticmethod
     def default_for_non_null_arg_message(var_name, type, guess_type):
-        return 'Variable "${}" of type "{}" is required and will not use the default value. ' \
-               'Perhaps you meant to use type "{}".'.format(var_name, type, guess_type)
+        return u'Variable "${}" of type "{}" is required and will not use the default value. ' \
+               u'Perhaps you meant to use type "{}".'.format(var_name, type, guess_type)
 
     @staticmethod
-    def bad_value_for_default_arg_message(var_name, type, value):
-        return 'Variable "${}" of type "{}" has invalid default value: {}.'.format(var_name, type, value)
+    def bad_value_for_default_arg_message(var_name, type, value, verbose_errors):
+        message = (u'\n' + u'\n'.join(verbose_errors)) if verbose_errors else u''
+        return u'Variable "${}" of type "{}" has invalid default value: {}.{}'.format(var_name, type, value, message)

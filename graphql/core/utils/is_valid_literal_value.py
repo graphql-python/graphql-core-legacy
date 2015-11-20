@@ -1,4 +1,5 @@
 from ..language import ast
+from ..language.printer import print_ast
 from ..type.definition import (
     GraphQLEnumType,
     GraphQLInputObjectType,
@@ -7,45 +8,66 @@ from ..type.definition import (
     GraphQLScalarType,
 )
 
+_empty_list = []
+
 
 def is_valid_literal_value(type, value_ast):
     if isinstance(type, GraphQLNonNull):
-        if not value_ast:
-            return False
-
         of_type = type.of_type
+        if not value_ast:
+            if of_type.name:
+                return [u'Expected "{}", found null.'.format(type)]
+
+            return [u'Expected non-null value, found null.']
+
         return is_valid_literal_value(of_type, value_ast)
 
     if not value_ast:
-        return True
+        return _empty_list
 
     if isinstance(value_ast, ast.Variable):
-        return True
+        return _empty_list
 
     if isinstance(type, GraphQLList):
         item_type = type.of_type
         if isinstance(value_ast, ast.ListValue):
-            return all(is_valid_literal_value(item_type, item_ast) for item_ast in value_ast.values)
+            errors = []
+
+            for i, item_ast in enumerate(value_ast.values):
+                item_errors = is_valid_literal_value(item_type, item_ast)
+                for error in item_errors:
+                    errors.append(u'In element #{}: {}'.format(i, error))
+
+            return errors
 
         return is_valid_literal_value(item_type, value_ast)
 
     if isinstance(type, GraphQLInputObjectType):
         if not isinstance(value_ast, ast.ObjectValue):
-            return False
+            return [u'Expected "{}", found not an object.'.format(type)]
 
         fields = type.get_fields()
         field_asts = value_ast.fields
 
-        if any(not fields.get(field_ast.name.value, None) for field_ast in field_asts):
-            return False
+        errors = []
+        for provided_field_ast in field_asts:
+            if provided_field_ast.name.value not in fields:
+                errors.append(u'In field "{}": Unknown field.'.format(provided_field_ast.name.value))
 
         field_ast_map = {field_ast.name.value: field_ast for field_ast in field_asts}
-        get_field_ast_value = lambda field_name: field_ast_map[
-            field_name].value if field_name in field_ast_map else None
+        get_field_ast_value = lambda field_name: field_ast_map[field_name].value \
+            if field_name in field_ast_map else None
 
-        return all(is_valid_literal_value(field.type, get_field_ast_value(field_name))
-                   for field_name, field in fields.items())
+        for field_name, field in fields.items():
+            subfield_errors = is_valid_literal_value(field.type, get_field_ast_value(field_name))
+            errors.extend(u'In field "{}": {}'.format(field_name, e) for e in subfield_errors)
+
+        return errors
 
     assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), 'Must be input type'
 
-    return type.parse_literal(value_ast) is not None
+    parse_result = type.parse_literal(value_ast)
+    if parse_result is None:
+        return [u'Expected type "{}", found {}.'.format(type.name, print_ast(value_ast))]
+
+    return _empty_list

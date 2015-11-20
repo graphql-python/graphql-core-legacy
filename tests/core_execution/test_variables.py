@@ -39,6 +39,14 @@ def input_to_json(obj, args, info):
         return stringify(input)
 
 
+TestNestedInputObject = GraphQLInputObjectType(
+    name='TestNestedInputObject',
+    fields={
+        'na': GraphQLInputObjectField(GraphQLNonNull(TestInputObject)),
+        'nb': GraphQLInputObjectField(GraphQLNonNull(GraphQLString))
+    }
+)
+
 TestType = GraphQLObjectType('TestType', {
     'fieldWithObjectInput': GraphQLField(
         GraphQLString,
@@ -55,6 +63,10 @@ TestType = GraphQLObjectType('TestType', {
     'fieldWithDefaultArgumentValue': GraphQLField(
         GraphQLString,
         args={'input': GraphQLArgument(GraphQLString, 'Hello World')},
+        resolver=input_to_json),
+    'fieldWithNestedInputObject': GraphQLField(
+        GraphQLString,
+        args={'input': GraphQLArgument(TestNestedInputObject, 'Hello World')},
         resolver=input_to_json),
     'list': GraphQLField(
         GraphQLString,
@@ -135,6 +147,7 @@ def test_does_not_use_incorrect_value():
     })
 
 
+# noinspection PyMethodMayBeStatic
 class TestUsingVariables:
     doc = '''
     query q($input: TestInputObject) {
@@ -179,8 +192,8 @@ class TestUsingVariables:
 
         assert format_error(excinfo.value) == {
             'locations': [{'column': 13, 'line': 2}],
-            'message': 'Variable "$input" expected value of type "TestInputObject" but got: '
-                       '{}.'.format(stringify(params['input']))
+            'message': 'Variable "$input" got invalid value {}.\n'
+                       'In field "c": Expected "String!", found null.'.format(stringify(params['input']))
         }
 
     def test_errors_on_incorrect_type(self):
@@ -191,8 +204,8 @@ class TestUsingVariables:
 
         assert format_error(excinfo.value) == {
             'locations': [{'column': 13, 'line': 2}],
-            'message': 'Variable "$input" expected value of type "TestInputObject" but got: '
-                       '{}.'.format(stringify(params['input']))
+            'message': 'Variable "$input" got invalid value {}.\n'
+                       'Expected "TestInputObject", found not an object.'.format(stringify(params['input']))
         }
 
     def test_errors_on_omission_of_nested_non_null(self):
@@ -203,11 +216,29 @@ class TestUsingVariables:
 
         assert format_error(excinfo.value) == {
             'locations': [{'column': 13, 'line': 2}],
-            'message': 'Variable "$input" expected value of type "TestInputObject" but got: '
-                       '{}.'.format(stringify(params['input']))
+            'message': 'Variable "$input" got invalid value {}.\n'
+                       'In field "c": Expected "String!", found null.'.format(stringify(params['input']))
         }
 
-    def test_errors_on_addition_of_unknown_input_field(self):
+    def test_errors_on_deep_nested_errors_and_with_many_errors(self):
+        nested_doc = '''
+          query q($input: TestNestedInputObject) {
+            fieldWithNestedObjectInput(input: $input)
+          }
+        '''
+
+        params = {'input': {'na': {'a': 'foo'}}}
+        with raises(GraphQLError) as excinfo:
+            check(nested_doc, {}, params)
+
+        assert format_error(excinfo.value) == {
+            'locations': [{'column': 19, 'line': 2}],
+            'message': 'Variable "$input" got invalid value {}.\n'
+                       'In field "na": In field "c": Expected "String!", found null.\n'
+                       'In field "nb": Expected "String!", found null.'.format(stringify(params['input']))
+        }
+
+    def test_errors_on_addition_of_input_field_of_incorrect_type(self):
         params = {'input': {'a': 'foo', 'b': 'bar', 'c': 'baz', 'd': 'dog'}}
 
         with raises(GraphQLError) as excinfo:
@@ -215,8 +246,20 @@ class TestUsingVariables:
 
         assert format_error(excinfo.value) == {
             'locations': [{'column': 13, 'line': 2}],
-            'message': 'Variable "$input" expected value of type "TestInputObject" but got: '
-                       '{}.'.format(stringify(params['input']))
+            'message': 'Variable "$input" got invalid value {}.\n'
+                       'In field "d": Expected type "ComplexScalar", found "dog".'.format(stringify(params['input']))
+        }
+
+    def test_errors_on_addition_of_unknown_input_field(self):
+        params = {'input': {'a': 'foo', 'b': 'bar', 'c': 'baz', 'f': 'dog'}}
+
+        with raises(GraphQLError) as excinfo:
+            check(self.doc, {}, params)
+
+        assert format_error(excinfo.value) == {
+            'locations': [{'column': 13, 'line': 2}],
+            'message': 'Variable "$input" got invalid value {}.\n'
+                       'In field "f": Unknown field.'.format(stringify(params['input']))
         }
 
 
@@ -496,8 +539,8 @@ def test_does_not_allow_lists_of_non_nulls_to_contain_null():
 
     assert format_error(excinfo.value) == {
         'locations': [{'column': 13, 'line': 2}],
-        'message': 'Variable "$input" expected value of type "[String!]" but got: '
-                   '{}.'.format(stringify(params['input']))
+        'message': 'Variable "$input" got invalid value {}.\n'
+                   'In element #1: Expected "String!", found null.'.format(stringify(params['input']))
     }
 
 
@@ -544,8 +587,8 @@ def test_does_not_allow_non_null_lists_of_non_nulls_to_contain_null():
 
     assert format_error(excinfo.value) == {
         'locations': [{'column': 13, 'line': 2}],
-        'message': 'Variable "$input" expected value of type "[String!]!" but got: '
-                   '{}.'.format(stringify(params['input']))
+        'message': 'Variable "$input" got invalid value {}.\n'
+                   'In element #1: Expected "String!", found null.'.format(stringify(params['input']))
     }
 
 
