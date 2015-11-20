@@ -44,10 +44,24 @@ Dog = GraphQLObjectType('Dog', {
         'surname': GraphQLArgument(GraphQLBoolean),
     }),
     'nickname': GraphQLField(GraphQLString),
+    'barkVolume': GraphQLField(GraphQLInt),
     'barks': GraphQLField(GraphQLBoolean),
     'doesKnowCommand': GraphQLField(GraphQLBoolean, {
         'dogCommand': GraphQLArgument(DogCommand)
-    })
+    }),
+    'isHousetrained': GraphQLField(
+        GraphQLBoolean,
+        args={
+            'atOtherHomes': GraphQLArgument(GraphQLBoolean, default_value=True)
+        }
+    ),
+    'isAtLocation': GraphQLField(
+        GraphQLBoolean,
+        args={
+            'x': GraphQLArgument(GraphQLInt),
+            'y': GraphQLArgument(GraphQLInt)
+        }
+    )
 }, interfaces=[Being, Pet], is_type_of=lambda: None)
 
 Cat = GraphQLObjectType('Cat', lambda: {
@@ -163,7 +177,7 @@ QueryRoot = GraphQLObjectType('QueryRoot', {
     'complicatedArgs': GraphQLField(ComplicatedArgs),
 })
 
-default_schema = GraphQLSchema(query=QueryRoot, directives=[
+test_schema = GraphQLSchema(query=QueryRoot, directives=[
     GraphQLDirective(name='operationOnly', on_operation=True),
     GraphQLIncludeDirective,
     GraphQLSkipDirective
@@ -202,11 +216,11 @@ def expect_invalid(schema, rules, query, expected_errors, sort_list=True):
 
 
 def expect_passes_rule(rule, query):
-    return expect_valid(default_schema, [rule], query)
+    return expect_valid(test_schema, [rule], query)
 
 
 def expect_fails_rule(rule, query, errors, sort_list=True):
-    return expect_invalid(default_schema, [rule], query, errors, sort_list)
+    return expect_invalid(test_schema, [rule], query, errors, sort_list)
 
 
 def expect_fails_rule_with_schema(schema, rule, query, errors, sort_list=True):

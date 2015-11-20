@@ -22,9 +22,9 @@ def pop(lst):
 @six.add_metaclass(visitor_meta.VisitorMeta)
 class TypeInfo(object):
     __slots__ = '_schema', '_type_stack', '_parent_type_stack', '_input_type_stack', '_field_def_stack', '_directive', \
-                '_argument'
+                '_argument', '_get_field_def_fn'
 
-    def __init__(self, schema):
+    def __init__(self, schema, get_field_def_fn=get_field_def):
         self._schema = schema
         self._type_stack = []
         self._parent_type_stack = []
@@ -32,6 +32,7 @@ class TypeInfo(object):
         self._field_def_stack = []
         self._directive = None
         self._argument = None
+        self._get_field_def_fn = get_field_def_fn
 
     def get_type(self):
         if self._type_stack:
@@ -76,7 +77,7 @@ class TypeInfo(object):
         parent_type = self.get_parent_type()
         field_def = None
         if parent_type:
-            field_def = get_field_def(self._schema, parent_type, node)
+            field_def = self._get_field_def_fn(self._schema, parent_type, node)
         self._field_def_stack.append(field_def)
         self._type_stack.append(field_def and field_def.type)
 
