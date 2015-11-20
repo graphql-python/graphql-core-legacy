@@ -21,10 +21,7 @@ def is_valid_value(value, type):
     if isinstance(type, GraphQLNonNull):
         of_type = type.of_type
         if value is None:
-            if hasattr(of_type, 'name'):
-                return [u'Expected "{}", found null.'.format(type)]
-
-            return [u'Expected non-null value, found null.']
+            return [u'Expected "{}", found null.'.format(type)]
 
         return is_valid_value(value, of_type)
 
@@ -52,7 +49,7 @@ def is_valid_value(value, type):
         fields = type.get_fields()
         errors = []
 
-        for provided_field in value.keys():
+        for provided_field in sorted(value.keys()):
             if provided_field not in fields:
                 errors.append(u'In field "{}": Unknown field.'.format(provided_field))
 

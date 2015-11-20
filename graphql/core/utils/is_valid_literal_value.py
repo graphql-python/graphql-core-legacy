@@ -15,10 +15,7 @@ def is_valid_literal_value(type, value_ast):
     if isinstance(type, GraphQLNonNull):
         of_type = type.of_type
         if not value_ast:
-            if of_type.name:
-                return [u'Expected "{}", found null.'.format(type)]
-
-            return [u'Expected non-null value, found null.']
+            return [u'Expected "{}", found null.'.format(type)]
 
         return is_valid_literal_value(of_type, value_ast)
 
