@@ -646,6 +646,9 @@ class GraphQLInputObjectType(GraphQLType):
             'function which returns such a mapping.'
         ).format(self)
 
+        if not isinstance(fields, collections.OrderedDict):
+            fields = collections.OrderedDict(sorted(list(fields.items())))
+
         field_map = collections.OrderedDict()
         for field_name, field in fields.items():
             assert_valid_name(field_name)
