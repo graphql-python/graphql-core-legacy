@@ -1,5 +1,6 @@
 import collections
 import functools
+import logging
 
 from ..error import GraphQLError
 from ..language import ast
@@ -12,6 +13,9 @@ from ..type import GraphQLEnumType, GraphQLInterfaceType, GraphQLList, GraphQLNo
 from ..validation import validate
 from .base import ExecutionContext, ExecutionResult, ResolveInfo, Undefined, collect_fields, default_resolve_fn, \
     get_field_def, get_operation_root_type
+
+
+logger = logging.getLogger(__name__)
 
 
 class Executor(object):
@@ -317,4 +321,6 @@ class Executor(object):
 
             return curried_resolve_fn()
         except Exception as e:
+            logger.exception("An error occurred while resolving field %s.%s"
+                             % (info.parent_type.name, info.field_name))
             return e
