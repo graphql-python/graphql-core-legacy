@@ -51,7 +51,8 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
         if name1 != name2:
             return (
                 (response_name, '{} and {} are different fields'.format(name1, name2)),
-                (ast1, ast2)
+                [ast1],
+                [ast2]
             )
 
         type1 = def1 and def1.type
@@ -60,19 +61,22 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
         if type1 and type2 and not self.same_type(type1, type2):
             return (
                 (response_name, 'they return differing types {} and {}'.format(type1, type2)),
-                (ast1, ast2)
+                [ast1],
+                [ast2]
             )
 
         if not self.same_arguments(ast1.arguments, ast2.arguments):
             return (
                 (response_name, 'they have differing arguments'),
-                (ast1, ast2)
+                [ast1],
+                [ast2]
             )
 
         if not self.same_directives(ast1.directives, ast2.directives):
             return (
                 (response_name, 'they have differing directives'),
-                (ast1, ast2)
+                [ast1],
+                [ast2]
             )
 
         selection_set1 = ast1.selection_set
@@ -98,7 +102,8 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
             if conflicts:
                 return (
                     (response_name, [conflict[0] for conflict in conflicts]),
-                    tuple(itertools.chain((ast1, ast2), *[conflict[1] for conflict in conflicts]))
+                    tuple(itertools.chain([ast1], *[conflict[1] for conflict in conflicts])),
+                    tuple(itertools.chain([ast2], *[conflict[2] for conflict in conflicts]))
                 )
 
     def leave_SelectionSet(self, node, key, parent, path, ancestors):
@@ -110,8 +115,8 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
         conflicts = self.find_conflicts(field_map)
         if conflicts:
             return [
-                GraphQLError(self.fields_conflict_message(reason_name, reason), list(fields)) for
-                (reason_name, reason), fields in conflicts
+                GraphQLError(self.fields_conflict_message(reason_name, reason), list(fields1)+list(fields2)) for
+                (reason_name, reason), fields1, fields2 in conflicts
                 ]
 
     @staticmethod

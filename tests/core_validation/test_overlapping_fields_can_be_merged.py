@@ -205,7 +205,7 @@ def test_deep_conflict():
     ''', [
         fields_conflict(
             'field', [('x', 'a and b are different fields')],
-            L(3, 9), L(6, 9), L(4, 13), L(7, 13))
+            L(3, 9), L(4, 13), L(6, 9), L(7, 13))
     ], sort_list=False)
 
 
@@ -224,7 +224,7 @@ def test_deep_conflict_with_multiple_issues():
     ''', [
         fields_conflict(
             'field', [('x', 'a and b are different fields'), ('y', 'c and d are different fields')],
-            L(3, 9), L(7, 9), L(4, 13), L(8, 13), L(5, 13), L(9, 13)
+            L(3, 9), L(4, 13), L(5, 13), L(7, 9), L(8, 13), L(9, 13)
         )
     ], sort_list=False)
 
@@ -246,7 +246,7 @@ def test_very_deep_conflict():
     ''', [
         fields_conflict(
             'field', [['deepField', [['x', 'a and b are different fields']]]],
-            L(3, 9), L(8, 9), L(4, 13), L(9, 13), L(5, 17), L(10, 17)
+            L(3, 9), L(4, 13), L(5, 17), L(8, 9), L(9, 13), L(10, 17)
         )
     ], sort_list=False)
 
@@ -271,7 +271,7 @@ def test_reports_deep_conflict_to_nearest_common_ancestor():
     ''', [
         fields_conflict(
             'deepField', [('x', 'a and b are different fields')],
-            L(4, 13), L(7, 13), L(5, 17), L(8, 17)
+            L(4, 13), L(5, 17), L(7, 13), L(8, 17)
         )
     ], sort_list=False)
 
@@ -378,9 +378,9 @@ def test_compares_deep_types_including_list():
     ''', [
         fields_conflict(
             'edges', [['node', [['id', 'id and name are different fields']]]],
-            L(14, 9), L(5, 13),
-            L(15, 13), L(6, 17),
-            L(16, 17), L(7, 21),
+            L(14, 9), L(15, 13),
+            L(16, 17), L(5, 13),
+            L(6, 17), L(7, 21),
         )
     ], sort_list=False)
 
