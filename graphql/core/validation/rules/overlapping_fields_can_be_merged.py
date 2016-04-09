@@ -36,11 +36,27 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
 
         return conflicts
 
-    def find_conflict(self, response_name, pair1, pair2):
-        ast1, def1 = pair1
-        ast2, def2 = pair2
+    def find_conflict(self, response_name, field1, field2):
+        parent_type1, ast1, def1 = field1
+        parent_type2, ast2, def2 = field2
 
-        if ast1 is ast2 or self.compared_set.has(ast1, ast2):
+        # Not a pair
+        if ast1 is ast2:
+            return
+
+        # If the statically known parent types could not possibly apply at the same
+        # time, then it is safe to permit them to diverge as they will not present
+        # any ambiguity by differing.
+        # It is known that two parent types could never overlap if they are
+        # different Object types. Interface or Union types might overlap - if not
+        # in the current state of the schema, then perhaps in some future version,
+        # thus may not safely diverge.
+        if parent_type1 != parent_type2 and \
+            isinstance(parent_type1, GraphQLObjectType) and \
+            isinstance(parent_type2, GraphQLObjectType):
+            return
+
+        if self.compared_set.has(ast1, ast2):
             return
 
         self.compared_set.add(ast1, ast2)
@@ -192,7 +208,7 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
                     field_def = parent_type.get_fields().get(field_name)
 
                 response_name = selection.alias.value if selection.alias else field_name
-                ast_and_defs[response_name].append((selection, field_def))
+                ast_and_defs[response_name].append((parent_type, selection, field_def))
 
             elif isinstance(selection, ast.InlineFragment):
                 type_condition = selection.type_condition
