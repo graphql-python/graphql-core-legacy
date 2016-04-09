@@ -68,6 +68,15 @@ def test_different_directives_with_different_aliases():
     ''')
 
 
+def test_different_skip_or_include_directives_accepted():
+    expect_passes_rule(OverlappingFieldsCanBeMerged, '''
+    fragment differentDirectivesWithDifferentAliases on Dog {
+        name @include(if: true)
+        name @include(if: false)
+    }
+    ''')
+
+
 def test_same_aliases_with_different_field_targets():
     expect_fails_rule(OverlappingFieldsCanBeMerged, '''
     fragment sameAliasesWithDifferentFieldTargets on Dog {
@@ -147,49 +156,6 @@ def test_allows_different_args_where_no_conflict_is_possible():
         }
     }
     ''')
-
-def test_conflicting_directives():
-    expect_fails_rule(OverlappingFieldsCanBeMerged, '''
-    fragment conflictingDirectiveArgs on Dog {
-        name @include(if: true)
-        name @skip(if: false)
-    }
-    ''', [
-        fields_conflict('name', 'they have differing directives', L(3, 9), L(4, 9))
-    ], sort_list=False)
-
-
-def test_conflicting_directive_args():
-    expect_fails_rule(OverlappingFieldsCanBeMerged, '''
-    fragment conflictingDirectiveArgs on Dog {
-        name @include(if: true)
-        name @include(if: false)
-    }
-    ''', [
-        fields_conflict('name', 'they have differing directives', L(3, 9), L(4, 9))
-    ], sort_list=False)
-
-
-def test_conflicting_args_with_matching_directives():
-    expect_fails_rule(OverlappingFieldsCanBeMerged, '''
-    fragment conflictingArgsWithMatchingDirectiveArgs on Dog {
-        doesKnowCommand(dogCommand: SIT) @include(if: true)
-        doesKnowCommand(dogCommand: HEEL) @include(if: true)
-    }
-    ''', [
-        fields_conflict('doesKnowCommand', 'they have differing arguments', L(3, 9), L(4, 9))
-    ], sort_list=False)
-
-
-def test_conflicting_directives_with_matching_args():
-    expect_fails_rule(OverlappingFieldsCanBeMerged, '''
-    fragment conflictingDirectiveArgsWithMatchingArgs on Dog {
-        doesKnowCommand(dogCommand: SIT) @include(if: true)
-        doesKnowCommand(dogCommand: SIT) @skip(if: false)
-    }
-    ''', [
-        fields_conflict('doesKnowCommand', 'they have differing directives', L(3, 9), L(4, 9))
-    ], sort_list=False)
 
 
 def test_encounters_conflict_in_fragments():

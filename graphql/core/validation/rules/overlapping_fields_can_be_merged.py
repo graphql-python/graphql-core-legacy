@@ -88,13 +88,6 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
                 [ast2]
             )
 
-        if not self.same_directives(ast1.directives, ast2.directives):
-            return (
-                (response_name, 'they have differing directives'),
-                [ast1],
-                [ast2]
-            )
-
         selection_set1 = ast1.selection_set
         selection_set2 = ast2.selection_set
 
@@ -161,28 +154,6 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
                 return False
 
             if not cls.same_value(argument1.value, argument2.value):
-                return False
-
-        return True
-
-    @classmethod
-    def same_directives(cls, directives1, directives2):
-        # Check to see if they are empty directives or nones. If they are, we can
-        # bail out early.
-        if not (directives1 or directives2):
-            return True
-
-        if len(directives1) != len(directives2):
-            return False
-
-        directives2_values_to_arg = {a.name.value: a for a in directives2}
-
-        for directive1 in directives1:
-            directive2 = directives2_values_to_arg.get(directive1.name.value)
-            if not directive2:
-                return False
-
-            if not cls.same_arguments(directive1.arguments, directive2.arguments):
                 return False
 
         return True
