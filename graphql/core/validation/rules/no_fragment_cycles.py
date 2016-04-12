@@ -5,51 +5,60 @@ from .base import ValidationRule
 
 
 class NoFragmentCycles(ValidationRule):
-    __slots__ = 'spreads_in_fragment', 'known_to_lead_to_cycle'
+    __slots__ = 'errors', 'visited_frags', 'spread_path', 'spread_path_index_by_name'
 
     def __init__(self, context):
         super(NoFragmentCycles, self).__init__(context)
-        self.spreads_in_fragment = {
-            node.name.value: self.gather_spreads(node)
-            for node in context.get_ast().definitions
-            if isinstance(node, ast.FragmentDefinition)
-            }
-        self.known_to_lead_to_cycle = set()
+        self.errors = []
+        self.visited_frags = set()
+        self.spread_path = []
+        self.spread_path_index_by_name = {}
+
+    def leave_Document(self, node, key, parent, path, ancestors):
+        if self.errors:
+            return self.errors
+
+    def enter_OperationDefinition(self, node, key, parent, path, ancestors):
+        return False
 
     def enter_FragmentDefinition(self, node, key, parent, path, ancestors):
-        errors = []
-        initial_name = node.name.value
-        spread_path = []
+        if node.name.value not in self.visited_frags:
+            self.detect_cycle_recursive(node)
+        return False
 
-        def detect_cycle_recursive(fragment_name):
-            spread_nodes = self.spreads_in_fragment.get(fragment_name)
-            if not spread_nodes:
-                return
+    def detect_cycle_recursive(self, fragment):
+        fragment_name = fragment.name.value
+        self.visited_frags.add(fragment_name)
 
-            for spread_node in spread_nodes:
-                if spread_node in self.known_to_lead_to_cycle:
-                    continue
+        spread_nodes = []
+        self.gather_spreads(spread_nodes, fragment.selection_set)
+        if not spread_nodes:
+            return
 
-                if spread_node.name.value == initial_name:
-                    cycle_path = spread_path + [spread_node]
-                    self.known_to_lead_to_cycle |= set(cycle_path)
+        self.spread_path_index_by_name[fragment_name] = len(self.spread_path)
 
-                    errors.append(GraphQLError(
-                        self.cycle_error_message(initial_name, [s.name.value for s in spread_path]),
-                        cycle_path
-                    ))
-                    continue
+        for spread_node in spread_nodes:
+            spread_name = spread_node.name.value
+            cycle_index = self.spread_path_index_by_name.get(spread_name)
 
-                if any(spread is spread_node for spread in spread_path):
-                    continue
+            if cycle_index is None:
+                self.spread_path.append(spread_node)
+                if spread_name not in self.visited_frags:
+                    spread_fragment = self.context.get_fragment(spread_name)
+                    if spread_fragment:
+                        self.detect_cycle_recursive(spread_fragment)
+                self.spread_path.pop()
+            else:
+                cycle_path = self.spread_path[cycle_index:]
+                self.errors.append(GraphQLError(
+                    self.cycle_error_message(
+                        spread_name,
+                        [s.name.value for s in cycle_path]
+                    ),
+                    cycle_path+[spread_node]
+                ))
 
-                spread_path.append(spread_node)
-                detect_cycle_recursive(spread_node.name.value)
-                spread_path.pop()
-
-        detect_cycle_recursive(initial_name)
-        if errors:
-            return errors
+        self.spread_path_index_by_name[fragment_name] = None
 
     @staticmethod
     def cycle_error_message(fragment_name, spread_names):
@@ -57,19 +66,9 @@ class NoFragmentCycles(ValidationRule):
         return 'Cannot spread fragment "{}" within itself{}.'.format(fragment_name, via)
 
     @classmethod
-    def gather_spreads(cls, node):
-        visitor = cls.CollectFragmentSpreadNodesVisitor()
-        visit(node, visitor)
-        return visitor.collect_fragment_spread_nodes()
-
-    class CollectFragmentSpreadNodesVisitor(Visitor):
-        __slots__ = 'spread_nodes',
-
-        def __init__(self):
-            self.spread_nodes = []
-
-        def enter_FragmentSpread(self, node, key, parent, path, ancestors):
-            self.spread_nodes.append(node)
-
-        def collect_fragment_spread_nodes(self):
-            return self.spread_nodes
+    def gather_spreads(cls, spreads, node):
+        for selection in node.selections:
+            if isinstance(selection, ast.FragmentSpread):
+                spreads.append(selection)
+            elif selection.selection_set:
+                cls.gather_spreads(spreads, selection.selection_set)
