@@ -2,7 +2,7 @@ from ..language.ast import FragmentDefinition, FragmentSpread
 
 
 class ValidationContext(object):
-    __slots__ = '_schema', '_ast', '_type_info', '_fragments', '_fragment_spreads'
+    __slots__ = '_schema', '_ast', '_type_info', '_fragments', '_fragment_spreads', '_recursively_referenced_fragments'
 
     def __init__(self, schema, ast, type_info):
         self._schema = schema
@@ -10,9 +10,30 @@ class ValidationContext(object):
         self._type_info = type_info
         self._fragments = None
         self._fragment_spreads = {}
+        self._recursively_referenced_fragments = {}
 
     def get_schema(self):
         return self._schema
+
+    def get_recursively_referenced_fragments(self, operation):
+        fragments = self._recursively_referenced_fragments.get(operation)
+        if not fragments:
+            fragments = []
+            collected_names = set()
+            nodes_to_visit = [operation]
+            while nodes_to_visit:
+                node = nodes_to_visit.pop()
+                spreads = self.get_fragment_spreads(node)
+                for spread in spreads:
+                    frag_name = spread.name.value
+                    if frag_name not in collected_names:
+                        collected_names.add(frag_name)
+                        fragment = self.get_fragment(frag_name)
+                        if fragment:
+                            fragments.append(fragment)
+                            nodes_to_visit.append(fragment)
+            self._recursively_referenced_fragments[operation] = fragments
+        return fragments
 
     def get_fragment_spreads(self, node):
         spreads = self._fragment_spreads.get(node)

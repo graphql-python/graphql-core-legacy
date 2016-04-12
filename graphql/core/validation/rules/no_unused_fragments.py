@@ -3,15 +3,15 @@ from .base import ValidationRule
 
 
 class NoUnusedFragments(ValidationRule):
-    __slots__ = 'fragment_definitions', 'spreads_within_operation', 'fragment_adjacencies', 'spread_names'
+    __slots__ = 'fragment_definitions', 'operation_definitions', 'fragment_adjacencies', 'spread_names'
 
     def __init__(self, context):
         super(NoUnusedFragments, self).__init__(context)
-        self.spreads_within_operation = []
+        self.operation_definitions = []
         self.fragment_definitions = []
 
     def enter_OperationDefinition(self, node, key, parent, path, ancestors):
-        self.spreads_within_operation.append(self.context.get_fragment_spreads(node))
+        self.operation_definitions.append(node)
         return False
 
     def enter_FragmentDefinition(self, node, key, parent, path, ancestors):
@@ -21,19 +21,10 @@ class NoUnusedFragments(ValidationRule):
     def leave_Document(self, node, key, parent, path, ancestors):
         fragment_names_used = set()
 
-        def reduce_spread_fragments(spreads):
-            for spread in spreads:
-                frag_name = spread.name.value
-                if frag_name in fragment_names_used:
-                    continue
-
-                fragment_names_used.add(frag_name)
-                fragment = self.context.get_fragment(frag_name)
-                if fragment:
-                    reduce_spread_fragments(self.context.get_fragment_spreads(fragment))
-
-        for spreads in self.spreads_within_operation:
-            reduce_spread_fragments(spreads)
+        for operation in self.operation_definitions:
+            fragments = self.context.get_recursively_referenced_fragments(operation)
+            for fragment in fragments:
+                fragment_names_used.add(fragment.name.value)
 
         errors = [
             GraphQLError(
