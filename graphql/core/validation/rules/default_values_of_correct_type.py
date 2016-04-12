@@ -24,6 +24,13 @@ class DefaultValuesOfCorrectType(ValidationRule):
                     self.bad_value_for_default_arg_message(name, type, print_ast(default_value), errors),
                     [default_value]
                 )
+        return False
+
+    def enter_SelectionSet(self, node, key, parent, path, ancestors):
+        return False
+
+    def enter_FragmentDefinition(self, node, key, parent, path, ancestors):
+        return False
 
     @staticmethod
     def default_for_non_null_arg_message(var_name, type, guess_type):

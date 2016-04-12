@@ -15,6 +15,7 @@ class ArgumentsOfCorrectType(ValidationRule):
                                            print_ast(node.value), errors),
                     [node.value]
                 )
+        return False
 
     @staticmethod
     def bad_value_message(arg_name, type, value, verbose_errors):

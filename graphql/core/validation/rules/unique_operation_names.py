@@ -21,6 +21,10 @@ class UniqueOperationNames(ValidationRule):
             )
 
         self.known_operation_names[operation_name.value] = operation_name
+        return False
+
+    def enter_FragmentDefinition(self, node, key, parent, path, ancestors):
+        return False
 
     @staticmethod
     def duplicate_operation_name_message(operation_name):

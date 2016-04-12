@@ -30,8 +30,7 @@ class NoFragmentCycles(ValidationRule):
         fragment_name = fragment.name.value
         self.visited_frags.add(fragment_name)
 
-        spread_nodes = []
-        self.gather_spreads(spread_nodes, fragment.selection_set)
+        spread_nodes = self.context.get_fragment_spreads(fragment)
         if not spread_nodes:
             return
 
@@ -64,11 +63,3 @@ class NoFragmentCycles(ValidationRule):
     def cycle_error_message(fragment_name, spread_names):
         via = ' via {}'.format(', '.join(spread_names)) if spread_names else ''
         return 'Cannot spread fragment "{}" within itself{}.'.format(fragment_name, via)
-
-    @classmethod
-    def gather_spreads(cls, spreads, node):
-        for selection in node.selections:
-            if isinstance(selection, ast.FragmentSpread):
-                spreads.append(selection)
-            elif selection.selection_set:
-                cls.gather_spreads(spreads, selection.selection_set)

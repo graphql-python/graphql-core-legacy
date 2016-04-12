@@ -25,6 +25,7 @@ class UniqueArgumentNames(ValidationRule):
             )
 
         self.known_arg_names[arg_name] = node.name
+        return False
 
     @staticmethod
     def duplicate_arg_message(field):

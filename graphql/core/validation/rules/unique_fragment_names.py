@@ -9,6 +9,9 @@ class UniqueFragmentNames(ValidationRule):
         super(UniqueFragmentNames, self).__init__(context)
         self.known_fragment_names = {}
 
+    def enter_OperationDefinition(self, node, key, parent, path, ancestors):
+        return False
+
     def enter_FragmentDefinition(self, node, key, parent, path, ancestors):
         fragment_name = node.name.value
         if fragment_name in self.known_fragment_names:
@@ -18,6 +21,7 @@ class UniqueFragmentNames(ValidationRule):
             )
 
         self.known_fragment_names[fragment_name] = node.name
+        return False
 
     @staticmethod
     def duplicate_fragment_name_message(field):

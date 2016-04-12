@@ -7,34 +7,30 @@ class NoUnusedFragments(ValidationRule):
 
     def __init__(self, context):
         super(NoUnusedFragments, self).__init__(context)
-        self.fragment_definitions = []
         self.spreads_within_operation = []
-        self.fragment_adjacencies = {}
-        self.spread_names = set()
+        self.fragment_definitions = []
 
     def enter_OperationDefinition(self, node, key, parent, path, ancestors):
-        self.spread_names = set()
-        self.spreads_within_operation.append(self.spread_names)
+        self.spreads_within_operation.append(self.context.get_fragment_spreads(node))
+        return False
 
     def enter_FragmentDefinition(self, node, key, parent, path, ancestors):
         self.fragment_definitions.append(node)
-        self.spread_names = set()
-        self.fragment_adjacencies[node.name.value] = self.spread_names
-
-    def enter_FragmentSpread(self, node, key, parent, path, ancestors):
-        self.spread_names.add(node.name.value)
+        return False
 
     def leave_Document(self, node, key, parent, path, ancestors):
         fragment_names_used = set()
 
         def reduce_spread_fragments(spreads):
-            for fragment_name in spreads:
-                if fragment_name in fragment_names_used:
+            for spread in spreads:
+                frag_name = spread.name.value
+                if frag_name in fragment_names_used:
                     continue
 
-                fragment_names_used.add(fragment_name)
-                if fragment_name in self.fragment_adjacencies:
-                    reduce_spread_fragments(self.fragment_adjacencies[fragment_name])
+                fragment_names_used.add(frag_name)
+                fragment = self.context.get_fragment(frag_name)
+                if fragment:
+                    reduce_spread_fragments(self.context.get_fragment_spreads(fragment))
 
         for spreads in self.spreads_within_operation:
             reduce_spread_fragments(spreads)

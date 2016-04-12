@@ -26,6 +26,7 @@ class UniqueInputFieldNames(ValidationRule):
             )
 
         self.known_names[field_name] = node.name
+        return False
 
     @staticmethod
     def duplicate_input_field_message(field_name):
