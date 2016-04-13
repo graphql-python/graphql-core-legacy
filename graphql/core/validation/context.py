@@ -1,8 +1,37 @@
-from ..language.ast import FragmentDefinition, FragmentSpread
+from ..language.ast import FragmentDefinition, FragmentSpread, VariableDefinition, Variable, OperationDefinition
+from ..utils.type_info import TypeInfo
+from ..language.visitor import Visitor, visit
+
+
+class VariableUsage(object):
+    __slots__ = 'node', 'type'
+
+    def __init__(self, node, type):
+        self.node = node
+        self.type = type
+
+
+class UsageVisitor(Visitor):
+    __slots__ = 'context', 'usages', 'type_info'
+
+    def __init__(self, usages, type_info):
+        self.usages = usages
+        self.type_info = type_info
+
+    def enter(self, node, key, parent, path, ancestors):
+        self.type_info.enter(node)
+        if isinstance(node, VariableDefinition):
+            return False
+        elif isinstance(node, Variable):
+            usage = VariableUsage(node, type=self.type_info.get_input_type())
+            self.usages.append(usage)
+
+    def leave(self, node, key, parent, path, ancestors):
+        self.type_info.leave(node)
 
 
 class ValidationContext(object):
-    __slots__ = '_schema', '_ast', '_type_info', '_fragments', '_fragment_spreads', '_recursively_referenced_fragments'
+    __slots__ = '_schema', '_ast', '_type_info', '_fragments', '_fragment_spreads', '_recursively_referenced_fragments', '_variable_usages', '_recursive_variable_usages'
 
     def __init__(self, schema, ast, type_info):
         self._schema = schema
@@ -11,11 +40,36 @@ class ValidationContext(object):
         self._fragments = None
         self._fragment_spreads = {}
         self._recursively_referenced_fragments = {}
+        self._variable_usages = {}
+        self._recursive_variable_usages = {}
 
     def get_schema(self):
         return self._schema
 
+    def get_variable_usages(self, node):
+        usages = self._variable_usages.get(node)
+        if usages is None:
+            usages = []
+            sub_visitor = UsageVisitor(usages, self._type_info)
+            visit(node, sub_visitor)
+            self._variable_usages[node] = usages
+
+        return usages
+
+    def get_recursive_variable_usages(self, operation):
+        assert isinstance(operation, OperationDefinition)
+        usages = self._recursive_variable_usages.get(operation)
+        if usages is None:
+            usages = self.get_variable_usages(operation)
+            fragments = self.get_recursively_referenced_fragments(operation)
+            for fragment in fragments:
+                usages.extend(self.get_variable_usages(fragment))
+            self._recursive_variable_usages[operation] = usages
+
+        return usages
+
     def get_recursively_referenced_fragments(self, operation):
+        assert isinstance(operation, OperationDefinition)
         fragments = self._recursively_referenced_fragments.get(operation)
         if not fragments:
             fragments = []

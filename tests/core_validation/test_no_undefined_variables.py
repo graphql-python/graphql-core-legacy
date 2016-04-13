@@ -3,17 +3,9 @@ from graphql.core.validation.rules import NoUndefinedVariables
 from utils import expect_passes_rule, expect_fails_rule
 
 
-def undefined_var(var_name, line, column):
+def undefined_var(var_name, l1, c1, op_name, l2, c2):
     return {
-        'message': NoUndefinedVariables.undefined_var_message(var_name),
-        'locations': [SourceLocation(line, column)]
-    }
-
-
-def undefined_var_by_op(var_name, l1, c1, op_name, l2, c2):
-    return {
-        'message': NoUndefinedVariables.undefined_var_by_op_message(
-            var_name, op_name),
+        'message': NoUndefinedVariables.undefined_var_message(var_name, op_name),
         'locations': [
             SourceLocation(l1, c1),
             SourceLocation(l2, c2),
@@ -128,7 +120,7 @@ def test_variable_not_defined():
         field(a: $a, b: $b, c: $c, d: $d)
       }
     ''', [
-        undefined_var('d', 3, 39)
+        undefined_var('d', 3, 39, 'Foo', 2, 7)
     ])
 
 
@@ -138,7 +130,7 @@ def variable_not_defined_by_unnamed_query():
         field(a: $a)
       }
     ''', [
-        undefined_var('a', 3, 18)
+        undefined_var('a', 3, 18, '', 2, 7)
     ])
 
 
@@ -148,8 +140,8 @@ def test_multiple_variables_not_defined():
         field(a: $a, b: $b, c: $c)
       }
     ''', [
-        undefined_var('a', 3, 18),
-        undefined_var('c', 3, 32)
+        undefined_var('a', 3, 18, 'Foo', 2, 7),
+        undefined_var('c', 3, 32, 'Foo', 2, 7)
     ])
 
 
@@ -162,7 +154,7 @@ def test_variable_in_fragment_not_defined_by_unnamed_query():
         field(a: $a)
       }
     ''', [
-        undefined_var('a', 6, 18)
+        undefined_var('a', 6, 18, '', 2, 7)
     ])
 
 
@@ -185,7 +177,7 @@ def test_variable_in_fragment_not_defined_by_operation():
         field(c: $c)
       }
     ''', [
-        undefined_var_by_op('c', 16, 18, 'Foo', 2, 7)
+        undefined_var('c', 16, 18, 'Foo', 2, 7)
     ])
 
 
@@ -208,8 +200,8 @@ def test_multiple_variables_in_fragments_not_defined():
         field(c: $c)
       }
     ''', [
-        undefined_var_by_op('a', 6, 18, 'Foo', 2, 7),
-        undefined_var_by_op('c', 16, 18, 'Foo', 2, 7)
+        undefined_var('a', 6, 18, 'Foo', 2, 7),
+        undefined_var('c', 16, 18, 'Foo', 2, 7)
     ])
 
 
@@ -225,8 +217,8 @@ def test_single_variable_in_fragment_not_defined_by_multiple_operations():
         field(a: $a, b: $b)
       }
     ''', [
-        undefined_var_by_op('b', 9, 25, 'Foo', 2, 7),
-        undefined_var_by_op('b', 9, 25, 'Bar', 5, 7)
+        undefined_var('b', 9, 25, 'Foo', 2, 7),
+        undefined_var('b', 9, 25, 'Bar', 5, 7)
     ])
 
 
@@ -242,8 +234,8 @@ def test_variables_in_fragment_not_defined_by_multiple_operations():
         field(a: $a, b: $b)
       }
     ''', [
-        undefined_var_by_op('a', 9, 18, 'Foo', 2, 7),
-        undefined_var_by_op('b', 9, 25, 'Bar', 5, 7)
+        undefined_var('a', 9, 18, 'Foo', 2, 7),
+        undefined_var('b', 9, 25, 'Bar', 5, 7)
     ])
 
 
@@ -262,8 +254,8 @@ def test_variable_in_fragment_used_by_other_operation():
         field(b: $b)
       }
     ''', [
-        undefined_var_by_op('a', 9, 18, 'Foo', 2, 7),
-        undefined_var_by_op('b', 12, 18, 'Bar', 5, 7)
+        undefined_var('a', 9, 18, 'Foo', 2, 7),
+        undefined_var('b', 12, 18, 'Bar', 5, 7)
     ])
 
 
@@ -284,10 +276,10 @@ def test_multiple_undefined_variables_produce_multiple_errors():
         field2(c: $c)
       }
     ''', [
-        undefined_var_by_op('a', 9, 19, 'Foo', 2, 7),
-        undefined_var_by_op('c', 14, 19, 'Foo', 2, 7),
-        undefined_var_by_op('a', 11, 19, 'Foo', 2, 7),
-        undefined_var_by_op('b', 9, 26, 'Bar', 5, 7),
-        undefined_var_by_op('c', 14, 19, 'Bar', 5, 7),
-        undefined_var_by_op('b', 11, 26, 'Bar', 5, 7),
+        undefined_var('a', 9, 19, 'Foo', 2, 7),
+        undefined_var('a', 11, 19, 'Foo', 2, 7),
+        undefined_var('c', 14, 19, 'Foo', 2, 7),
+        undefined_var('b', 9, 26, 'Bar', 5, 7),
+        undefined_var('b', 11, 26, 'Bar', 5, 7),
+        undefined_var('c', 14, 19, 'Bar', 5, 7),
     ])

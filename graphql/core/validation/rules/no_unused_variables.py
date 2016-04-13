@@ -3,50 +3,36 @@ from .base import ValidationRule
 
 
 class NoUnusedVariables(ValidationRule):
-    __slots__ = 'visited_fragment_names', 'variable_definitions', 'variable_name_used', 'visit_spread_fragments'
+    __slots__ = 'variable_definitions'
 
     def __init__(self, context):
-        self.visited_fragment_names = None
-        self.variable_definitions = None
-        self.variable_name_used = None
-        self.visit_spread_fragments = True
+        self.variable_definitions = []
         super(NoUnusedVariables, self).__init__(context)
 
     def enter_OperationDefinition(self, node, key, parent, path, ancestors):
-        self.visited_fragment_names = set()
         self.variable_definitions = []
-        self.variable_name_used = set()
 
-    def leave_OperationDefinition(self, node, key, parent, path, ancestors):
+    def leave_OperationDefinition(self, operation, key, parent, path, ancestors):
+        variable_name_used = set()
+        usages = self.context.get_recursive_variable_usages(operation)
+
+        for variable_usage in usages:
+            variable_name_used.add(variable_usage.node.name.value)
+
         errors = [
             GraphQLError(
                 self.unused_variable_message(variable_definition.variable.name.value),
                 [variable_definition]
             )
             for variable_definition in self.variable_definitions
-            if variable_definition.variable.name.value not in self.variable_name_used
+            if variable_definition.variable.name.value not in variable_name_used
             ]
 
         if errors:
             return errors
 
     def enter_VariableDefinition(self, node, key, parent, path, ancestors):
-        if self.variable_definitions is not None:
-            self.variable_definitions.append(node)
-
-        return False
-
-    def enter_Variable(self, node, key, parent, path, ancestors):
-        if self.variable_name_used is not None:
-            self.variable_name_used.add(node.name.value)
-
-    def enter_FragmentSpread(self, node, key, parent, path, ancestors):
-        if self.visited_fragment_names is not None:
-            spread_name = node.name.value
-            if spread_name in self.visited_fragment_names:
-                return False
-
-            self.visited_fragment_names.add(spread_name)
+        self.variable_definitions.append(node)
 
     @staticmethod
     def unused_variable_message(variable_name):
