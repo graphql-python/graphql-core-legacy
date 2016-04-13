@@ -100,7 +100,15 @@ class ValidationContext(object):
         spreads = self._fragment_spreads.get(node)
         if not spreads:
             spreads = []
-            self.gather_spreads(spreads, node.selection_set)
+            sets_to_visit = [node.selection_set]
+            while sets_to_visit:
+                _set = sets_to_visit.pop()
+                for selection in _set.selections:
+                    if isinstance(selection, FragmentSpread):
+                        spreads.append(selection)
+                    elif selection.selection_set:
+                        sets_to_visit.append(selection.selection_set)
+
             self._fragment_spreads[node] = spreads
         return spreads
 
@@ -133,11 +141,3 @@ class ValidationContext(object):
 
     def get_argument(self):
         return self._type_info.get_argument()
-
-    @classmethod
-    def gather_spreads(cls, spreads, node):
-        for selection in node.selections:
-            if isinstance(selection, FragmentSpread):
-                spreads.append(selection)
-            elif selection.selection_set:
-                cls.gather_spreads(spreads, selection.selection_set)
