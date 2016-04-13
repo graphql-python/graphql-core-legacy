@@ -19,17 +19,12 @@ class NoUnusedVariables(ValidationRule):
         for variable_usage in usages:
             variable_name_used.add(variable_usage.node.name.value)
 
-        errors = [
-            GraphQLError(
-                self.unused_variable_message(variable_definition.variable.name.value),
-                [variable_definition]
-            )
-            for variable_definition in self.variable_definitions
-            if variable_definition.variable.name.value not in variable_name_used
-            ]
-
-        if errors:
-            return errors
+        for variable_definition in self.variable_definitions:
+            if variable_definition.variable.name.value not in variable_name_used:
+                self.context.report_error(GraphQLError(
+                    self.unused_variable_message(variable_definition.variable.name.value),
+                    [variable_definition]
+                ))
 
     def enter_VariableDefinition(self, node, key, parent, path, ancestors):
         self.variable_definitions.append(node)

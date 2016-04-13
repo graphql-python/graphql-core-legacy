@@ -23,19 +23,15 @@ class NoUndefinedVariables(ValidationRule):
 
     def leave_OperationDefinition(self, operation, key, parent, path, ancestors):
         usages = self.context.get_recursive_variable_usages(operation)
-        errors = []
 
         for variable_usage in usages:
             node = variable_usage.node
             var_name = node.name.value
             if var_name not in self.defined_variable_names:
-                errors.append(GraphQLError(
+                self.context.report_error(GraphQLError(
                     self.undefined_var_message(var_name, operation.name and operation.name.value),
                     [node, operation]
                 ))
-
-        if errors:
-            return errors
 
     def enter_VariableDefinition(self, node, key, parent, path, ancestors):
         self.defined_variable_names.add(node.variable.name.value)

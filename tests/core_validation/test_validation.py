@@ -49,5 +49,7 @@ def test_validates_using_a_custom_type_info():
         specified_rules
     )
 
-    assert len(errors) == 1
+    assert len(errors) == 3
     assert errors[0].message == 'Cannot query field "catOrDog" on "QueryRoot".'
+    assert errors[1].message == 'Cannot query field "furColor" on "Cat".'
+    assert errors[2].message == 'Cannot query field "isHousetrained" on "Dog".'

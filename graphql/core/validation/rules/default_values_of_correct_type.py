@@ -12,18 +12,18 @@ class DefaultValuesOfCorrectType(ValidationRule):
         type = self.context.get_input_type()
 
         if isinstance(type, GraphQLNonNull) and default_value:
-            return GraphQLError(
+            self.context.report_error(GraphQLError(
                 self.default_for_non_null_arg_message(name, type, type.of_type),
                 [default_value]
-            )
+            ))
 
         if type and default_value:
             errors = is_valid_literal_value(type, default_value)
             if errors:
-                return GraphQLError(
+                self.context.report_error(GraphQLError(
                     self.bad_value_for_default_arg_message(name, type, print_ast(default_value), errors),
                     [default_value]
-                )
+                ))
         return False
 
     def enter_SelectionSet(self, node, key, parent, path, ancestors):

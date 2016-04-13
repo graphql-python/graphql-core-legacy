@@ -31,17 +31,24 @@ class UsageVisitor(Visitor):
 
 
 class ValidationContext(object):
-    __slots__ = '_schema', '_ast', '_type_info', '_fragments', '_fragment_spreads', '_recursively_referenced_fragments', '_variable_usages', '_recursive_variable_usages'
+    __slots__ = '_schema', '_ast', '_type_info', '_errors', '_fragments', '_fragment_spreads', '_recursively_referenced_fragments', '_variable_usages', '_recursive_variable_usages'
 
     def __init__(self, schema, ast, type_info):
         self._schema = schema
         self._ast = ast
         self._type_info = type_info
+        self._errors = []
         self._fragments = None
         self._fragment_spreads = {}
         self._recursively_referenced_fragments = {}
         self._variable_usages = {}
         self._recursive_variable_usages = {}
+
+    def report_error(self, error):
+        self._errors.append(error)
+
+    def get_errors(self):
+        return self._errors
 
     def get_schema(self):
         return self._schema

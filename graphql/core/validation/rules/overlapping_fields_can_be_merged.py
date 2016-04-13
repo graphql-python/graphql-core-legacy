@@ -123,10 +123,8 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
 
         conflicts = self.find_conflicts(field_map)
         if conflicts:
-            return [
-                GraphQLError(self.fields_conflict_message(reason_name, reason), list(fields1)+list(fields2)) for
-                (reason_name, reason), fields1, fields2 in conflicts
-                ]
+            for (reason_name, reason), fields1, fields2 in conflicts:
+                self.context.report_error(GraphQLError(self.fields_conflict_message(reason_name, reason), list(fields1)+list(fields2)))
 
     @staticmethod
     def same_type(type1, type2):

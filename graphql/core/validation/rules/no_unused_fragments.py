@@ -26,17 +26,12 @@ class NoUnusedFragments(ValidationRule):
             for fragment in fragments:
                 fragment_names_used.add(fragment.name.value)
 
-        errors = [
-            GraphQLError(
-                self.unused_fragment_message(fragment_definition.name.value),
-                [fragment_definition]
-            )
-            for fragment_definition in self.fragment_definitions
-            if fragment_definition.name.value not in fragment_names_used
-            ]
-
-        if errors:
-            return errors
+        for fragment_definition in self.fragment_definitions:
+            if fragment_definition.name.value not in fragment_names_used:
+                self.context.report_error(GraphQLError(
+                    self.unused_fragment_message(fragment_definition.name.value),
+                    [fragment_definition]
+                ))
 
     @staticmethod
     def unused_fragment_message(fragment_name):

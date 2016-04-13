@@ -20,12 +20,12 @@ class UniqueInputFieldNames(ValidationRule):
     def enter_ObjectField(self, node, key, parent, path, ancestors):
         field_name = node.name.value
         if field_name in self.known_names:
-            return GraphQLError(
+            self.context.report_error(GraphQLError(
                 self.duplicate_input_field_message(field_name),
                 [self.known_names[field_name], node.name]
-            )
-
-        self.known_names[field_name] = node.name
+            ))
+        else:
+            self.known_names[field_name] = node.name
         return False
 
     @staticmethod

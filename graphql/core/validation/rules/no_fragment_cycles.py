@@ -14,10 +14,6 @@ class NoFragmentCycles(ValidationRule):
         self.spread_path = []
         self.spread_path_index_by_name = {}
 
-    def leave_Document(self, node, key, parent, path, ancestors):
-        if self.errors:
-            return self.errors
-
     def enter_OperationDefinition(self, node, key, parent, path, ancestors):
         return False
 
@@ -49,7 +45,7 @@ class NoFragmentCycles(ValidationRule):
                 self.spread_path.pop()
             else:
                 cycle_path = self.spread_path[cycle_index:]
-                self.errors.append(GraphQLError(
+                self.context.report_error(GraphQLError(
                     self.cycle_error_message(
                         spread_name,
                         [s.name.value for s in cycle_path]

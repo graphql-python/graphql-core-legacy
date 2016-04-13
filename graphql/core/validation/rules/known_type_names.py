@@ -8,7 +8,7 @@ class KnownTypeNames(ValidationRule):
         type = self.context.get_schema().get_type(type_name)
 
         if not type:
-            return GraphQLError(self.unknown_type_message(type_name), [node])
+            self.context.report_error(GraphQLError(self.unknown_type_message(type_name), [node]))
 
     @staticmethod
     def unknown_type_message(type):

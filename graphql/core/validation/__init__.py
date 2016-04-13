@@ -19,4 +19,4 @@ def visit_using_rules(schema, type_info, ast, rules):
     errors = []
     rules = [rule(context) for rule in rules]
     visit(ast, ValidationVisitor(rules, context, type_info, errors))
-    return errors
+    return context.get_errors()

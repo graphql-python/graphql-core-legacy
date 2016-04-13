@@ -19,7 +19,6 @@ class VariablesInAllowedPosition(ValidationRule):
 
     def leave_OperationDefinition(self, operation, key, parent, path, ancestors):
         usages = self.context.get_recursive_variable_usages(operation)
-        errors = []
 
         for usage in usages:
             node = usage.node
@@ -28,13 +27,10 @@ class VariablesInAllowedPosition(ValidationRule):
             var_def = self.var_def_map.get(var_name)
             var_type = var_def and type_from_ast(self.context.get_schema(), var_def.type)
             if var_type and type and not self.var_type_allowed_for_type(self.effective_type(var_type, var_def), type):
-                errors.append(GraphQLError(
+                self.context.report_error(GraphQLError(
                     self.bad_var_pos_message(var_name, var_type, type),
                     [node]
                 ))
-
-        if errors:
-            return errors
 
     def enter_VariableDefinition(self, node, key, parent, path, ancestors):
         self.var_def_map[node.variable.name.value] = node

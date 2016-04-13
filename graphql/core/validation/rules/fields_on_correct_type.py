@@ -10,10 +10,10 @@ class FieldsOnCorrectType(ValidationRule):
 
         field_def = self.context.get_field_def()
         if not field_def:
-            return GraphQLError(
+            self.context.report_error(GraphQLError(
                 self.undefined_field_message(node.name.value, type.name),
                 [node]
-            )
+            ))
 
     @staticmethod
     def undefined_field_message(field_name, type):
