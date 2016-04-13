@@ -16,7 +16,7 @@ def validate(schema, ast, rules=specified_rules):
 
 def visit_using_rules(schema, type_info, ast, rules):
     context = ValidationContext(schema, ast, type_info)
-    errors = []
     rules = [rule(context) for rule in rules]
-    visit(ast, ValidationVisitor(rules, context, type_info, errors))
+    for instance in rules:
+        visit(ast, ValidationVisitor(instance, context, type_info))
     return context.get_errors()
