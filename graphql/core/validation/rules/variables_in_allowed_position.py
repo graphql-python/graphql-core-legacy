@@ -25,12 +25,13 @@ class VariablesInAllowedPosition(ValidationRule):
             type = usage.type
             var_name = node.name.value
             var_def = self.var_def_map.get(var_name)
-            var_type = var_def and type_from_ast(self.context.get_schema(), var_def.type)
-            if var_type and type and not self.var_type_allowed_for_type(self.effective_type(var_type, var_def), type):
-                self.context.report_error(GraphQLError(
-                    self.bad_var_pos_message(var_name, var_type, type),
-                    [node]
-                ))
+            if var_def and type:
+                var_type = type_from_ast(self.context.get_schema(), var_def.type)
+                if var_type and not self.var_type_allowed_for_type(self.effective_type(var_type, var_def), type):
+                    self.context.report_error(GraphQLError(
+                        self.bad_var_pos_message(var_name, var_type, type),
+                        [var_def, node]
+                    ))
 
     def enter_VariableDefinition(self, node, key, parent, path, ancestors):
         self.var_def_map[node.variable.name.value] = node

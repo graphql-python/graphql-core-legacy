@@ -153,15 +153,14 @@ def test_boolean_non_null_boolean_in_directive_with_default():
 
 def test_int_non_null_int():
     expect_fails_rule(VariablesInAllowedPosition, '''
-      query Query($intArg: Int)
-      {
+      query Query($intArg: Int) {
         complicatedArgs {
           nonNullIntArgField(nonNullIntArg: $intArg)
         }
       }
     ''', [
       { 'message': VariablesInAllowedPosition.bad_var_pos_message('intArg', 'Int', 'Int!'),
-        'locations': [SourceLocation(5, 45)] }
+        'locations': [SourceLocation(4, 45), SourceLocation(2, 19)] }
     ])
 
 def test_int_non_null_int_within_fragment():
@@ -169,15 +168,14 @@ def test_int_non_null_int_within_fragment():
       fragment nonNullIntArgFieldFrag on ComplicatedArgs {
         nonNullIntArgField(nonNullIntArg: $intArg)
       }
-      query Query($intArg: Int)
-      {
+      query Query($intArg: Int) {
         complicatedArgs {
           ...nonNullIntArgFieldFrag
         }
       }
     ''', [
       { 'message': VariablesInAllowedPosition.bad_var_pos_message('intArg', 'Int', 'Int!'),
-        'locations': [SourceLocation(3, 43)] }
+        'locations': [SourceLocation(5, 19), SourceLocation(3, 43)] }
     ])
 
 def test_int_non_null_int_within_nested_fragment():
@@ -188,61 +186,56 @@ def test_int_non_null_int_within_nested_fragment():
       fragment nonNullIntArgFieldFrag on ComplicatedArgs {
         nonNullIntArgField(nonNullIntArg: $intArg)
       }
-      query Query($intArg: Int)
-      {
+      query Query($intArg: Int) {
         complicatedArgs {
           ...outerFrag
         }
       }
     ''', [
       { 'message': VariablesInAllowedPosition.bad_var_pos_message('intArg', 'Int', 'Int!'),
-        'locations': [SourceLocation(6, 43)] }
+        'locations': [SourceLocation(8, 19), SourceLocation(6, 43)] }
     ])
 
 def test_string_over_boolean():
     expect_fails_rule(VariablesInAllowedPosition, '''
-      query Query($stringVar: String)
-      {
+      query Query($stringVar: String) {
         complicatedArgs {
           booleanArgField(booleanArg: $stringVar)
         }
       }
     ''', [
       { 'message': VariablesInAllowedPosition.bad_var_pos_message('stringVar', 'String', 'Boolean'),
-        'locations': [SourceLocation(5, 39)] }
+        'locations': [SourceLocation(2, 19), SourceLocation(4, 39)] }
     ])
 
 def test_string_string_fail():
     expect_fails_rule(VariablesInAllowedPosition, '''
-      query Query($stringVar: String)
-      {
+      query Query($stringVar: String) {
         complicatedArgs {
           stringListArgField(stringListArg: $stringVar)
         }
       }
     ''', [
       { 'message': VariablesInAllowedPosition.bad_var_pos_message('stringVar', 'String', '[String]'),
-        'locations': [SourceLocation(5, 45)]}
+        'locations': [SourceLocation(2, 19), SourceLocation(4, 45)]}
     ])
 
 def test_boolean_non_null_boolean_in_directive():
     expect_fails_rule(VariablesInAllowedPosition, '''
-      query Query($boolVar: Boolean)
-      {
+      query Query($boolVar: Boolean) {
         dog @include(if: $boolVar)
       }
     ''', [
       { 'message': VariablesInAllowedPosition.bad_var_pos_message('boolVar', 'Boolean', 'Boolean!'),
-        'locations': [SourceLocation(4, 26)] 
+        'locations': [SourceLocation(2, 19), SourceLocation(3, 26)] 
       }])
 
 def test_string_non_null_boolean_in_directive():
     expect_fails_rule(VariablesInAllowedPosition, '''
-      query Query($stringVar: String)
-      {
+      query Query($stringVar: String) {
         dog @include(if: $stringVar)
       }
     ''', [
       { 'message': VariablesInAllowedPosition.bad_var_pos_message('stringVar', 'String', 'Boolean!'),
-        'locations': [SourceLocation(4, 26)] }
+        'locations': [SourceLocation(2, 19), SourceLocation(3, 26)] }
     ])
