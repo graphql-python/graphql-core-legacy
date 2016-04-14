@@ -11,6 +11,7 @@ from ...type.definition import (
     get_named_type,
 )
 from ...utils.type_from_ast import type_from_ast
+from ...utils.type_comparators import is_equal_type
 from .base import ValidationRule
 
 
@@ -128,7 +129,8 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
 
     @staticmethod
     def same_type(type1, type2):
-        return type1.is_same_type(type2)
+        return is_equal_type(type1, type2)
+        # return type1.is_same_type(type2)
 
     @staticmethod
     def same_value(value1, value2):

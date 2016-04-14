@@ -1459,6 +1459,98 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
         assert str(excinfo.value) == 'AnotherInterface.field(input:) expects type "String" ' \
                                      'but AnotherObject.field(input:) provides type "SomeScalar".'
 
+    def test_rejects_an_object_with_an_incorrectly_typed_interface_field(self):
+        AnotherInterface = GraphQLInterfaceType(
+            name='AnotherInterface',
+            resolve_type=_none,
+            fields={
+                'field': GraphQLField(GraphQLString)
+            }
+        )
+        AnotherObject = GraphQLObjectType(
+            name='AnotherObject',
+            interfaces=[AnotherInterface],
+            fields={
+                'field': GraphQLField(SomeScalarType)
+            }
+        )
+
+        with raises(AssertionError) as excinfo:
+            schema_with_field_type(AnotherObject)
+
+        assert str(excinfo.value) == 'AnotherInterface.field expects type "String" ' \
+                                     'but AnotherObject.field provides type "SomeScalar".'
+
+    def test_rejects_an_object_with_a_differently_typed_Interface_field(self):
+        TypeA = GraphQLObjectType(
+            name='A',
+            fields={
+                'foo': GraphQLField(GraphQLString)
+            }
+        )
+        TypeB = GraphQLObjectType(
+            name='B',
+            fields={
+                'foo': GraphQLField(GraphQLString)
+            }
+        )
+        AnotherInterface = GraphQLInterfaceType(
+            name='AnotherInterface',
+            resolve_type=_none,
+            fields={
+                'field': GraphQLField(TypeA)
+            }
+        )
+        AnotherObject = GraphQLObjectType(
+            name='AnotherObject',
+            interfaces=[AnotherInterface],
+            fields={
+                'field': GraphQLField(TypeB)
+            }
+        )
+
+        with raises(AssertionError) as excinfo:
+            schema_with_field_type(AnotherObject)
+
+        assert str(excinfo.value) == 'AnotherInterface.field expects type "A" but ' \
+                                     'AnotherObject.field provides type "B".'
+
+    def test_accepts_an_object_with_a_subtyped_interface_field_interface(self):
+        AnotherInterface = GraphQLInterfaceType(
+            name='AnotherInterface',
+            resolve_type=_none,
+            fields=lambda: {
+                'field': GraphQLField(AnotherInterface)
+            }
+        )
+        AnotherObject = GraphQLObjectType(
+            name='AnotherObject',
+            interfaces=[AnotherInterface],
+            fields=lambda: {
+                'field': GraphQLField(AnotherObject)
+            }
+        )
+
+        assert schema_with_field_type(AnotherObject)
+
+    def test_accepts_an_object_with_a_subtyped_interface_field_union(self):
+        AnotherInterface = GraphQLInterfaceType(
+            name='AnotherInterface',
+            resolve_type=_none,
+            fields=lambda: {
+                'field': GraphQLField(SomeUnionType)
+            }
+        )
+        AnotherObject = GraphQLObjectType(
+            name='AnotherObject',
+            interfaces=[AnotherInterface],
+            fields=lambda: {
+                'field': GraphQLField(SomeObjectType)
+            }
+        )
+
+        assert schema_with_field_type(AnotherObject)
+
     def test_accepts_an_object_with_an_equivalently_modified_interface_field_type(self):
         AnotherInterface = GraphQLInterfaceType(
             name='AnotherInterface',
@@ -1478,7 +1570,52 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
 
         assert schema_with_field_type(AnotherObject)
 
-    def test_rejects_an_object_with_an_differently_modified_interface_field_type(self):
+    def test_rejects_an_object_with_a_non_list_interface_field_list_type(self):
+        AnotherInterface = GraphQLInterfaceType(
+            name='AnotherInterface',
+            resolve_type=_none,
+            fields={
+                'field': GraphQLField(GraphQLList(GraphQLString))
+            }
+        )
+        AnotherObject = GraphQLObjectType(
+            name='AnotherObject',
+            interfaces=[AnotherInterface],
+            fields={
+                'field': GraphQLField(GraphQLString)
+            }
+        )
+
+        with raises(AssertionError) as excinfo:
+            schema_with_field_type(AnotherObject)
+
+        assert str(excinfo.value) == 'AnotherInterface.field expects type "[String]" ' \
+                                     'but AnotherObject.field provides type "String".'
+
+    def test_rejects_a_object_with_a_list_interface_field_non_list_type(self):
+        AnotherInterface = GraphQLInterfaceType(
+            name='AnotherInterface',
+            resolve_type=_none,
+            fields={
+                'field': GraphQLField(GraphQLString)
+            }
+        )
+        AnotherObject = GraphQLObjectType(
+            name='AnotherObject',
+            interfaces=[AnotherInterface],
+            fields={
+                'field': GraphQLField(GraphQLList(GraphQLString))
+
+            }
+        )
+
+        with raises(AssertionError) as excinfo:
+            schema_with_field_type(AnotherObject)
+
+        assert str(excinfo.value) == 'AnotherInterface.field expects type "String" ' \
+                                     'but AnotherObject.field provides type "[String]".'
+
+    def test_accepts_an_object_with_a_subset_non_null_interface_field_type(self):
         AnotherInterface = GraphQLInterfaceType(
             name='AnotherInterface',
             resolve_type=_none,
@@ -1491,6 +1628,24 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
             interfaces=[AnotherInterface],
             fields={
                 'field': GraphQLField(GraphQLNonNull(GraphQLString))
+            }
+        )
+
+        assert schema_with_field_type(AnotherObject)
+
+    def test_rejects_a_object_with_a_superset_nullable_interface_field_type(self):
+        AnotherInterface = GraphQLInterfaceType(
+            name='AnotherInterface',
+            resolve_type=_none,
+            fields={
+                'field': GraphQLField(GraphQLNonNull(GraphQLString))
+            }
+        )
+        AnotherObject = GraphQLObjectType(
+            name='AnotherObject',
+            interfaces=[AnotherInterface],
+            fields={
+                'field': GraphQLField(GraphQLString)
 
             }
         )
@@ -1498,5 +1653,5 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
         with raises(AssertionError) as excinfo:
             schema_with_field_type(AnotherObject)
 
-        assert str(excinfo.value) == 'AnotherInterface.field expects type "String" ' \
-                                     'but AnotherObject.field provides type "String!".'
+        assert str(excinfo.value) == 'AnotherInterface.field expects type "String!" but ' \
+                                     'AnotherObject.field provides type "String".'

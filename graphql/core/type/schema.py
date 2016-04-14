@@ -9,6 +9,7 @@ from .definition import (
 )
 from .directives import GraphQLDirective, GraphQLIncludeDirective, GraphQLSkipDirective
 from .introspection import IntrospectionSchema
+from ..utils.type_comparators import is_equal_type, is_type_sub_type_of
 
 
 class GraphQLSchema(object):
@@ -144,7 +145,7 @@ def assert_object_implements_interface(object, interface):
             interface, field_name, object
         )
 
-        assert is_equal_type(interface_field.type, object_field.type), (
+        assert is_type_sub_type_of(object_field.type, interface_field.type), (
             '{}.{} expects type "{}" but {}.{} provides type "{}".'
         ).format(interface, field_name, interface_field.type, object, field_name, object_field.type)
 
@@ -171,13 +172,3 @@ def assert_object_implements_interface(object, interface):
                     '"{}" but is not also provided by the '
                     'interface {}.{}.'
                 ).format(object, field_name, arg_name, object_arg.type, interface, field_name)
-
-
-def is_equal_type(type_a, type_b):
-    if isinstance(type_a, GraphQLNonNull) and isinstance(type_b, GraphQLNonNull):
-        return is_equal_type(type_a.of_type, type_b.of_type)
-
-    if isinstance(type_a, GraphQLList) and isinstance(type_b, GraphQLList):
-        return is_equal_type(type_a.of_type, type_b.of_type)
-
-    return type_a is type_b

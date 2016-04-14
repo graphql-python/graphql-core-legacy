@@ -1,9 +1,9 @@
 from ...error import GraphQLError
 from ...type.definition import (
-    GraphQLList,
     GraphQLNonNull
 )
 from ...utils.type_from_ast import type_from_ast
+from ...utils.type_comparators import is_type_sub_type_of
 from .base import ValidationRule
 
 
@@ -27,7 +27,7 @@ class VariablesInAllowedPosition(ValidationRule):
             var_def = self.var_def_map.get(var_name)
             if var_def and type:
                 var_type = type_from_ast(self.context.get_schema(), var_def.type)
-                if var_type and not self.var_type_allowed_for_type(self.effective_type(var_type, var_def), type):
+                if var_type and not is_type_sub_type_of(self.effective_type(var_type, var_def), type):
                     self.context.report_error(GraphQLError(
                         self.bad_var_pos_message(var_name, var_type, type),
                         [var_def, node]
@@ -42,22 +42,6 @@ class VariablesInAllowedPosition(ValidationRule):
             return var_type
 
         return GraphQLNonNull(var_type)
-
-    @classmethod
-    def var_type_allowed_for_type(cls, var_type, expected_type):
-        if isinstance(expected_type, GraphQLNonNull):
-            if isinstance(var_type, GraphQLNonNull):
-                return cls.var_type_allowed_for_type(var_type.of_type, expected_type.of_type)
-
-            return False
-
-        if isinstance(var_type, GraphQLNonNull):
-            return cls.var_type_allowed_for_type(var_type.of_type, expected_type)
-
-        if isinstance(var_type, GraphQLList) and isinstance(expected_type, GraphQLList):
-            return cls.var_type_allowed_for_type(var_type.of_type, expected_type.of_type)
-
-        return var_type == expected_type
 
     @staticmethod
     def bad_var_pos_message(var_name, var_type, expected_type):
