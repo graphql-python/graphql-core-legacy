@@ -2,12 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='graphql-core',
-    version='0.4.12.1',
+    version='0.4.13',
     description='GraphQL implementation for Python',
     url='https://github.com/graphql-python/graphql-core',
     download_url='https://github.com/graphql-python/graphql-core/releases',
-    author='Jake Heinz',
-    author_email='me' '@' 'jh.gg',
+    author='Syrus Akbary',
+    author_email='me@syrusakbary.com',
     license='MIT',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
