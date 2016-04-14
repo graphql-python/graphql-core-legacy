@@ -1,7 +1,8 @@
 from pytest import raises
+
 from graphql.core.language.error import LanguageError
-from graphql.core.language.source import Source
 from graphql.core.language.lexer import Lexer, Token, TokenKind
+from graphql.core.language.source import Source
 
 
 def lex_one(s):

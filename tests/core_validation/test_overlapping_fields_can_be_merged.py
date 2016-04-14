@@ -1,10 +1,12 @@
 from graphql.core.language.location import SourceLocation as L
-from graphql.core.type.definition import GraphQLObjectType, GraphQLArgument, GraphQLNonNull, GraphQLUnionType, \
-    GraphQLList, GraphQLField
-from graphql.core.type.scalars import GraphQLString, GraphQLInt, GraphQLID
+from graphql.core.type.definition import (GraphQLArgument, GraphQLField,
+                                          GraphQLInterfaceType, GraphQLList,
+                                          GraphQLNonNull, GraphQLObjectType)
+from graphql.core.type.scalars import GraphQLID, GraphQLInt, GraphQLString
 from graphql.core.type.schema import GraphQLSchema
 from graphql.core.validation.rules import OverlappingFieldsCanBeMerged
-from utils import expect_passes_rule, expect_fails_rule, expect_fails_rule_with_schema, expect_passes_rule_with_schema
+from utils import (expect_fails_rule, expect_fails_rule_with_schema,
+                   expect_passes_rule, expect_passes_rule_with_schema)
 
 
 def fields_conflict(reason_name, reason, *locations):
@@ -68,6 +70,15 @@ def test_different_directives_with_different_aliases():
     ''')
 
 
+def test_different_skip_or_include_directives_accepted():
+    expect_passes_rule(OverlappingFieldsCanBeMerged, '''
+    fragment differentDirectivesWithDifferentAliases on Dog {
+        name @include(if: true)
+        name @include(if: false)
+    }
+    ''')
+
+
 def test_same_aliases_with_different_field_targets():
     expect_fails_rule(OverlappingFieldsCanBeMerged, '''
     fragment sameAliasesWithDifferentFieldTargets on Dog {
@@ -79,6 +90,19 @@ def test_same_aliases_with_different_field_targets():
     ], sort_list=False)
 
 
+def test_same_aliases_allowed_on_nonoverlapping_fields():
+    expect_passes_rule(OverlappingFieldsCanBeMerged, '''
+    fragment sameAliasesWithDifferentFieldTargets on Pet {
+        ... on Dog {
+            name
+        }
+        ... on Cat {
+            name: nickname
+        }
+    }
+    ''')
+
+
 def test_alias_masking_direct_field_access():
     expect_fails_rule(OverlappingFieldsCanBeMerged, '''
     fragment aliasMaskingDirectFieldAccess on Dog {
@@ -87,6 +111,28 @@ def test_alias_masking_direct_field_access():
     }
     ''', [
         fields_conflict('name', 'nickname and name are different fields', L(3, 9), L(4, 9))
+    ], sort_list=False)
+
+
+def test_diferent_args_second_adds_an_argument():
+    expect_fails_rule(OverlappingFieldsCanBeMerged, '''
+    fragment conflictingArgs on Dog {
+        doesKnowCommand
+        doesKnowCommand(dogCommand: HEEL)
+    }
+    ''', [
+        fields_conflict('doesKnowCommand', 'they have differing arguments', L(3, 9), L(4, 9))
+    ], sort_list=False)
+
+
+def test_diferent_args_second_missing_an_argument():
+    expect_fails_rule(OverlappingFieldsCanBeMerged, '''
+    fragment conflictingArgs on Dog {
+        doesKnowCommand(dogCommand: SIT)
+        doesKnowCommand
+    }
+    ''', [
+        fields_conflict('doesKnowCommand', 'they have differing arguments', L(3, 9), L(4, 9))
     ], sort_list=False)
 
 
@@ -101,48 +147,17 @@ def test_conflicting_args():
     ], sort_list=False)
 
 
-def test_conflicting_directives():
-    expect_fails_rule(OverlappingFieldsCanBeMerged, '''
-    fragment conflictingDirectiveArgs on Dog {
-        name @include(if: true)
-        name @skip(if: false)
+def test_allows_different_args_where_no_conflict_is_possible():
+    expect_passes_rule(OverlappingFieldsCanBeMerged, '''
+    fragment conflictingArgs on Pet {
+        ... on Dog {
+            name(surname: true)
+        }
+        ... on Cat {
+            name
+        }
     }
-    ''', [
-        fields_conflict('name', 'they have differing directives', L(3, 9), L(4, 9))
-    ], sort_list=False)
-
-
-def test_conflicting_directive_args():
-    expect_fails_rule(OverlappingFieldsCanBeMerged, '''
-    fragment conflictingDirectiveArgs on Dog {
-        name @include(if: true)
-        name @include(if: false)
-    }
-    ''', [
-        fields_conflict('name', 'they have differing directives', L(3, 9), L(4, 9))
-    ], sort_list=False)
-
-
-def test_conflicting_args_with_matching_directives():
-    expect_fails_rule(OverlappingFieldsCanBeMerged, '''
-    fragment conflictingArgsWithMatchingDirectiveArgs on Dog {
-        doesKnowCommand(dogCommand: SIT) @include(if: true)
-        doesKnowCommand(dogCommand: HEEL) @include(if: true)
-    }
-    ''', [
-        fields_conflict('doesKnowCommand', 'they have differing arguments', L(3, 9), L(4, 9))
-    ], sort_list=False)
-
-
-def test_conflicting_directives_with_matching_args():
-    expect_fails_rule(OverlappingFieldsCanBeMerged, '''
-    fragment conflictingDirectiveArgsWithMatchingArgs on Dog {
-        doesKnowCommand(dogCommand: SIT) @include(if: true)
-        doesKnowCommand(dogCommand: SIT) @skip(if: false)
-    }
-    ''', [
-        fields_conflict('doesKnowCommand', 'they have differing directives', L(3, 9), L(4, 9))
-    ], sort_list=False)
+    ''')
 
 
 def test_encounters_conflict_in_fragments():
@@ -205,7 +220,7 @@ def test_deep_conflict():
     ''', [
         fields_conflict(
             'field', [('x', 'a and b are different fields')],
-            L(3, 9), L(6, 9), L(4, 13), L(7, 13))
+            L(3, 9), L(4, 13), L(6, 9), L(7, 13))
     ], sort_list=False)
 
 
@@ -224,7 +239,7 @@ def test_deep_conflict_with_multiple_issues():
     ''', [
         fields_conflict(
             'field', [('x', 'a and b are different fields'), ('y', 'c and d are different fields')],
-            L(3, 9), L(7, 9), L(4, 13), L(8, 13), L(5, 13), L(9, 13)
+            L(3, 9), L(4, 13), L(5, 13), L(7, 9), L(8, 13), L(9, 13)
         )
     ], sort_list=False)
 
@@ -246,7 +261,7 @@ def test_very_deep_conflict():
     ''', [
         fields_conflict(
             'field', [['deepField', [['x', 'a and b are different fields']]]],
-            L(3, 9), L(8, 9), L(4, 13), L(9, 13), L(5, 17), L(10, 17)
+            L(3, 9), L(4, 13), L(5, 17), L(8, 9), L(9, 13), L(10, 17)
         )
     ], sort_list=False)
 
@@ -271,30 +286,42 @@ def test_reports_deep_conflict_to_nearest_common_ancestor():
     ''', [
         fields_conflict(
             'deepField', [('x', 'a and b are different fields')],
-            L(4, 13), L(7, 13), L(5, 17), L(8, 17)
+            L(4, 13), L(5, 17), L(7, 13), L(8, 17)
         )
     ], sort_list=False)
 
 
+SomeBox = GraphQLInterfaceType('SomeBox', {
+    'unrelatedField': GraphQLField(GraphQLString)
+}, resolve_type=lambda *_: StringBox)
+
 StringBox = GraphQLObjectType('StringBox', {
-    'scalar': GraphQLField(GraphQLString)
-})
+    'scalar': GraphQLField(GraphQLString),
+    'unrelatedField': GraphQLField(GraphQLString)
+}, interfaces=[SomeBox])
 
 IntBox = GraphQLObjectType('IntBox', {
-    'scalar': GraphQLField(GraphQLInt)
-})
+    'scalar': GraphQLField(GraphQLInt),
+    'unrelatedField': GraphQLField(GraphQLString)
+}, interfaces=[SomeBox])
 
-NonNullStringBox1 = GraphQLObjectType('NonNullStringBox1', {
+NonNullStringBox1 = GraphQLInterfaceType('NonNullStringBox1', {
     'scalar': GraphQLField(GraphQLNonNull(GraphQLString))
-})
+}, resolve_type=lambda *_: StringBox)
 
-NonNullStringBox2 = GraphQLObjectType('NonNullStringBox2', {
+NonNullStringBox1Impl = GraphQLObjectType('NonNullStringBox1Impl', {
+    'scalar': GraphQLField(GraphQLNonNull(GraphQLString)),
+    'unrelatedField': GraphQLField(GraphQLString)
+}, interfaces=[SomeBox, NonNullStringBox1])
+
+NonNullStringBox2 = GraphQLInterfaceType('NonNullStringBox2', {
     'scalar': GraphQLField(GraphQLNonNull(GraphQLString))
-})
+}, resolve_type=lambda *_: StringBox)
 
-BoxUnion = GraphQLUnionType('BoxUnion', [
-    StringBox, IntBox, NonNullStringBox1, NonNullStringBox2
-], resolve_type=lambda *_: StringBox)
+NonNullStringBox2Impl = GraphQLObjectType('NonNullStringBox2Impl', {
+    'scalar': GraphQLField(GraphQLNonNull(GraphQLString)),
+    'unrelatedField': GraphQLField(GraphQLString)
+}, interfaces=[SomeBox, NonNullStringBox2])
 
 Connection = GraphQLObjectType('Connection', {
     'edges': GraphQLField(GraphQLList(GraphQLObjectType('Edge', {
@@ -306,15 +333,33 @@ Connection = GraphQLObjectType('Connection', {
 })
 
 schema = GraphQLSchema(GraphQLObjectType('QueryRoot', {
-    'boxUnion': GraphQLField(BoxUnion),
+    'someBox': GraphQLField(SomeBox),
     'connection': GraphQLField(Connection)
 }))
 
 
-def test_conflicting_scalar_return_types():
+def test_conflicting_return_types_which_potentially_overlap():
     expect_fails_rule_with_schema(schema, OverlappingFieldsCanBeMerged, '''
     {
-        boxUnion {
+        someBox {
+            ...on IntBox {
+                scalar
+            }
+            ...on NonNullStringBox1 {
+                scalar
+            }
+        }
+    }
+
+    ''', [
+        fields_conflict('scalar', 'they return differing types Int and String!', L(5, 17), L(8, 17))
+    ], sort_list=False)
+
+
+def test_allows_differing_return_types_which_cannot_overlap():
+    expect_passes_rule_with_schema(schema, OverlappingFieldsCanBeMerged, '''
+    {
+        someBox {
             ...on IntBox {
                 scalar
             }
@@ -323,16 +368,13 @@ def test_conflicting_scalar_return_types():
             }
         }
     }
-
-    ''', [
-        fields_conflict('scalar', 'they return differing types Int and String', L(5, 17), L(8, 17))
-    ], sort_list=False)
+    ''')
 
 
 def test_same_wrapped_scalar_return_types():
     expect_passes_rule_with_schema(schema, OverlappingFieldsCanBeMerged, '''
     {
-        boxUnion {
+        someBox {
             ...on NonNullStringBox1 {
               scalar
             }
@@ -378,9 +420,9 @@ def test_compares_deep_types_including_list():
     ''', [
         fields_conflict(
             'edges', [['node', [['id', 'id and name are different fields']]]],
-            L(14, 9), L(5, 13),
-            L(15, 13), L(6, 17),
-            L(16, 17), L(7, 21),
+            L(14, 9), L(15, 13),
+            L(16, 17), L(5, 13),
+            L(6, 17), L(7, 21),
         )
     ], sort_list=False)
 

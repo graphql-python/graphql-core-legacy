@@ -5,11 +5,9 @@ from ...language import ast
 from ...language.printer import print_ast
 from ...pyutils.default_ordered_dict import DefaultOrderedDict
 from ...pyutils.pair_set import PairSet
-from ...type.definition import (
-    GraphQLInterfaceType,
-    GraphQLObjectType,
-    get_named_type,
-)
+from ...type.definition import (GraphQLInterfaceType, GraphQLObjectType,
+                                get_named_type)
+from ...utils.type_comparators import is_equal_type
 from ...utils.type_from_ast import type_from_ast
 from .base import ValidationRule
 
@@ -36,11 +34,27 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
 
         return conflicts
 
-    def find_conflict(self, response_name, pair1, pair2):
-        ast1, def1 = pair1
-        ast2, def2 = pair2
+    def find_conflict(self, response_name, field1, field2):
+        parent_type1, ast1, def1 = field1
+        parent_type2, ast2, def2 = field2
 
-        if ast1 is ast2 or self.compared_set.has(ast1, ast2):
+        # Not a pair
+        if ast1 is ast2:
+            return
+
+        # If the statically known parent types could not possibly apply at the same
+        # time, then it is safe to permit them to diverge as they will not present
+        # any ambiguity by differing.
+        # It is known that two parent types could never overlap if they are
+        # different Object types. Interface or Union types might overlap - if not
+        # in the current state of the schema, then perhaps in some future version,
+        # thus may not safely diverge.
+        if parent_type1 != parent_type2 and \
+                isinstance(parent_type1, GraphQLObjectType) and \
+                isinstance(parent_type2, GraphQLObjectType):
+            return
+
+        if self.compared_set.has(ast1, ast2):
             return
 
         self.compared_set.add(ast1, ast2)
@@ -51,7 +65,8 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
         if name1 != name2:
             return (
                 (response_name, '{} and {} are different fields'.format(name1, name2)),
-                (ast1, ast2)
+                [ast1],
+                [ast2]
             )
 
         type1 = def1 and def1.type
@@ -60,19 +75,15 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
         if type1 and type2 and not self.same_type(type1, type2):
             return (
                 (response_name, 'they return differing types {} and {}'.format(type1, type2)),
-                (ast1, ast2)
+                [ast1],
+                [ast2]
             )
 
         if not self.same_arguments(ast1.arguments, ast2.arguments):
             return (
                 (response_name, 'they have differing arguments'),
-                (ast1, ast2)
-            )
-
-        if not self.same_directives(ast1.directives, ast2.directives):
-            return (
-                (response_name, 'they have differing directives'),
-                (ast1, ast2)
+                [ast1],
+                [ast2]
             )
 
         selection_set1 = ast1.selection_set
@@ -98,7 +109,8 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
             if conflicts:
                 return (
                     (response_name, [conflict[0] for conflict in conflicts]),
-                    tuple(itertools.chain((ast1, ast2), *[conflict[1] for conflict in conflicts]))
+                    tuple(itertools.chain([ast1], *[conflict[1] for conflict in conflicts])),
+                    tuple(itertools.chain([ast2], *[conflict[2] for conflict in conflicts]))
                 )
 
     def leave_SelectionSet(self, node, key, parent, path, ancestors):
@@ -109,14 +121,19 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
 
         conflicts = self.find_conflicts(field_map)
         if conflicts:
-            return [
-                GraphQLError(self.fields_conflict_message(reason_name, reason), list(fields)) for
-                (reason_name, reason), fields in conflicts
-                ]
+            for (reason_name, reason), fields1, fields2 in conflicts:
+                self.context.report_error(
+                    GraphQLError(
+                        self.fields_conflict_message(
+                            reason_name,
+                            reason),
+                        list(fields1) +
+                        list(fields2)))
 
     @staticmethod
     def same_type(type1, type2):
-        return type1.is_same_type(type2)
+        return is_equal_type(type1, type2)
+        # return type1.is_same_type(type2)
 
     @staticmethod
     def same_value(value1, value2):
@@ -144,28 +161,6 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
 
         return True
 
-    @classmethod
-    def same_directives(cls, directives1, directives2):
-        # Check to see if they are empty directives or nones. If they are, we can
-        # bail out early.
-        if not (directives1 or directives2):
-            return True
-
-        if len(directives1) != len(directives2):
-            return False
-
-        directives2_values_to_arg = {a.name.value: a for a in directives2}
-
-        for directive1 in directives1:
-            directive2 = directives2_values_to_arg.get(directive1.name.value)
-            if not directive2:
-                return False
-
-            if not cls.same_arguments(directive1.arguments, directive2.arguments):
-                return False
-
-        return True
-
     def collect_field_asts_and_defs(self, parent_type, selection_set, visited_fragment_names=None, ast_and_defs=None):
         if visited_fragment_names is None:
             visited_fragment_names = set()
@@ -187,7 +182,7 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
                     field_def = parent_type.get_fields().get(field_name)
 
                 response_name = selection.alias.value if selection.alias else field_name
-                ast_and_defs[response_name].append((selection, field_def))
+                ast_and_defs[response_name].append((parent_type, selection, field_def))
 
             elif isinstance(selection, ast.InlineFragment):
                 type_condition = selection.type_condition

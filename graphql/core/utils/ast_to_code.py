@@ -7,7 +7,9 @@ def ast_to_code(ast, indent=0):
     Converts an ast into a python code representation of the AST.
     """
     code = []
-    append = lambda line: code.append(('    ' * indent) + line)
+
+    def append(line):
+        code.append(('    ' * indent) + line)
 
     if isinstance(ast, Node):
         append('ast.{}('.format(ast.__class__.__name__))

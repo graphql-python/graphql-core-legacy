@@ -5,6 +5,7 @@ __all__ = ['LanguageError']
 
 
 class LanguageError(GraphQLError):
+
     def __init__(self, source, position, description):
         location = get_location(source, position)
         super(LanguageError, self).__init__(

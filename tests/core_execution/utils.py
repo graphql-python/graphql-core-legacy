@@ -1,7 +1,9 @@
-from graphql.core.pyutils.defer import Deferred, DeferredException, _passthrough
+from graphql.core.pyutils.defer import (Deferred, DeferredException,
+                                        _passthrough)
 
 
 class RaisingDeferred(Deferred):
+
     def _next(self):
         """Process the next callback."""
         if self._running or self.paused:

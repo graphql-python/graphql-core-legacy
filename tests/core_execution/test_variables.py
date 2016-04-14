@@ -1,20 +1,14 @@
-from pytest import raises
 import json
+
+from pytest import raises
+
+from graphql.core.error import GraphQLError, format_error
 from graphql.core.execution import execute
 from graphql.core.language.parser import parse
-from graphql.core.type import (
-    GraphQLSchema,
-    GraphQLObjectType,
-    GraphQLField,
-    GraphQLArgument,
-    GraphQLInputObjectField,
-    GraphQLInputObjectType,
-    GraphQLList,
-    GraphQLString,
-    GraphQLNonNull,
-    GraphQLScalarType,
-)
-from graphql.core.error import GraphQLError, format_error
+from graphql.core.type import (GraphQLArgument, GraphQLField,
+                               GraphQLInputObjectField, GraphQLInputObjectType,
+                               GraphQLList, GraphQLNonNull, GraphQLObjectType,
+                               GraphQLScalarType, GraphQLSchema, GraphQLString)
 
 TestComplexScalar = GraphQLScalarType(
     name='ComplexScalar',
@@ -628,6 +622,7 @@ def test_does_not_allow_unknown_types_to_be_used_as_values():
 
 # noinspection PyMethodMayBeStatic
 class TestUsesArgumentDefaultValues:
+
     def test_when_no_argument_provided(self):
         check('{ fieldWithDefaultArgumentValue }', {
             'data': {

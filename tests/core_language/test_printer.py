@@ -1,8 +1,11 @@
 import copy
+
+from pytest import raises
+
 from graphql.core.language.ast import Field, Name
 from graphql.core.language.parser import parse
 from graphql.core.language.printer import print_ast
-from pytest import raises
+
 from .fixtures import KITCHEN_SINK
 
 

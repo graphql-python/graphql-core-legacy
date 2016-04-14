@@ -1,7 +1,8 @@
+from pytest import raises
+
 from graphql.core import parse
 from graphql.core.utils.build_ast_schema import build_ast_schema
 from graphql.core.utils.schema_printer import print_schema
-from pytest import raises
 
 
 def cycle_output(body, query_type, mutation_type=None, subscription_type=None):

@@ -1,19 +1,12 @@
 from collections import OrderedDict
+
 from ..language.printer import print_ast
 from ..utils.ast_from_value import ast_from_value
-from .definition import (
-    GraphQLArgument,
-    GraphQLEnumType,
-    GraphQLEnumValue,
-    GraphQLField,
-    GraphQLInputObjectType,
-    GraphQLInterfaceType,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLObjectType,
-    GraphQLScalarType,
-    GraphQLUnionType,
-)
+from .definition import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
+                         GraphQLField, GraphQLInputObjectType,
+                         GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
+                         GraphQLObjectType, GraphQLScalarType,
+                         GraphQLUnionType)
 from .scalars import GraphQLBoolean, GraphQLString
 
 __Schema = GraphQLObjectType(

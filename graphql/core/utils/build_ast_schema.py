@@ -1,26 +1,12 @@
 from collections import OrderedDict
 
 from ..language import ast
-from ..type import (
-    GraphQLArgument,
-    GraphQLBoolean,
-    GraphQLEnumType,
-    GraphQLEnumValue,
-    GraphQLField,
-    GraphQLFloat,
-    GraphQLID,
-    GraphQLInputObjectField,
-    GraphQLInputObjectType,
-    GraphQLInt,
-    GraphQLInterfaceType,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLObjectType,
-    GraphQLScalarType,
-    GraphQLSchema,
-    GraphQLString,
-    GraphQLUnionType,
-)
+from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
+                    GraphQLEnumValue, GraphQLField, GraphQLFloat, GraphQLID,
+                    GraphQLInputObjectField, GraphQLInputObjectType,
+                    GraphQLInt, GraphQLInterfaceType, GraphQLList,
+                    GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
+                    GraphQLSchema, GraphQLString, GraphQLUnionType)
 from ..utils.value_from_ast import value_from_ast
 
 
@@ -41,8 +27,10 @@ def _get_inner_type_name(type_ast):
     return type_ast.name.value
 
 
-_false = lambda *_: False
-_none = lambda *_: None
+def _false(*_): return False
+
+
+def _none(*_): return None
 
 
 def build_ast_schema(document, query_type_name, mutation_type_name=None, subscription_type_name=None):

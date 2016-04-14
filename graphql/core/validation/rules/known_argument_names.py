@@ -4,6 +4,7 @@ from .base import ValidationRule
 
 
 class KnownArgumentNames(ValidationRule):
+
     def enter_Argument(self, node, key, parent, path, ancestors):
         argument_of = ancestors[-1]
 
@@ -17,10 +18,10 @@ class KnownArgumentNames(ValidationRule):
             if not field_arg_def:
                 parent_type = self.context.get_parent_type()
                 assert parent_type
-                return GraphQLError(
+                self.context.report_error(GraphQLError(
                     self.unknown_arg_message(node.name.value, field_def.name, parent_type.name),
                     [node]
-                )
+                ))
 
         elif isinstance(argument_of, ast.Directive):
             directive = self.context.get_directive()
@@ -30,10 +31,10 @@ class KnownArgumentNames(ValidationRule):
             directive_arg_def = next((arg for arg in directive.args if arg.name == node.name.value), None)
 
             if not directive_arg_def:
-                return GraphQLError(
+                self.context.report_error(GraphQLError(
                     self.unknown_directive_arg_message(node.name.value, directive.name),
                     [node]
-                )
+                ))
 
     @staticmethod
     def unknown_arg_message(arg_name, field_name, type):

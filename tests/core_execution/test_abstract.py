@@ -1,22 +1,26 @@
 from graphql.core import graphql
-from graphql.core.type import GraphQLString, GraphQLBoolean, GraphQLSchema
-from graphql.core.type.definition import GraphQLInterfaceType, GraphQLField, GraphQLObjectType, GraphQLList, \
-    GraphQLUnionType
+from graphql.core.type import GraphQLBoolean, GraphQLSchema, GraphQLString
+from graphql.core.type.definition import (GraphQLField, GraphQLInterfaceType,
+                                          GraphQLList, GraphQLObjectType,
+                                          GraphQLUnionType)
 
 
 class Dog(object):
+
     def __init__(self, name, woofs):
         self.name = name
         self.woofs = woofs
 
 
 class Cat(object):
+
     def __init__(self, name, meows):
         self.name = name
         self.meows = meows
 
 
 class Human(object):
+
     def __init__(self, name):
         self.name = name
 

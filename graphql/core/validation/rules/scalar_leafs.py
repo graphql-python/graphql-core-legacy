@@ -4,6 +4,7 @@ from .base import ValidationRule
 
 
 class ScalarLeafs(ValidationRule):
+
     def enter_Field(self, node, key, parent, path, ancestors):
         type = self.context.get_type()
 
@@ -12,16 +13,16 @@ class ScalarLeafs(ValidationRule):
 
         if is_leaf_type(type):
             if node.selection_set:
-                return GraphQLError(
+                self.context.report_error(GraphQLError(
                     self.no_subselection_allowed_message(node.name.value, type),
                     [node.selection_set]
-                )
+                ))
 
         elif not node.selection_set:
-            return GraphQLError(
+            self.context.report_error(GraphQLError(
                 self.required_subselection_message(node.name.value, type),
                 [node]
-            )
+            ))
 
     @staticmethod
     def no_subselection_allowed_message(field, type):

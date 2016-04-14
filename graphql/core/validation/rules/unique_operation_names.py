@@ -15,12 +15,16 @@ class UniqueOperationNames(ValidationRule):
             return
 
         if operation_name.value in self.known_operation_names:
-            return GraphQLError(
+            self.context.report_error(GraphQLError(
                 self.duplicate_operation_name_message(operation_name.value),
                 [self.known_operation_names[operation_name.value], operation_name]
-            )
+            ))
+        else:
+            self.known_operation_names[operation_name.value] = operation_name
+        return False
 
-        self.known_operation_names[operation_name.value] = operation_name
+    def enter_FragmentDefinition(self, node, key, parent, path, ancestors):
+        return False
 
     @staticmethod
     def duplicate_operation_name_message(operation_name):

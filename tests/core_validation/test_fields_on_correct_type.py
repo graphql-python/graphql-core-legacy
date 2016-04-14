@@ -1,6 +1,6 @@
 from graphql.core.language.location import SourceLocation
 from graphql.core.validation.rules import FieldsOnCorrectType
-from utils import expect_passes_rule, expect_fails_rule
+from utils import expect_fails_rule, expect_passes_rule
 
 
 def undefined_field(field, type, line, column):
@@ -61,6 +61,21 @@ def test_ignores_fields_on_unknown_type():
     ''')
 
 
+def test_reports_errors_when_type_is_known_again():
+    expect_fails_rule(FieldsOnCorrectType, '''
+      fragment typeKnownAgain on Pet {
+        unknown_pet_field {
+          ... on Cat {
+            unknown_cat_field
+          }
+        }
+      },
+    ''', [
+        undefined_field('unknown_pet_field', 'Pet', 3, 9),
+        undefined_field('unknown_cat_field', 'Cat', 5, 13)
+    ])
+
+
 def test_field_not_defined_on_fragment():
     expect_fails_rule(FieldsOnCorrectType, '''
       fragment fieldNotDefined on Dog {
@@ -71,7 +86,7 @@ def test_field_not_defined_on_fragment():
     ])
 
 
-def test_field_not_defined_deeply_only_reports_first():
+def test_ignores_deeply_unknown_field():
     expect_fails_rule(FieldsOnCorrectType, '''
       fragment deepFieldNotDefined on Dog {
         unknown_field {

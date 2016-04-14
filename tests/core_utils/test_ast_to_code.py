@@ -1,6 +1,6 @@
-from graphql.core import parse, Source
-from graphql.core.language.parser import Loc
+from graphql.core import Source, parse
 from graphql.core.language import ast
+from graphql.core.language.parser import Loc
 from graphql.core.utils.ast_to_code import ast_to_code
 from tests.core_language import fixtures
 

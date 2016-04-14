@@ -1,9 +1,11 @@
 from collections import OrderedDict
+
 from graphql.core.error import format_error
+from graphql.core.execution import Executor, execute
 from graphql.core.language.parser import parse
 from graphql.core.pyutils.defer import fail, succeed
-from graphql.core.type import GraphQLObjectType, GraphQLField, GraphQLString, GraphQLNonNull, GraphQLSchema
-from graphql.core.execution import execute, Executor
+from graphql.core.type import (GraphQLField, GraphQLNonNull, GraphQLObjectType,
+                               GraphQLSchema, GraphQLString)
 
 sync_error = Exception('sync')
 non_null_sync_error = Exception('nonNullSync')
@@ -14,6 +16,7 @@ executor = Executor(map_type=OrderedDict)
 
 
 class ThrowingData(object):
+
     def sync(self):
         raise sync_error
 
@@ -40,6 +43,7 @@ class ThrowingData(object):
 
 
 class NullingData(object):
+
     def sync(self):
         return None
 

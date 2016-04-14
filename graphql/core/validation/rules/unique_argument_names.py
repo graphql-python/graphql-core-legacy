@@ -19,12 +19,13 @@ class UniqueArgumentNames(ValidationRule):
         arg_name = node.name.value
 
         if arg_name in self.known_arg_names:
-            return GraphQLError(
+            self.context.report_error(GraphQLError(
                 self.duplicate_arg_message(arg_name),
                 [self.known_arg_names[arg_name], node.name]
-            )
-
-        self.known_arg_names[arg_name] = node.name
+            ))
+        else:
+            self.known_arg_names[arg_name] = node.name
+        return False
 
     @staticmethod
     def duplicate_arg_message(field):

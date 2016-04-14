@@ -1,12 +1,7 @@
 from ..language import ast
 from ..language.printer import print_ast
-from ..type.definition import (
-    GraphQLEnumType,
-    GraphQLInputObjectType,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLScalarType,
-)
+from ..type.definition import (GraphQLEnumType, GraphQLInputObjectType,
+                               GraphQLList, GraphQLNonNull, GraphQLScalarType)
 
 _empty_list = []
 
@@ -52,8 +47,10 @@ def is_valid_literal_value(type, value_ast):
                 errors.append(u'In field "{}": Unknown field.'.format(provided_field_ast.name.value))
 
         field_ast_map = {field_ast.name.value: field_ast for field_ast in field_asts}
-        get_field_ast_value = lambda field_name: field_ast_map[field_name].value \
-            if field_name in field_ast_map else None
+
+        def get_field_ast_value(field_name):
+            if field_name in field_ast_map:
+                return field_ast_map[field_name].value
 
         for field_name, field in fields.items():
             subfield_errors = is_valid_literal_value(field.type, get_field_ast_value(field_name))

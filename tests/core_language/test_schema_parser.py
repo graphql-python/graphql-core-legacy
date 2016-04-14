@@ -1,4 +1,5 @@
 from pytest import raises
+
 from graphql.core import Source, parse
 from graphql.core.language import ast
 from graphql.core.language.error import LanguageError

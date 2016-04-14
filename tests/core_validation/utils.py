@@ -1,25 +1,16 @@
-from graphql.core.type.directives import GraphQLDirective, GraphQLIncludeDirective, GraphQLSkipDirective
-from graphql.core.validation import validate
-from graphql.core.language.parser import parse
-from graphql.core.type import (
-    GraphQLSchema,
-    GraphQLObjectType,
-    GraphQLField,
-    GraphQLArgument,
-    GraphQLID,
-    GraphQLNonNull,
-    GraphQLString,
-    GraphQLInt,
-    GraphQLFloat,
-    GraphQLBoolean,
-    GraphQLInterfaceType,
-    GraphQLEnumType,
-    GraphQLEnumValue,
-    GraphQLInputObjectField,
-    GraphQLInputObjectType,
-    GraphQLUnionType,
-    GraphQLList)
 from graphql.core.error import format_error
+from graphql.core.language.parser import parse
+from graphql.core.type import (GraphQLArgument, GraphQLBoolean,
+                               GraphQLEnumType, GraphQLEnumValue, GraphQLField,
+                               GraphQLFloat, GraphQLID,
+                               GraphQLInputObjectField, GraphQLInputObjectType,
+                               GraphQLInt, GraphQLInterfaceType, GraphQLList,
+                               GraphQLNonNull, GraphQLObjectType,
+                               GraphQLSchema, GraphQLString, GraphQLUnionType)
+from graphql.core.type.directives import (GraphQLDirective,
+                                          GraphQLIncludeDirective,
+                                          GraphQLSkipDirective)
+from graphql.core.validation import validate
 
 Being = GraphQLInterfaceType('Being', {
     'name': GraphQLField(GraphQLString, {
@@ -207,7 +198,7 @@ def expect_invalid(schema, rules, query, expected_errors, sort_list=True):
         error['locations'] = [
             {'line': loc.line, 'column': loc.column}
             for loc in error['locations']
-            ]
+        ]
     if sort_list:
         assert sort_lists(list(map(format_error, errors))) == sort_lists(expected_errors)
 

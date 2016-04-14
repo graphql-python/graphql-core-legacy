@@ -1,8 +1,11 @@
 from copy import deepcopy
-from graphql.core import parse
+
 from pytest import raises
-from graphql.core.language.printer import print_ast
+
+from graphql.core import parse
 from graphql.core.language import ast
+from graphql.core.language.printer import print_ast
+
 from .fixtures import SCHEMA_KITCHEN_SINK
 
 

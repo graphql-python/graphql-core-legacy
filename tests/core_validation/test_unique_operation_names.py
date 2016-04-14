@@ -1,6 +1,6 @@
 from graphql.core.language.location import SourceLocation
 from graphql.core.validation.rules import UniqueOperationNames
-from utils import expect_passes_rule, expect_fails_rule
+from utils import expect_fails_rule, expect_passes_rule
 
 
 def duplicate_op(op_name, l1, c1, l2, c2):

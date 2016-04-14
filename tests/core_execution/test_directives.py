@@ -1,6 +1,7 @@
 from graphql.core.execution import execute
 from graphql.core.language.parser import parse
-from graphql.core.type import GraphQLSchema, GraphQLObjectType, GraphQLField, GraphQLString
+from graphql.core.type import (GraphQLField, GraphQLObjectType, GraphQLSchema,
+                               GraphQLString)
 
 schema = GraphQLSchema(
     query=GraphQLObjectType(

@@ -1,4 +1,5 @@
 from six import string_types
+
 from . import ast
 from .error import LanguageError
 from .lexer import Lexer, TokenKind, get_token_desc, get_token_kind_desc

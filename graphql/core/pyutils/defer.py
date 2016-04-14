@@ -61,6 +61,7 @@
 # THE SOFTWARE.
 import collections
 import sys
+
 from six import reraise
 
 __all__ = ("Deferred", "AlreadyCalledDeferred", "DeferredException",
@@ -511,6 +512,7 @@ class _ResultCollector(Deferred):
 
 
 class DeferredDict(_ResultCollector):
+
     def __init__(self, mapping):
         super(DeferredDict, self).__init__()
         assert isinstance(mapping, collections.Mapping)
@@ -519,6 +521,7 @@ class DeferredDict(_ResultCollector):
 
 
 class DeferredList(_ResultCollector):
+
     def __init__(self, sequence):
         super(DeferredList, self).__init__()
         assert isinstance(sequence, collections.Sequence)

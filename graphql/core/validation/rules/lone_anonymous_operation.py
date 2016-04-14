@@ -16,7 +16,7 @@ class LoneAnonymousOperation(ValidationRule):
 
     def enter_OperationDefinition(self, node, key, parent, path, ancestors):
         if not node.name and self.operation_count > 1:
-            return GraphQLError(self.anonymous_operation_not_alone_message(), [node])
+            self.context.report_error(GraphQLError(self.anonymous_operation_not_alone_message(), [node]))
 
     @staticmethod
     def anonymous_operation_not_alone_message():

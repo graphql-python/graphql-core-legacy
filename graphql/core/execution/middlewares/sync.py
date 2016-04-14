@@ -3,6 +3,7 @@ from ...pyutils.defer import Deferred
 
 
 class SynchronousExecutionMiddleware(object):
+
     @staticmethod
     def run_resolve_fn(resolver, original_resolver):
         result = resolver()

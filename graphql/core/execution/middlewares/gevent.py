@@ -30,6 +30,7 @@ def run_in_greenlet(f):
 
 
 class GeventExecutionMiddleware(object):
+
     @staticmethod
     def run_resolve_fn(resolver, original_resolver):
         if resolver_has_tag(original_resolver, 'run_in_greenlet'):

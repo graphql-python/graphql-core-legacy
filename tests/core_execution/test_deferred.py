@@ -1,7 +1,8 @@
 from pytest import raises
 
-from graphql.core.pyutils.defer import Deferred, DeferredException, succeed, fail, DeferredList, DeferredDict, \
-    AlreadyCalledDeferred
+from graphql.core.pyutils.defer import (AlreadyCalledDeferred, Deferred,
+                                        DeferredDict, DeferredException,
+                                        DeferredList, fail, succeed)
 
 
 def test_succeed():

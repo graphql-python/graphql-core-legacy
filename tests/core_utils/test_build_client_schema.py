@@ -1,30 +1,20 @@
 from collections import OrderedDict
+
 from pytest import raises
+
 from graphql.core import graphql
 from graphql.core.error import format_error
-from graphql.core.type import (
-    GraphQLSchema,
-    GraphQLArgument,
-    GraphQLScalarType,
-    GraphQLObjectType,
-    GraphQLInterfaceType,
-    GraphQLUnionType,
-    GraphQLEnumType,
-    GraphQLEnumValue,
-    GraphQLField,
-    GraphQLInputObjectType,
-    GraphQLInputObjectField,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLInt,
-    GraphQLFloat,
-    GraphQLString,
-    GraphQLBoolean,
-    GraphQLID,
-)
+from graphql.core.type import (GraphQLArgument, GraphQLBoolean,
+                               GraphQLEnumType, GraphQLEnumValue, GraphQLField,
+                               GraphQLFloat, GraphQLID,
+                               GraphQLInputObjectField, GraphQLInputObjectType,
+                               GraphQLInt, GraphQLInterfaceType, GraphQLList,
+                               GraphQLNonNull, GraphQLObjectType,
+                               GraphQLScalarType, GraphQLSchema, GraphQLString,
+                               GraphQLUnionType)
 from graphql.core.type.directives import GraphQLDirective
-from graphql.core.utils.introspection_query import introspection_query
 from graphql.core.utils.build_client_schema import build_client_schema
+from graphql.core.utils.introspection_query import introspection_query
 
 
 def _test_schema(server_schema):

@@ -1,4 +1,5 @@
-from graphql.core.execution import get_default_executor, set_default_executor, Executor
+from graphql.core.execution import (Executor, get_default_executor,
+                                    set_default_executor)
 
 
 def test_get_and_set_default_executor():

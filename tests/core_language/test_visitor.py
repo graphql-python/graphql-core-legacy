@@ -1,6 +1,7 @@
 from graphql.core.language.ast import Field, Name, SelectionSet
 from graphql.core.language.parser import parse
-from graphql.core.language.visitor import visit, Visitor, REMOVE, BREAK
+from graphql.core.language.visitor import BREAK, REMOVE, Visitor, visit
+
 from .fixtures import KITCHEN_SINK
 
 
@@ -8,6 +9,7 @@ def test_allows_for_editing_on_enter():
     ast = parse('{ a, b, c { a, b, c } }', no_location=True)
 
     class TestVisitor(Visitor):
+
         def enter(self, node, *args):
             if isinstance(node, Field) and node.name.value == 'b':
                 return REMOVE
@@ -22,6 +24,7 @@ def test_allows_for_editing_on_leave():
     ast = parse('{ a, b, c { a, b, c } }', no_location=True)
 
     class TestVisitor(Visitor):
+
         def leave(self, node, *args):
             if isinstance(node, Field) and node.name.value == 'b':
                 return REMOVE
@@ -37,6 +40,7 @@ def test_visits_edited_node():
     ast = parse('{ a { x } }')
 
     class TestVisitor(Visitor):
+
         def __init__(self):
             self.did_visit_added_field = False
 
@@ -61,6 +65,7 @@ def test_allows_skipping_a_subtree():
     ast = parse('{ a, b { x }, c }')
 
     class TestVisitor(Visitor):
+
         def enter(self, node, *args):
             visited.append(['enter', type(node).__name__, getattr(node, 'value', None)])
             if isinstance(node, Field) and node.name.value == 'b':
@@ -95,6 +100,7 @@ def test_allows_early_exit_while_visiting():
     ast = parse('{ a, b { x }, c }')
 
     class TestVisitor(Visitor):
+
         def enter(self, node, *args):
             visited.append(['enter', type(node).__name__, getattr(node, 'value', None)])
             if isinstance(node, Name) and node.value == 'x':
@@ -127,6 +133,7 @@ def test_allows_a_named_functions_visitor_api():
     ast = parse('{ a, b { x }, c }')
 
     class TestVisitor(Visitor):
+
         def enter_Name(self, node, *args):
             visited.append(['enter', type(node).__name__, getattr(node, 'value', None)])
 
@@ -155,6 +162,7 @@ def test_visits_kitchen_sink():
     ast = parse(KITCHEN_SINK)
 
     class TestVisitor(Visitor):
+
         def enter(self, node, key, parent, *args):
             kind = parent and type(parent).__name__
             if kind == 'list':

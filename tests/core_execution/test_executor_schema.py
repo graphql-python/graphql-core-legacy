@@ -1,17 +1,10 @@
 from graphql.core.execution import execute
 from graphql.core.language.parser import parse
-from graphql.core.type import (
-    GraphQLSchema,
-    GraphQLObjectType,
-    GraphQLField,
-    GraphQLArgument,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLInt,
-    GraphQLString,
-    GraphQLBoolean,
-    GraphQLID,
-)
+from graphql.core.type import (GraphQLArgument, GraphQLBoolean, GraphQLField,
+                               GraphQLID, GraphQLInt, GraphQLList,
+                               GraphQLNonNull, GraphQLObjectType,
+                               GraphQLSchema, GraphQLString)
+
 
 def test_executes_using_a_schema():
     BlogImage = GraphQLObjectType('BlogImage', {
@@ -24,13 +17,13 @@ def test_executes_using_a_schema():
         'id': GraphQLField(GraphQLString),
         'name': GraphQLField(GraphQLString),
         'pic': GraphQLField(BlogImage,
-            args={
-                'width': GraphQLArgument(GraphQLInt),
-                'height': GraphQLArgument(GraphQLInt),
-            },
-            resolver=lambda obj, args, *_:
-                obj.pic(args['width'], args['height'])
-        ),
+                            args={
+                                'width': GraphQLArgument(GraphQLInt),
+                                'height': GraphQLArgument(GraphQLInt),
+                            },
+                            resolver=lambda obj, args, *_:
+                            obj.pic(args['width'], args['height'])
+                            ),
         'recentArticle': GraphQLField(BlogArticle),
     })
 
@@ -56,6 +49,7 @@ def test_executes_using_a_schema():
     BlogSchema = GraphQLSchema(BlogQuery)
 
     class Article(object):
+
         def __init__(self, id):
             self.id = id
             self.isPublished = True
@@ -68,12 +62,15 @@ def test_executes_using_a_schema():
     class Author(object):
         id = 123
         name = 'John Smith'
+
         def pic(self, width, height):
             return Pic(123, width, height)
+
         @property
         def recentArticle(self): return Article(1)
 
     class Pic(object):
+
         def __init__(self, uid, width, height):
             self.url = 'cdn://{}'.format(uid)
             self.width = str(width)

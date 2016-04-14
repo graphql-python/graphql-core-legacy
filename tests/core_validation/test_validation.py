@@ -1,5 +1,4 @@
-from graphql.core import parse
-from graphql.core import validate
+from graphql.core import parse, validate
 from graphql.core.utils.type_info import TypeInfo
 from graphql.core.validation import visit_using_rules
 from graphql.core.validation.rules import specified_rules
@@ -49,5 +48,7 @@ def test_validates_using_a_custom_type_info():
         specified_rules
     )
 
-    assert len(errors) == 1
+    assert len(errors) == 3
     assert errors[0].message == 'Cannot query field "catOrDog" on "QueryRoot".'
+    assert errors[1].message == 'Cannot query field "furColor" on "Cat".'
+    assert errors[2].message == 'Cannot query field "isHousetrained" on "Dog".'

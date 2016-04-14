@@ -1,33 +1,22 @@
 from collections import OrderedDict
+
 from ..language.parser import parse_value
-from ..type import (
-    GraphQLArgument,
-    GraphQLBoolean,
-    GraphQLEnumType,
-    GraphQLEnumValue,
-    GraphQLField,
-    GraphQLFloat,
-    GraphQLID,
-    GraphQLInputObjectField,
-    GraphQLInputObjectType,
-    GraphQLInt,
-    GraphQLInterfaceType,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLObjectType,
-    GraphQLScalarType,
-    GraphQLSchema,
-    GraphQLString,
-    GraphQLUnionType,
-    is_input_type,
-    is_output_type
-)
+from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
+                    GraphQLEnumValue, GraphQLField, GraphQLFloat, GraphQLID,
+                    GraphQLInputObjectField, GraphQLInputObjectType,
+                    GraphQLInt, GraphQLInterfaceType, GraphQLList,
+                    GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
+                    GraphQLSchema, GraphQLString, GraphQLUnionType,
+                    is_input_type, is_output_type)
 from ..type.directives import GraphQLDirective
 from ..type.introspection import TypeKind
 from .value_from_ast import value_from_ast
 
-_none = lambda *_: None
-_false = lambda *_: False
+
+def _false(*_): return False
+
+
+def _none(*_): return None
 
 
 def no_execution(*args):
@@ -221,7 +210,8 @@ def build_client_schema(introspection):
         get_named_type(type_introspection_name)
 
     query_type = get_object_type(schema_introspection['queryType'])
-    mutation_type = get_object_type(schema_introspection['mutationType']) if schema_introspection.get('mutationType') else None
+    mutation_type = get_object_type(
+        schema_introspection['mutationType']) if schema_introspection.get('mutationType') else None
     subscription_type = get_object_type(schema_introspection['subscriptionType']) if \
         schema_introspection.get('subscriptionType') else None
 
