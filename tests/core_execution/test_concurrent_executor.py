@@ -1,11 +1,15 @@
 from collections import OrderedDict
+
 from graphql.core.error import format_error
 from graphql.core.execution import Executor
-from graphql.core.execution.middlewares.sync import SynchronousExecutionMiddleware
-from graphql.core.pyutils.defer import succeed, Deferred, fail
-from graphql.core.type import (GraphQLSchema, GraphQLObjectType, GraphQLField,
-                               GraphQLArgument, GraphQLList, GraphQLInt, GraphQLString)
+from graphql.core.execution.middlewares.sync import \
+    SynchronousExecutionMiddleware
+from graphql.core.pyutils.defer import Deferred, fail, succeed
+from graphql.core.type import (GraphQLArgument, GraphQLField, GraphQLInt,
+                               GraphQLList, GraphQLObjectType, GraphQLSchema,
+                               GraphQLString)
 from graphql.core.type.definition import GraphQLNonNull
+
 from .utils import raise_callback_results
 
 
@@ -123,6 +127,7 @@ def test_executes_arbitary_code():
 
 def test_synchronous_executor_doesnt_support_defers_with_nullable_type_getting_set_to_null():
     class Data(object):
+
         def promise(self):
             return succeed('i shouldn\'nt work')
 
@@ -153,6 +158,7 @@ def test_synchronous_executor_doesnt_support_defers_with_nullable_type_getting_s
 
 def test_synchronous_executor_doesnt_support_defers():
     class Data(object):
+
         def promise(self):
             return succeed('i shouldn\'nt work')
 
@@ -183,6 +189,7 @@ def test_synchronous_executor_doesnt_support_defers():
 
 def test_executor_defer_failure():
     class Data(object):
+
         def promise(self):
             return fail(Exception('Something bad happened! Sucks :('))
 
@@ -213,6 +220,7 @@ def test_executor_defer_failure():
 
 def test_synchronous_executor_will_synchronously_resolve():
     class Data(object):
+
         def promise(self):
             return 'I should work'
 
@@ -248,6 +256,7 @@ def test_synchronous_error_nulls_out_error_subtrees():
     '''
 
     class Data:
+
         def sync(self):
             return 'sync'
 

@@ -1,6 +1,7 @@
-from .starwars_schema import StarWarsSchema
 from graphql.core import graphql
 from graphql.core.error import format_error
+
+from .starwars_schema import StarWarsSchema
 
 
 def test_hero_name_query():
@@ -70,7 +71,7 @@ def test_nested_query():
             'friends': [
                 {
                     'name': 'Luke Skywalker',
-                    'appearsIn': [ 'NEWHOPE', 'EMPIRE', 'JEDI' ],
+                    'appearsIn': ['NEWHOPE', 'EMPIRE', 'JEDI'],
                     'friends': [
                         {
                             'name': 'Han Solo',
@@ -88,7 +89,7 @@ def test_nested_query():
                 },
                 {
                     'name': 'Han Solo',
-                    'appearsIn': [ 'NEWHOPE', 'EMPIRE', 'JEDI' ],
+                    'appearsIn': ['NEWHOPE', 'EMPIRE', 'JEDI'],
                     'friends': [
                         {
                             'name': 'Luke Skywalker',
@@ -103,7 +104,7 @@ def test_nested_query():
                 },
                 {
                     'name': 'Leia Organa',
-                    'appearsIn': [ 'NEWHOPE', 'EMPIRE', 'JEDI' ],
+                    'appearsIn': ['NEWHOPE', 'EMPIRE', 'JEDI'],
                     'friends': [
                         {
                             'name': 'Luke Skywalker',
@@ -265,11 +266,11 @@ def test_duplicate_fields():
         'luke': {
             'name': 'Luke Skywalker',
             'homePlanet': 'Tatooine',
-            },
+        },
         'leia': {
             'name': 'Leia Organa',
             'homePlanet': 'Alderaan',
-            }
+        }
     }
     result = graphql(StarWarsSchema, query)
     assert not result.errors
@@ -295,11 +296,11 @@ def test_use_fragment():
         'luke': {
             'name': 'Luke Skywalker',
             'homePlanet': 'Tatooine',
-            },
+        },
         'leia': {
             'name': 'Leia Organa',
             'homePlanet': 'Alderaan',
-            }
+        }
     }
     result = graphql(StarWarsSchema, query)
     assert not result.errors

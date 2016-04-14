@@ -1,16 +1,10 @@
-from graphql.core.type import (
-    GraphQLEnumType,
-    GraphQLEnumValue,
-    GraphQLInterfaceType,
-    GraphQLObjectType,
-    GraphQLField,
-    GraphQLArgument,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLSchema,
-    GraphQLString,
-)
-from .starwars_fixtures import getHero, getHuman, getFriends, getDroid
+from graphql.core.type import (GraphQLArgument, GraphQLEnumType,
+                               GraphQLEnumValue, GraphQLField,
+                               GraphQLInterfaceType, GraphQLList,
+                               GraphQLNonNull, GraphQLObjectType,
+                               GraphQLSchema, GraphQLString)
+
+from .starwars_fixtures import getDroid, getFriends, getHero, getHuman
 
 episodeEnum = GraphQLEnumType(
     'Episode',

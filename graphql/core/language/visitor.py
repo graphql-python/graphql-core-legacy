@@ -1,9 +1,9 @@
 from copy import copy
 
 import six
+
 from . import ast
 from .visitor_meta import QUERY_DOCUMENT_KEYS, VisitorMeta
-
 
 BREAK = object()
 REMOVE = object()

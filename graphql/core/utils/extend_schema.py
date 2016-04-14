@@ -1,8 +1,7 @@
 from collections import OrderedDict, defaultdict
 
-from graphql.core.language import ast
-
 from ..error import GraphQLError
+from ..language import ast
 from ..type.definition import (GraphQLArgument, GraphQLEnumType,
                                GraphQLEnumValue, GraphQLField,
                                GraphQLInputObjectField, GraphQLInputObjectType,

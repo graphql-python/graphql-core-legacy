@@ -1,6 +1,6 @@
 from graphql.core.language.location import SourceLocation
 from graphql.core.validation.rules import FieldsOnCorrectType
-from utils import expect_passes_rule, expect_fails_rule
+from utils import expect_fails_rule, expect_passes_rule
 
 
 def undefined_field(field, type, line, column):

@@ -1,14 +1,9 @@
 import six
 
 from ..language import visitor_meta
-from ..type.definition import (
-    GraphQLInputObjectType,
-    GraphQLList,
-    get_named_type,
-    get_nullable_type,
-    is_composite_type,
-)
-
+from ..type.definition import (GraphQLInputObjectType, GraphQLList,
+                               get_named_type, get_nullable_type,
+                               is_composite_type)
 from .get_field_def import get_field_def
 from .type_from_ast import type_from_ast
 

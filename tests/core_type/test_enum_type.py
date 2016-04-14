@@ -1,16 +1,11 @@
 from collections import OrderedDict
+
 from pytest import raises
-from graphql.core.type import (
-    GraphQLEnumType,
-    GraphQLEnumValue,
-    GraphQLObjectType,
-    GraphQLField,
-    GraphQLArgument,
-    GraphQLInt,
-    GraphQLString,
-    GraphQLSchema
-)
+
 from graphql.core import graphql
+from graphql.core.type import (GraphQLArgument, GraphQLEnumType,
+                               GraphQLEnumValue, GraphQLField, GraphQLInt,
+                               GraphQLObjectType, GraphQLSchema, GraphQLString)
 
 ColorType = GraphQLEnumType(
     name='Color',
@@ -147,7 +142,9 @@ def test_accepts_enum_literals_as_input_arguments_to_mutations():
 
 
 def test_accepts_enum_literals_as_input_arguments_to_subscriptions():
-    result = graphql(Schema, 'subscription x($color: Color!) { subscribeToEnum(color: $color) }', None, {'color': 'GREEN'})
+    result = graphql(
+        Schema, 'subscription x($color: Color!) { subscribeToEnum(color: $color) }', None, {
+            'color': 'GREEN'})
     assert not result.errors
     assert result.data == {'subscribeToEnum': 'GREEN'}
 

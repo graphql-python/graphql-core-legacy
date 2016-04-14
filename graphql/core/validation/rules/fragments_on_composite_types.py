@@ -5,6 +5,7 @@ from .base import ValidationRule
 
 
 class FragmentsOnCompositeTypes(ValidationRule):
+
     def enter_InlineFragment(self, node, key, parent, path, ancestors):
         type = self.context.get_type()
 

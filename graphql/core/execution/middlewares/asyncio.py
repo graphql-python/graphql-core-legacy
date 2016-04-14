@@ -17,6 +17,7 @@ def process_future_result(deferred):
 
 
 class AsyncioExecutionMiddleware(object):
+
     @staticmethod
     def run_resolve_fn(resolver, original_resolver):
         result = resolver()

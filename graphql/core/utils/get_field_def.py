@@ -1,9 +1,7 @@
-from ..type.definition import (
-    GraphQLInterfaceType,
-    GraphQLObjectType,
-    GraphQLUnionType,
-)
-from ..type.introspection import SchemaMetaFieldDef, TypeMetaFieldDef, TypeNameMetaFieldDef
+from ..type.definition import (GraphQLInterfaceType, GraphQLObjectType,
+                               GraphQLUnionType)
+from ..type.introspection import (SchemaMetaFieldDef, TypeMetaFieldDef,
+                                  TypeNameMetaFieldDef)
 
 
 def get_field_def(schema, parent_type, field_ast):

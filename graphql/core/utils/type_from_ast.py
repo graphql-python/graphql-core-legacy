@@ -1,8 +1,5 @@
 from ..language import ast
-from ..type.definition import (
-    GraphQLList,
-    GraphQLNonNull,
-)
+from ..type.definition import GraphQLList, GraphQLNonNull
 
 
 def type_from_ast(schema, input_type_ast):

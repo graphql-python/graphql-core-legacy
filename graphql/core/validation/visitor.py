@@ -25,7 +25,7 @@ class ParallelVisitor(Visitor):
 
     def __init__(self, visitors):
         self.visitors = visitors
-        self.skipping = [None]*len(visitors)
+        self.skipping = [None] * len(visitors)
 
     def enter(self, node, key, parent, path, ancestors):
         for i, visitor in enumerate(self.visitors):

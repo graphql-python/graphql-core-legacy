@@ -1,6 +1,6 @@
 from graphql.core.language.location import SourceLocation
 from graphql.core.validation.rules import UniqueArgumentNames
-from utils import expect_passes_rule, expect_fails_rule
+from utils import expect_fails_rule, expect_passes_rule
 
 
 def duplicate_arg(arg_name, l1, c1, l2, c2):
@@ -112,7 +112,7 @@ def test_duplicate_directive_arguments():
     ''', [
         duplicate_arg('arg1', 3, 24, 3, 39)
     ]
-                      )
+    )
 
 
 def test_many_duplicate_directive_arguments():

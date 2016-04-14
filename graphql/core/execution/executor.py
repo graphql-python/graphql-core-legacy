@@ -6,15 +6,19 @@ from ..language import ast
 from ..language.parser import parse
 from ..language.source import Source
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
-from ..pyutils.defer import Deferred, DeferredDict, DeferredList, defer, succeed
-from ..type import GraphQLEnumType, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, \
-    GraphQLScalarType, GraphQLUnionType
+from ..pyutils.defer import (Deferred, DeferredDict, DeferredList, defer,
+                             succeed)
+from ..type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
+                    GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
+                    GraphQLUnionType)
 from ..validation import validate
-from .base import ExecutionContext, ExecutionResult, ResolveInfo, Undefined, collect_fields, default_resolve_fn, \
-    get_field_def, get_operation_root_type
+from .base import (ExecutionContext, ExecutionResult, ResolveInfo, Undefined,
+                   collect_fields, default_resolve_fn, get_field_def,
+                   get_operation_root_type)
 
 
 class Executor(object):
+
     def __init__(self, execution_middlewares=None, default_resolver=default_resolve_fn, map_type=dict):
         assert issubclass(map_type, collections.MutableMapping)
 

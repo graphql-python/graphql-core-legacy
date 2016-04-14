@@ -4,14 +4,11 @@
 
 import collections
 import json
+
 from six import string_types
-from ..type import (
-    GraphQLEnumType,
-    GraphQLInputObjectType,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLScalarType,
-)
+
+from ..type import (GraphQLEnumType, GraphQLInputObjectType, GraphQLList,
+                    GraphQLNonNull, GraphQLScalarType)
 
 _empty_list = []
 

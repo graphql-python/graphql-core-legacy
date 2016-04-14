@@ -1,14 +1,12 @@
 from ...error import GraphQLError
-from ...type.definition import (
-    GraphQLInterfaceType,
-    GraphQLObjectType,
-    GraphQLUnionType,
-)
+from ...type.definition import (GraphQLInterfaceType, GraphQLObjectType,
+                                GraphQLUnionType)
 from ...utils.type_from_ast import type_from_ast
 from .base import ValidationRule
 
 
 class PossibleFragmentSpreads(ValidationRule):
+
     def enter_InlineFragment(self, node, key, parent, path, ancestors):
         frag_type = self.context.get_type()
         parent_type = self.context.get_parent_type()

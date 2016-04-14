@@ -1,6 +1,4 @@
 from ...error import GraphQLError
-from ...language import ast
-from ...language.visitor import Visitor, visit
 from .base import ValidationRule
 
 
@@ -50,7 +48,7 @@ class NoFragmentCycles(ValidationRule):
                         spread_name,
                         [s.name.value for s in cycle_path]
                     ),
-                    cycle_path+[spread_node]
+                    cycle_path + [spread_node]
                 ))
 
         self.spread_path_index_by_name[fragment_name] = None

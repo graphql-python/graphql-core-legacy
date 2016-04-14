@@ -1,15 +1,18 @@
 from graphql.core.execution import execute
 from graphql.core.language.parser import parse
-from graphql.core.type import (GraphQLSchema, GraphQLObjectType, GraphQLField,
-    GraphQLArgument, GraphQLList, GraphQLInt, GraphQLString)
+from graphql.core.type import (GraphQLArgument, GraphQLField, GraphQLInt,
+                               GraphQLList, GraphQLObjectType, GraphQLSchema,
+                               GraphQLString)
 
 
 class NumberHolder(object):
+
     def __init__(self, n):
         self.theNumber = n
 
 
 class Root(object):
+
     def __init__(self, n):
         self.numberHolder = NumberHolder(n)
 
@@ -27,7 +30,7 @@ class Root(object):
     def promise_and_fail_to_change_the_number(self, n):
         # TODO: async
         self.fail_to_change_the_number(n)
-        
+
 
 NumberHolderType = GraphQLObjectType('NumberHolder', {
     'theNumber': GraphQLField(GraphQLInt)

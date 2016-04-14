@@ -1,5 +1,5 @@
-from ..language.ast import FragmentDefinition, FragmentSpread, VariableDefinition, Variable, OperationDefinition
-from ..utils.type_info import TypeInfo
+from ..language.ast import (FragmentDefinition, FragmentSpread,
+                            OperationDefinition)
 from ..language.visitor import Visitor, visit
 from .visitor import TypeInfoVisitor
 
@@ -28,7 +28,8 @@ class UsageVisitor(Visitor):
 
 
 class ValidationContext(object):
-    __slots__ = '_schema', '_ast', '_type_info', '_errors', '_fragments', '_fragment_spreads', '_recursively_referenced_fragments', '_variable_usages', '_recursive_variable_usages'
+    __slots__ = ('_schema', '_ast', '_type_info', '_errors', '_fragments', '_fragment_spreads',
+                 '_recursively_referenced_fragments', '_variable_usages', '_recursive_variable_usages')
 
     def __init__(self, schema, ast, type_info):
         self._schema = schema

@@ -2,19 +2,10 @@
 from ..error import GraphQLError
 from ..language import ast
 from ..pyutils.defer import DeferredException
-from ..type.definition import (
-    GraphQLInterfaceType,
-    GraphQLUnionType,
-)
-from ..type.directives import (
-    GraphQLIncludeDirective,
-    GraphQLSkipDirective,
-)
-from ..type.introspection import (
-    SchemaMetaFieldDef,
-    TypeMetaFieldDef,
-    TypeNameMetaFieldDef,
-)
+from ..type.definition import GraphQLInterfaceType, GraphQLUnionType
+from ..type.directives import GraphQLIncludeDirective, GraphQLSkipDirective
+from ..type.introspection import (SchemaMetaFieldDef, TypeMetaFieldDef,
+                                  TypeNameMetaFieldDef)
 from ..utils.type_from_ast import type_from_ast
 from .values import get_argument_values, get_variable_values
 
@@ -97,7 +88,7 @@ class ExecutionResult(object):
             errors = [
                 error.value if isinstance(error, DeferredException) else error
                 for error in errors
-                ]
+            ]
 
         self.errors = errors
 
@@ -170,7 +161,9 @@ def collect_fields(ctx, runtime_type, selection_set, fields, prev_fragment_names
             fields[name].append(selection)
 
         elif isinstance(selection, ast.InlineFragment):
-            if not should_include_node(ctx, directives) or not does_fragment_condition_match(ctx, selection, runtime_type):
+            if not should_include_node(
+                    ctx, directives) or not does_fragment_condition_match(
+                    ctx, selection, runtime_type):
                 continue
 
             collect_fields(ctx, runtime_type, selection.selection_set, fields, prev_fragment_names)
@@ -255,6 +248,7 @@ def get_field_entry_key(node):
 
 
 class ResolveInfo(object):
+
     def __init__(self, field_name, field_asts, return_type, parent_type, context):
         self.field_name = field_name
         self.field_asts = field_asts

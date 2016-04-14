@@ -3,6 +3,7 @@ from .base import ValidationRule
 
 
 class FieldsOnCorrectType(ValidationRule):
+
     def enter_Field(self, node, key, parent, path, ancestors):
         type = self.context.get_parent_type()
         if not type:

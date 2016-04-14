@@ -4,6 +4,7 @@ from .base import ValidationRule
 
 
 class ProvidedNonNullArguments(ValidationRule):
+
     def leave_Field(self, node, key, parent, path, ancestors):
         field_def = self.context.get_field_def()
         if not field_def:

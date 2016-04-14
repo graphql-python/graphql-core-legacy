@@ -1,16 +1,12 @@
 from collections import namedtuple
+
 from graphql.core.error import format_error
-from graphql.core.execution import execute, Executor
+from graphql.core.execution import Executor, execute
 from graphql.core.language.parser import parse
-from graphql.core.pyutils.defer import succeed, fail
-from graphql.core.type import (
-    GraphQLSchema,
-    GraphQLObjectType,
-    GraphQLField,
-    GraphQLInt,
-    GraphQLList,
-    GraphQLNonNull,
-)
+from graphql.core.pyutils.defer import fail, succeed
+from graphql.core.type import (GraphQLField, GraphQLInt, GraphQLList,
+                               GraphQLNonNull, GraphQLObjectType,
+                               GraphQLSchema)
 
 Data = namedtuple('Data', 'test')
 ast = parse('{ nest { test } }')

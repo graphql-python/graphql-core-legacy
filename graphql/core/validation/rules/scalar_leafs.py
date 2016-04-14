@@ -4,6 +4,7 @@ from .base import ValidationRule
 
 
 class ScalarLeafs(ValidationRule):
+
     def enter_Field(self, node, key, parent, path, ancestors):
         type = self.context.get_type()
 

@@ -1,20 +1,16 @@
 from collections import OrderedDict
-from graphql.core.type.definition import GraphQLField, GraphQLArgument, GraphQLInputObjectField, GraphQLEnumValue
-from graphql.core.utils.schema_printer import print_schema, print_introspection_schema
-from graphql.core.type import (
-    GraphQLSchema,
-    GraphQLInputObjectType,
-    GraphQLScalarType,
-    GraphQLObjectType,
-    GraphQLInterfaceType,
-    GraphQLUnionType,
-    GraphQLEnumType,
-    GraphQLString,
-    GraphQLInt,
-    GraphQLBoolean,
-    GraphQLList,
-    GraphQLNonNull,
-)
+
+from graphql.core.type import (GraphQLBoolean, GraphQLEnumType,
+                               GraphQLInputObjectType, GraphQLInt,
+                               GraphQLInterfaceType, GraphQLList,
+                               GraphQLNonNull, GraphQLObjectType,
+                               GraphQLScalarType, GraphQLSchema, GraphQLString,
+                               GraphQLUnionType)
+from graphql.core.type.definition import (GraphQLArgument, GraphQLEnumValue,
+                                          GraphQLField,
+                                          GraphQLInputObjectField)
+from graphql.core.utils.schema_printer import (print_introspection_schema,
+                                               print_schema)
 
 
 def print_for_test(schema):

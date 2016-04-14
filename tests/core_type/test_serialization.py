@@ -1,9 +1,6 @@
-from graphql.core.type import (
-    GraphQLInt,
-    GraphQLFloat,
-    GraphQLString,
-    GraphQLBoolean,
-)
+from graphql.core.type import (GraphQLBoolean, GraphQLFloat, GraphQLInt,
+                               GraphQLString)
+
 
 def test_serializes_output_int():
     assert GraphQLInt.serialize(1) == 1

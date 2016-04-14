@@ -1,5 +1,4 @@
 from graphql.core import Source, parse
-
 from graphql.core.language.printer import print_ast
 from graphql.core.utils.concat_ast import concat_ast
 

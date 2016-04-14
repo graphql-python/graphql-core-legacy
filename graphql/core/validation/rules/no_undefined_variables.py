@@ -1,5 +1,4 @@
 from ...error import GraphQLError
-from ...language import ast
 from .base import ValidationRule
 
 

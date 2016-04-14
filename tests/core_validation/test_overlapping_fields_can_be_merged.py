@@ -1,10 +1,12 @@
 from graphql.core.language.location import SourceLocation as L
-from graphql.core.type.definition import GraphQLObjectType, GraphQLArgument, GraphQLNonNull, GraphQLInterfaceType, \
-    GraphQLList, GraphQLField
-from graphql.core.type.scalars import GraphQLString, GraphQLInt, GraphQLID
+from graphql.core.type.definition import (GraphQLArgument, GraphQLField,
+                                          GraphQLInterfaceType, GraphQLList,
+                                          GraphQLNonNull, GraphQLObjectType)
+from graphql.core.type.scalars import GraphQLID, GraphQLInt, GraphQLString
 from graphql.core.type.schema import GraphQLSchema
 from graphql.core.validation.rules import OverlappingFieldsCanBeMerged
-from utils import expect_passes_rule, expect_fails_rule, expect_fails_rule_with_schema, expect_passes_rule_with_schema
+from utils import (expect_fails_rule, expect_fails_rule_with_schema,
+                   expect_passes_rule, expect_passes_rule_with_schema)
 
 
 def fields_conflict(reason_name, reason, *locations):
@@ -310,7 +312,7 @@ NonNullStringBox1 = GraphQLInterfaceType('NonNullStringBox1', {
 NonNullStringBox1Impl = GraphQLObjectType('NonNullStringBox1Impl', {
     'scalar': GraphQLField(GraphQLNonNull(GraphQLString)),
     'unrelatedField': GraphQLField(GraphQLString)
-}, interfaces=[ SomeBox, NonNullStringBox1 ])
+}, interfaces=[SomeBox, NonNullStringBox1])
 
 NonNullStringBox2 = GraphQLInterfaceType('NonNullStringBox2', {
     'scalar': GraphQLField(GraphQLNonNull(GraphQLString))
@@ -319,7 +321,7 @@ NonNullStringBox2 = GraphQLInterfaceType('NonNullStringBox2', {
 NonNullStringBox2Impl = GraphQLObjectType('NonNullStringBox2Impl', {
     'scalar': GraphQLField(GraphQLNonNull(GraphQLString)),
     'unrelatedField': GraphQLField(GraphQLString)
-}, interfaces=[ SomeBox, NonNullStringBox2 ])
+}, interfaces=[SomeBox, NonNullStringBox2])
 
 Connection = GraphQLObjectType('Connection', {
     'edges': GraphQLField(GraphQLList(GraphQLObjectType('Edge', {

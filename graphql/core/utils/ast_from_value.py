@@ -3,13 +3,10 @@ import re
 import sys
 
 from six import string_types
+
 from ..language import ast
-from ..type.definition import (
-    GraphQLEnumType,
-    GraphQLInputObjectType,
-    GraphQLList,
-    GraphQLNonNull,
-)
+from ..type.definition import (GraphQLEnumType, GraphQLInputObjectType,
+                               GraphQLList, GraphQLNonNull)
 from ..type.scalars import GraphQLFloat
 
 

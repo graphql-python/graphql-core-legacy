@@ -4,6 +4,7 @@ from .base import ValidationRule
 
 
 class KnownArgumentNames(ValidationRule):
+
     def enter_Argument(self, node, key, parent, path, ancestors):
         argument_of = ancestors[-1]
 

@@ -1,6 +1,6 @@
 from graphql.core.language.location import SourceLocation
 from graphql.core.validation.rules import NoUndefinedVariables
-from utils import expect_passes_rule, expect_fails_rule
+from utils import expect_fails_rule, expect_passes_rule
 
 
 def undefined_var(var_name, l1, c1, op_name, l2, c2):

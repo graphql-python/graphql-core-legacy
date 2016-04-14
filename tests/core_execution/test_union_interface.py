@@ -1,30 +1,27 @@
 from graphql.core.execution import execute
 from graphql.core.language.parser import parse
-from graphql.core.type import (
-    GraphQLSchema,
-    GraphQLField,
-    GraphQLObjectType,
-    GraphQLInterfaceType,
-    GraphQLUnionType,
-    GraphQLList,
-    GraphQLString,
-    GraphQLBoolean
-)
+from graphql.core.type import (GraphQLBoolean, GraphQLField,
+                               GraphQLInterfaceType, GraphQLList,
+                               GraphQLObjectType, GraphQLSchema, GraphQLString,
+                               GraphQLUnionType)
 
 
 class Dog(object):
+
     def __init__(self, name, barks):
         self.name = name
         self.barks = barks
 
 
 class Cat(object):
+
     def __init__(self, name, meows):
         self.name = name
         self.meows = meows
 
 
 class Person(object):
+
     def __init__(self, name, pets, friends):
         self.name = name
         self.pets = pets

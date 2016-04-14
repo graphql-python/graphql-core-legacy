@@ -5,13 +5,10 @@ from ...language import ast
 from ...language.printer import print_ast
 from ...pyutils.default_ordered_dict import DefaultOrderedDict
 from ...pyutils.pair_set import PairSet
-from ...type.definition import (
-    GraphQLInterfaceType,
-    GraphQLObjectType,
-    get_named_type,
-)
-from ...utils.type_from_ast import type_from_ast
+from ...type.definition import (GraphQLInterfaceType, GraphQLObjectType,
+                                get_named_type)
 from ...utils.type_comparators import is_equal_type
+from ...utils.type_from_ast import type_from_ast
 from .base import ValidationRule
 
 
@@ -53,8 +50,8 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
         # in the current state of the schema, then perhaps in some future version,
         # thus may not safely diverge.
         if parent_type1 != parent_type2 and \
-            isinstance(parent_type1, GraphQLObjectType) and \
-            isinstance(parent_type2, GraphQLObjectType):
+                isinstance(parent_type1, GraphQLObjectType) and \
+                isinstance(parent_type2, GraphQLObjectType):
             return
 
         if self.compared_set.has(ast1, ast2):
@@ -125,7 +122,13 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
         conflicts = self.find_conflicts(field_map)
         if conflicts:
             for (reason_name, reason), fields1, fields2 in conflicts:
-                self.context.report_error(GraphQLError(self.fields_conflict_message(reason_name, reason), list(fields1)+list(fields2)))
+                self.context.report_error(
+                    GraphQLError(
+                        self.fields_conflict_message(
+                            reason_name,
+                            reason),
+                        list(fields1) +
+                        list(fields2)))
 
     @staticmethod
     def same_type(type1, type2):

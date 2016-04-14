@@ -1,12 +1,7 @@
 from ..language.printer import print_ast
-from ..type.definition import (
-    GraphQLEnumType,
-    GraphQLInputObjectType,
-    GraphQLInterfaceType,
-    GraphQLObjectType,
-    GraphQLScalarType,
-    GraphQLUnionType
-)
+from ..type.definition import (GraphQLEnumType, GraphQLInputObjectType,
+                               GraphQLInterfaceType, GraphQLObjectType,
+                               GraphQLScalarType, GraphQLUnionType)
 from .ast_from_value import ast_from_value
 
 

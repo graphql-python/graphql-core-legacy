@@ -1,9 +1,11 @@
 from collections import OrderedDict
-from graphql.core.type.definition import GraphQLEnumType, GraphQLEnumValue, GraphQLList, GraphQLInputObjectType, \
-    GraphQLInputObjectField
+
+from graphql.core.language import ast
+from graphql.core.type.definition import (GraphQLEnumType, GraphQLEnumValue,
+                                          GraphQLInputObjectField,
+                                          GraphQLInputObjectType, GraphQLList)
 from graphql.core.type.scalars import GraphQLFloat
 from graphql.core.utils.ast_from_value import ast_from_value
-from graphql.core.language import ast
 
 
 def test_converts_boolean_values_to_asts():

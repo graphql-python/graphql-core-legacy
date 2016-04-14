@@ -1,9 +1,5 @@
-from ..type.definition import (
-    is_abstract_type,
-    GraphQLObjectType,
-    GraphQLList,
-    GraphQLNonNull,
-)
+from ..type.definition import (GraphQLList, GraphQLNonNull, GraphQLObjectType,
+                               is_abstract_type)
 
 
 def is_equal_type(type_a, type_b):
@@ -37,7 +33,8 @@ def is_type_sub_type_of(maybe_subtype, super_type):
     elif isinstance(maybe_subtype, GraphQLList):
         return False
 
-    if is_abstract_type(super_type) and isinstance(maybe_subtype, GraphQLObjectType) and super_type.is_possible_type(maybe_subtype):
+    if is_abstract_type(super_type) and isinstance(maybe_subtype,
+                                                   GraphQLObjectType) and super_type.is_possible_type(maybe_subtype):
         return True
 
     return False

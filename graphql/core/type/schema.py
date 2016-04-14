@@ -1,15 +1,12 @@
 from collections import OrderedDict
-from .definition import (
-    GraphQLInputObjectType,
-    GraphQLInterfaceType,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLObjectType,
-    GraphQLUnionType,
-)
-from .directives import GraphQLDirective, GraphQLIncludeDirective, GraphQLSkipDirective
-from .introspection import IntrospectionSchema
+
 from ..utils.type_comparators import is_equal_type, is_type_sub_type_of
+from .definition import (GraphQLInputObjectType, GraphQLInterfaceType,
+                         GraphQLList, GraphQLNonNull, GraphQLObjectType,
+                         GraphQLUnionType)
+from .directives import (GraphQLDirective, GraphQLIncludeDirective,
+                         GraphQLSkipDirective)
+from .introspection import IntrospectionSchema
 
 
 class GraphQLSchema(object):
@@ -51,7 +48,7 @@ class GraphQLSchema(object):
         assert all(isinstance(d, GraphQLDirective) for d in directives), \
             'Schema directives must be List[GraphQLDirective] if provided but got: {}.'.format(
                 directives
-            )
+        )
 
         self._directives = directives
 

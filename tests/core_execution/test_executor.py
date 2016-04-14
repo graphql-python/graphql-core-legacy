@@ -1,13 +1,16 @@
-from collections import OrderedDict
 import json
+from collections import OrderedDict
+
 from pytest import raises
-from graphql.core.execution import execute, Executor
-from graphql.core.execution.middlewares.sync import SynchronousExecutionMiddleware
-from graphql.core.language.parser import parse
-from graphql.core.type import (GraphQLSchema, GraphQLObjectType, GraphQLField,
-                               GraphQLArgument, GraphQLList, GraphQLInt, GraphQLString,
-                               GraphQLBoolean)
+
 from graphql.core.error import GraphQLError
+from graphql.core.execution import Executor, execute
+from graphql.core.execution.middlewares.sync import \
+    SynchronousExecutionMiddleware
+from graphql.core.language.parser import parse
+from graphql.core.type import (GraphQLArgument, GraphQLBoolean, GraphQLField,
+                               GraphQLInt, GraphQLList, GraphQLObjectType,
+                               GraphQLSchema, GraphQLString)
 
 
 def test_executes_arbitary_code():
@@ -145,17 +148,17 @@ def test_merges_parallel_fragments():
     result = execute(schema, None, ast)
     assert not result.errors
     assert result.data == \
-           {
-               'a': 'Apple',
-               'b': 'Banana',
-               'c': 'Cherry',
-               'deep': {
-                   'b': 'Banana',
-                   'c': 'Cherry',
-                   'deeper': {
-                       'b': 'Banana',
-                       'c': 'Cherry'}}
-           }
+        {
+            'a': 'Apple',
+            'b': 'Banana',
+            'c': 'Cherry',
+            'deep': {
+                'b': 'Banana',
+                'c': 'Cherry',
+                'deeper': {
+                    'b': 'Banana',
+                    'c': 'Cherry'}}
+        }
 
 
 def test_threads_context_correctly():
@@ -219,6 +222,7 @@ def test_nulls_out_error_subtrees():
     }'''
 
     class Data(object):
+
         def ok(self):
             return 'ok'
 
@@ -410,10 +414,12 @@ def test_does_not_include_arguments_that_were_not_set():
 
 def test_fails_when_an_is_type_of_check_is_not_met():
     class Special(object):
+
         def __init__(self, value):
             self.value = value
 
     class NotSpecial(object):
+
         def __init__(self, value):
             self.value = value
 
@@ -471,7 +477,7 @@ def test_fails_to_execute_a_query_containing_a_type_definition():
     )
 
     with raises(GraphQLError) as excinfo:
-        result = execute(schema, None, query)
+        execute(schema, None, query)
 
     assert excinfo.value.message == 'GraphQL cannot execute a request containing a ObjectTypeDefinition.'
 

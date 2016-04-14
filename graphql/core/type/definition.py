@@ -1,6 +1,7 @@
 import collections
 import copy
 import re
+
 from ..language import ast
 
 
@@ -466,7 +467,8 @@ def define_types(union_type, types):
     if callable(types):
         types = types()
 
-    assert isinstance(types, (list, tuple)) and len(types) > 0, 'Must provide types for Union {}.'.format(union_type.name)
+    assert isinstance(types, (list, tuple)) and len(
+        types) > 0, 'Must provide types for Union {}.'.format(union_type.name)
     has_resolve_type_fn = callable(union_type._resolve_type)
 
     for type in types:

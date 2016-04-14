@@ -3,6 +3,7 @@ from .base import ValidationRule
 
 
 class KnownTypeNames(ValidationRule):
+
     def enter_NamedType(self, node, *args):
         type_name = node.name.value
         type = self.context.get_schema().get_type(type_name)

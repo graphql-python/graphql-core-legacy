@@ -5,6 +5,7 @@ from .base import ValidationRule
 
 
 class ArgumentsOfCorrectType(ValidationRule):
+
     def enter_Argument(self, node, key, parent, path, ancestors):
         arg_def = self.context.get_argument()
         if arg_def:

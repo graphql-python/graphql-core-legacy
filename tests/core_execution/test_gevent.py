@@ -1,16 +1,13 @@
 # flake8: noqa
+import gevent
+
 from graphql.core.error import format_error
 from graphql.core.execution import Executor
-from graphql.core.execution.middlewares.gevent import GeventExecutionMiddleware, run_in_greenlet
+from graphql.core.execution.middlewares.gevent import (GeventExecutionMiddleware,
+                                                       run_in_greenlet)
 from graphql.core.language.location import SourceLocation
-from graphql.core.type import (
-    GraphQLSchema,
-    GraphQLObjectType,
-    GraphQLField,
-    GraphQLString
-)
-
-import gevent
+from graphql.core.type import (GraphQLField, GraphQLObjectType, GraphQLSchema,
+                               GraphQLString)
 
 
 def test_gevent_executor():

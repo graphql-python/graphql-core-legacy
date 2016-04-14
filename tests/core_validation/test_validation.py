@@ -1,5 +1,4 @@
-from graphql.core import parse
-from graphql.core import validate
+from graphql.core import parse, validate
 from graphql.core.utils.type_info import TypeInfo
 from graphql.core.validation import visit_using_rules
 from graphql.core.validation.rules import specified_rules

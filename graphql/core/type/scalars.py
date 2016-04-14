@@ -1,10 +1,6 @@
 from six import text_type
-from ..language.ast import (
-    BooleanValue,
-    FloatValue,
-    IntValue,
-    StringValue,
-)
+
+from ..language.ast import BooleanValue, FloatValue, IntValue, StringValue
 from .definition import GraphQLScalarType
 
 # Integers are only safe when between -(2^53 - 1) and 2^53 - 1 due to being

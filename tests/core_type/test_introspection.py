@@ -1,23 +1,17 @@
-from collections import OrderedDict
 import json
+from collections import OrderedDict
+
 from graphql.core import graphql
 from graphql.core.error import format_error
-from graphql.core.language.parser import parse
 from graphql.core.execution import execute
-from graphql.core.type import (
-    GraphQLSchema,
-    GraphQLObjectType,
-    GraphQLField,
-    GraphQLArgument,
-    GraphQLInputObjectType,
-    GraphQLInputObjectField,
-    GraphQLString,
-    GraphQLList,
-    GraphQLEnumType,
-    GraphQLEnumValue,
-)
-from graphql.core.validation.rules import ProvidedNonNullArguments
+from graphql.core.language.parser import parse
+from graphql.core.type import (GraphQLArgument, GraphQLEnumType,
+                               GraphQLEnumValue, GraphQLField,
+                               GraphQLInputObjectField, GraphQLInputObjectType,
+                               GraphQLList, GraphQLObjectType, GraphQLSchema,
+                               GraphQLString)
 from graphql.core.utils.introspection_query import introspection_query
+from graphql.core.validation.rules import ProvidedNonNullArguments
 
 
 def test_executes_an_introspection_query():

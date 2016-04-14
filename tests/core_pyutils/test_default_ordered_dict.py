@@ -1,7 +1,10 @@
 import copy
-from graphql.core.pyutils.default_ordered_dict import DefaultOrderedDict
-from pytest import raises
 import pickle
+
+from pytest import raises
+
+from graphql.core.pyutils.default_ordered_dict import DefaultOrderedDict
+
 
 def test_will_missing_will_set_value_from_factory():
     d = DefaultOrderedDict(list)

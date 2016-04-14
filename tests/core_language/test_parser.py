@@ -1,9 +1,11 @@
 from pytest import raises
+
+from graphql.core.language import ast
 from graphql.core.language.error import LanguageError
 from graphql.core.language.location import SourceLocation
+from graphql.core.language.parser import Loc, parse
 from graphql.core.language.source import Source
-from graphql.core.language.parser import parse, Loc
-from graphql.core.language import ast
+
 from .fixtures import KITCHEN_SINK
 
 
@@ -16,12 +18,12 @@ def test_parse_provides_useful_errors():
     with raises(LanguageError) as excinfo:
         parse("""{""")
     assert (
-               u'Syntax Error GraphQL (1:2) Expected Name, found EOF\n'
-               u'\n'
-               u'1: {\n'
-               u'    ^\n'
-               u''
-           ) == excinfo.value.message
+        u'Syntax Error GraphQL (1:2) Expected Name, found EOF\n'
+        u'\n'
+        u'1: {\n'
+        u'    ^\n'
+        u''
+    ) == excinfo.value.message
 
     assert excinfo.value.positions == [1]
     assert excinfo.value.locations == [SourceLocation(line=1, column=2)]
@@ -183,50 +185,47 @@ def test_parse_creates_ast():
     result = parse(source)
 
     assert result == \
-           ast.Document(
-               loc=Loc(start=0, end=41, source=source),
-               definitions=
-               [ast.OperationDefinition(
-                   loc=Loc(start=0, end=40, source=source),
-                   operation='query',
-                   name=None,
-                   variable_definitions=None,
-                   directives=[],
-                   selection_set=ast.SelectionSet(
-                       loc=Loc(start=0, end=40, source=source),
-                       selections=
-                       [ast.Field(
-                           loc=Loc(start=4, end=38, source=source),
-                           alias=None,
-                           name=ast.Name(
-                               loc=Loc(start=4, end=8, source=source),
-                               value='node'),
-                           arguments=[ast.Argument(
-                               name=ast.Name(loc=Loc(start=9, end=11, source=source),
-                                             value='id'),
-                               value=ast.IntValue(
+        ast.Document(
+            loc=Loc(start=0, end=41, source=source),
+            definitions=[ast.OperationDefinition(
+                loc=Loc(start=0, end=40, source=source),
+                operation='query',
+                name=None,
+                variable_definitions=None,
+                directives=[],
+                selection_set=ast.SelectionSet(
+                    loc=Loc(start=0, end=40, source=source),
+                    selections=[ast.Field(
+                        loc=Loc(start=4, end=38, source=source),
+                        alias=None,
+                        name=ast.Name(
+                            loc=Loc(start=4, end=8, source=source),
+                            value='node'),
+                        arguments=[ast.Argument(
+                            name=ast.Name(loc=Loc(start=9, end=11, source=source),
+                                          value='id'),
+                            value=ast.IntValue(
                                    loc=Loc(start=13, end=14, source=source),
                                    value='4'),
-                               loc=Loc(start=9, end=14, source=source))],
-                           directives=[],
-                           selection_set=ast.SelectionSet(
-                               loc=Loc(start=16, end=38, source=source),
-                               selections=
-                               [ast.Field(
-                                   loc=Loc(start=22, end=24, source=source),
-                                   alias=None,
-                                   name=ast.Name(
-                                       loc=Loc(start=22, end=24, source=source),
-                                       value='id'),
-                                   arguments=[],
-                                   directives=[],
-                                   selection_set=None),
-                                   ast.Field(
-                                       loc=Loc(start=30, end=34, source=source),
-                                       alias=None,
-                                       name=ast.Name(
-                                           loc=Loc(start=30, end=34, source=source),
-                                           value='name'),
-                                       arguments=[],
-                                       directives=[],
-                                       selection_set=None)]))]))])
+                            loc=Loc(start=9, end=14, source=source))],
+                        directives=[],
+                        selection_set=ast.SelectionSet(
+                            loc=Loc(start=16, end=38, source=source),
+                            selections=[ast.Field(
+                                loc=Loc(start=22, end=24, source=source),
+                                alias=None,
+                                name=ast.Name(
+                                    loc=Loc(start=22, end=24, source=source),
+                                    value='id'),
+                                arguments=[],
+                                directives=[],
+                                selection_set=None),
+                                ast.Field(
+                                loc=Loc(start=30, end=34, source=source),
+                                alias=None,
+                                name=ast.Name(
+                                    loc=Loc(start=30, end=34, source=source),
+                                    value='name'),
+                                arguments=[],
+                                directives=[],
+                                selection_set=None)]))]))])
