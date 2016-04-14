@@ -1,6 +1,6 @@
-# graphql-core
+# GraphQL-core
 
-Core GraphQL Library for Python
+GraphQL for Python
 
 [![PyPI version](https://badge.fury.io/py/graphql-core.svg)](https://badge.fury.io/py/graphql-core)
 [![Build Status](https://travis-ci.org/graphql-python/graphql-core.svg?branch=master)](https://travis-ci.org/graphql-python/graphql-core)
@@ -11,8 +11,8 @@ Core GraphQL Library for Python
 ## Project Status
 
 This library is a port of [graphql-js](https://github.com/graphql/graphql-js) to Python.
-This library includes core features only that other packages within the [graphql-python](https://github.com/graphql-python/) organization shall build upon.
-We are currently targeting feature parity with `v0.4.13` of the reference implementation, and are currently on `v0.4.12`.
+
+We are currently targeting feature parity with `v0.4.14` of the reference implementation, and are currently on `v0.4.13`.
 
 Please see [issues](https://github.com/graphql-python/graphql-core/issues) for the progress.
 
@@ -51,32 +51,12 @@ Additionally, support for `gevent` is available via
 
 Otherwise, by default, the executor will use execute with no concurrency.
 
-## Documentation
+## Main Contributors
 
-Documentation is in the works but not available yet. See #14 for additional information.
-
-## Pythonic GraphQL Library
-For a more refined and Pythonic interface to build graphql APIs, check out
- * [`graphene`](https://github.com/graphql-python/graphene)
-    - **Easy to use:** Graphene helps you use GraphQL in Python without effort.
-    - **Relay:** Graphene has builtin support for Relay
-    - **Django:** Automatic *Django model* mapping to Graphene Types. Check a fully working [Django](http://github.com/graphql-python/swapi-graphene) implementation
- * [`graphql-epoxy`](https://github.com/graphql-python/graphql-epoxy)
-    - **Minimal Boilerplate**: You can create a GraphQL schema and execute it in less than 5 lines of code.
-    - **Definition Ordering**: It doesn't matter. Define your objects in any order you want. Epoxy will take care of the rest.
-    - **Quick**: Once you create your schema, epoxy doesn't get in the way. Your resolvers will be called directly by 
-   `graphql-core` with no additional indirection.
-
-## Current Maintainer
+ * [@syrusakbary](https://github.com/syrusakbary/)
  * [@jhgg](https://github.com/jhgg/)
-
-## Contributions
-For an up to date list of contributors, check the contributor list [here](https://github.com/graphql-python/graphql-core/graphs/contributors). 
+ * [@dittos](https://github.com/dittos/)
 
 ## License
 
 [MIT License](https://github.com/graphql-python/graphql-core/blob/master/LICENSE)
-
-## Original work
-
-This project is a community fork of [graphqllib](https://github.com/dittos/graphqllib) by [@dittos](https://github.com/dittos/).
