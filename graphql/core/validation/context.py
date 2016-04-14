@@ -1,6 +1,7 @@
 from ..language.ast import FragmentDefinition, FragmentSpread, VariableDefinition, Variable, OperationDefinition
 from ..utils.type_info import TypeInfo
 from ..language.visitor import Visitor, visit
+from .visitor import TypeInfoVisitor
 
 
 class VariableUsage(object):
@@ -12,22 +13,18 @@ class VariableUsage(object):
 
 
 class UsageVisitor(Visitor):
-    __slots__ = 'context', 'usages', 'type_info'
+    __slots__ = 'usages', 'type_info'
 
     def __init__(self, usages, type_info):
         self.usages = usages
         self.type_info = type_info
 
-    def enter(self, node, key, parent, path, ancestors):
-        self.type_info.enter(node)
-        if isinstance(node, VariableDefinition):
-            return False
-        elif isinstance(node, Variable):
-            usage = VariableUsage(node, type=self.type_info.get_input_type())
-            self.usages.append(usage)
+    def enter_VariableDefinition(self, node, key, parent, path, ancestors):
+        return False
 
-    def leave(self, node, key, parent, path, ancestors):
-        self.type_info.leave(node)
+    def enter_Variable(self, node, key, parent, path, ancestors):
+        usage = VariableUsage(node, type=self.type_info.get_input_type())
+        self.usages.append(usage)
 
 
 class ValidationContext(object):
@@ -58,7 +55,7 @@ class ValidationContext(object):
         if usages is None:
             usages = []
             sub_visitor = UsageVisitor(usages, self._type_info)
-            visit(node, sub_visitor)
+            visit(node, TypeInfoVisitor(self._type_info, sub_visitor))
             self._variable_usages[node] = usages
 
         return usages
