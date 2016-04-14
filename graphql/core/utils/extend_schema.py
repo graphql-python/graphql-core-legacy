@@ -145,12 +145,12 @@ def extend_schema(schema, documentAST=None):
         return GraphQLUnionType(
             name=type.name,
             description=type.description,
-            types=map(get_type_from_def, type.get_possible_types()),
+            types=list(map(get_type_from_def, type.get_possible_types())),
             resolve_type=raise_client_schema_execution_error,
         )
 
     def extend_implemented_interfaces(type):
-        interfaces = map(get_type_from_def, type.get_interfaces())
+        interfaces = list(map(get_type_from_def, type.get_interfaces()))
 
         # If there are any extensions to the interfaces, apply those here.
         extensions = type_extensions_map[type.name]
@@ -171,7 +171,7 @@ def extend_schema(schema, documentAST=None):
     def extend_field_map(type):
         new_field_map = OrderedDict()
         old_field_map = type.get_fields()
-        for field_name, field in old_field_map.iteritems():
+        for field_name, field in old_field_map.items():
             new_field_map[field_name] = GraphQLField(
                 extend_field_type(field.type),
                 description=field.description,
@@ -237,7 +237,7 @@ def extend_schema(schema, documentAST=None):
     def build_union_type(type_ast):
         return GraphQLUnionType(
             type_ast.name.value,
-            types=map(get_type_from_AST, type_ast.types),
+            types=list(map(get_type_from_AST, type_ast.types)),
             resolve_type=raise_client_schema_execution_error,
         )
 
@@ -267,7 +267,7 @@ def extend_schema(schema, documentAST=None):
         )
 
     def build_implemented_interfaces(type_ast):
-        return map(get_type_from_AST, type_ast.interfaces)
+        return list(map(get_type_from_AST, type_ast.interfaces))
 
     def build_field_map(type_ast):
         return {
@@ -324,11 +324,11 @@ def extend_schema(schema, documentAST=None):
 
     # Iterate through all types, getting the type definition for each, ensuring
     # that any type not directly referenced by a field will get created.
-    for typeName, _def in schema.get_type_map().iteritems():
+    for typeName, _def in schema.get_type_map().items():
         get_type_from_def(_def)
 
     # Do the same with new types.
-    for typeName, _def in type_definition_map.iteritems():
+    for typeName, _def in type_definition_map.items():
         get_type_from_AST(_def)
 
     # Then produce and return a Schema with these types.
