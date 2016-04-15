@@ -72,7 +72,9 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
         type1 = def1 and def1.type
         type2 = def2 and def2.type
 
-        if type1 and type2 and not self.same_type(type1, type2) and not self.is_interface_implementation(type1, type2) and not self.is_interface_implementation(type2, type1):
+        if type1 and type2 and not self.same_type(type1, type2) and \
+                not self.is_interface_implementation(type1, type2) and \
+                not self.is_interface_implementation(type2, type1):
             return (
                 (response_name, 'they return differing types {} and {}'.format(type1, type2)),
                 [ast1],
