@@ -72,7 +72,7 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
         type1 = def1 and def1.type
         type2 = def2 and def2.type
 
-        if type1 and type2 and not self.same_type(type1, type2):
+        if type1 and type2 and not self.same_type(type1, type2) and not self.is_interface_implementation(type1, type2) and not self.is_interface_implementation(type2, type1):
             return (
                 (response_name, 'they return differing types {} and {}'.format(type1, type2)),
                 [ast1],
@@ -160,6 +160,16 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
                 return False
 
         return True
+
+    @staticmethod
+    def is_interface_implementation(value1, value2):
+        type1, type2 = get_named_type(value1), get_named_type(value2)
+
+        if isinstance(type2, GraphQLInterfaceType) and isinstance(type1, GraphQLObjectType):
+            for interface in type1.get_interfaces():
+                if interface.is_same_type(type2):
+                    return True
+        return False
 
     def collect_field_asts_and_defs(self, parent_type, selection_set, visited_fragment_names=None, ast_and_defs=None):
         if visited_fragment_names is None:
