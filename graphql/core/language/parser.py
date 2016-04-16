@@ -209,8 +209,10 @@ def parse_definition(parser):
             return parse_operation_definition(parser)
         elif name == 'fragment':
             return parse_fragment_definition(parser)
-        elif name in ('type', 'interface', 'union', 'scalar', 'enum', 'input', 'extend'):
+        elif name in ('type', 'interface', 'union', 'scalar', 'enum', 'input'):
             return parse_type_definition(parser)
+        elif name == 'extend':
+            return parse_type_extension_definition(parser)
 
     raise unexpected(parser)
 
@@ -529,9 +531,6 @@ def parse_type_definition(parser):
 
     elif name == 'input':
         return parse_input_object_type_definition(parser)
-
-    elif name == 'extend':
-        return parse_type_extension_definition(parser)
 
     raise unexpected(parser)
 
