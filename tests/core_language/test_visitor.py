@@ -1,6 +1,7 @@
 from graphql.core.language.ast import Field, Name, SelectionSet
 from graphql.core.language.parser import parse
-from graphql.core.language.visitor import BREAK, REMOVE, Visitor, visit, ParallelVisitor
+from graphql.core.language.visitor import (
+    BREAK, REMOVE, Visitor, visit, ParallelVisitor)
 
 from .fixtures import KITCHEN_SINK
 
@@ -577,4 +578,99 @@ def test_visits_in_pararell_allows_skipping_different_subtrees():
         ['no-b', 'leave', 'OperationDefinition', None],
         ['no-a', 'leave', 'Document', None],
         ['no-b', 'leave', 'Document', None],
+    ]
+
+
+def test_visits_in_pararell_allows_early_exit_while_visiting():
+    visited = []
+    ast = parse('{ a, b { x }, c }')
+
+    class TestVisitor(Visitor):
+
+        def enter(self, node, key, parent, *args):
+            visited.append(
+                ['enter', type(node).__name__, getattr(node, 'value', None)])
+
+        def leave(self, node, key, parent, *args):
+            visited.append(
+                ['leave', type(node).__name__, getattr(node, 'value', None)])
+            if type(node).__name__ == 'Name' and node.value == 'x':
+                return BREAK
+
+    visit(ast, ParallelVisitor([TestVisitor()]))
+    assert visited == [
+        ['enter', 'Document', None],
+        ['enter', 'OperationDefinition', None],
+        ['enter', 'SelectionSet', None],
+        ['enter', 'Field', None],
+        ['enter', 'Name', 'a'],
+        ['leave', 'Name', 'a'],
+        ['leave', 'Field', None],
+        ['enter', 'Field', None],
+        ['enter', 'Name', 'b'],
+        ['leave', 'Name', 'b'],
+        ['enter', 'SelectionSet', None],
+        ['enter', 'Field', None],
+        ['enter', 'Name', 'x'],
+        ['leave', 'Name', 'x']
+    ]
+
+
+def test_visits_in_pararell_allows_early_exit_from_different_points():
+    visited = []
+    ast = parse('{ a { y }, b { x } }')
+
+    class TestVisitor(Visitor):
+
+        def __init__(self, name):
+            self.name = name
+
+        def enter(self, node, key, parent, *args):
+            visited.append(["break-{}".format(self.name), 'enter',
+                            type(node).__name__, getattr(node, 'value', None)])
+
+        def leave(self, node, key, parent, *args):
+            visited.append(["break-{}".format(self.name), 'leave',
+                            type(node).__name__, getattr(node, 'value', None)])
+            if type(node).__name__ == 'Field' and node.name.value == self.name:
+                return BREAK
+
+    visit(ast, ParallelVisitor([TestVisitor('a'), TestVisitor('b')]))
+    assert visited == [
+        ['break-a', 'enter', 'Document', None],
+        ['break-b', 'enter', 'Document', None],
+        ['break-a', 'enter', 'OperationDefinition', None],
+        ['break-b', 'enter', 'OperationDefinition', None],
+        ['break-a', 'enter', 'SelectionSet', None],
+        ['break-b', 'enter', 'SelectionSet', None],
+        ['break-a', 'enter', 'Field', None],
+        ['break-b', 'enter', 'Field', None],
+        ['break-a', 'enter', 'Name', 'a'],
+        ['break-b', 'enter', 'Name', 'a'],
+        ['break-a', 'leave', 'Name', 'a'],
+        ['break-b', 'leave', 'Name', 'a'],
+        ['break-a', 'enter', 'SelectionSet', None],
+        ['break-b', 'enter', 'SelectionSet', None],
+        ['break-a', 'enter', 'Field', None],
+        ['break-b', 'enter', 'Field', None],
+        ['break-a', 'enter', 'Name', 'y'],
+        ['break-b', 'enter', 'Name', 'y'],
+        ['break-a', 'leave', 'Name', 'y'],
+        ['break-b', 'leave', 'Name', 'y'],
+        ['break-a', 'leave', 'Field', None],
+        ['break-b', 'leave', 'Field', None],
+        ['break-a', 'leave', 'SelectionSet', None],
+        ['break-b', 'leave', 'SelectionSet', None],
+        ['break-a', 'leave', 'Field', None],
+        ['break-b', 'leave', 'Field', None],
+        ['break-b', 'enter', 'Field', None],
+        ['break-b', 'enter', 'Name', 'b'],
+        ['break-b', 'leave', 'Name', 'b'],
+        ['break-b', 'enter', 'SelectionSet', None],
+        ['break-b', 'enter', 'Field', None],
+        ['break-b', 'enter', 'Name', 'x'],
+        ['break-b', 'leave', 'Name', 'x'],
+        ['break-b', 'leave', 'Field', None],
+        ['break-b', 'leave', 'SelectionSet', None],
+        ['break-b', 'leave', 'Field', None]
     ]

@@ -177,11 +177,15 @@ class ParallelVisitor(Visitor):
                 result = visitor.enter(node, key, parent, path, ancestors)
                 if result is False:
                     self.skipping[i] = node
+                elif result is BREAK:
+                    self.skipping[i] = BREAK
 
     def leave(self, node, key, parent, path, ancestors):
         for i, visitor in enumerate(self.visitors):
             if not self.skipping[i]:
-                visitor.leave(node, key, parent, path, ancestors)
+                result = visitor.leave(node, key, parent, path, ancestors)
+                if result is BREAK:
+                    self.skipping[i] = BREAK
             elif self.skipping[i] == node:
                 self.skipping[i] = None
 
