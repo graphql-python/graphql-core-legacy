@@ -6,8 +6,8 @@ setup(
     description='GraphQL implementation for Python',
     url='https://github.com/graphql-python/graphql-core',
     download_url='https://github.com/graphql-python/graphql-core/releases',
-    author='Syrus Akbary',
-    author_email='me@syrusakbary.com',
+    author='Syrus Akbary, Jake Heinz, Taeho Kim',
+    author_email='Syrus Akbary <me@syrusakbary.com>, Jake Heinz <me@jh.gg>, Taeho Kim <dittos@gmail.com>',
     license='MIT',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
