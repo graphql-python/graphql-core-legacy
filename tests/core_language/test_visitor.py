@@ -674,3 +674,115 @@ def test_visits_in_pararell_allows_early_exit_from_different_points():
         ['break-b', 'leave', 'SelectionSet', None],
         ['break-b', 'leave', 'Field', None]
     ]
+
+
+def test_visits_in_pararell_allows_for_editing_on_enter():
+    visited = []
+    ast = parse('{ a, b, c { a, b, c } }', no_location=True)
+
+    class TestVisitor1(Visitor):
+
+        def enter(self, node, key, parent, *args):
+            if type(node).__name__ == 'Field' and node.name.value == 'b':
+                return REMOVE
+
+    class TestVisitor2(Visitor):
+
+        def enter(self, node, key, parent, *args):
+            visited.append(
+                ['enter', type(node).__name__, getattr(node, 'value', None)])
+
+        def leave(self, node, key, parent, *args):
+            visited.append(
+                ['leave', type(node).__name__, getattr(node, 'value', None)])
+
+    edited_ast = visit(ast, ParallelVisitor([TestVisitor1(), TestVisitor2()]))
+
+    assert ast == parse('{ a, b, c { a, b, c } }', no_location=True)
+    assert edited_ast == parse('{ a,    c { a,    c } }', no_location=True)
+
+    assert visited == [
+        ['enter', 'Document', None],
+        ['enter', 'OperationDefinition', None],
+        ['enter', 'SelectionSet', None],
+        ['enter', 'Field', None],
+        ['enter', 'Name', 'a'],
+        ['leave', 'Name', 'a'],
+        ['leave', 'Field', None],
+        ['enter', 'Field', None],
+        ['enter', 'Name', 'c'],
+        ['leave', 'Name', 'c'],
+        ['enter', 'SelectionSet', None],
+        ['enter', 'Field', None],
+        ['enter', 'Name', 'a'],
+        ['leave', 'Name', 'a'],
+        ['leave', 'Field', None],
+        ['enter', 'Field', None],
+        ['enter', 'Name', 'c'],
+        ['leave', 'Name', 'c'],
+        ['leave', 'Field', None],
+        ['leave', 'SelectionSet', None],
+        ['leave', 'Field', None],
+        ['leave', 'SelectionSet', None],
+        ['leave', 'OperationDefinition', None],
+        ['leave', 'Document', None]
+    ]
+
+
+def test_visits_in_pararell_allows_for_editing_on_leave():
+    visited = []
+    ast = parse('{ a, b, c { a, b, c } }', no_location=True)
+
+    class TestVisitor1(Visitor):
+
+        def leave(self, node, key, parent, *args):
+            if type(node).__name__ == 'Field' and node.name.value == 'b':
+                return REMOVE
+
+    class TestVisitor2(Visitor):
+
+        def enter(self, node, key, parent, *args):
+            visited.append(
+                ['enter', type(node).__name__, getattr(node, 'value', None)])
+
+        def leave(self, node, key, parent, *args):
+            visited.append(
+                ['leave', type(node).__name__, getattr(node, 'value', None)])
+
+    edited_ast = visit(ast, ParallelVisitor([TestVisitor1(), TestVisitor2()]))
+
+    assert ast == parse('{ a, b, c { a, b, c } }', no_location=True)
+    assert edited_ast == parse('{ a,    c { a,    c } }', no_location=True)
+
+    assert visited == [
+        ['enter', 'Document', None],
+        ['enter', 'OperationDefinition', None],
+        ['enter', 'SelectionSet', None],
+        ['enter', 'Field', None],
+        ['enter', 'Name', 'a'],
+        ['leave', 'Name', 'a'],
+        ['leave', 'Field', None],
+        ['enter', 'Field', None],
+        ['enter', 'Name', 'b'],
+        ['leave', 'Name', 'b'],
+        ['enter', 'Field', None],
+        ['enter', 'Name', 'c'],
+        ['leave', 'Name', 'c'],
+        ['enter', 'SelectionSet', None],
+        ['enter', 'Field', None],
+        ['enter', 'Name', 'a'],
+        ['leave', 'Name', 'a'],
+        ['leave', 'Field', None],
+        ['enter', 'Field', None],
+        ['enter', 'Name', 'b'],
+        ['leave', 'Name', 'b'],
+        ['enter', 'Field', None],
+        ['enter', 'Name', 'c'],
+        ['leave', 'Name', 'c'],
+        ['leave', 'Field', None],
+        ['leave', 'SelectionSet', None],
+        ['leave', 'Field', None],
+        ['leave', 'SelectionSet', None],
+        ['leave', 'OperationDefinition', None],
+        ['leave', 'Document', None]
+    ]

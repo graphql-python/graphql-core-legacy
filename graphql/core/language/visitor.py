@@ -5,8 +5,17 @@ import six
 from . import ast
 from .visitor_meta import QUERY_DOCUMENT_KEYS, VisitorMeta
 
+
+class Falsey(object):
+    def __nonzero__(self):
+        return False
+
+    def __bool__(self):
+        return False
+
+
 BREAK = object()
-REMOVE = object()
+REMOVE = Falsey()
 
 
 class Stack(object):
@@ -90,7 +99,7 @@ def visit(root, visitor, key_map=None):
                 key = None
                 node = new_root
 
-            if node is None:
+            if node is REMOVE or node is None:
                 continue
 
             if parent:
@@ -179,6 +188,8 @@ class ParallelVisitor(Visitor):
                     self.skipping[i] = node
                 elif result is BREAK:
                     self.skipping[i] = BREAK
+                elif result is not None:
+                    return result
 
     def leave(self, node, key, parent, path, ancestors):
         for i, visitor in enumerate(self.visitors):
@@ -186,8 +197,10 @@ class ParallelVisitor(Visitor):
                 result = visitor.leave(node, key, parent, path, ancestors)
                 if result is BREAK:
                     self.skipping[i] = BREAK
+                elif result is not None and result is not False:
+                    return result
             elif self.skipping[i] == node:
-                self.skipping[i] = None
+                self.skipping[i] = REMOVE
 
 
 class TypeInfoVisitor(Visitor):
