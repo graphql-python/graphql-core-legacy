@@ -1,7 +1,6 @@
 from ..language.ast import (FragmentDefinition, FragmentSpread,
                             OperationDefinition)
-from ..language.visitor import Visitor, visit
-from .visitor import TypeInfoVisitor
+from ..language.visitor import TypeInfoVisitor, Visitor, visit
 
 
 class VariableUsage(object):

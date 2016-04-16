@@ -5,8 +5,17 @@ import six
 from . import ast
 from .visitor_meta import QUERY_DOCUMENT_KEYS, VisitorMeta
 
+
+class Falsey(object):
+    def __nonzero__(self):
+        return False
+
+    def __bool__(self):
+        return False
+
+
 BREAK = object()
-REMOVE = object()
+REMOVE = Falsey()
 
 
 class Stack(object):
@@ -90,7 +99,7 @@ def visit(root, visitor, key_map=None):
                 key = None
                 node = new_root
 
-            if node is None:
+            if node is REMOVE or node is None:
                 continue
 
             if parent:
@@ -162,3 +171,55 @@ class Visitor(object):
         method = self._get_leave_handler(type(node))
         if method:
             return method(self, node, key, parent, path, ancestors)
+
+
+class ParallelVisitor(Visitor):
+    __slots__ = 'skipping', 'visitors'
+
+    def __init__(self, visitors):
+        self.visitors = visitors
+        self.skipping = [None] * len(visitors)
+
+    def enter(self, node, key, parent, path, ancestors):
+        for i, visitor in enumerate(self.visitors):
+            if not self.skipping[i]:
+                result = visitor.enter(node, key, parent, path, ancestors)
+                if result is False:
+                    self.skipping[i] = node
+                elif result is BREAK:
+                    self.skipping[i] = BREAK
+                elif result is not None:
+                    return result
+
+    def leave(self, node, key, parent, path, ancestors):
+        for i, visitor in enumerate(self.visitors):
+            if not self.skipping[i]:
+                result = visitor.leave(node, key, parent, path, ancestors)
+                if result is BREAK:
+                    self.skipping[i] = BREAK
+                elif result is not None and result is not False:
+                    return result
+            elif self.skipping[i] == node:
+                self.skipping[i] = REMOVE
+
+
+class TypeInfoVisitor(Visitor):
+    __slots__ = 'visitor', 'type_info'
+
+    def __init__(self, type_info, visitor):
+        self.type_info = type_info
+        self.visitor = visitor
+
+    def enter(self, node, key, parent, path, ancestors):
+        self.type_info.enter(node)
+        result = self.visitor.enter(node, key, parent, path, ancestors)
+        if result is not None:
+            self.type_info.leave(node)
+            if isinstance(result, ast.Node):
+                self.type_info.enter(result)
+        return result
+
+    def leave(self, node, key, parent, path, ancestors):
+        result = self.visitor.leave(node, key, parent, path, ancestors)
+        self.type_info.leave(node)
+        return result

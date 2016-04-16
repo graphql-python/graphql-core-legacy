@@ -4,6 +4,18 @@ from .base import ValidationRule
 
 class KnownTypeNames(ValidationRule):
 
+    def enter_ObjectTypeDefinition(self, node, *args):
+        return False
+
+    def enter_InterfaceTypeDefinition(self, node, *args):
+        return False
+
+    def enter_UnionTypeDefinition(self, node, *args):
+        return False
+
+    def enter_InputObjectTypeDefinition(self, node, *args):
+        return False
+
     def enter_NamedType(self, node, *args):
         type_name = node.name.value
         type = self.context.get_schema().get_type(type_name)

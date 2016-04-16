@@ -1,6 +1,6 @@
 from graphql.core.language.location import SourceLocation
 from graphql.core.validation.rules import KnownTypeNames
-from utils import expect_fails_rule, expect_passes_rule
+from .utils import expect_fails_rule, expect_passes_rule
 
 
 def unknown_type(type_name, line, column):
@@ -38,4 +38,26 @@ def test_unknown_type_names_are_invalid():
         unknown_type('JumbledUpLetters', 2, 23),
         unknown_type('Badger', 5, 25),
         unknown_type('Peettt', 8, 29),
+    ])
+
+
+def test_ignores_type_definitions():
+    expect_fails_rule(KnownTypeNames, '''
+      type NotInTheSchema {
+        field: FooBar
+      }
+      interface FooBar {
+        field: NotInTheSchema
+      }
+      union U = A | B
+      input Blob {
+        field: UnknownType
+      }
+      query Foo($var: NotInTheSchema) {
+        user(id: $var) {
+          id
+        }
+      }
+    ''', [
+        unknown_type('NotInTheSchema', 12, 23),
     ])
