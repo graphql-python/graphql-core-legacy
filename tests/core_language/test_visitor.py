@@ -1,9 +1,13 @@
 from graphql.core.language.ast import Field, Name, SelectionSet
 from graphql.core.language.parser import parse
+from graphql.core.language.printer import print_ast
 from graphql.core.language.visitor import (
-    BREAK, REMOVE, Visitor, visit, ParallelVisitor)
+    BREAK, REMOVE, Visitor, visit, ParallelVisitor, TypeInfoVisitor)
+from graphql.core.utils.type_info import TypeInfo
+from graphql.core.type import is_composite_type, get_named_type
 
 from .fixtures import KITCHEN_SINK
+from ..core_validation.utils import test_schema
 
 
 def test_allows_for_editing_on_enter():
@@ -785,4 +789,179 @@ def test_visits_in_pararell_allows_for_editing_on_leave():
         ['leave', 'SelectionSet', None],
         ['leave', 'OperationDefinition', None],
         ['leave', 'Document', None]
+    ]
+
+
+def test_visits_with_typeinfo_maintains_type_info_during_visit():
+    visited = []
+    ast = parse('{ human(id: 4) { name, pets { name }, unknown } }')
+
+    type_info = TypeInfo(test_schema)
+
+    class TestVisitor(Visitor):
+
+        def enter(self, node, key, parent, *args):
+            parent_type = type_info.get_parent_type()
+            _type = type_info.get_type()
+            input_type = type_info.get_input_type()
+            visited.append([
+                'enter',
+                type(node).__name__,
+                node.value if type(node).__name__ == "Name" else None,
+                str(parent_type) if parent_type else None,
+                str(_type) if _type else None,
+                str(input_type) if input_type else None
+            ])
+
+        def leave(self, node, key, parent, *args):
+            parent_type = type_info.get_parent_type()
+            _type = type_info.get_type()
+            input_type = type_info.get_input_type()
+            visited.append([
+                'leave',
+                type(node).__name__,
+                node.value if type(node).__name__ == "Name" else None,
+                str(parent_type) if parent_type else None,
+                str(_type) if _type else None,
+                str(input_type) if input_type else None
+            ])
+
+    visit(ast, TypeInfoVisitor(type_info, TestVisitor()))
+    assert visited == [
+        ['enter', 'Document', None, None, None, None],
+        ['enter', 'OperationDefinition', None, None, 'QueryRoot', None],
+        ['enter', 'SelectionSet', None, 'QueryRoot', 'QueryRoot', None],
+        ['enter', 'Field', None, 'QueryRoot', 'Human', None],
+        ['enter', 'Name', 'human', 'QueryRoot', 'Human', None],
+        ['leave', 'Name', 'human', 'QueryRoot', 'Human', None],
+        ['enter', 'Argument', None, 'QueryRoot', 'Human', 'ID'],
+        ['enter', 'Name', 'id', 'QueryRoot', 'Human', 'ID'],
+        ['leave', 'Name', 'id', 'QueryRoot', 'Human', 'ID'],
+        ['enter', 'IntValue', None, 'QueryRoot', 'Human', 'ID'],
+        ['leave', 'IntValue', None, 'QueryRoot', 'Human', 'ID'],
+        ['leave', 'Argument', None, 'QueryRoot', 'Human', 'ID'],
+        ['enter', 'SelectionSet', None, 'Human', 'Human', None],
+        ['enter', 'Field', None, 'Human', 'String', None],
+        ['enter', 'Name', 'name', 'Human', 'String', None],
+        ['leave', 'Name', 'name', 'Human', 'String', None],
+        ['leave', 'Field', None, 'Human', 'String', None],
+        ['enter', 'Field', None, 'Human', '[Pet]', None],
+        ['enter', 'Name', 'pets', 'Human', '[Pet]', None],
+        ['leave', 'Name', 'pets', 'Human', '[Pet]', None],
+        ['enter', 'SelectionSet', None, 'Pet', '[Pet]', None],
+        ['enter', 'Field', None, 'Pet', 'String', None],
+        ['enter', 'Name', 'name', 'Pet', 'String', None],
+        ['leave', 'Name', 'name', 'Pet', 'String', None],
+        ['leave', 'Field', None, 'Pet', 'String', None],
+        ['leave', 'SelectionSet', None, 'Pet', '[Pet]', None],
+        ['leave', 'Field', None, 'Human', '[Pet]', None],
+        ['enter', 'Field', None, 'Human', None, None],
+        ['enter', 'Name', 'unknown', 'Human', None, None],
+        ['leave', 'Name', 'unknown', 'Human', None, None],
+        ['leave', 'Field', None, 'Human', None, None],
+        ['leave', 'SelectionSet', None, 'Human', 'Human', None],
+        ['leave', 'Field', None, 'QueryRoot', 'Human', None],
+        ['leave', 'SelectionSet', None, 'QueryRoot', 'QueryRoot', None],
+        ['leave', 'OperationDefinition', None, None, 'QueryRoot', None],
+        ['leave', 'Document', None, None, None, None]
+    ]
+
+
+def test_visits_with_typeinfo_maintains_type_info_during_edit():
+    visited = []
+    ast = parse('{ human(id: 4) { name, pets }, alien }')
+
+    type_info = TypeInfo(test_schema)
+
+    class TestVisitor(Visitor):
+
+        def enter(self, node, key, parent, *args):
+            parent_type = type_info.get_parent_type()
+            _type = type_info.get_type()
+            input_type = type_info.get_input_type()
+            visited.append([
+                'enter',
+                type(node).__name__,
+                node.value if type(node).__name__ == "Name" else None,
+                str(parent_type) if parent_type else None,
+                str(_type) if _type else None,
+                str(input_type) if input_type else None
+            ])
+
+            # Make a query valid by adding missing selection sets.
+            if type(node).__name__ == "Field" and not node.selection_set and is_composite_type(get_named_type(_type)):
+                return Field(
+                    alias=node.alias,
+                    name=node.name,
+                    arguments=node.arguments,
+                    directives=node.directives,
+                    selection_set=SelectionSet(
+                        [Field(name=Name(value='__typename'))]
+                    )
+                )
+
+        def leave(self, node, key, parent, *args):
+            parent_type = type_info.get_parent_type()
+            _type = type_info.get_type()
+            input_type = type_info.get_input_type()
+            visited.append([
+                'leave',
+                type(node).__name__,
+                node.value if type(node).__name__ == "Name" else None,
+                str(parent_type) if parent_type else None,
+                str(_type) if _type else None,
+                str(input_type) if input_type else None
+            ])
+
+    edited_ast = visit(ast, TypeInfoVisitor(type_info, TestVisitor()))
+
+    # assert print_ast(ast) == print_ast(parse(
+    #     '{ human(id: 4) { name, pets }, alien }'
+    # ))
+    assert print_ast(edited_ast) == print_ast(parse(
+        '{ human(id: 4) { name, pets { __typename } }, alien { __typename } }'
+    ))
+    assert visited == [
+        ['enter', 'Document', None, None, None, None],
+        ['enter', 'OperationDefinition', None, None, 'QueryRoot', None],
+        ['enter', 'SelectionSet', None, 'QueryRoot', 'QueryRoot', None],
+        ['enter', 'Field', None, 'QueryRoot', 'Human', None],
+        ['enter', 'Name', 'human', 'QueryRoot', 'Human', None],
+        ['leave', 'Name', 'human', 'QueryRoot', 'Human', None],
+        ['enter', 'Argument', None, 'QueryRoot', 'Human', 'ID'],
+        ['enter', 'Name', 'id', 'QueryRoot', 'Human', 'ID'],
+        ['leave', 'Name', 'id', 'QueryRoot', 'Human', 'ID'],
+        ['enter', 'IntValue', None, 'QueryRoot', 'Human', 'ID'],
+        ['leave', 'IntValue', None, 'QueryRoot', 'Human', 'ID'],
+        ['leave', 'Argument', None, 'QueryRoot', 'Human', 'ID'],
+        ['enter', 'SelectionSet', None, 'Human', 'Human', None],
+        ['enter', 'Field', None, 'Human', 'String', None],
+        ['enter', 'Name', 'name', 'Human', 'String', None],
+        ['leave', 'Name', 'name', 'Human', 'String', None],
+        ['leave', 'Field', None, 'Human', 'String', None],
+        ['enter', 'Field', None, 'Human', '[Pet]', None],
+        ['enter', 'Name', 'pets', 'Human', '[Pet]', None],
+        ['leave', 'Name', 'pets', 'Human', '[Pet]', None],
+        ['enter', 'SelectionSet', None, 'Pet', '[Pet]', None],
+        ['enter', 'Field', None, 'Pet', 'String!', None],
+        ['enter', 'Name', '__typename', 'Pet', 'String!', None],
+        ['leave', 'Name', '__typename', 'Pet', 'String!', None],
+        ['leave', 'Field', None, 'Pet', 'String!', None],
+        ['leave', 'SelectionSet', None, 'Pet', '[Pet]', None],
+        ['leave', 'Field', None, 'Human', '[Pet]', None],
+        ['leave', 'SelectionSet', None, 'Human', 'Human', None],
+        ['leave', 'Field', None, 'QueryRoot', 'Human', None],
+        ['enter', 'Field', None, 'QueryRoot', 'Alien', None],
+        ['enter', 'Name', 'alien', 'QueryRoot', 'Alien', None],
+        ['leave', 'Name', 'alien', 'QueryRoot', 'Alien', None],
+        ['enter', 'SelectionSet', None, 'Alien', 'Alien', None],
+        ['enter', 'Field', None, 'Alien', 'String!', None],
+        ['enter', 'Name', '__typename', 'Alien', 'String!', None],
+        ['leave', 'Name', '__typename', 'Alien', 'String!', None],
+        ['leave', 'Field', None, 'Alien', 'String!', None],
+        ['leave', 'SelectionSet', None, 'Alien', 'Alien', None],
+        ['leave', 'Field', None, 'QueryRoot', 'Alien', None],
+        ['leave', 'SelectionSet', None, 'QueryRoot', 'QueryRoot', None],
+        ['leave', 'OperationDefinition', None, None, 'QueryRoot', None],
+        ['leave', 'Document', None, None, None, None]
     ]

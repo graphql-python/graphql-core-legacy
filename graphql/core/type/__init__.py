@@ -12,6 +12,7 @@ from .definition import (  # no import order
     GraphQLInputObjectField,
     GraphQLList,
     GraphQLNonNull,
+    get_named_type,
     is_abstract_type,
     is_composite_type,
     is_input_type,

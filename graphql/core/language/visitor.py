@@ -213,10 +213,13 @@ class TypeInfoVisitor(Visitor):
     def enter(self, node, key, parent, path, ancestors):
         self.type_info.enter(node)
         result = self.visitor.enter(node, key, parent, path, ancestors)
-        if result is False:
+        if result is not None:
             self.type_info.leave(node)
-            return False
+            if isinstance(result, ast.Node):
+                self.type_info.enter(result)
+        return result
 
     def leave(self, node, key, parent, path, ancestors):
-        self.visitor.leave(node, key, parent, path, ancestors)
+        result = self.visitor.leave(node, key, parent, path, ancestors)
         self.type_info.leave(node)
+        return result

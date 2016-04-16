@@ -163,6 +163,7 @@ QueryRoot = GraphQLObjectType('QueryRoot', {
     }),
     'dog': GraphQLField(Dog),
     'pet': GraphQLField(Pet),
+    'alien': GraphQLField(Alien),
     'catOrDog': GraphQLField(CatOrDog),
     'humanOrAlien': GraphQLField(HumanOrAlien),
     'complicatedArgs': GraphQLField(ComplicatedArgs),
