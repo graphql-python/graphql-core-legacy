@@ -39,3 +39,25 @@ def test_unknown_type_names_are_invalid():
         unknown_type('Badger', 5, 25),
         unknown_type('Peettt', 8, 29),
     ])
+
+
+def test_ignores_type_definitions():
+    expect_fails_rule(KnownTypeNames, '''
+      type NotInTheSchema {
+        field: FooBar
+      }
+      interface FooBar {
+        field: NotInTheSchema
+      }
+      union U = A | B
+      input Blob {
+        field: UnknownType
+      }
+      query Foo($var: NotInTheSchema) {
+        user(id: $var) {
+          id
+        }
+      }
+    ''', [
+        unknown_type('NotInTheSchema', 12, 23),
+    ])
