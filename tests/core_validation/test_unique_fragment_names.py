@@ -1,6 +1,6 @@
 from graphql.core.language.location import SourceLocation
 from graphql.core.validation.rules import UniqueFragmentNames
-from utils import expect_fails_rule, expect_passes_rule
+from .utils import expect_fails_rule, expect_passes_rule
 
 
 def duplicate_fragment(fragment_name, l1, c1, l2, c2):

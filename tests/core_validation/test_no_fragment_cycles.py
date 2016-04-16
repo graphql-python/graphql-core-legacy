@@ -1,6 +1,6 @@
 from graphql.core.language.location import SourceLocation as L
 from graphql.core.validation.rules import NoFragmentCycles
-from utils import expect_fails_rule, expect_passes_rule
+from .utils import expect_fails_rule, expect_passes_rule
 
 
 def cycle_error_message(fragment_name, spread_names, *locations):

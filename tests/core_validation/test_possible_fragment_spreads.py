@@ -1,6 +1,6 @@
 from graphql.core.language.location import SourceLocation
 from graphql.core.validation.rules import PossibleFragmentSpreads
-from utils import expect_fails_rule, expect_passes_rule
+from .utils import expect_fails_rule, expect_passes_rule
 
 
 def error(frag_name, parent_type, frag_type, line, column):

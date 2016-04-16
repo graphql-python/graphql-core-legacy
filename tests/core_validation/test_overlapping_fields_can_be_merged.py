@@ -5,7 +5,7 @@ from graphql.core.type.definition import (GraphQLArgument, GraphQLField,
 from graphql.core.type.scalars import GraphQLID, GraphQLInt, GraphQLString
 from graphql.core.type.schema import GraphQLSchema
 from graphql.core.validation.rules import OverlappingFieldsCanBeMerged
-from utils import (expect_fails_rule, expect_fails_rule_with_schema,
+from .utils import (expect_fails_rule, expect_fails_rule_with_schema,
                    expect_passes_rule, expect_passes_rule_with_schema)
 
 

@@ -1,6 +1,6 @@
 from graphql.core.language.location import SourceLocation
 from graphql.core.validation.rules import DefaultValuesOfCorrectType
-from utils import expect_fails_rule, expect_passes_rule
+from .utils import expect_fails_rule, expect_passes_rule
 
 
 def default_for_non_null_arg(var_name, type_name, guess_type_name, line, column):

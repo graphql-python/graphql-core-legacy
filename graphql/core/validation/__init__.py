@@ -1,4 +1,4 @@
-from ..language.visitor import visit, ParallelVisitor, TypeInfoVisitor
+from ..language.visitor import ParallelVisitor, TypeInfoVisitor, visit
 from ..type import GraphQLSchema
 from ..utils.type_info import TypeInfo
 from .context import ValidationContext
