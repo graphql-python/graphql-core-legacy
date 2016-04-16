@@ -1,9 +1,8 @@
-from ..language.visitor import visit
+from ..language.visitor import visit, ParallelVisitor, TypeInfoVisitor
 from ..type import GraphQLSchema
 from ..utils.type_info import TypeInfo
 from .context import ValidationContext
 from .rules import specified_rules
-from .visitor import ParallelVisitor, TypeInfoVisitor
 
 
 def validate(schema, ast, rules=specified_rules):

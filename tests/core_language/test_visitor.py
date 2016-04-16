@@ -1,6 +1,6 @@
 from graphql.core.language.ast import Field, Name, SelectionSet
 from graphql.core.language.parser import parse
-from graphql.core.language.visitor import BREAK, REMOVE, Visitor, visit
+from graphql.core.language.visitor import BREAK, REMOVE, Visitor, visit, ParallelVisitor
 
 from .fixtures import KITCHEN_SINK
 
@@ -50,7 +50,8 @@ def test_visits_edited_node():
                 selections = []
                 if selection_set:
                     selections = selection_set.selections
-                new_selection_set = SelectionSet(selections=[added_field] + selections)
+                new_selection_set = SelectionSet(
+                    selections=[added_field] + selections)
                 return Field(name=None, selection_set=new_selection_set)
             if node is added_field:
                 self.did_visit_added_field = True
@@ -67,12 +68,14 @@ def test_allows_skipping_a_subtree():
     class TestVisitor(Visitor):
 
         def enter(self, node, *args):
-            visited.append(['enter', type(node).__name__, getattr(node, 'value', None)])
+            visited.append(
+                ['enter', type(node).__name__, getattr(node, 'value', None)])
             if isinstance(node, Field) and node.name.value == 'b':
                 return False
 
         def leave(self, node, *args):
-            visited.append(['leave', type(node).__name__, getattr(node, 'value', None)])
+            visited.append(
+                ['leave', type(node).__name__, getattr(node, 'value', None)])
 
     visit(ast, TestVisitor())
 
@@ -102,12 +105,14 @@ def test_allows_early_exit_while_visiting():
     class TestVisitor(Visitor):
 
         def enter(self, node, *args):
-            visited.append(['enter', type(node).__name__, getattr(node, 'value', None)])
+            visited.append(
+                ['enter', type(node).__name__, getattr(node, 'value', None)])
             if isinstance(node, Name) and node.value == 'x':
                 return BREAK
 
         def leave(self, node, *args):
-            visited.append(['leave', type(node).__name__, getattr(node, 'value', None)])
+            visited.append(
+                ['leave', type(node).__name__, getattr(node, 'value', None)])
 
     visit(ast, TestVisitor())
 
@@ -135,13 +140,16 @@ def test_allows_a_named_functions_visitor_api():
     class TestVisitor(Visitor):
 
         def enter_Name(self, node, *args):
-            visited.append(['enter', type(node).__name__, getattr(node, 'value', None)])
+            visited.append(
+                ['enter', type(node).__name__, getattr(node, 'value', None)])
 
         def enter_SelectionSet(self, node, *args):
-            visited.append(['enter', type(node).__name__, getattr(node, 'value', None)])
+            visited.append(
+                ['enter', type(node).__name__, getattr(node, 'value', None)])
 
         def leave_SelectionSet(self, node, *args):
-            visited.append(['leave', type(node).__name__, getattr(node, 'value', None)])
+            visited.append(
+                ['leave', type(node).__name__, getattr(node, 'value', None)])
 
     visit(ast, TestVisitor())
 
@@ -475,4 +483,98 @@ def test_visits_kitchen_sink():
         ['leave', 'SelectionSet', 'selection_set', 'OperationDefinition'],
         ['leave', 'OperationDefinition', 4, None],
         ['leave', 'Document', None, None]
+    ]
+
+
+def test_visits_in_pararell_allows_skipping_a_subtree():
+    visited = []
+    ast = parse('{ a, b { x }, c }')
+
+    class TestVisitor(Visitor):
+
+        def enter(self, node, key, parent, *args):
+            visited.append(
+                ['enter', type(node).__name__, getattr(node, 'value', None)])
+            if type(node).__name__ == 'Field' and node.name.value == 'b':
+                return False
+
+        def leave(self, node, key, parent, *args):
+            visited.append(
+                ['leave', type(node).__name__, getattr(node, 'value', None)])
+
+    visit(ast, ParallelVisitor([TestVisitor()]))
+    assert visited == [
+        ['enter', 'Document', None],
+        ['enter', 'OperationDefinition', None],
+        ['enter', 'SelectionSet', None],
+        ['enter', 'Field', None],
+        ['enter', 'Name', 'a'],
+        ['leave', 'Name', 'a'],
+        ['leave', 'Field', None],
+        ['enter', 'Field', None],
+        ['enter', 'Field', None],
+        ['enter', 'Name', 'c'],
+        ['leave', 'Name', 'c'],
+        ['leave', 'Field', None],
+        ['leave', 'SelectionSet', None],
+        ['leave', 'OperationDefinition', None],
+        ['leave', 'Document', None],
+    ]
+
+
+def test_visits_in_pararell_allows_skipping_different_subtrees():
+    visited = []
+    ast = parse('{ a { x }, b { y} }')
+
+    class TestVisitor(Visitor):
+
+        def __init__(self, name):
+            self.name = name
+
+        def enter(self, node, key, parent, *args):
+            visited.append(["no-{}".format(self.name), 'enter',
+                            type(node).__name__, getattr(node, 'value', None)])
+            if type(node).__name__ == 'Field' and node.name.value == self.name:
+                return False
+
+        def leave(self, node, key, parent, *args):
+            visited.append(["no-{}".format(self.name), 'leave',
+                            type(node).__name__, getattr(node, 'value', None)])
+
+    visit(ast, ParallelVisitor([TestVisitor('a'), TestVisitor('b')]))
+    assert visited == [
+        ['no-a', 'enter', 'Document', None],
+        ['no-b', 'enter', 'Document', None],
+        ['no-a', 'enter', 'OperationDefinition', None],
+        ['no-b', 'enter', 'OperationDefinition', None],
+        ['no-a', 'enter', 'SelectionSet', None],
+        ['no-b', 'enter', 'SelectionSet', None],
+        ['no-a', 'enter', 'Field', None],
+        ['no-b', 'enter', 'Field', None],
+        ['no-b', 'enter', 'Name', 'a'],
+        ['no-b', 'leave', 'Name', 'a'],
+        ['no-b', 'enter', 'SelectionSet', None],
+        ['no-b', 'enter', 'Field', None],
+        ['no-b', 'enter', 'Name', 'x'],
+        ['no-b', 'leave', 'Name', 'x'],
+        ['no-b', 'leave', 'Field', None],
+        ['no-b', 'leave', 'SelectionSet', None],
+        ['no-b', 'leave', 'Field', None],
+        ['no-a', 'enter', 'Field', None],
+        ['no-b', 'enter', 'Field', None],
+        ['no-a', 'enter', 'Name', 'b'],
+        ['no-a', 'leave', 'Name', 'b'],
+        ['no-a', 'enter', 'SelectionSet', None],
+        ['no-a', 'enter', 'Field', None],
+        ['no-a', 'enter', 'Name', 'y'],
+        ['no-a', 'leave', 'Name', 'y'],
+        ['no-a', 'leave', 'Field', None],
+        ['no-a', 'leave', 'SelectionSet', None],
+        ['no-a', 'leave', 'Field', None],
+        ['no-a', 'leave', 'SelectionSet', None],
+        ['no-b', 'leave', 'SelectionSet', None],
+        ['no-a', 'leave', 'OperationDefinition', None],
+        ['no-b', 'leave', 'OperationDefinition', None],
+        ['no-a', 'leave', 'Document', None],
+        ['no-b', 'leave', 'Document', None],
     ]
