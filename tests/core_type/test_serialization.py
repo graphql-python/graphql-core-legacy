@@ -10,6 +10,8 @@ def test_serializes_output_int():
     assert GraphQLInt.serialize(1.1) == 1
     assert GraphQLInt.serialize(-1.1) == -1
     assert GraphQLInt.serialize(1e5) == 100000
+    assert GraphQLInt.serialize(9876504321) is None
+    assert GraphQLInt.serialize(-9876504321) is None
     assert GraphQLInt.serialize(1e100) is None
     assert GraphQLInt.serialize(-1e100) is None
     assert GraphQLInt.serialize('-1.1') == -1
