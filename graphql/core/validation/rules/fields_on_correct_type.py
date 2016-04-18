@@ -51,9 +51,7 @@ def get_sibling_interfaces_including_field(type, field_name):
     implementing_objects = filter(lambda t: isinstance(t, GraphQLObjectType), type.get_possible_types())
     suggested_interfaces = Counter()
     for t in implementing_objects:
-        print t.name
         for i in t.get_interfaces():
-            print i.name
             if field_name not in i.get_fields():
                 break
             suggested_interfaces[i.name] += 1
