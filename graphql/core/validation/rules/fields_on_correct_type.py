@@ -1,8 +1,18 @@
-from collections import Counter
+from collections import Counter, OrderedDict
+try:
+    # Python 2
+    from itertools import izip
+except ImportError:
+    # Python 3
+    izip = zip
 
 from ...error import GraphQLError
-from ...type.definition import is_abstract_type, GraphQLObjectType
+from ...type.definition import GraphQLObjectType, is_abstract_type
 from .base import ValidationRule
+
+
+class OrderedCounter(Counter, OrderedDict):
+    pass
 
 
 class FieldsOnCorrectType(ValidationRule):
@@ -49,13 +59,14 @@ def get_sibling_interfaces_including_field(type, field_name):
     interface.'''
 
     implementing_objects = filter(lambda t: isinstance(t, GraphQLObjectType), type.get_possible_types())
-    suggested_interfaces = Counter()
+    suggested_interfaces = OrderedCounter()
     for t in implementing_objects:
         for i in t.get_interfaces():
             if field_name not in i.get_fields():
-                break
+                continue
             suggested_interfaces[i.name] += 1
     most_common = suggested_interfaces.most_common()
     if not most_common:
         return []
-    return list(zip(*most_common)[0])
+    # Get first element of each list (excluding the counter int)
+    return list(next(izip(*most_common)))

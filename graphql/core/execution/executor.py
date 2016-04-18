@@ -253,7 +253,7 @@ class Executor(object):
         if isinstance(return_type, GraphQLList):
             assert isinstance(result, collections.Iterable), \
                 ('User Error: expected iterable, but did not find one' +
-                'for field {}.{}').format(info.parent_type, info.field_name)
+                 'for field {}.{}').format(info.parent_type, info.field_name)
 
             item_type = return_type.of_type
             completed_results = []
