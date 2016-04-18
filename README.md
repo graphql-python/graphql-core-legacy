@@ -12,7 +12,7 @@ GraphQL for Python
 
 This library is a port of [graphql-js](https://github.com/graphql/graphql-js) to Python.
 
-We are currently targeting feature parity with `v0.4.15` of the reference implementation, and are currently on `v0.4.14`.
+We are currently targeting feature parity with `v0.4.16` of the reference implementation, and are currently on `v0.4.15`.
 
 Please see [issues](https://github.com/graphql-python/graphql-core/issues) for the progress.
 
