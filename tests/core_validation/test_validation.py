@@ -49,6 +49,6 @@ def test_validates_using_a_custom_type_info():
     )
 
     assert len(errors) == 3
-    assert errors[0].message == 'Cannot query field "catOrDog" on "QueryRoot".'
-    assert errors[1].message == 'Cannot query field "furColor" on "Cat".'
-    assert errors[2].message == 'Cannot query field "isHousetrained" on "Dog".'
+    assert errors[0].message == 'Cannot query field "catOrDog" on type "QueryRoot".'
+    assert errors[1].message == 'Cannot query field "furColor" on type "Cat".'
+    assert errors[2].message == 'Cannot query field "isHousetrained" on type "Dog".'

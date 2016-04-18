@@ -3,9 +3,9 @@ from graphql.core.validation.rules import FieldsOnCorrectType
 from .utils import expect_fails_rule, expect_passes_rule
 
 
-def undefined_field(field, type, line, column):
+def undefined_field(field, type, suggestions, line, column):
     return {
-        'message': FieldsOnCorrectType.undefined_field_message(field, type),
+        'message': FieldsOnCorrectType.undefined_field_message(field, type, suggestions),
         'locations': [SourceLocation(line, column)]
     }
 
@@ -71,8 +71,8 @@ def test_reports_errors_when_type_is_known_again():
         }
       },
     ''', [
-        undefined_field('unknown_pet_field', 'Pet', 3, 9),
-        undefined_field('unknown_cat_field', 'Cat', 5, 13)
+        undefined_field('unknown_pet_field', 'Pet', [], 3, 9),
+        undefined_field('unknown_cat_field', 'Cat', [], 5, 13)
     ])
 
 
@@ -82,7 +82,7 @@ def test_field_not_defined_on_fragment():
         meowVolume
       }
     ''', [
-        undefined_field('meowVolume', 'Dog', 3, 9)
+        undefined_field('meowVolume', 'Dog', [], 3, 9)
     ])
 
 
@@ -94,7 +94,7 @@ def test_ignores_deeply_unknown_field():
         }
       }
     ''', [
-        undefined_field('unknown_field', 'Dog', 3, 9)
+        undefined_field('unknown_field', 'Dog', [], 3, 9)
     ])
 
 
@@ -106,7 +106,7 @@ def test_sub_field_not_defined():
         }
       }
     ''', [
-        undefined_field('unknown_field', 'Pet', 4, 11)
+        undefined_field('unknown_field', 'Pet', [], 4, 11)
     ])
 
 
@@ -118,7 +118,7 @@ def test_field_not_defined_on_inline_fragment():
         }
       }
     ''', [
-        undefined_field('meowVolume', 'Dog', 4, 11)
+        undefined_field('meowVolume', 'Dog', [], 4, 11)
     ])
 
 
@@ -128,7 +128,7 @@ def test_aliased_field_target_not_defined():
         volume : mooVolume
       }
     ''', [
-        undefined_field('mooVolume', 'Dog', 3, 9)
+        undefined_field('mooVolume', 'Dog', [], 3, 9)
     ])
 
 
@@ -138,7 +138,7 @@ def test_aliased_lying_field_target_not_defined():
         barkVolume : kawVolume
       }
     ''', [
-        undefined_field('kawVolume', 'Dog', 3, 9)
+        undefined_field('kawVolume', 'Dog', [], 3, 9)
     ])
 
 
@@ -148,7 +148,7 @@ def test_not_defined_on_interface():
         tailLength
       }
     ''', [
-        undefined_field('tailLength', 'Pet', 3, 9)
+        undefined_field('tailLength', 'Pet', [], 3, 9)
     ])
 
 
@@ -158,7 +158,7 @@ def test_defined_on_implementors_but_not_on_interface():
         nickname
       }
     ''', [
-        undefined_field('nickname', 'Pet', 3, 9)
+        undefined_field('nickname', 'Pet', ['Cat', 'Dog'], 3, 9)
     ])
 
 
@@ -176,7 +176,7 @@ def test_direct_field_selection_on_union():
         directField
       }
     ''', [
-        undefined_field('directField', 'CatOrDog', 3, 9)
+        undefined_field('directField', 'CatOrDog', [], 3, 9)
     ])
 
 
@@ -186,7 +186,13 @@ def test_defined_on_implementors_queried_on_union():
         name
       }
     ''', [
-        undefined_field('name', 'CatOrDog', 3, 9)
+        undefined_field(
+          'name',
+          'CatOrDog',
+          ['Being', 'Pet', 'Canine', 'Cat', 'Dog'],
+          3,
+          9
+        )
     ])
 
 
@@ -201,3 +207,27 @@ def test_valid_field_in_inline_fragment():
         }
       }
     ''')
+
+
+def test_fields_correct_type_no_suggestion():
+    message = FieldsOnCorrectType.undefined_field_message('T', 'f', [])
+    assert message == 'Cannot query field "T" on type "f".'
+
+
+def test_fields_correct_type_no_small_number_suggestions():
+    message = FieldsOnCorrectType.undefined_field_message('T', 'f', ['A', 'B'])
+    assert message == (
+      'Cannot query field "T" on type "f". ' +
+      'However, this field exists on "A", "B". ' +
+      'Perhaps you meant to use an inline fragment?'
+    )
+
+
+def test_fields_correct_type_lot_suggestions():
+    message = FieldsOnCorrectType.undefined_field_message('T', 'f', ['A', 'B', 'C', 'D', 'E', 'F'])
+    assert message == (
+      'Cannot query field "T" on type "f". ' +
+      'However, this field exists on "A", "B", "C", "D", "E", ' +
+      'and 1 other types. '+
+      'Perhaps you meant to use an inline fragment?'
+    )
