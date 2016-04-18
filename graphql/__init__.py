@@ -1,0 +1,17 @@
+'''
+GraphQL provides a Python implementation for the GraphQL specification
+but is also a useful utility for operating on GraphQL files and building
+sophisticated tools.
+
+This primary module exports a general purpose function for fulfilling all
+steps of the GraphQL specification in a single operation, but also includes
+utilities for every part of the GraphQL specification:
+
+  - Parsing the GraphQL language.
+  - Building a GraphQL type schema.
+  - Validating a GraphQL request against a type schema.
+  - Executing a GraphQL request against a type schema.
+
+This also includes utility functions for operating on GraphQL types and
+GraphQL documents to facilitate building tools.
+'''

@@ -24,6 +24,12 @@ Pet = GraphQLInterfaceType('Pet', {
     }),
 })
 
+Canine = GraphQLInterfaceType('Canine', {
+    'name': GraphQLField(GraphQLString, {
+        'surname': GraphQLArgument(GraphQLBoolean),
+    }),
+})
+
 DogCommand = GraphQLEnumType('DogCommand', {
     'SIT': GraphQLEnumValue(0),
     'HEEL': GraphQLEnumValue(1),
@@ -53,13 +59,14 @@ Dog = GraphQLObjectType('Dog', {
             'y': GraphQLArgument(GraphQLInt)
         }
     )
-}, interfaces=[Being, Pet], is_type_of=lambda: None)
+}, interfaces=[Being, Pet, Canine], is_type_of=lambda: None)
 
 Cat = GraphQLObjectType('Cat', lambda: {
     'furColor': GraphQLField(FurColor),
     'name': GraphQLField(GraphQLString, {
         'surname': GraphQLArgument(GraphQLBoolean),
-    })
+    }),
+    'nickname': GraphQLField(GraphQLString),
 }, interfaces=[Being, Pet], is_type_of=lambda: None)
 
 CatOrDog = GraphQLUnionType('CatOrDog', [Dog, Cat])

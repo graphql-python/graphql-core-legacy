@@ -252,7 +252,8 @@ class Executor(object):
         # If field type is List, complete each item in the list with the inner type
         if isinstance(return_type, GraphQLList):
             assert isinstance(result, collections.Iterable), \
-                'User Error: expected iterable, but did not find one.'
+                ('User Error: expected iterable, but did not find one' +
+                 'for field {}.{}').format(info.parent_type, info.field_name)
 
             item_type = return_type.of_type
             completed_results = []

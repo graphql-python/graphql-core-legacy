@@ -126,7 +126,7 @@ def test_complex_input_complex_input():
       query Query($complexVar: ComplexInput)
       {
         complicatedArgs {
-          complexArgField(complexArg: $ComplexInput)
+          complexArgField(complexArg: $complexVar)
         }
       }
     ''')

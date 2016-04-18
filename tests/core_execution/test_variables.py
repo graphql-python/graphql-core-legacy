@@ -245,7 +245,7 @@ class TestUsingVariables:
         }
 
     def test_errors_on_addition_of_unknown_input_field(self):
-        params = {'input': {'a': 'foo', 'b': 'bar', 'c': 'baz', 'f': 'dog'}}
+        params = {'input': {'a': 'foo', 'b': 'bar', 'c': 'baz', 'extra': 'dog'}}
 
         with raises(GraphQLError) as excinfo:
             check(self.doc, {}, params)
@@ -253,7 +253,7 @@ class TestUsingVariables:
         assert format_error(excinfo.value) == {
             'locations': [{'column': 13, 'line': 2}],
             'message': 'Variable "$input" got invalid value {}.\n'
-                       'In field "f": Unknown field.'.format(stringify(params['input']))
+                       'In field "extra": Unknown field.'.format(stringify(params['input']))
         }
 
 
