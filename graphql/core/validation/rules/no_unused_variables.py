@@ -15,6 +15,7 @@ class NoUnusedVariables(ValidationRule):
     def leave_OperationDefinition(self, operation, key, parent, path, ancestors):
         variable_name_used = set()
         usages = self.context.get_recursive_variable_usages(operation)
+        op_name = operation.name and operation.name.value or None
 
         for variable_usage in usages:
             variable_name_used.add(variable_usage.node.name.value)
@@ -22,7 +23,7 @@ class NoUnusedVariables(ValidationRule):
         for variable_definition in self.variable_definitions:
             if variable_definition.variable.name.value not in variable_name_used:
                 self.context.report_error(GraphQLError(
-                    self.unused_variable_message(variable_definition.variable.name.value),
+                    self.unused_variable_message(variable_definition.variable.name.value, op_name),
                     [variable_definition]
                 ))
 
@@ -30,5 +31,7 @@ class NoUnusedVariables(ValidationRule):
         self.variable_definitions.append(node)
 
     @staticmethod
-    def unused_variable_message(variable_name):
+    def unused_variable_message(variable_name, op_name):
+        if op_name:
+            return 'Variable "${}" is never used in operation "{}".'.format(variable_name, op_name)
         return 'Variable "${}" is never used.'.format(variable_name)
