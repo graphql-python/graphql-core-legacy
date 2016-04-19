@@ -1,5 +1,5 @@
-from ..type.definition import (GraphQLList, GraphQLNonNull, GraphQLObjectType,
-                               GraphQLInterfaceType, GraphQLUnionType,
+from ..type.definition import (GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
+                               GraphQLObjectType, GraphQLUnionType,
                                is_abstract_type)
 
 
