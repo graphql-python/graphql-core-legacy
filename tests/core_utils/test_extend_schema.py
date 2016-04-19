@@ -115,7 +115,7 @@ def test_extends_objects_by_adding_new_fields():
     ''')
     original_print = print_schema(test_schema)
     extended_schema = extend_schema(test_schema, ast)
-    assert extend_schema != test_schema
+    assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
     # print original_print
     assert print_schema(extended_schema) == \
@@ -164,7 +164,7 @@ def test_extends_objects_by_adding_new_fields_with_arguments():
     ''')
     original_print = print_schema(test_schema)
     extended_schema = extend_schema(test_schema, ast)
-    assert extend_schema != test_schema
+    assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
     assert print_schema(extended_schema) == \
         '''type Bar implements SomeInterface {
@@ -214,7 +214,7 @@ def test_extends_objects_by_adding_implemented_interfaces():
     ''')
     original_print = print_schema(test_schema)
     extended_schema = extend_schema(test_schema, ast)
-    assert extend_schema != test_schema
+    assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
     assert print_schema(extended_schema) == \
         '''type Bar implements SomeInterface {
@@ -278,7 +278,7 @@ def test_extends_objects_by_adding_implemented_interfaces():
     ''')
     original_print = print_schema(test_schema)
     extended_schema = extend_schema(test_schema, ast)
-    assert extend_schema != test_schema
+    assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
     assert print_schema(extended_schema) == \
         '''type Bar implements SomeInterface {
@@ -350,7 +350,7 @@ def test_extends_objects_by_adding_implemented_new_interfaces():
     ''')
     original_print = print_schema(test_schema)
     extended_schema = extend_schema(test_schema, ast)
-    assert extend_schema != test_schema
+    assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
     assert print_schema(extended_schema) == \
         '''type Bar implements SomeInterface {
@@ -409,7 +409,7 @@ def test_extends_objects_multiple_times():
     ''')
     original_print = print_schema(test_schema)
     extended_schema = extend_schema(test_schema, ast)
-    assert extend_schema != test_schema
+    assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
     assert print_schema(extended_schema) == \
         '''type Bar implements SomeInterface {
@@ -487,7 +487,7 @@ def test_may_extend_mutations_and_subscriptions():
     ''')
     original_print = print_schema(mutationSchema)
     extended_schema = extend_schema(mutationSchema, ast)
-    assert extend_schema != mutationSchema
+    assert extended_schema != mutationSchema
     assert print_schema(mutationSchema) == original_print
     assert print_schema(extended_schema) == \
         '''type Mutation {
