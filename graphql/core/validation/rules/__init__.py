@@ -19,6 +19,7 @@ from .unique_argument_names import UniqueArgumentNames
 from .unique_fragment_names import UniqueFragmentNames
 from .unique_input_field_names import UniqueInputFieldNames
 from .unique_operation_names import UniqueOperationNames
+from .unique_variable_names import UniqueVariableNames
 from .variables_are_input_types import VariablesAreInputTypes
 from .variables_in_allowed_position import VariablesInAllowedPosition
 
@@ -45,7 +46,8 @@ specified_rules = [
     DefaultValuesOfCorrectType,
     VariablesInAllowedPosition,
     OverlappingFieldsCanBeMerged,
-    UniqueInputFieldNames
+    UniqueInputFieldNames,
+    UniqueVariableNames
 ]
 
 __all__ = [
@@ -59,6 +61,7 @@ __all__ = [
     'KnownTypeNames',
     'LoneAnonymousOperation',
     'NoFragmentCycles',
+    'UniqueVariableNames',
     'NoUndefinedVariables',
     'NoUnusedFragments',
     'NoUnusedVariables',
