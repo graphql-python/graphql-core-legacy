@@ -1,4 +1,5 @@
 from ..type.definition import (GraphQLList, GraphQLNonNull, GraphQLObjectType,
+                               GraphQLInterfaceType, GraphQLUnionType,
                                is_abstract_type)
 
 
@@ -38,3 +39,18 @@ def is_type_sub_type_of(maybe_subtype, super_type):
         return True
 
     return False
+
+
+def do_types_overlap(t1, t2):
+    if t1 == t2:
+        return True
+    if isinstance(t1, GraphQLObjectType):
+        if isinstance(t2, GraphQLObjectType):
+            return False
+        return t1 in t2.get_possible_types()
+    if isinstance(t1, GraphQLInterfaceType) or isinstance(t1, GraphQLUnionType):
+        if isinstance(t2, GraphQLObjectType):
+            return t2 in t1.get_possible_types()
+
+        t1_type_names = {possible_type.name: possible_type for possible_type in t1.get_possible_types()}
+        return any(t.name in t1_type_names for t in t2.get_possible_types())
