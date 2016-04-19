@@ -92,7 +92,7 @@ def peek(parser, kind):
 def skip(parser, kind):
     """If the next token is of the given kind, return true after advancing
     the parser. Otherwise, do not change the parser state
-    and return False."""
+    and throw an error."""
     match = parser.token.kind == kind
     if match:
         advance(parser)
