@@ -7,7 +7,7 @@ from graphql.core.utils.type_info import TypeInfo
 from graphql.core.type import is_composite_type, get_named_type
 
 from .fixtures import KITCHEN_SINK
-from ..core_validation.utils import test_schema
+from ...validation.tests.utils import test_schema
 
 
 def test_allows_for_editing_on_enter():
