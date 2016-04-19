@@ -332,9 +332,27 @@ Connection = GraphQLObjectType('Connection', {
     })))
 })
 
+
+TestChildInterface = GraphQLInterfaceType('TestChildInterface', {
+    'testChildField': GraphQLField(GraphQLString)
+}, resolve_type=lambda *_: TestChildImpl)
+
+TestChildImpl = GraphQLObjectType('TestChildImpl', {
+    'testChildField': GraphQLField(GraphQLString)
+}, interfaces=[TestChildInterface])
+
+TestParentInterface = GraphQLInterfaceType('TestParentInterface', {
+    'testField': GraphQLField(TestChildInterface),
+}, resolve_type=lambda *_: TestParentImpl)
+
+TestParentImpl = GraphQLObjectType('TestParentImpl', {
+    'testField': GraphQLField(TestChildImpl),
+}, interfaces=[TestParentInterface])
+
 schema = GraphQLSchema(GraphQLObjectType('QueryRoot', {
     'someBox': GraphQLField(SomeBox),
-    'connection': GraphQLField(Connection)
+    'connection': GraphQLField(Connection),
+    'parent': GraphQLField(TestParentImpl),
 }))
 
 
@@ -436,6 +454,23 @@ def test_ignores_unknown_types():
             }
             ...on NonNullStringBox2 {
                 scalar
+            }
+        }
+    }
+    ''')
+
+
+def test_allows_overlapping_types_that_are_interfaces():
+    expect_passes_rule_with_schema(schema, OverlappingFieldsCanBeMerged, '''
+    {
+        parent {
+            ... on TestParentInterface {
+                testField {
+                    testChildField
+                }
+            }
+            testField {
+                testChildField
             }
         }
     }
