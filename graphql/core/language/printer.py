@@ -24,14 +24,14 @@ class PrintingVisitor(Visitor):
     def leave_OperationDefinition(self, node, *args):
         name = node.name
         selection_set = node.selection_set
-        if not name:
-            return selection_set
-
         op = node.operation
-        defs = wrap('(', join(node.variable_definitions, ', '), ')')
+        var_defs = wrap('(', join(node.variable_definitions, ', '), ')')
         directives = join(node.directives, ' ')
 
-        return join([op, join([name, defs]), directives, selection_set], ' ')
+        if not name and not directives and not var_defs and op == 'query':
+            return selection_set
+
+        return join([op, join([name, var_defs]), directives, selection_set], ' ')
 
     def leave_VariableDefinition(self, node, *args):
         return node.variable + ': ' + node.type + wrap(' = ', node.default_value)

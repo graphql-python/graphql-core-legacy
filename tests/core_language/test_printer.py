@@ -28,6 +28,46 @@ def test_produces_helpful_error_messages():
     assert 'Invalid AST Node' in str(excinfo.value)
 
 
+def test_correctly_prints_query_operation_without_name():
+    query_ast_shorthanded = parse('query { id, name }')
+    assert print_ast(query_ast_shorthanded) == '''{
+  id
+  name
+}
+'''
+
+
+def test_correctly_prints_mutation_operation_without_name():
+    mutation_ast = parse('mutation { id, name }')
+    assert print_ast(mutation_ast) == '''mutation {
+  id
+  name
+}
+'''
+
+
+def test_correctly_prints_query_with_artifacts():
+    query_ast_shorthanded = parse(
+      'query ($foo: TestType) @testDirective { id, name }'
+    )
+    assert print_ast(query_ast_shorthanded) == '''query ($foo: TestType) @testDirective {
+  id
+  name
+}
+'''
+
+
+def test_correctly_prints_mutation_with_artifacts():
+    query_ast_shorthanded = parse(
+      'mutation ($foo: TestType) @testDirective { id, name }'
+    )
+    assert print_ast(query_ast_shorthanded) == '''mutation ($foo: TestType) @testDirective {
+  id
+  name
+}
+'''
+
+
 def test_prints_kitchen_sink():
     ast = parse(KITCHEN_SINK)
     printed = print_ast(ast)
