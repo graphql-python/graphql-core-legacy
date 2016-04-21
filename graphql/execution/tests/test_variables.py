@@ -141,6 +141,19 @@ def test_does_not_use_incorrect_value():
     })
 
 
+def test_properly_runs_parse_literal_on_complex_scalar_types():
+    doc = '''
+    {
+        fieldWithObjectInput(input: {a: "foo", d: "SerializedValue"})
+    }
+    '''
+    check(doc, {
+        'data': {
+            'fieldWithObjectInput': '{"a": "foo", "d": "DeserializedValue"}',
+        }
+    })
+
+
 # noinspection PyMethodMayBeStatic
 class TestUsingVariables:
     doc = '''
