@@ -265,8 +265,7 @@ class Executor(object):
         if isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
             return self.complete_abstract_value(ctx, return_type, field_asts, info, result)
 
-        # Not reachable
-        return None
+        assert False, u'Cannot complete value of unexpected type "{}"'.format(return_type)
 
     def complete_list_value(self, ctx, return_type, field_asts, info, result):
         """
