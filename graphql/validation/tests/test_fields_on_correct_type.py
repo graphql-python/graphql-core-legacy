@@ -188,11 +188,11 @@ def test_defined_on_implementors_queried_on_union():
       }
     ''', [
         undefined_field(
-          'name',
-          'CatOrDog',
-          ['Being', 'Pet', 'Canine', 'Cat', 'Dog'],
-          3,
-          9
+            'name',
+            'CatOrDog',
+            ['Being', 'Pet', 'Canine', 'Cat', 'Dog'],
+            3,
+            9
         )
     ])
 
@@ -218,17 +218,17 @@ def test_fields_correct_type_no_suggestion():
 def test_fields_correct_type_no_small_number_suggestions():
     message = FieldsOnCorrectType.undefined_field_message('T', 'f', ['A', 'B'])
     assert message == (
-      'Cannot query field "T" on type "f". ' +
-      'However, this field exists on "A", "B". ' +
-      'Perhaps you meant to use an inline fragment?'
+        'Cannot query field "T" on type "f". ' +
+        'However, this field exists on "A", "B". ' +
+        'Perhaps you meant to use an inline fragment?'
     )
 
 
 def test_fields_correct_type_lot_suggestions():
     message = FieldsOnCorrectType.undefined_field_message('T', 'f', ['A', 'B', 'C', 'D', 'E', 'F'])
     assert message == (
-      'Cannot query field "T" on type "f". ' +
-      'However, this field exists on "A", "B", "C", "D", "E", ' +
-      'and 1 other types. '+
-      'Perhaps you meant to use an inline fragment?'
+        'Cannot query field "T" on type "f". ' +
+        'However, this field exists on "A", "B", "C", "D", "E", ' +
+        'and 1 other types. ' +
+        'Perhaps you meant to use an inline fragment?'
     )

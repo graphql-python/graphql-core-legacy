@@ -48,7 +48,7 @@ def test_correctly_prints_mutation_operation_without_name():
 
 def test_correctly_prints_query_with_artifacts():
     query_ast_shorthanded = parse(
-      'query ($foo: TestType) @testDirective { id, name }'
+        'query ($foo: TestType) @testDirective { id, name }'
     )
     assert print_ast(query_ast_shorthanded) == '''query ($foo: TestType) @testDirective {
   id
@@ -59,7 +59,7 @@ def test_correctly_prints_query_with_artifacts():
 
 def test_correctly_prints_mutation_with_artifacts():
     query_ast_shorthanded = parse(
-      'mutation ($foo: TestType) @testDirective { id, name }'
+        'mutation ($foo: TestType) @testDirective { id, name }'
     )
     assert print_ast(query_ast_shorthanded) == '''mutation ($foo: TestType) @testDirective {
   id

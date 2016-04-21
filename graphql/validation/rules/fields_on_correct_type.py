@@ -12,7 +12,6 @@ except ImportError:
     izip = zip
 
 
-
 class OrderedCounter(Counter, OrderedDict):
     pass
 
@@ -43,7 +42,7 @@ class FieldsOnCorrectType(ValidationRule):
             suggestions = ', '.join(['"{}"'.format(t) for t in suggested_types[:MAX_LENGTH]])
             l_suggested_types = len(suggested_types)
             if l_suggested_types > MAX_LENGTH:
-                suggestions += ", and {} other types".format(l_suggested_types-MAX_LENGTH)
+                suggestions += ", and {} other types".format(l_suggested_types - MAX_LENGTH)
             message += " However, this field exists on {}.".format(suggestions)
             message += " Perhaps you meant to use an inline fragment?"
         return message
