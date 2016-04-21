@@ -255,12 +255,7 @@ class Executor(object):
 
         # If field type is Scalar or Enum, serialize to a valid value, returning null if coercion is not possible.
         if isinstance(return_type, (GraphQLScalarType, GraphQLEnumType)):
-            serialized_result = return_type.serialize(result)
-
-            if serialized_result is None:
-                return None
-
-            return serialized_result
+            return self.complete_leaf_value(ctx, return_type, field_asts, info, result)
 
         runtime_type = None
 
@@ -317,6 +312,17 @@ class Executor(object):
             completed_results.append(completed_item)
 
         return DeferredList(completed_results) if contains_deferred else completed_results
+
+    def complete_leaf_value(self, ctx, return_type, field_asts, info, result):
+        """
+        Complete a Scalar or Enum by serializing to a valid value, returning null if serialization is not possible.
+        """
+        serialized_result = return_type.serialize(result)
+
+        if serialized_result is None:
+            return None
+
+        return serialized_result
 
     def resolve_or_error(self, resolve_fn, source, args, info):
         curried_resolve_fn = functools.partial(resolve_fn, source, args, info)
