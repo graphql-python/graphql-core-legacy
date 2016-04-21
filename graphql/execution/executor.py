@@ -251,21 +251,7 @@ class Executor(object):
 
         # If field type is List, complete each item in the list with the inner type
         if isinstance(return_type, GraphQLList):
-            assert isinstance(result, collections.Iterable), \
-                ('User Error: expected iterable, but did not find one' +
-                 'for field {}.{}').format(info.parent_type, info.field_name)
-
-            item_type = return_type.of_type
-            completed_results = []
-            contains_deferred = False
-            for item in result:
-                completed_item = self.complete_value_catching_error(ctx, item_type, field_asts, info, item)
-                if not contains_deferred and isinstance(completed_item, Deferred):
-                    contains_deferred = True
-
-                completed_results.append(completed_item)
-
-            return DeferredList(completed_results) if contains_deferred else completed_results
+            return self.complete_list_value(ctx, return_type, field_asts, info, result)
 
         # If field type is Scalar or Enum, serialize to a valid value, returning null if coercion is not possible.
         if isinstance(return_type, (GraphQLScalarType, GraphQLEnumType)):
@@ -311,6 +297,26 @@ class Executor(object):
                 )
 
         return self._execute_fields(ctx, runtime_type, result, subfield_asts)
+
+    def complete_list_value(self, ctx, return_type, field_asts, info, result):
+        """
+        Complete a list value by completing each item in the list with the inner type
+        """
+        assert isinstance(result, collections.Iterable), \
+            ('User Error: expected iterable, but did not find one' +
+             'for field {}.{}').format(info.parent_type, info.field_name)
+
+        item_type = return_type.of_type
+        completed_results = []
+        contains_deferred = False
+        for item in result:
+            completed_item = self.complete_value_catching_error(ctx, item_type, field_asts, info, item)
+            if not contains_deferred and isinstance(completed_item, Deferred):
+                contains_deferred = True
+
+            completed_results.append(completed_item)
+
+        return DeferredList(completed_results) if contains_deferred else completed_results
 
     def resolve_or_error(self, resolve_fn, source, args, info):
         curried_resolve_fn = functools.partial(resolve_fn, source, args, info)
