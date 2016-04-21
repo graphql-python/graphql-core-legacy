@@ -214,6 +214,8 @@ class Executor(object):
         If the field type is a Scalar or Enum, ensures the completed value is a legal value of the type by calling the
         `serialize` method of GraphQL type definition.
 
+        If the field is an abstract type, determine the runtime type of the value and then complete based on that type.
+
         Otherwise, the field type expects a sub-selection set, and will complete the value by evaluating all
         sub-selections.
         """
@@ -260,21 +262,11 @@ class Executor(object):
         if isinstance(return_type, GraphQLObjectType):
             return self.complete_object_value(ctx, return_type, field_asts, info, result)
 
-        # Field type must be Object, Interface or Union and expect sub-selections.
-        runtime_type = None
-
         if isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
-            runtime_type = return_type.resolve_type(result, info)
-            if runtime_type and not return_type.is_possible_type(runtime_type):
-                raise GraphQLError(
-                    u'Runtime Object type "{}" is not a possible type for "{}".'.format(runtime_type, return_type),
-                    field_asts
-                )
+            return self.complete_abstract_value(ctx, return_type, field_asts, info, result)
 
-        if not runtime_type:
-            return None
-
-        return self.complete_object_value(ctx, runtime_type, field_asts, info, result)
+        # Not reachable
+        return None
 
     def complete_list_value(self, ctx, return_type, field_asts, info, result):
         """
@@ -329,6 +321,27 @@ class Executor(object):
                 )
 
         return self._execute_fields(ctx, return_type, result, subfield_asts)
+
+    def complete_abstract_value(self, ctx, return_type, field_asts, info, result):
+        """
+        Complete an value of an abstract type by determining the runtime type of that value, then completing based
+        on that type.
+        """
+        # Field type must be Object, Interface or Union and expect sub-selections.
+        runtime_type = None
+
+        if isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
+            runtime_type = return_type.resolve_type(result, info)
+            if runtime_type and not return_type.is_possible_type(runtime_type):
+                raise GraphQLError(
+                    u'Runtime Object type "{}" is not a possible type for "{}".'.format(runtime_type, return_type),
+                    field_asts
+                )
+
+        if not runtime_type:
+            return None
+
+        return self.complete_object_value(ctx, runtime_type, field_asts, info, result)
 
     def resolve_or_error(self, resolve_fn, source, args, info):
         curried_resolve_fn = functools.partial(resolve_fn, source, args, info)
