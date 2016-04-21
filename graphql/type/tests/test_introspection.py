@@ -5,11 +5,10 @@ from graphql import graphql
 from graphql.error import format_error
 from graphql.execution import execute
 from graphql.language.parser import parse
-from graphql.type import (GraphQLArgument, GraphQLEnumType,
-                               GraphQLEnumValue, GraphQLField,
-                               GraphQLInputObjectField, GraphQLInputObjectType,
-                               GraphQLList, GraphQLObjectType, GraphQLSchema,
-                               GraphQLString)
+from graphql.type import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
+                          GraphQLField, GraphQLInputObjectField,
+                          GraphQLInputObjectType, GraphQLList,
+                          GraphQLObjectType, GraphQLSchema, GraphQLString)
 from graphql.utils.introspection_query import introspection_query
 from graphql.validation.rules import ProvidedNonNullArguments
 

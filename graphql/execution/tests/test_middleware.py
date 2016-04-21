@@ -1,6 +1,6 @@
 from graphql.execution.middlewares.utils import (merge_resolver_tags,
-                                                      resolver_has_tag,
-                                                      tag_resolver)
+                                                 resolver_has_tag,
+                                                 tag_resolver)
 
 
 def test_tag_resolver():

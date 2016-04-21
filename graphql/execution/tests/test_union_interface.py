@@ -1,9 +1,8 @@
 from graphql.execution import execute
 from graphql.language.parser import parse
-from graphql.type import (GraphQLBoolean, GraphQLField,
-                               GraphQLInterfaceType, GraphQLList,
-                               GraphQLObjectType, GraphQLSchema, GraphQLString,
-                               GraphQLUnionType)
+from graphql.type import (GraphQLBoolean, GraphQLField, GraphQLInterfaceType,
+                          GraphQLList, GraphQLObjectType, GraphQLSchema,
+                          GraphQLString, GraphQLUnionType)
 
 
 class Dog(object):

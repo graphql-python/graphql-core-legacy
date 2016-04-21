@@ -1,5 +1,5 @@
 from graphql.type import (GraphQLBoolean, GraphQLFloat, GraphQLInt,
-                               GraphQLString)
+                          GraphQLString)
 
 
 def test_serializes_output_int():

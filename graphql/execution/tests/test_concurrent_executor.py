@@ -2,12 +2,11 @@ from collections import OrderedDict
 
 from graphql.error import format_error
 from graphql.execution import Executor
-from graphql.execution.middlewares.sync import \
-    SynchronousExecutionMiddleware
+from graphql.execution.middlewares.sync import SynchronousExecutionMiddleware
 from graphql.pyutils.defer import Deferred, fail, succeed
 from graphql.type import (GraphQLArgument, GraphQLField, GraphQLInt,
-                               GraphQLList, GraphQLObjectType, GraphQLSchema,
-                               GraphQLString)
+                          GraphQLList, GraphQLObjectType, GraphQLSchema,
+                          GraphQLString)
 from graphql.type.definition import GraphQLNonNull
 
 from .utils import raise_callback_results

@@ -1,5 +1,4 @@
-from graphql.pyutils.defer import (Deferred, DeferredException,
-                                        _passthrough)
+from graphql.pyutils.defer import Deferred, DeferredException, _passthrough
 
 
 class RaisingDeferred(Deferred):

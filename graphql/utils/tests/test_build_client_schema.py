@@ -4,14 +4,13 @@ from pytest import raises
 
 from graphql import graphql
 from graphql.error import format_error
-from graphql.type import (GraphQLArgument, GraphQLBoolean,
-                               GraphQLEnumType, GraphQLEnumValue, GraphQLField,
-                               GraphQLFloat, GraphQLID,
-                               GraphQLInputObjectField, GraphQLInputObjectType,
-                               GraphQLInt, GraphQLInterfaceType, GraphQLList,
-                               GraphQLNonNull, GraphQLObjectType,
-                               GraphQLScalarType, GraphQLSchema, GraphQLString,
-                               GraphQLUnionType)
+from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
+                          GraphQLEnumValue, GraphQLField, GraphQLFloat,
+                          GraphQLID, GraphQLInputObjectField,
+                          GraphQLInputObjectType, GraphQLInt,
+                          GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
+                          GraphQLObjectType, GraphQLScalarType, GraphQLSchema,
+                          GraphQLString, GraphQLUnionType)
 from graphql.type.directives import GraphQLDirective
 from graphql.utils.build_client_schema import build_client_schema
 from graphql.utils.introspection_query import introspection_query

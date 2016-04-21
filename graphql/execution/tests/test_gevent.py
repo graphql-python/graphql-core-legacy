@@ -4,10 +4,10 @@ import gevent
 from graphql.error import format_error
 from graphql.execution import Executor
 from graphql.execution.middlewares.gevent import (GeventExecutionMiddleware,
-                                                       run_in_greenlet)
+                                                  run_in_greenlet)
 from graphql.language.location import SourceLocation
 from graphql.type import (GraphQLField, GraphQLObjectType, GraphQLSchema,
-                               GraphQLString)
+                          GraphQLString)
 
 
 def test_gevent_executor():

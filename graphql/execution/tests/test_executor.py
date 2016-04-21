@@ -5,12 +5,11 @@ from pytest import raises
 
 from graphql.error import GraphQLError
 from graphql.execution import Executor, execute
-from graphql.execution.middlewares.sync import \
-    SynchronousExecutionMiddleware
+from graphql.execution.middlewares.sync import SynchronousExecutionMiddleware
 from graphql.language.parser import parse
 from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLField,
-                               GraphQLInt, GraphQLList, GraphQLObjectType,
-                               GraphQLSchema, GraphQLString)
+                          GraphQLInt, GraphQLList, GraphQLObjectType,
+                          GraphQLSchema, GraphQLString)
 
 
 def test_executes_arbitary_code():

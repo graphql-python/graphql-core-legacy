@@ -2,6 +2,7 @@ from graphql import parse, validate
 from graphql.utils.type_info import TypeInfo
 from graphql.validation import visit_using_rules
 from graphql.validation.rules import specified_rules
+
 from .utils import test_schema
 
 

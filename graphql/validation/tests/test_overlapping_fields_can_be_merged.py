@@ -1,12 +1,13 @@
 from graphql.language.location import SourceLocation as L
 from graphql.type.definition import (GraphQLArgument, GraphQLField,
-                                          GraphQLInterfaceType, GraphQLList,
-                                          GraphQLNonNull, GraphQLObjectType)
+                                     GraphQLInterfaceType, GraphQLList,
+                                     GraphQLNonNull, GraphQLObjectType)
 from graphql.type.scalars import GraphQLID, GraphQLInt, GraphQLString
 from graphql.type.schema import GraphQLSchema
 from graphql.validation.rules import OverlappingFieldsCanBeMerged
+
 from .utils import (expect_fails_rule, expect_fails_rule_with_schema,
-                   expect_passes_rule, expect_passes_rule_with_schema)
+                    expect_passes_rule, expect_passes_rule_with_schema)
 
 
 def fields_conflict(reason_name, reason, *locations):

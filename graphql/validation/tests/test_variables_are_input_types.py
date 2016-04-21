@@ -1,5 +1,6 @@
 from graphql.language.location import SourceLocation
 from graphql.validation.rules import VariablesAreInputTypes
+
 from .utils import expect_fails_rule, expect_passes_rule
 
 

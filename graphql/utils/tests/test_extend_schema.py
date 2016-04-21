@@ -5,9 +5,9 @@ from pytest import raises
 from graphql import parse
 from graphql.execution import execute
 from graphql.type import (GraphQLArgument, GraphQLField, GraphQLID,
-                               GraphQLInterfaceType, GraphQLList,
-                               GraphQLNonNull, GraphQLObjectType,
-                               GraphQLSchema, GraphQLString, GraphQLUnionType)
+                          GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
+                          GraphQLObjectType, GraphQLSchema, GraphQLString,
+                          GraphQLUnionType)
 from graphql.utils.extend_schema import extend_schema
 from graphql.utils.schema_printer import print_schema
 

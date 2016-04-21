@@ -1,4 +1,9 @@
 from collections import Counter, OrderedDict
+
+from ...error import GraphQLError
+from ...type.definition import GraphQLObjectType, is_abstract_type
+from .base import ValidationRule
+
 try:
     # Python 2
     from itertools import izip
@@ -6,9 +11,6 @@ except ImportError:
     # Python 3
     izip = zip
 
-from ...error import GraphQLError
-from ...type.definition import GraphQLObjectType, is_abstract_type
-from .base import ValidationRule
 
 
 class OrderedCounter(Counter, OrderedDict):

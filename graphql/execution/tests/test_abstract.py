@@ -1,8 +1,8 @@
 from graphql import graphql
 from graphql.type import GraphQLBoolean, GraphQLSchema, GraphQLString
 from graphql.type.definition import (GraphQLField, GraphQLInterfaceType,
-                                          GraphQLList, GraphQLObjectType,
-                                          GraphQLUnionType)
+                                     GraphQLList, GraphQLObjectType,
+                                     GraphQLUnionType)
 
 
 class Dog(object):

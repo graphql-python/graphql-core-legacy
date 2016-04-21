@@ -2,8 +2,8 @@ from collections import OrderedDict
 
 from graphql.language import ast
 from graphql.type.definition import (GraphQLEnumType, GraphQLEnumValue,
-                                          GraphQLInputObjectField,
-                                          GraphQLInputObjectType, GraphQLList)
+                                     GraphQLInputObjectField,
+                                     GraphQLInputObjectType, GraphQLList)
 from graphql.type.scalars import GraphQLFloat
 from graphql.utils.ast_from_value import ast_from_value
 

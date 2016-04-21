@@ -1,9 +1,8 @@
 from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLField,
-                               GraphQLID, GraphQLInt, GraphQLList,
-                               GraphQLNonNull, GraphQLObjectType,
-                               GraphQLSchema, GraphQLString)
+                          GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull,
+                          GraphQLObjectType, GraphQLSchema, GraphQLString)
 
 
 def test_executes_using_a_schema():

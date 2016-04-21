@@ -2,6 +2,7 @@ from graphql import Source, parse
 from graphql.language import ast
 from graphql.language.parser import Loc
 from graphql.utils.ast_to_code import ast_to_code
+
 from ...language.tests import fixtures
 
 

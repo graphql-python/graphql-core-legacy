@@ -3,9 +3,9 @@ from collections import OrderedDict
 from pytest import raises
 
 from graphql import graphql
-from graphql.type import (GraphQLArgument, GraphQLEnumType,
-                               GraphQLEnumValue, GraphQLField, GraphQLInt,
-                               GraphQLObjectType, GraphQLSchema, GraphQLString)
+from graphql.type import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
+                          GraphQLField, GraphQLInt, GraphQLObjectType,
+                          GraphQLSchema, GraphQLString)
 
 ColorType = GraphQLEnumType(
     name='Color',

@@ -1,8 +1,7 @@
-from graphql.type import (GraphQLArgument, GraphQLEnumType,
-                               GraphQLEnumValue, GraphQLField,
-                               GraphQLInterfaceType, GraphQLList,
-                               GraphQLNonNull, GraphQLObjectType,
-                               GraphQLSchema, GraphQLString)
+from graphql.type import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
+                          GraphQLField, GraphQLInterfaceType, GraphQLList,
+                          GraphQLNonNull, GraphQLObjectType, GraphQLSchema,
+                          GraphQLString)
 
 from .starwars_fixtures import getDroid, getFriends, getHero, getHuman
 

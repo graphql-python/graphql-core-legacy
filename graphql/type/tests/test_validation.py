@@ -3,11 +3,10 @@ import re
 from pytest import raises
 
 from graphql.type import (GraphQLEnumType, GraphQLEnumValue, GraphQLField,
-                               GraphQLInputObjectField, GraphQLInputObjectType,
-                               GraphQLInterfaceType, GraphQLList,
-                               GraphQLNonNull, GraphQLObjectType,
-                               GraphQLScalarType, GraphQLSchema, GraphQLString,
-                               GraphQLUnionType)
+                          GraphQLInputObjectField, GraphQLInputObjectType,
+                          GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
+                          GraphQLObjectType, GraphQLScalarType, GraphQLSchema,
+                          GraphQLString, GraphQLUnionType)
 from graphql.type.definition import GraphQLArgument
 
 _none = lambda *args: None

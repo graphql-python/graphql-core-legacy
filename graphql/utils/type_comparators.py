@@ -1,6 +1,6 @@
-from ..type.definition import (GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
-                               GraphQLObjectType, GraphQLUnionType,
-                               is_abstract_type)
+from ..type.definition import (GraphQLInterfaceType, GraphQLList,
+                               GraphQLNonNull, GraphQLObjectType,
+                               GraphQLUnionType, is_abstract_type)
 
 
 def is_equal_type(type_a, type_b):

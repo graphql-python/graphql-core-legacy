@@ -5,7 +5,7 @@ from graphql.execution import Executor, execute
 from graphql.language.parser import parse
 from graphql.pyutils.defer import fail, succeed
 from graphql.type import (GraphQLField, GraphQLNonNull, GraphQLObjectType,
-                               GraphQLSchema, GraphQLString)
+                          GraphQLSchema, GraphQLString)
 
 sync_error = Exception('sync')
 non_null_sync_error = Exception('nonNullSync')

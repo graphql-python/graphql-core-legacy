@@ -2,12 +2,12 @@ from collections import OrderedDict
 
 from py.test import raises
 
-from graphql.type import (GraphQLArgument, GraphQLBoolean,
-                               GraphQLEnumType, GraphQLEnumValue, GraphQLField,
-                               GraphQLInputObjectField, GraphQLInputObjectType,
-                               GraphQLInt, GraphQLInterfaceType, GraphQLList,
-                               GraphQLNonNull, GraphQLObjectType,
-                               GraphQLSchema, GraphQLString, GraphQLUnionType)
+from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
+                          GraphQLEnumValue, GraphQLField,
+                          GraphQLInputObjectField, GraphQLInputObjectType,
+                          GraphQLInt, GraphQLInterfaceType, GraphQLList,
+                          GraphQLNonNull, GraphQLObjectType, GraphQLSchema,
+                          GraphQLString, GraphQLUnionType)
 from graphql.type.definition import is_input_type, is_output_type
 
 BlogImage = GraphQLObjectType('Image', {

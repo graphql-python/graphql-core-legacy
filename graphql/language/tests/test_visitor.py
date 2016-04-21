@@ -1,13 +1,13 @@
 from graphql.language.ast import Field, Name, SelectionSet
 from graphql.language.parser import parse
 from graphql.language.printer import print_ast
-from graphql.language.visitor import (
-    BREAK, REMOVE, Visitor, visit, ParallelVisitor, TypeInfoVisitor)
+from graphql.language.visitor import (BREAK, REMOVE, ParallelVisitor,
+                                      TypeInfoVisitor, Visitor, visit)
+from graphql.type import get_named_type, is_composite_type
 from graphql.utils.type_info import TypeInfo
-from graphql.type import is_composite_type, get_named_type
 
-from .fixtures import KITCHEN_SINK
 from ...validation.tests.utils import test_schema
+from .fixtures import KITCHEN_SINK
 
 
 def test_allows_for_editing_on_enter():

@@ -1,5 +1,5 @@
-from collections import OrderedDict
 import copy
+from collections import OrderedDict
 
 
 class DefaultOrderedDict(OrderedDict):
