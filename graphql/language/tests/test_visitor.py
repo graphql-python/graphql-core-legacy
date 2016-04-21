@@ -1,4 +1,4 @@
-from graphql.language.ast import Field, Name, SelectionSet
+from graphql.language.ast import Field, Name, SelectionSet, Document, OperationDefinition
 from graphql.language.parser import parse
 from graphql.language.printer import print_ast
 from graphql.language.visitor import (BREAK, REMOVE, ParallelVisitor,
@@ -8,6 +8,67 @@ from graphql.utils.type_info import TypeInfo
 
 from ...validation.tests.utils import test_schema
 from .fixtures import KITCHEN_SINK
+
+
+def test_allows_editing_a_node_both_on_enter_and_on_leave():
+    ast = parse('{ a, b, c { a, b, c } }', no_location=True)
+
+    class TestVisitor(Visitor):
+        def enter(self, node, *args):
+            if isinstance(node, OperationDefinition):
+                selection_set = node.selection_set
+                self.selections = None
+                if selection_set:
+                    self.selections = selection_set.selections
+                new_selection_set = SelectionSet(
+                    selections=[])
+                return OperationDefinition(
+                    name=node.name,
+                    variable_definitions=node.variable_definitions,
+                    directives=node.directives,
+                    loc=node.loc,
+                    operation=node.operation,
+                    selection_set=new_selection_set)
+
+        def leave(self, node, *args):
+            if isinstance(node, OperationDefinition):
+                new_selection_set = None
+                if self.selections:
+                    new_selection_set = SelectionSet(
+                        selections=self.selections)
+                return OperationDefinition(
+                    name=node.name,
+                    variable_definitions=node.variable_definitions,
+                    directives=node.directives,
+                    loc=node.loc,
+                    operation=node.operation,
+                    selection_set=new_selection_set)
+
+    edited_ast = visit(ast, TestVisitor())
+    assert ast == parse('{ a, b, c { a, b, c } }', no_location=True)
+    assert edited_ast == ast
+
+
+def test_allows_editing_the_root_node_on_enter_and_on_leave():
+    ast = parse('{ a, b, c { a, b, c } }', no_location=True)
+
+    definitions = ast.definitions
+
+    class TestVisitor(Visitor):
+        def enter(self, node, *args):
+            if isinstance(node, Document):
+                return Document(
+                    loc=node.loc,
+                    definitions=[])
+
+        def leave(self, node, *args):
+            if isinstance(node, Document):
+                return Document(
+                    loc=node.loc,
+                    definitions=definitions)
+
+    edited_ast = visit(ast, TestVisitor())
+    assert edited_ast == ast
 
 
 def test_allows_for_editing_on_enter():

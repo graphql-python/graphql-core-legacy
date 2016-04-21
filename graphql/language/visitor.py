@@ -154,7 +154,7 @@ def visit(root, visitor, key_map=None):
             break
 
     if edits:
-        new_root = edits[0][1]
+        new_root = edits[-1][1]
 
     return new_root
 
