@@ -1,6 +1,6 @@
-from graphql.core.language.parser import parse
-from graphql.core.language.source import Source
-from graphql.core.validation import validate
+from graphql.language.parser import parse
+from graphql.language.source import Source
+from graphql.validation import validate
 
 from .starwars_schema import StarWarsSchema
 

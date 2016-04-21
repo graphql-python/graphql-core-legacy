@@ -1,4 +1,4 @@
-from graphql.core.type import (GraphQLArgument, GraphQLEnumType,
+from graphql.type import (GraphQLArgument, GraphQLEnumType,
                                GraphQLEnumValue, GraphQLField,
                                GraphQLInterfaceType, GraphQLList,
                                GraphQLNonNull, GraphQLObjectType,

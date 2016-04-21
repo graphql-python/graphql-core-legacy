@@ -2,10 +2,10 @@
 
 import asyncio
 import functools
-from graphql.core.error import format_error
-from graphql.core.execution import Executor
-from graphql.core.execution.middlewares.asyncio import AsyncioExecutionMiddleware
-from graphql.core.type import (
+from graphql.error import format_error
+from graphql.execution import Executor
+from graphql.execution.middlewares.asyncio import AsyncioExecutionMiddleware
+from graphql.type import (
     GraphQLSchema,
     GraphQLObjectType,
     GraphQLField,
