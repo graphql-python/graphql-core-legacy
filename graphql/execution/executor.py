@@ -257,13 +257,13 @@ class Executor(object):
         if isinstance(return_type, (GraphQLScalarType, GraphQLEnumType)):
             return self.complete_leaf_value(ctx, return_type, field_asts, info, result)
 
-        runtime_type = None
+        if isinstance(return_type, GraphQLObjectType):
+            return self.complete_object_value(ctx, return_type, field_asts, info, result)
 
         # Field type must be Object, Interface or Union and expect sub-selections.
-        if isinstance(return_type, GraphQLObjectType):
-            runtime_type = return_type
+        runtime_type = None
 
-        elif isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
+        if isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
             runtime_type = return_type.resolve_type(result, info)
             if runtime_type and not return_type.is_possible_type(runtime_type):
                 raise GraphQLError(
@@ -274,24 +274,7 @@ class Executor(object):
         if not runtime_type:
             return None
 
-        if runtime_type.is_type_of and not runtime_type.is_type_of(result, info):
-            raise GraphQLError(
-                u'Expected value of type "{}" but got {}.'.format(return_type, type(result).__name__),
-                field_asts
-            )
-
-        # Collect sub-fields to execute to complete this value.
-        subfield_asts = DefaultOrderedDict(list) if self._enforce_strict_ordering else collections.defaultdict(list)
-        visited_fragment_names = set()
-        for field_ast in field_asts:
-            selection_set = field_ast.selection_set
-            if selection_set:
-                subfield_asts = collect_fields(
-                    ctx, runtime_type, selection_set,
-                    subfield_asts, visited_fragment_names
-                )
-
-        return self._execute_fields(ctx, runtime_type, result, subfield_asts)
+        return self.complete_object_value(ctx, runtime_type, field_asts, info, result)
 
     def complete_list_value(self, ctx, return_type, field_asts, info, result):
         """
@@ -323,6 +306,29 @@ class Executor(object):
             return None
 
         return serialized_result
+
+    def complete_object_value(self, ctx, return_type, field_asts, info, result):
+        """
+        Complete an Object value by evaluating all sub-selections.
+        """
+        if return_type.is_type_of and not return_type.is_type_of(result, info):
+            raise GraphQLError(
+                u'Expected value of type "{}" but got {}.'.format(return_type, type(result).__name__),
+                field_asts
+            )
+
+        # Collect sub-fields to execute to complete this value.
+        subfield_asts = DefaultOrderedDict(list) if self._enforce_strict_ordering else collections.defaultdict(list)
+        visited_fragment_names = set()
+        for field_ast in field_asts:
+            selection_set = field_ast.selection_set
+            if selection_set:
+                subfield_asts = collect_fields(
+                    ctx, return_type, selection_set,
+                    subfield_asts, visited_fragment_names
+                )
+
+        return self._execute_fields(ctx, return_type, result, subfield_asts)
 
     def resolve_or_error(self, resolve_fn, source, args, info):
         curried_resolve_fn = functools.partial(resolve_fn, source, args, info)
