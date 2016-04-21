@@ -15,8 +15,13 @@ def test_allows_editing_a_node_both_on_enter_and_on_leave():
     ast = parse('{ a, b, c { a, b, c } }', no_location=True)
 
     class TestVisitor(Visitor):
+        def __init__(self):
+            self.did_enter = False
+            self.did_leave = False
+
         def enter(self, node, *args):
             if isinstance(node, OperationDefinition):
+                self.did_enter = True
                 selection_set = node.selection_set
                 self.selections = None
                 if selection_set:
@@ -33,6 +38,7 @@ def test_allows_editing_a_node_both_on_enter_and_on_leave():
 
         def leave(self, node, *args):
             if isinstance(node, OperationDefinition):
+                self.did_leave = True
                 new_selection_set = None
                 if self.selections:
                     new_selection_set = SelectionSet(
@@ -45,9 +51,12 @@ def test_allows_editing_a_node_both_on_enter_and_on_leave():
                     operation=node.operation,
                     selection_set=new_selection_set)
 
-    edited_ast = visit(ast, TestVisitor())
+    visitor = TestVisitor()
+    edited_ast = visit(ast, visitor)
     assert ast == parse('{ a, b, c { a, b, c } }', no_location=True)
     assert edited_ast == ast
+    assert visitor.did_enter
+    assert visitor.did_leave
 
 
 def test_allows_editing_the_root_node_on_enter_and_on_leave():
@@ -56,20 +65,29 @@ def test_allows_editing_the_root_node_on_enter_and_on_leave():
     definitions = ast.definitions
 
     class TestVisitor(Visitor):
+        def __init__(self):
+            self.did_enter = False
+            self.did_leave = False
+
         def enter(self, node, *args):
             if isinstance(node, Document):
+                self.did_enter = True
                 return Document(
                     loc=node.loc,
                     definitions=[])
 
         def leave(self, node, *args):
             if isinstance(node, Document):
+                self.did_leave = True
                 return Document(
                     loc=node.loc,
                     definitions=definitions)
 
-    edited_ast = visit(ast, TestVisitor())
+    visitor = TestVisitor()
+    edited_ast = visit(ast, visitor)
     assert edited_ast == ast
+    assert visitor.did_enter
+    assert visitor.did_leave
 
 
 def test_allows_for_editing_on_enter():
