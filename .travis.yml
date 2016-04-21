@@ -8,7 +8,7 @@ python:
 - pypy
 cache: pip
 install:
-- pip install --cache-dir $HOME/.cache/pip pytest-cov coveralls flake8 import-order gevent==1.1b5 six>=1.10.0
+- pip install --cache-dir $HOME/.cache/pip pytest-cov coveralls flake8 isort gevent==1.1b5 six>=1.10.0
 - pip install --cache-dir $HOME/.cache/pip pytest>=2.7.3 --upgrade
 - pip install -e .
 script:
@@ -21,5 +21,5 @@ matrix:
     - python: "3.5"
       script:
         - flake8
-        - import-order graphql
+        - isort --check-only graphql/ -rc
         - py.test --cov=graphql graphql tests tests_py35

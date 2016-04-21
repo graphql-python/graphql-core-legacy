@@ -1,4 +1,5 @@
-from graphql.language.ast import Field, Name, SelectionSet, Document, OperationDefinition
+from graphql.language.ast import (Document, Field, Name, OperationDefinition,
+                                  SelectionSet)
 from graphql.language.parser import parse
 from graphql.language.printer import print_ast
 from graphql.language.visitor import (BREAK, REMOVE, ParallelVisitor,
