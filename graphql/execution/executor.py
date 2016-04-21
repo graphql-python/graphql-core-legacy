@@ -214,6 +214,8 @@ class Executor(object):
         If the field type is a Scalar or Enum, ensures the completed value is a legal value of the type by calling the
         `serialize` method of GraphQL type definition.
 
+        If the field is an abstract type, determine the runtime type of the value and then complete based on that type.
+
         Otherwise, the field type expects a sub-selection set, and will complete the value by evaluating all
         sub-selections.
         """
@@ -251,49 +253,56 @@ class Executor(object):
 
         # If field type is List, complete each item in the list with the inner type
         if isinstance(return_type, GraphQLList):
-            assert isinstance(result, collections.Iterable), \
-                ('User Error: expected iterable, but did not find one' +
-                 'for field {}.{}').format(info.parent_type, info.field_name)
-
-            item_type = return_type.of_type
-            completed_results = []
-            contains_deferred = False
-            for item in result:
-                completed_item = self.complete_value_catching_error(ctx, item_type, field_asts, info, item)
-                if not contains_deferred and isinstance(completed_item, Deferred):
-                    contains_deferred = True
-
-                completed_results.append(completed_item)
-
-            return DeferredList(completed_results) if contains_deferred else completed_results
+            return self.complete_list_value(ctx, return_type, field_asts, info, result)
 
         # If field type is Scalar or Enum, serialize to a valid value, returning null if coercion is not possible.
         if isinstance(return_type, (GraphQLScalarType, GraphQLEnumType)):
-            serialized_result = return_type.serialize(result)
+            return self.complete_leaf_value(ctx, return_type, field_asts, info, result)
 
-            if serialized_result is None:
-                return None
-
-            return serialized_result
-
-        runtime_type = None
-
-        # Field type must be Object, Interface or Union and expect sub-selections.
         if isinstance(return_type, GraphQLObjectType):
-            runtime_type = return_type
+            return self.complete_object_value(ctx, return_type, field_asts, info, result)
 
-        elif isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
-            runtime_type = return_type.resolve_type(result, info)
-            if runtime_type and not return_type.is_possible_type(runtime_type):
-                raise GraphQLError(
-                    u'Runtime Object type "{}" is not a possible type for "{}".'.format(runtime_type, return_type),
-                    field_asts
-                )
+        if isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
+            return self.complete_abstract_value(ctx, return_type, field_asts, info, result)
 
-        if not runtime_type:
+        assert False, u'Cannot complete value of unexpected type "{}"'.format(return_type)
+
+    def complete_list_value(self, ctx, return_type, field_asts, info, result):
+        """
+        Complete a list value by completing each item in the list with the inner type
+        """
+        assert isinstance(result, collections.Iterable), \
+            ('User Error: expected iterable, but did not find one' +
+             'for field {}.{}').format(info.parent_type, info.field_name)
+
+        item_type = return_type.of_type
+        completed_results = []
+        contains_deferred = False
+        for item in result:
+            completed_item = self.complete_value_catching_error(ctx, item_type, field_asts, info, item)
+            if not contains_deferred and isinstance(completed_item, Deferred):
+                contains_deferred = True
+
+            completed_results.append(completed_item)
+
+        return DeferredList(completed_results) if contains_deferred else completed_results
+
+    def complete_leaf_value(self, ctx, return_type, field_asts, info, result):
+        """
+        Complete a Scalar or Enum by serializing to a valid value, returning null if serialization is not possible.
+        """
+        serialized_result = return_type.serialize(result)
+
+        if serialized_result is None:
             return None
 
-        if runtime_type.is_type_of and not runtime_type.is_type_of(result, info):
+        return serialized_result
+
+    def complete_object_value(self, ctx, return_type, field_asts, info, result):
+        """
+        Complete an Object value by evaluating all sub-selections.
+        """
+        if return_type.is_type_of and not return_type.is_type_of(result, info):
             raise GraphQLError(
                 u'Expected value of type "{}" but got {}.'.format(return_type, type(result).__name__),
                 field_asts
@@ -306,11 +315,32 @@ class Executor(object):
             selection_set = field_ast.selection_set
             if selection_set:
                 subfield_asts = collect_fields(
-                    ctx, runtime_type, selection_set,
+                    ctx, return_type, selection_set,
                     subfield_asts, visited_fragment_names
                 )
 
-        return self._execute_fields(ctx, runtime_type, result, subfield_asts)
+        return self._execute_fields(ctx, return_type, result, subfield_asts)
+
+    def complete_abstract_value(self, ctx, return_type, field_asts, info, result):
+        """
+        Complete an value of an abstract type by determining the runtime type of that value, then completing based
+        on that type.
+        """
+        # Field type must be Object, Interface or Union and expect sub-selections.
+        runtime_type = None
+
+        if isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
+            runtime_type = return_type.resolve_type(result, info)
+            if runtime_type and not return_type.is_possible_type(runtime_type):
+                raise GraphQLError(
+                    u'Runtime Object type "{}" is not a possible type for "{}".'.format(runtime_type, return_type),
+                    field_asts
+                )
+
+        if not runtime_type:
+            return None
+
+        return self.complete_object_value(ctx, runtime_type, field_asts, info, result)
 
     def resolve_or_error(self, resolve_fn, source, args, info):
         curried_resolve_fn = functools.partial(resolve_fn, source, args, info)
