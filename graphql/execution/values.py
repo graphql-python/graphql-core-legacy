@@ -32,9 +32,11 @@ def get_variable_values(schema, definition_asts, inputs):
 def get_argument_values(arg_defs, arg_asts, variables):
     """Prepares an object map of argument values given a list of argument
     definitions and list of argument AST nodes."""
+    if not arg_defs:
+        return {}
+
     if arg_asts:
         arg_ast_map = {arg.name.value: arg for arg in arg_asts}
-
     else:
         arg_ast_map = {}
 
@@ -75,14 +77,15 @@ def get_variable_value(schema, definition_ast, input):
             [definition_ast]
         )
 
-    errors = is_valid_value(input, type)
+    input_type = type
+    errors = is_valid_value(input, input_type)
     if not errors:
         if input is None:
             default_value = definition_ast.default_value
             if default_value:
-                return value_from_ast(default_value, type)
+                return value_from_ast(default_value, input_type)
 
-        return coerce_value(type, input)
+        return coerce_value(input_type, input)
 
     if input is None:
         raise GraphQLError(

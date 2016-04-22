@@ -18,10 +18,10 @@ class ExecutionContext(object):
     Namely, schema of the type system that is currently executing,
     and the fragments defined in the query document"""
 
-    __slots__ = 'schema', 'fragments', 'root', 'operation', 'variables', 'errors', 'request_context', \
+    __slots__ = 'schema', 'fragments', 'root_value', 'operation', 'variable_values', 'errors', 'context_value', \
                 'argument_values_cache'
 
-    def __init__(self, schema, root, document_ast, operation_name, args, request_context):
+    def __init__(self, schema, document_ast, root_value, context_value, variable_values, operation_name):
         """Constructs a ExecutionContext object from the arguments passed
         to execute, which we will pass throughout the other execution
         methods."""
@@ -53,15 +53,15 @@ class ExecutionContext(object):
             else:
                 raise GraphQLError('Must provide an operation.')
 
-        variables = get_variable_values(schema, operation.variable_definitions or [], args)
+        variable_values = get_variable_values(schema, operation.variable_definitions or [], variable_values)
 
         self.schema = schema
         self.fragments = fragments
-        self.root = root
+        self.root_value = root_value
         self.operation = operation
-        self.variables = variables
+        self.variable_values = variable_values
         self.errors = errors
-        self.request_context = request_context
+        self.context_value = context_value
         self.argument_values_cache = {}
 
     def get_argument_values(self, field_def, field_ast):
@@ -70,7 +70,7 @@ class ExecutionContext(object):
 
         if not result:
             result = self.argument_values_cache[k] = get_argument_values(field_def.args, field_ast.arguments,
-                                                                         self.variables)
+                                                                         self.variable_values)
 
         return result
 
@@ -190,6 +190,7 @@ def collect_fields(ctx, runtime_type, selection_set, fields, prev_fragment_names
 def should_include_node(ctx, directives):
     """Determines if a field should be included based on the @include and
     @skip directives, where @skip has higher precidence than @include."""
+    # TODO: Refactor based on latest code
     if directives:
         skip_ast = None
 
@@ -202,7 +203,7 @@ def should_include_node(ctx, directives):
             args = get_argument_values(
                 GraphQLSkipDirective.args,
                 skip_ast.arguments,
-                ctx.variables,
+                ctx.variable_values,
             )
             return not args.get('if')
 
@@ -217,7 +218,7 @@ def should_include_node(ctx, directives):
             args = get_argument_values(
                 GraphQLIncludeDirective.args,
                 include_ast.arguments,
-                ctx.variables,
+                ctx.variable_values,
             )
 
             return bool(args.get('if'))
@@ -249,36 +250,16 @@ def get_field_entry_key(node):
 
 class ResolveInfo(object):
 
-    def __init__(self, field_name, field_asts, return_type, parent_type, context):
+    def __init__(self, field_name, field_asts, return_type, parent_type, schema, fragments, root_value, operation, variable_values):
         self.field_name = field_name
         self.field_asts = field_asts
         self.return_type = return_type
         self.parent_type = parent_type
-        self.context = context
-
-    @property
-    def schema(self):
-        return self.context.schema
-
-    @property
-    def fragments(self):
-        return self.context.fragments
-
-    @property
-    def root_value(self):
-        return self.context.root
-
-    @property
-    def operation(self):
-        return self.context.operation
-
-    @property
-    def variable_values(self):
-        return self.context.variables
-
-    @property
-    def request_context(self):
-        return self.context.request_context
+        self.schema = schema
+        self.fragments = fragments
+        self.root_value = root_value
+        self.operation = operation
+        self.variable_values = variable_values
 
 
 def default_resolve_fn(source, args, info):

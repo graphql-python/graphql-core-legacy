@@ -1,9 +1,9 @@
 from collections import OrderedDict
 
 from graphql.error import format_error
-from graphql.execution import Executor, execute
+from graphql.execution import execute
 from graphql.language.parser import parse
-from graphql.pyutils.defer import fail, succeed
+from graphql.pyutils.aplus import Promise
 from graphql.type import (GraphQLField, GraphQLNonNull, GraphQLObjectType,
                           GraphQLSchema, GraphQLString)
 
@@ -12,7 +12,12 @@ non_null_sync_error = Exception('nonNullSync')
 promise_error = Exception('promise')
 non_null_promise_error = Exception('nonNullPromise')
 
-executor = Executor(map_type=OrderedDict)
+
+def resolved(value):
+    return Promise.fulfilled(value)
+
+def rejected(error):
+    return Promise.rejected(error)
 
 
 class ThrowingData(object):
@@ -24,10 +29,10 @@ class ThrowingData(object):
         raise non_null_sync_error
 
     def promise(self):
-        return fail(promise_error)
+        return rejected(promise_error)
 
     def nonNullPromise(self):
-        return fail(non_null_promise_error)
+        return rejected(non_null_promise_error)
 
     def nest(self):
         return ThrowingData()
@@ -36,10 +41,10 @@ class ThrowingData(object):
         return ThrowingData()
 
     def promiseNest(self):
-        return succeed(ThrowingData())
+        return resolved(ThrowingData())
 
     def nonNullPromiseNest(self):
-        return succeed(ThrowingData())
+        return resolved(ThrowingData())
 
 
 class NullingData(object):
@@ -51,7 +56,10 @@ class NullingData(object):
         return None
 
     def promise(self):
-        return succeed(None)
+        return resolved(None)
+
+    def nonNullPromise(self):
+        return resolved(None)
 
     def nest(self):
         return NullingData()
@@ -60,10 +68,10 @@ class NullingData(object):
         return NullingData()
 
     def promiseNest(self):
-        return succeed(NullingData())
+        return resolved(NullingData())
 
     def nonNullPromiseNest(self):
-        return succeed(NullingData())
+        return resolved(NullingData())
 
 
 DataType = GraphQLObjectType('DataType', lambda: {
@@ -82,9 +90,7 @@ schema = GraphQLSchema(DataType)
 
 def check(doc, data, expected):
     ast = parse(doc)
-    response = executor.execute(schema, ast, data)
-    assert response.called
-    response = response.result
+    response = execute(schema, data, ast)
 
     if response.errors:
         result = {

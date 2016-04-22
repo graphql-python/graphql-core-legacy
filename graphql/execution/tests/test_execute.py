@@ -4,8 +4,7 @@ from collections import OrderedDict
 from pytest import raises
 
 from graphql.error import GraphQLError
-from graphql.execution import Executor, execute
-from graphql.execution.middlewares.sync import SynchronousExecutionMiddleware
+from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLField,
                           GraphQLInt, GraphQLList, GraphQLObjectType,
@@ -456,7 +455,7 @@ def test_fails_when_an_is_type_of_check_is_not_met():
         ]
     }
 
-    assert 'Expected value of type "SpecialType" but got NotSpecial.' in str(result.errors)
+    assert 'Expected value of type "SpecialType" but got: NotSpecial.' in [str(e) for e in result.errors]
 
 
 def test_fails_to_execute_a_query_containing_a_type_definition():
@@ -479,45 +478,3 @@ def test_fails_to_execute_a_query_containing_a_type_definition():
         execute(schema, None, query)
 
     assert excinfo.value.message == 'GraphQL cannot execute a request containing a ObjectTypeDefinition.'
-
-
-def test_executor_detects_strict_ordering():
-    executor = Executor()
-    assert not executor.enforce_strict_ordering
-    assert executor.map_type is dict
-
-    executor = Executor(map_type=OrderedDict)
-    assert executor.enforce_strict_ordering
-    assert executor.map_type is OrderedDict
-
-
-def test_executor_can_enforce_strict_ordering():
-    Type = GraphQLObjectType('Type', lambda: {
-        'a': GraphQLField(GraphQLString,
-                          resolver=lambda *_: 'Apple'),
-        'b': GraphQLField(GraphQLString,
-                          resolver=lambda *_: 'Banana'),
-        'c': GraphQLField(GraphQLString,
-                          resolver=lambda *_: 'Cherry'),
-        'deep': GraphQLField(Type, resolver=lambda *_: {}),
-    })
-    schema = GraphQLSchema(query=Type)
-    executor = Executor(execution_middlewares=[SynchronousExecutionMiddleware], map_type=OrderedDict)
-    query = '{ a b c aa: c cc: c bb: b aaz: a bbz: b deep { b a c deeper: deep { c a b } } ' \
-            'ccz: c zzz: c aaa: a }'
-
-    def check_result(result):
-        assert not result.errors
-
-        data = result.data
-        assert isinstance(data, OrderedDict)
-        assert list(data.keys()) == ['a', 'b', 'c', 'aa', 'cc', 'bb', 'aaz', 'bbz', 'deep', 'ccz', 'zzz', 'aaa']
-        deep = data['deep']
-        assert isinstance(deep, OrderedDict)
-        assert list(deep.keys()) == ['b', 'a', 'c', 'deeper']
-        deeper = deep['deeper']
-        assert isinstance(deeper, OrderedDict)
-        assert list(deeper.keys()) == ['c', 'a', 'b']
-
-    check_result(executor.execute(schema, query))
-    check_result(executor.execute(schema, query, execute_serially=True))
