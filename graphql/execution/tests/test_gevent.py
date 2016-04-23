@@ -2,21 +2,20 @@
 import gevent
 
 from graphql.error import format_error
-from graphql.execution import Executor
-from graphql.execution.middlewares.gevent import (GeventExecutionMiddleware,
-                                                  run_in_greenlet)
 from graphql.language.location import SourceLocation
+from graphql.language.parser import parse
 from graphql.type import (GraphQLField, GraphQLObjectType, GraphQLSchema,
                           GraphQLString)
+from ..execute import execute
+from ..executors.gevent import GeventExecutor
+
 
 
 def test_gevent_executor():
-    @run_in_greenlet
     def resolver(context, *_):
         gevent.sleep(0.001)
         return 'hey'
 
-    @run_in_greenlet
     def resolver_2(context, *_):
         gevent.sleep(0.003)
         return 'hey2'
@@ -30,22 +29,19 @@ def test_gevent_executor():
         'c': GraphQLField(GraphQLString, resolver=resolver_3)
     })
 
-    doc = '{ a b c }'
-    executor = Executor([GeventExecutionMiddleware()])
-    result = executor.execute(GraphQLSchema(Type), doc)
+    ast = parse('{ a b c }')
+    result = execute(GraphQLSchema(Type), ast, executor=GeventExecutor())
     assert not result.errors
     assert result.data == {'a': 'hey', 'b': 'hey2', 'c': 'hey3'}
 
 
 def test_gevent_executor_with_error():
-    doc = 'query Example { a, b }'
+    ast = parse('query Example { a, b }')
 
-    @run_in_greenlet
     def resolver(context, *_):
         gevent.sleep(0.001)
         return 'hey'
 
-    @run_in_greenlet
     def resolver_2(context, *_):
         gevent.sleep(0.003)
         raise Exception('resolver_2 failed!')
@@ -55,8 +51,7 @@ def test_gevent_executor_with_error():
         'b': GraphQLField(GraphQLString, resolver=resolver_2)
     })
 
-    executor = Executor([GeventExecutionMiddleware()])
-    result = executor.execute(GraphQLSchema(Type), doc)
+    result = execute(GraphQLSchema(Type), ast, executor=GeventExecutor())
     formatted_errors = list(map(format_error, result.errors))
     assert formatted_errors == [{'locations': [{'line': 1, 'column': 20}], 'message': 'resolver_2 failed!'}]
     assert result.data == {'a': 'hey', 'b': None}

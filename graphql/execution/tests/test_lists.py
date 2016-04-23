@@ -3,21 +3,12 @@ from collections import namedtuple
 from graphql.error import format_error
 from graphql.execution import execute
 from graphql.language.parser import parse
-from graphql.pyutils.aplus import Promise
 from graphql.type import (GraphQLField, GraphQLInt, GraphQLList,
                           GraphQLNonNull, GraphQLObjectType, GraphQLSchema)
+from .utils import resolved, rejected
 
 Data = namedtuple('Data', 'test')
 ast = parse('{ nest { test } }')
-
-
-def resolved(value):
-    return Promise.resolve(value)
-
-def rejected(error):
-    p = Promise()
-    p.reject(error)
-    return p
 
 
 def check(test_data, expected):

@@ -16,12 +16,15 @@ from ..validation import validate
 from .base import (ExecutionContext, ExecutionResult, ResolveInfo, Undefined,
                    collect_fields, default_resolve_fn, get_field_def,
                    get_operation_root_type)
+from .executors.sync import SyncExecutor
 
 
-
-def execute(schema, document_ast, root_value=None, context_value=None, variable_values=None, operation_name=None):
+def execute(schema, document_ast, root_value=None, context_value=None, variable_values=None, operation_name=None, executor=None):
     assert schema, 'Must provide schema'
     assert isinstance(schema, GraphQLSchema), 'Schema must be an instance of GraphQLSchema. Also ensure that there are not multiple versions of GraphQL installed in your node_modules directory.'
+
+    if executor is None:
+        executor = SyncExecutor()
 
     context = ExecutionContext(
         schema,
@@ -29,7 +32,8 @@ def execute(schema, document_ast, root_value=None, context_value=None, variable_
         root_value,
         context_value,
         variable_values,
-        operation_name
+        operation_name,
+        executor
     )
 
     def executor(resolve, reject):
@@ -42,7 +46,10 @@ def execute(schema, document_ast, root_value=None, context_value=None, variable_
     def on_resolve(data):
         return ExecutionResult(data=data, errors=context.errors)
 
-    return Promise(executor).catch(on_rejected).then(on_resolve).value
+    p = Promise(executor).catch(on_rejected).then(on_resolve)
+    context.executor.wait_until_finished()
+    return p.value
+
 
 
 def execute_operation(exe_context, operation, root_value):
@@ -177,7 +184,7 @@ def resolve_field(exe_context, parent_type, source, field_asts):
 def resolve_or_error(resolve_fn, source, args, exe_context, info):
     try:
         # return resolve_fn(source, args, exe_context, info)
-        return resolve_fn(source, args, info)
+        return exe_context.executor.execute(resolve_fn, source, args, info)
     except Exception as e:
         return e
 

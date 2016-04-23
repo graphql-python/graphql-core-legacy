@@ -3,8 +3,9 @@
 import asyncio
 import functools
 from graphql.error import format_error
-from graphql.execution import Executor
-from graphql.execution.middlewares.asyncio import AsyncioExecutionMiddleware
+from graphql.execution.execute import execute
+from graphql.language.parser import parse
+from graphql.execution.executors.asyncio import AsyncioExecutor
 from graphql.type import (
     GraphQLSchema,
     GraphQLObjectType,
@@ -13,17 +14,8 @@ from graphql.type import (
 )
 
 
-def run_until_complete(fun):
-    @functools.wraps(fun)
-    def wrapper(*args, **kwargs):
-        coro = fun(*args, **kwargs)
-        return asyncio.get_event_loop().run_until_complete(coro)
-    return wrapper
-
-
-@run_until_complete
-async def test_asyncio_py35_executor():
-    doc = 'query Example { a, b, c }'
+def test_asyncio_py35_executor():
+    ast = parse('query Example { a, b, c }')
 
     async def resolver(context, *_):
         await asyncio.sleep(0.001)
@@ -42,14 +34,13 @@ async def test_asyncio_py35_executor():
         'c': GraphQLField(GraphQLString, resolver=resolver_3)
     })
 
-    executor = Executor([AsyncioExecutionMiddleware()])
-    result = await executor.execute(GraphQLSchema(Type), doc)
+    result = execute(GraphQLSchema(Type), ast, executor=AsyncioExecutor())
     assert not result.errors
     assert result.data == {'a': 'hey', 'b': 'hey2', 'c': 'hey3'}
 
-@run_until_complete
-async def test_asyncio_py35_executor_with_error():
-    doc = 'query Example { a, b }'
+
+def test_asyncio_py35_executor_with_error():
+    ast = parse('query Example { a, b }')
 
     async def resolver(context, *_):
         await asyncio.sleep(0.001)
@@ -64,8 +55,7 @@ async def test_asyncio_py35_executor_with_error():
         'b': GraphQLField(GraphQLString, resolver=resolver_2)
     })
 
-    executor = Executor([AsyncioExecutionMiddleware()])
-    result = await executor.execute(GraphQLSchema(Type), doc)
+    result = execute(GraphQLSchema(Type), ast, executor=AsyncioExecutor())
     formatted_errors = list(map(format_error, result.errors))
     assert formatted_errors == [{'locations': [{'line': 1, 'column': 20}], 'message': 'resolver_2 failed!'}]
     assert result.data == {'a': 'hey', 'b': None}

@@ -1,6 +1,15 @@
 from graphql.pyutils.defer import Deferred, DeferredException, _passthrough
 
 
+from graphql.pyutils.aplus import Promise
+
+def resolved(value):
+    return Promise.fulfilled(value)
+
+def rejected(error):
+    return Promise.rejected(error)
+
+
 class RaisingDeferred(Deferred):
 
     def _next(self):

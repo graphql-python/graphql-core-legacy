@@ -64,7 +64,7 @@ class Promise(object):
             self.reject(x)
         try:
             fn(resolve_fn, reject_fn)
-        except Exception, e:
+        except Exception as e:
             self.reject(e)
 
     @staticmethod
@@ -418,7 +418,7 @@ def listPromise(values_or_promises):
     In other words, this turns an list of promises for values
     into a promise for a list of values.
     """
-    promises=filter(_isPromise, values_or_promises)
+    promises=list(filter(_isPromise, values_or_promises))
     if len(promises) == 0:
         # All the values or promises are resolved
         return Promise.fulfilled(values_or_promises)
@@ -450,8 +450,8 @@ def dictPromise(m):
     keys, values = zip(*m.items())
     dict_type = type(m)
 
-    def handleSuccess(values):
-        return dict_type(zip(keys, values))
+    def handleSuccess(resolved_values):
+        return dict_type(zip(keys, resolved_values))
 
     return Promise.all(values).then(handleSuccess)
 
