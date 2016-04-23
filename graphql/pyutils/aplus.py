@@ -89,9 +89,9 @@ class Promise(object):
 
         if self is x:
             raise TypeError("Cannot resolve promise with itself.")
-        elif _isPromise(x):
+        elif is_thenable(x):
             try:
-                _promisify(x).done(self.fulfill, self.reject)
+                promisify(x).done(self.fulfill, self.reject)
             except Exception as e:
                 self.reject(e)
         else:
@@ -159,17 +159,17 @@ class Promise(object):
                 pass
 
     @property
-    def isPending(self):
+    def is_pending(self):
         """Indicate whether the Promise is still pending. Could be wrong the moment the function returns."""
         return self._state == self.PENDING
 
     @property
-    def isFulfilled(self):
+    def is_fulfilled(self):
         """Indicate whether the Promise has been fulfilled. Could be wrong the moment the function returns."""
         return self._state == self.FULFILLED
 
     @property
-    def isRejected(self):
+    def is_rejected(self):
         """Indicate whether the Promise has been rejected. Could be wrong the moment the function returns."""
         return self._state == self.REJECTED
 
@@ -200,13 +200,13 @@ class Promise(object):
         """
         self._event.wait(timeout)
 
-    def addCallback(self, f):
+    def add_callback(self, f):
         """
         Add a callback for when this promis is fulfilled.  Note that
         if you intend to use the value of the promise somehow in
         the callback, it is more convenient to use the 'then' method.
         """
-        assert _isFunction(f)
+        assert _is_function(f)
 
         with self._cb_lock:
             if self._state == self.PENDING:
@@ -221,14 +221,14 @@ class Promise(object):
         else:
             pass
 
-    def addErrback(self, f):
+    def add_errback(self, f):
         """
         Add a callback for when this promis is rejected.  Note that
         if you intend to use the rejection reason of the promise
         somehow in the callback, it is more convenient to use
         the 'then' method.
         """
-        assert _isFunction(f)
+        assert _is_function(f)
 
         with self._cb_lock:
             if self._state == self.PENDING:
@@ -256,9 +256,9 @@ class Promise(object):
         """
         with self._cb_lock:
             if success is not None:
-                self.addCallback(success)
+                self.add_callback(success)
             if failure is not None:
-                self.addErrback(failure)
+                self.add_errback(failure)
 
     def done_all(self, *handlers):
         """
@@ -311,33 +311,33 @@ class Promise(object):
         """
         ret = Promise()
 
-        def callAndFulfill(v):
+        def call_and_fulfill(v):
             """
             A callback to be invoked if the "self promise"
             is fulfilled.
             """
             try:
-                if _isFunction(success):
+                if _is_function(success):
                     ret.fulfill(success(v))
                 else:
                     ret.fulfill(v)
             except Exception as e:
                 ret.reject(e)
 
-        def callAndReject(r):
+        def call_and_reject(r):
             """
             A callback to be invoked if the "self promise"
             is rejected.
             """
             try:
-                if _isFunction(failure):
+                if _is_function(failure):
                     ret.fulfill(failure(r))
                 else:
                     ret.reject(r)
             except Exception as e:
                 ret.reject(e)
 
-        self.done(callAndFulfill, callAndReject)
+        self.done(call_and_fulfill, call_and_reject)
 
         return ret
 
@@ -374,10 +374,32 @@ class Promise(object):
 
     @staticmethod
     def all(values_or_promises):
-        return listPromise(values_or_promises)
+        """
+        A special function that takes a bunch of promises
+        and turns them into a promise for a vector of values.
+        In other words, this turns an list of promises for values
+        into a promise for a list of values.
+        """
+        promises = list(filter(is_thenable, values_or_promises))
+        if len(promises) == 0:
+            # All the values or promises are resolved
+            return Promise.fulfilled(values_or_promises)
+
+        all_promise = Promise()
+        counter = CountdownLatch(len(promises))
+
+        def handleSuccess(_):
+            if counter.dec() == 0:
+                values = list(map(lambda p: p.value if p in promises else p, values_or_promises))
+                all_promise.fulfill(values)
+
+        for p in promises:
+            promisify(p).done(handleSuccess, all_promise.reject)
+
+        return all_promise
 
 
-def _isFunction(v):
+def _is_function(v):
     """
     A utility function to determine if the specified
     value is a function.
@@ -385,63 +407,32 @@ def _isFunction(v):
     return v is not None and hasattr(v, "__call__")
 
 
-def _isPromise(obj):
+def is_thenable(obj):
     """
     A utility function to determine if the specified
     object is a promise using "duck typing".
     """
     return isinstance(obj, Promise) or (
-        hasattr(obj, "done") and _isFunction(getattr(obj, "done"))) or (
-        hasattr(obj, "then") and _isFunction(getattr(obj, "then")))
+        hasattr(obj, "done") and _is_function(getattr(obj, "done"))) or (
+        hasattr(obj, "then") and _is_function(getattr(obj, "then")))
 
 
-is_thenable = _isPromise
-
-
-def _promisify(obj):
+def promisify(obj):
     if isinstance(obj, Promise):
         return obj
-    elif hasattr(obj, "done") and _isFunction(getattr(obj, "done")):
+    elif hasattr(obj, "done") and _is_function(getattr(obj, "done")):
         p = Promise()
         obj.done(p.fulfill, p.reject)
         return p
-    elif hasattr(obj, "then") and _isFunction(getattr(obj, "then")):
+    elif hasattr(obj, "then") and _is_function(getattr(obj, "then")):
         p = Promise()
         obj.then(p.fulfill, p.reject)
         return p
     else:
         raise TypeError("Object is not a Promise like object.")
 
-promisify = _promisify
 
-
-def listPromise(values_or_promises):
-    """
-    A special function that takes a bunch of promises
-    and turns them into a promise for a vector of values.
-    In other words, this turns an list of promises for values
-    into a promise for a list of values.
-    """
-    promises = list(filter(_isPromise, values_or_promises))
-    if len(promises) == 0:
-        # All the values or promises are resolved
-        return Promise.fulfilled(values_or_promises)
-
-    ret = Promise()
-    counter = CountdownLatch(len(promises))
-
-    def handleSuccess(_):
-        if counter.dec() == 0:
-            values = list(map(lambda p: p.value if p in promises else p, values_or_promises))
-            ret.fulfill(values)
-
-    for p in promises:
-        _promisify(p).done(handleSuccess, ret.reject)
-
-    return ret
-
-
-def dictPromise(m):
+def promise_for_dict(m):
     """
     A special function that takes a dictionary of promises
     and turns them into a promise for a dictionary of values.
@@ -458,14 +449,3 @@ def dictPromise(m):
         return dict_type(zip(keys, resolved_values))
 
     return Promise.all(values).then(handleSuccess)
-
-
-promise_for_dict = dictPromise
-
-
-def _process(p, f):
-    try:
-        val = f()
-        p.fulfill(val)
-    except Exception as e:
-        p.reject(e)
