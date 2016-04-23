@@ -9,6 +9,7 @@ from graphql.type import (GraphQLField, GraphQLObjectType, GraphQLSchema,
 
 from ..execute import execute
 from ..executors.gevent import GeventExecutor
+from .test_mutations import assert_evaluate_mutations_serially
 
 
 def test_gevent_executor():
@@ -55,3 +56,7 @@ def test_gevent_executor_with_error():
     formatted_errors = list(map(format_error, result.errors))
     assert formatted_errors == [{'locations': [{'line': 1, 'column': 20}], 'message': 'resolver_2 failed!'}]
     assert result.data == {'a': 'hey', 'b': None}
+
+
+def test_evaluates_mutations_serially():
+    assert_evaluate_mutations_serially(executor=GeventExecutor())
