@@ -53,28 +53,19 @@ class Promise(object):
     def do_resolve(self, fn):
         self._done = False
         def resolve_fn(x):
-            print 'RESOLVE FN', x
             if self._done:
                 return
             self._done = True
             self.fulfill(x)
         def reject_fn(x):
-            print 'REJECT FN', x
             if self._done:
                 return
             self._done = True
             self.reject(x)
-        res = None
-        err = None
         try:
-            print 'TRY DO RES'
-            res = fn(resolve_fn, reject_fn)
-            print 'DO RES', res
+            fn(resolve_fn, reject_fn)
         except Exception, e:
-            err = e
-        if not res and err:
-            print "ERR", err
-            self.reject(err)
+            self.reject(e)
 
     @staticmethod
     def fulfilled(x):
@@ -379,8 +370,8 @@ class Promise(object):
         return promises
 
     @staticmethod
-    def all(*promises):
-        return listPromise(*promises)
+    def all(values_or_promises):
+        return listPromise(values_or_promises)
 
 
 def _isFunction(v):
@@ -420,66 +411,49 @@ def _promisify(obj):
 
 promisify = _promisify
 
-def listPromise(*promises):
+def listPromise(values_or_promises):
     """
     A special function that takes a bunch of promises
     and turns them into a promise for a vector of values.
     In other words, this turns an list of promises for values
     into a promise for a list of values.
     """
-    if len(promises) == 1 and isinstance(promises[0], list):
-        promises = promises[0]
-
+    promises=filter(_isPromise, values_or_promises)
     if len(promises) == 0:
-        return Promise.fulfilled([])
+        # All the values or promises are resolved
+        return Promise.fulfilled(values_or_promises)
 
     ret = Promise()
     counter = CountdownLatch(len(promises))
 
     def handleSuccess(_):
         if counter.dec() == 0:
-            value = list(map(lambda p: p.value, promises))
-            ret.fulfill(value)
+            values = list(map(lambda p: p.value if p in promises else p, values_or_promises))
+            ret.fulfill(values)
 
     for p in promises:
-        assert _isPromise(p)
-
         _promisify(p).done(handleSuccess, ret.reject)
 
     return ret
 
 
-def dictPromise(m, dict_type=None):
+def dictPromise(m):
     """
     A special function that takes a dictionary of promises
     and turns them into a promise for a dictionary of values.
     In other words, this turns an dictionary of promises for values
     into a promise for a dictionary of values.
     """
-    if len(m) == 0:
+    if not m:
         return Promise.fulfilled({})
 
-    ret = Promise()
-    counter = CountdownLatch(len(m))
+    keys, values = zip(*m.items())
+    dict_type = type(m)
 
-    if not dict_type:
-        dict_type = dict
+    def handleSuccess(values):
+        return dict_type(zip(keys, values))
 
-    def handleSuccess(_):
-        if counter.dec() == 0:
-            value = dict_type()
-
-            for k in m:
-                value[k] = m[k].value
-
-            ret.fulfill(value)
-
-    for p in m.values():
-        assert _isPromise(p)
-
-        _promisify(p).done(handleSuccess, ret.reject)
-
-    return ret
+    return Promise.all(values).then(handleSuccess)
 
 
 promise_for_dict = dictPromise

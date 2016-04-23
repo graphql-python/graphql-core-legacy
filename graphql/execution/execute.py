@@ -36,12 +36,10 @@ def execute(schema, document_ast, root_value=None, context_value=None, variable_
         return resolve(execute_operation(context, context.operation, root_value))
 
     def on_rejected(error):
-        # print "ON=REJECTED", error
         context.errors.append(error)
         return None
 
     def on_resolve(data):
-        # print "ON=RESOLVE", data
         return ExecutionResult(data=data, errors=context.errors)
 
     return Promise(executor).catch(on_rejected).then(on_resolve).value
@@ -133,7 +131,7 @@ def execute_fields(exe_context, parent_type, source_value, fields):
     if not contains_promise:
         return final_results
 
-    return promise_for_dict(final_results, collections.OrderedDict)
+    return promise_for_dict(final_results)
 
 
 def resolve_field(exe_context, parent_type, source, field_asts):
@@ -195,17 +193,14 @@ def complete_value_catching_error(exe_context, return_type, field_asts, info, re
     try:
         completed = complete_value(exe_context, return_type, field_asts, info, result)
         if is_thenable(completed):
-            # TODO: Check if is None or Undefined
             def handle_error(error):
-                # print "HANDLE=ERROR", error
                 exe_context.errors.append(error)
-                return Promise.resolved(None)
+                return Promise.fulfilled(None)
 
             return promisify(completed).then(None, handle_error)
 
         return completed
     except Exception as e:
-        # print "GENERAL=EXCEPTION", e
         exe_context.errors.append(e)
         return None
 
@@ -232,7 +227,7 @@ def complete_value(exe_context, return_type, field_asts, info, result):
     # If field type is NonNull, complete for inner type, and throw field error if result is null.
 
     if is_thenable(result):
-        promisify(result).then(
+        return promisify(result).then(
             lambda resolved: complete_value(
                 exe_context,
                 return_type,
@@ -240,7 +235,7 @@ def complete_value(exe_context, return_type, field_asts, info, result):
                 info,
                 resolved
             ),
-            lambda error: Promise.rejected(GraphQLError(error.value and str(error.value), field_asts, error))
+            lambda error: Promise.rejected(GraphQLError(error and str(error), field_asts, error))
         )
 
     if isinstance(result, Exception):

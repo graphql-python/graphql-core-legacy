@@ -3,7 +3,7 @@ from collections import namedtuple
 from graphql.error import format_error
 from graphql.execution import execute
 from graphql.language.parser import parse
-from graphql.pyutils.aplus import Promisex
+from graphql.pyutils.aplus import Promise
 from graphql.type import (GraphQLField, GraphQLInt, GraphQLList,
                           GraphQLNonNull, GraphQLObjectType, GraphQLSchema)
 
