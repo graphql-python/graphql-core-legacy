@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from ..error import GraphQLError
 from ..language import ast
-from ..pyutils.defer import DeferredException
 from ..type.definition import GraphQLInterfaceType, GraphQLUnionType
 from ..type.directives import GraphQLIncludeDirective, GraphQLSkipDirective
 from ..type.introspection import (SchemaMetaFieldDef, TypeMetaFieldDef,
@@ -85,12 +84,6 @@ class ExecutionResult(object):
 
     def __init__(self, data=None, errors=None, invalid=False):
         self.data = data
-        if errors:
-            errors = [
-                error.value if isinstance(error, DeferredException) else error
-                for error in errors
-            ]
-
         self.errors = errors
 
         if invalid:

@@ -8,7 +8,6 @@ from graphql.type import (GraphQLArgument, GraphQLField, GraphQLInt,
 from graphql.type.definition import GraphQLNonNull
 
 from ..executors.thread import ThreadExecutor
-# from .utils import raise_callback_results
 from .utils import rejected, resolved
 
 
