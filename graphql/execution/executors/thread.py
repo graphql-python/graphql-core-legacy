@@ -1,9 +1,11 @@
 from threading import Thread
+
 from ...pyutils.aplus import Promise
 from .utils import process
 
 
 class ThreadExecutor(object):
+
     def __init__(self):
         self.threads = []
 

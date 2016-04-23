@@ -5,7 +5,8 @@ from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import (GraphQLField, GraphQLInt, GraphQLList,
                           GraphQLNonNull, GraphQLObjectType, GraphQLSchema)
-from .utils import resolved, rejected
+
+from .utils import rejected, resolved
 
 Data = namedtuple('Data', 'test')
 ast = parse('{ nest { test } }')

@@ -15,6 +15,7 @@ def test_allows_editing_a_node_both_on_enter_and_on_leave():
     ast = parse('{ a, b, c { a, b, c } }', no_location=True)
 
     class TestVisitor(Visitor):
+
         def __init__(self):
             self.did_enter = False
             self.did_leave = False
@@ -65,6 +66,7 @@ def test_allows_editing_the_root_node_on_enter_and_on_leave():
     definitions = ast.definitions
 
     class TestVisitor(Visitor):
+
         def __init__(self):
             self.did_enter = False
             self.did_leave = False

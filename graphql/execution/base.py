@@ -251,7 +251,8 @@ def get_field_entry_key(node):
 
 class ResolveInfo(object):
 
-    def __init__(self, field_name, field_asts, return_type, parent_type, schema, fragments, root_value, operation, variable_values):
+    def __init__(self, field_name, field_asts, return_type, parent_type,
+                 schema, fragments, root_value, operation, variable_values):
         self.field_name = field_name
         self.field_asts = field_asts
         self.return_type = return_type

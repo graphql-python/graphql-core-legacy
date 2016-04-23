@@ -1,6 +1,8 @@
-from multiprocessing import Pool, Process, Queue
+from multiprocessing import Process, Queue
+
 from ...pyutils.aplus import Promise
 from .utils import process
+
 
 def queue_process(q):
     promise, fn, args, kwargs = q.get()
@@ -8,6 +10,7 @@ def queue_process(q):
 
 
 class ProcessExecutor(object):
+
     def __init__(self):
         self.processes = []
         self.q = Queue()
@@ -20,8 +23,8 @@ class ProcessExecutor(object):
 
     def execute(self, fn, *args, **kwargs):
         promise = Promise()
-        
-        q.put([promise, fn, args, kwargs], False)
+
+        self.q.put([promise, fn, args, kwargs], False)
         _process = Process(target=queue_process, args=(self.q))
         _process.start()
         self.processes.append(_process)

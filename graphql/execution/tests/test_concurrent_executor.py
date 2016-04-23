@@ -1,16 +1,16 @@
-from collections import OrderedDict
 
 from graphql.error import format_error
+from graphql.execution.execute import execute
+from graphql.language.parser import parse
 from graphql.type import (GraphQLArgument, GraphQLField, GraphQLInt,
                           GraphQLList, GraphQLObjectType, GraphQLSchema,
                           GraphQLString)
 from graphql.type.definition import GraphQLNonNull
-from graphql.execution.execute import execute
-from graphql.language.parser import parse
 
-# from .utils import raise_callback_results
-from .utils import resolved, rejected
 from ..executors.thread import ThreadExecutor
+# from .utils import raise_callback_results
+from .utils import rejected, resolved
+
 
 def test_executes_arbitary_code():
     class Data(object):
@@ -118,7 +118,15 @@ def test_executes_arbitary_code():
         assert not result.errors
         assert result.data == expected
 
-    handle_result(execute(schema, ast, Data(), variable_values={'size': 100}, operation_name='Example', executor=ThreadExecutor()))
+    handle_result(
+        execute(
+            schema,
+            ast,
+            Data(),
+            variable_values={
+                'size': 100},
+            operation_name='Example',
+            executor=ThreadExecutor()))
     handle_result(execute(schema, ast, Data(), variable_values={'size': 100}, operation_name='Example'))
 
 

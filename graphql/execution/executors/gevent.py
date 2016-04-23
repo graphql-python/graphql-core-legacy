@@ -1,11 +1,13 @@
 from __future__ import absolute_import
 
 import gevent
-from .utils import process
+
 from ...pyutils.aplus import Promise
+from .utils import process
 
 
 class GeventExecutor(object):
+
     def __init__(self):
         self.jobs = []
 

@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
-from asyncio import Future, ensure_future, iscoroutine, get_event_loop, wait
+from asyncio import Future, ensure_future, get_event_loop, iscoroutine, wait
+
 from graphql.pyutils.aplus import Promise
 
 
@@ -16,6 +17,7 @@ def process_future_result(promise):
 
 
 class AsyncioExecutor(object):
+
     def __init__(self):
         self.loop = get_event_loop()
         self.futures = []

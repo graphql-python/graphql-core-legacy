@@ -1,11 +1,11 @@
-from collections import OrderedDict
 
 from graphql.error import format_error
 from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import (GraphQLField, GraphQLNonNull, GraphQLObjectType,
                           GraphQLSchema, GraphQLString)
-from .utils import resolved, rejected
+
+from .utils import rejected, resolved
 
 sync_error = Exception('sync')
 non_null_sync_error = Exception('nonNullSync')

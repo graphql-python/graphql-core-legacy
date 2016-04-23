@@ -6,9 +6,9 @@ from graphql.language.location import SourceLocation
 from graphql.language.parser import parse
 from graphql.type import (GraphQLField, GraphQLObjectType, GraphQLSchema,
                           GraphQLString)
+
 from ..execute import execute
 from ..executors.gevent import GeventExecutor
-
 
 
 def test_gevent_executor():

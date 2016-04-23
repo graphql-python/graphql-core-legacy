@@ -2,6 +2,7 @@ from threading import Event, RLock
 
 
 class CountdownLatch(object):
+
     def __init__(self, count):
         assert count >= 0
 
@@ -52,11 +53,13 @@ class Promise(object):
 
     def do_resolve(self, fn):
         self._done = False
+
         def resolve_fn(x):
             if self._done:
                 return
             self._done = True
             self.fulfill(x)
+
         def reject_fn(x):
             if self._done:
                 return
@@ -411,6 +414,7 @@ def _promisify(obj):
 
 promisify = _promisify
 
+
 def listPromise(values_or_promises):
     """
     A special function that takes a bunch of promises
@@ -418,7 +422,7 @@ def listPromise(values_or_promises):
     In other words, this turns an list of promises for values
     into a promise for a list of values.
     """
-    promises=list(filter(_isPromise, values_or_promises))
+    promises = list(filter(_isPromise, values_or_promises))
     if len(promises) == 0:
         # All the values or promises are resolved
         return Promise.fulfilled(values_or_promises)

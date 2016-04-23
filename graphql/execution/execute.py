@@ -2,26 +2,24 @@ import collections
 import functools
 
 from ..error import GraphQLError
-from ..language import ast
-from ..language.parser import parse
-from ..language.source import Source
+from ..pyutils.aplus import Promise, is_thenable, promise_for_dict, promisify
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
-from ..pyutils.aplus import Promise, is_thenable, promisify, promise_for_dict
-from ..pyutils.defer import (Deferred, DeferredDict, DeferredList, defer,
-                             succeed)
 from ..type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
                     GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
-                    GraphQLUnionType, GraphQLSchema)
-from ..validation import validate
+                    GraphQLSchema, GraphQLUnionType)
 from .base import (ExecutionContext, ExecutionResult, ResolveInfo, Undefined,
                    collect_fields, default_resolve_fn, get_field_def,
                    get_operation_root_type)
 from .executors.sync import SyncExecutor
 
 
-def execute(schema, document_ast, root_value=None, context_value=None, variable_values=None, operation_name=None, executor=None):
+def execute(schema, document_ast, root_value=None, context_value=None,
+            variable_values=None, operation_name=None, executor=None):
     assert schema, 'Must provide schema'
-    assert isinstance(schema, GraphQLSchema), 'Schema must be an instance of GraphQLSchema. Also ensure that there are not multiple versions of GraphQL installed in your node_modules directory.'
+    assert isinstance(schema, GraphQLSchema), (
+        'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
+        'not multiple versions of GraphQL installed in your node_modules directory.'
+    )
 
     if executor is None:
         executor = SyncExecutor()
@@ -49,7 +47,6 @@ def execute(schema, document_ast, root_value=None, context_value=None, variable_
     p = Promise(executor).catch(on_rejected).then(on_resolve)
     context.executor.wait_until_finished()
     return p.value
-
 
 
 def execute_operation(exe_context, operation, root_value):
@@ -89,36 +86,11 @@ def execute_fields_serially(exe_context, parent_type, source_value, fields):
 
         results[response_name] = result
         return results
+
     def execute_field(prev_promise, response_name):
         return prev_promise.then(lambda results: execute_field_callback(results, response_name))
 
     return functools.reduce(execute_field, fields.keys(), Promise.resolve(collections.OrderedDict()))
-
-
-# def execute_fields_serially(exe_context, parent_type, source_value, fields):
-#     final_results = collections.OrderedDict()
-
-#     prev_promise = Promise.resolve(collections.OrderedDict())
-
-#     def on_promise(results, response_name, field_asts):
-#         result = resolve_field(exe_context, parent_type, source_value, field_asts)
-#         if result is Undefined:
-#             return results
-
-#         if is_thenable(result):
-#             def collect_result(resolved_result):
-#                 results[response_name] = resolved_result
-#                 return results
-
-#             return promisify(result).then(collect_result)
-
-#         results[response_name] = result
-#         return results
-
-#     for response_name, field_asts in fields.items():
-#         prev_promise = prev_promise.then(lambda results: on_promise(results, response_name, field_asts))
-
-#     return prev_promise
 
 
 def execute_fields(exe_context, parent_type, source_value, fields):
@@ -166,8 +138,8 @@ def resolve_field(exe_context, parent_type, source, field_asts):
         schema=exe_context.schema,
         fragments=exe_context.fragments,
         root_value=exe_context.root_value,
-        operation= exe_context.operation,
-        variable_values= exe_context.variable_values,
+        operation=exe_context.operation,
+        variable_values=exe_context.variable_values,
     )
 
     result = resolve_or_error(resolve_fn, source, args, exe_context, info)
@@ -300,7 +272,6 @@ def complete_list_value(exe_context, return_type, field_asts, info, result):
         completed_results.append(completed_item)
 
     return Promise.all(completed_results) if contains_promise else completed_results
-
 
 
 def complete_leaf_value(return_type, result):
