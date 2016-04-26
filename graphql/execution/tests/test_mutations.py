@@ -1,4 +1,4 @@
-from graphql.execution import execute
+from graphql.execution.execute import execute
 from graphql.language.parser import parse
 from graphql.type import (GraphQLArgument, GraphQLField, GraphQLInt,
                           GraphQLList, GraphQLObjectType, GraphQLSchema,
@@ -66,7 +66,7 @@ MutationType = GraphQLObjectType('Mutation', {
 schema = GraphQLSchema(QueryType, MutationType)
 
 
-def test_evaluates_mutations_serially():
+def assert_evaluate_mutations_serially(executor=None):
     doc = '''mutation M {
       first: immediatelyChangeTheNumber(newNumber: 1) {
         theNumber
@@ -85,7 +85,7 @@ def test_evaluates_mutations_serially():
       }
     }'''
     ast = parse(doc)
-    result = execute(schema, Root(6), ast, 'M')
+    result = execute(schema, ast, Root(6), operation_name='M', executor=executor)
     assert not result.errors
     assert result.data == \
         {
@@ -95,6 +95,10 @@ def test_evaluates_mutations_serially():
             'fourth': {'theNumber': 4},
             'fifth': {'theNumber': 5},
         }
+
+
+def test_evaluates_mutations_serially():
+    assert_evaluate_mutations_serially()
 
 
 def test_evaluates_mutations_correctly_in_the_presense_of_a_failed_mutation():
@@ -119,7 +123,7 @@ def test_evaluates_mutations_correctly_in_the_presense_of_a_failed_mutation():
       }
     }'''
     ast = parse(doc)
-    result = execute(schema, Root(6), ast, 'M')
+    result = execute(schema, ast, Root(6), operation_name='M')
     assert result.data == \
         {
             'first': {'theNumber': 1},
