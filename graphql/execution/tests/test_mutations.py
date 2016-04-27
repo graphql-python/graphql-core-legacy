@@ -1,4 +1,4 @@
-from graphql.execution.execute import execute
+from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import (GraphQLArgument, GraphQLField, GraphQLInt,
                           GraphQLList, GraphQLObjectType, GraphQLSchema,

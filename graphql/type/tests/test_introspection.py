@@ -590,7 +590,7 @@ def test_supports_the_type_root_field():
     })
     schema = GraphQLSchema(TestType)
     request = '{ __type(name: "TestType") { name } }'
-    result = execute(schema, object(), parse(request))
+    result = execute(schema, parse(request), object())
     assert not result.errors
     assert result.data == {'__type': {'name': 'TestType'}}
 

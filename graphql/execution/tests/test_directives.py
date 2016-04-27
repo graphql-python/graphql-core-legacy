@@ -20,7 +20,7 @@ class Data(object):
 
 
 def execute_test_query(doc):
-    return execute(schema, Data, parse(doc))
+    return execute(schema, parse(doc), Data)
 
 
 def test_basic_query_works():

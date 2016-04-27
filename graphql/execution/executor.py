@@ -1,5 +1,6 @@
 import collections
 import functools
+import logging
 
 from ..error import GraphQLError
 from ..pyutils.aplus import Promise, is_thenable, promise_for_dict, promisify
@@ -11,6 +12,9 @@ from .base import (ExecutionContext, ExecutionResult, ResolveInfo, Undefined,
                    collect_fields, default_resolve_fn, get_field_def,
                    get_operation_root_type)
 from .executors.sync import SyncExecutor
+
+
+logger = logging.getLogger(__name__)
 
 
 def execute(schema, document_ast, root_value=None, context_value=None,
@@ -158,6 +162,9 @@ def resolve_or_error(resolve_fn, source, args, exe_context, info):
         # return resolve_fn(source, args, exe_context, info)
         return exe_context.executor.execute(resolve_fn, source, args, info)
     except Exception as e:
+        logger.exception("An error occurred while resolving field {}.{}".format(
+            info.parent_type.name, info.field_name
+        ))
         return e
 
 

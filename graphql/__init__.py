@@ -34,10 +34,10 @@ def graphql(schema, request='', root=None, args=None, operation_name=None):
             )
         return execute(
             schema,
-            root or object(),
             ast,
-            operation_name,
-            args or {},
+            root or object(),
+            operation_name=operation_name,
+            variable_values=args or {},
         )
     except Exception as e:
         return ExecutionResult(

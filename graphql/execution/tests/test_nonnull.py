@@ -83,7 +83,7 @@ schema = GraphQLSchema(DataType)
 
 def check(doc, data, expected):
     ast = parse(doc)
-    response = execute(schema, data, ast)
+    response = execute(schema, ast, data)
 
     if response.errors:
         result = {

@@ -111,7 +111,7 @@ def test_executes_arbitary_code():
 
     schema = GraphQLSchema(query=DataType)
 
-    result = execute(schema, Data(), ast, 'Example', {'size': 100})
+    result = execute(schema, ast, Data(), operation_name='Example', variable_values={'size': 100})
     assert not result.errors
     assert result.data == expected
 
@@ -142,7 +142,7 @@ def test_merges_parallel_fragments():
     })
 
     schema = GraphQLSchema(query=Type)
-    result = execute(schema, None, ast)
+    result = execute(schema, ast)
     assert not result.errors
     assert result.data == \
         {
@@ -176,7 +176,7 @@ def test_threads_context_correctly():
         'a': GraphQLField(GraphQLString, resolver=resolver)
     })
 
-    result = execute(GraphQLSchema(Type), Data(), ast, 'Example', {})
+    result = execute(GraphQLSchema(Type), ast, Data(), operation_name='Example')
     assert not result.errors
     assert resolver.got_here
 
@@ -207,7 +207,7 @@ def test_correctly_threads_arguments():
             resolver=resolver),
     })
 
-    result = execute(GraphQLSchema(Type), None, doc_ast, 'Example', {})
+    result = execute(GraphQLSchema(Type), doc_ast, None, operation_name='Example')
     assert not result.errors
     assert resolver.got_here
 
@@ -233,7 +233,7 @@ def test_nulls_out_error_subtrees():
         'error': GraphQLField(GraphQLString),
     })
 
-    result = execute(GraphQLSchema(Type), Data(), doc_ast)
+    result = execute(GraphQLSchema(Type), doc_ast, Data())
     assert result.data == {'ok': 'ok', 'error': None}
     assert len(result.errors) == 1
     assert result.errors[0].message == 'Error getting error'
@@ -250,7 +250,7 @@ def test_uses_the_inline_operation_if_no_operation_is_provided():
     Type = GraphQLObjectType('Type', {
         'a': GraphQLField(GraphQLString)
     })
-    result = execute(GraphQLSchema(Type), Data(), ast)
+    result = execute(GraphQLSchema(Type), ast, Data())
     assert not result.errors
     assert result.data == {'a': 'b'}
 
@@ -265,7 +265,7 @@ def test_uses_the_only_operation_if_no_operation_is_provided():
     Type = GraphQLObjectType('Type', {
         'a': GraphQLField(GraphQLString)
     })
-    result = execute(GraphQLSchema(Type), Data(), ast)
+    result = execute(GraphQLSchema(Type), ast, Data())
     assert not result.errors
     assert result.data == {'a': 'b'}
 
@@ -281,7 +281,7 @@ def test_raises_the_inline_operation_if_no_operation_is_provided():
         'a': GraphQLField(GraphQLString)
     })
     with raises(GraphQLError) as excinfo:
-        execute(GraphQLSchema(Type), Data(), ast)
+        execute(GraphQLSchema(Type), ast, Data())
     assert 'Must provide operation name if query contains multiple operations' in str(excinfo.value)
 
 
@@ -302,7 +302,7 @@ def test_uses_the_query_schema_for_queries():
     S = GraphQLObjectType('S', {
         'a': GraphQLField(GraphQLString)
     })
-    result = execute(GraphQLSchema(Q, M, S), Data(), ast, 'Q')
+    result = execute(GraphQLSchema(Q, M, S), ast, Data(), operation_name='Q')
     assert not result.errors
     assert result.data == {'a': 'b'}
 
@@ -321,7 +321,7 @@ def test_uses_the_mutation_schema_for_queries():
     M = GraphQLObjectType('M', {
         'c': GraphQLField(GraphQLString)
     })
-    result = execute(GraphQLSchema(Q, M), Data(), ast, 'M')
+    result = execute(GraphQLSchema(Q, M), ast, Data(), operation_name='M')
     assert not result.errors
     assert result.data == {'c': 'd'}
 
@@ -340,7 +340,7 @@ def test_uses_the_subscription_schema_for_subscriptions():
     S = GraphQLObjectType('S', {
         'a': GraphQLField(GraphQLString)
     })
-    result = execute(GraphQLSchema(Q, subscription=S), Data(), ast, 'S')
+    result = execute(GraphQLSchema(Q, subscription=S), ast, Data(), operation_name='S')
     assert not result.errors
     assert result.data == {'a': 'b'}
 
@@ -365,7 +365,7 @@ def test_avoids_recursion():
     Type = GraphQLObjectType('Type', {
         'a': GraphQLField(GraphQLString)
     })
-    result = execute(GraphQLSchema(Type), Data(), ast, 'Q')
+    result = execute(GraphQLSchema(Type), ast, Data(), operation_name='Q')
     assert not result.errors
     assert result.data == {'a': 'b'}
 
@@ -379,7 +379,7 @@ def test_does_not_include_illegal_fields_in_output():
     M = GraphQLObjectType('M', {
         'c': GraphQLField(GraphQLString)
     })
-    result = execute(GraphQLSchema(Q, M), None, ast)
+    result = execute(GraphQLSchema(Q, M), ast)
     assert not result.errors
     assert result.data == {}
 
@@ -403,7 +403,7 @@ def test_does_not_include_arguments_that_were_not_set():
     ))
 
     ast = parse('{ field(a: true, c: false, e: 0) }')
-    result = execute(schema, None, ast)
+    result = execute(schema, ast)
     assert result.data == {
         'field': '{"a":true,"c":false,"e":0}'
     }
@@ -445,7 +445,7 @@ def test_fails_when_an_is_type_of_check_is_not_met():
         'specials': [Special('foo'), NotSpecial('bar')]
     }
 
-    result = execute(schema, value, query)
+    result = execute(schema, query, value)
 
     assert result.data == {
         'specials': [
@@ -474,6 +474,30 @@ def test_fails_to_execute_a_query_containing_a_type_definition():
     )
 
     with raises(GraphQLError) as excinfo:
-        execute(schema, None, query)
+        execute(schema, query)
 
     assert excinfo.value.message == 'GraphQL cannot execute a request containing a ObjectTypeDefinition.'
+
+
+def test_exceptions_are_reraised_if_specified(mocker):
+
+    logger = mocker.patch('graphql.execution.executor.logger')
+
+    query = parse('''
+    { foo }
+    ''')
+
+    def resolver(*_):
+        raise Exception("UH OH!")
+
+    schema = GraphQLSchema(
+        GraphQLObjectType(
+            name='Query',
+            fields={
+                'foo': GraphQLField(GraphQLString, resolver=resolver)
+            }
+        )
+    )
+
+    execute(schema, query)
+    logger.exception.assert_called_with("An error occurred while resolving field Query.foo")

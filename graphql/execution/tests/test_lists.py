@@ -26,7 +26,7 @@ def check(test_data, expected):
         )
 
         schema = GraphQLSchema(query=DataType)
-        response = execute(schema, data, ast)
+        response = execute(schema, ast, data)
 
         if response.errors:
             result = {

@@ -18,11 +18,8 @@ single level of the query. These include:
 2) fragment "spreads" e.g. "...c"
 3) inline fragment "spreads" e.g. "...on Type { a }"
 """
-from .execute import execute as _execute
+from .executor import execute
 from .base import ExecutionResult
 
-
-def execute(schema, root, ast, operation_name='', args=None):
-    return _execute(schema, ast, root, variable_values=args, operation_name=operation_name)
 
 __all__ = ['execute', 'ExecutionResult']

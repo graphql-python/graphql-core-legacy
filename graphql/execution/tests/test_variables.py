@@ -91,7 +91,7 @@ schema = GraphQLSchema(TestType)
 
 def check(doc, expected, args=None):
     ast = parse(doc)
-    response = execute(schema, None, ast, args=args)
+    response = execute(schema, ast, variable_values=args)
 
     if response.errors:
         result = {

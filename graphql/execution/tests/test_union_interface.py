@@ -106,7 +106,7 @@ def test_can_introspect_on_union_and_intersection_types():
         }
     }''')
 
-    result = execute(schema, None, ast)
+    result = execute(schema, ast)
     assert result.data == {
         'Named': {
             'enumValues': None,
@@ -143,7 +143,7 @@ def test_executes_using_union_types():
             }
         }
     ''')
-    result = execute(schema, john, ast)
+    result = execute(schema, ast, john)
     assert not result.errors
     assert result.data == {
         '__typename': 'Person',
@@ -174,7 +174,7 @@ def test_executes_union_types_with_inline_fragment():
         }
       }
     ''')
-    result = execute(schema, john, ast)
+    result = execute(schema, ast, john)
     assert not result.errors
     assert result.data == {
         '__typename': 'Person',
@@ -200,7 +200,7 @@ def test_executes_using_interface_types():
         }
       }
     ''')
-    result = execute(schema, john, ast)
+    result = execute(schema, ast, john)
     assert not result.errors
     assert result.data == {
         '__typename': 'Person',
@@ -230,7 +230,7 @@ def test_executes_interface_types_with_inline_fragment():
         }
       }
     ''')
-    result = execute(schema, john, ast)
+    result = execute(schema, ast, john)
     assert not result.errors
     assert result.data == {
         '__typename': 'Person',
@@ -272,7 +272,7 @@ def test_allows_fragment_conditions_to_be_abstract_types():
         }
       }
     ''')
-    result = execute(schema, john, ast)
+    result = execute(schema, ast, john)
     assert not result.errors
     assert result.data == {
         '__typename': 'Person',
@@ -300,7 +300,7 @@ def test_only_include_fields_from_matching_fragment_condition():
         }
       }
     ''')
-    result = execute(schema, john, ast)
+    result = execute(schema, ast, john)
     assert not result.errors
     assert result.data == {
         'pets': [
@@ -340,7 +340,7 @@ def test_gets_execution_info_in_resolver():
     john2 = Person('John', [], [liz])
     ast = parse('''{ name, friends { name } }''')
 
-    result = execute(schema2, john2, ast)
+    result = execute(schema2, ast, john2)
     assert result.data == {
         'name': 'John', 'friends': [{'name': 'Liz'}]
     }

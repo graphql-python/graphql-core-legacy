@@ -2,12 +2,12 @@
 import gevent
 
 from graphql.error import format_error
+from graphql.execution import execute
 from graphql.language.location import SourceLocation
 from graphql.language.parser import parse
 from graphql.type import (GraphQLField, GraphQLObjectType, GraphQLSchema,
                           GraphQLString)
 
-from ..execute import execute
 from ..executors.gevent import GeventExecutor
 from .test_mutations import assert_evaluate_mutations_serially
 

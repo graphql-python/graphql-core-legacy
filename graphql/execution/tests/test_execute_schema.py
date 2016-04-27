@@ -110,7 +110,7 @@ def test_executes_using_a_schema():
 
     # Note: this is intentionally not validating to ensure appropriate
     # behavior occurs when executing an invalid query.
-    result = execute(BlogSchema, None, parse(request))
+    result = execute(BlogSchema, parse(request))
     assert not result.errors
     assert result.data == \
         {
