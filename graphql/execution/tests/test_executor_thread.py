@@ -190,6 +190,10 @@ def test_synchronous_error_nulls_out_error_subtrees():
         )
     )
 
+    def sort_key(item):
+        locations = item['locations'][0]
+        return (locations['line'], locations['column'])
+
     def handle_results(result):
         assert result.data == {
             'async': 'async',
@@ -201,7 +205,7 @@ def test_synchronous_error_nulls_out_error_subtrees():
             'syncReturnError': None,
             'syncReturnErrorList': ['sync0', None, 'sync2', None]
         }
-        assert list(map(format_error, result.errors)) == [
+        assert sorted(list(map(format_error, result.errors)), key=sort_key) == sorted([
             {'locations': [{'line': 4, 'column': 9}], 'message': 'Error getting syncError'},
             {'locations': [{'line': 5, 'column': 9}], 'message': 'Error getting syncReturnError'},
             {'locations': [{'line': 6, 'column': 9}], 'message': 'Error getting syncReturnErrorList1'},
@@ -209,7 +213,7 @@ def test_synchronous_error_nulls_out_error_subtrees():
             {'locations': [{'line': 8, 'column': 9}], 'message': 'Error getting asyncReject'},
             {'locations': [{'line': 9, 'column': 9}], 'message': 'An unknown error occurred.'},
             {'locations': [{'line': 10, 'column': 9}], 'message': 'Error getting asyncReturnError'}
-        ]
+        ], key=sort_key)
 
     handle_results(execute(schema, ast, Data(), executor=ThreadExecutor()))
 
