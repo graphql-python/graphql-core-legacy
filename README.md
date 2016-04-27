@@ -1,20 +1,19 @@
 # GraphQL-core
 
-GraphQL for Python
+GraphQL for Python.
+
+*This library is a port of [graphql-js](https://github.com/graphql/graphql-js) to Python.*
+
 
 [![PyPI version](https://badge.fury.io/py/graphql-core.svg)](https://badge.fury.io/py/graphql-core)
 [![Build Status](https://travis-ci.org/graphql-python/graphql-core.svg?branch=master)](https://travis-ci.org/graphql-python/graphql-core)
 [![Coverage Status](https://coveralls.io/repos/graphql-python/graphql-core/badge.svg?branch=master&service=github)](https://coveralls.io/github/graphql-python/graphql-core?branch=master)
 [![Public Slack Discussion](https://graphql-slack.herokuapp.com/badge.svg)](https://graphql-slack.herokuapp.com/)
 
+See more complete documentation at http://graphql.org/ and
+http://graphql.org/docs/api-reference-graphql/.
 
-## Project Status
-
-This library is a port of [graphql-js](https://github.com/graphql/graphql-js) to Python.
-
-We are currently targeting feature parity with `v0.4.18` of the reference implementation, and are currently on `v0.5.0`.
-
-Please see [issues](https://github.com/graphql-python/graphql-core/issues) for the progress.
+For questions, ask [Stack Overflow](http://stackoverflow.com/questions/tagged/graphql).
 
 ## Getting Started
 
@@ -25,7 +24,7 @@ The overview describes a simple set of GraphQL examples that exist as [tests](te
 in this repository. A good way to get started is to walk through that README and the corresponding tests
 in parallel. 
 
-### Using `graphql-core`
+### Using graphql-core
 
 Install from pip:
 
@@ -33,23 +32,91 @@ Install from pip:
 pip install graphql-core
 ```
 
-### Supported Python Versions
-`graphql-core` supports the following Python versions:
- 
-* `2.7.x`
-* `3.3.x`
-* `3.4.x`
-* `3.5.0`
-* `pypy-2.6.1`
+GraphQL.js provides two important capabilities: building a type schema, and
+serving queries against that type schema.
 
-### Built-in Concurrency Support
-Support for `3.5.0`'s `asyncio` module for concurrent execution is available via an executor middleware at 
-`graphql.core.execution.middlewares.asyncio.AsyncioExecutionMiddleware`.
+First, build a GraphQL type schema which maps to your code base.
 
-Additionally, support for `gevent` is available via 
-`graphql.core.execution.middlewares.gevent.GeventExecutionMiddleware`.
+```python
+from graphql import (
+    graphql,
+    GraphQLSchema,
+    GraphQLObjectType,
+    GraphQLField,
+    GraphQLString
+)
 
-Otherwise, by default, the executor will use execute with no concurrency.
+schema = GraphQLSchema(
+  query= GraphQLObjectType(
+    name='RootQueryType',
+    fields={
+      'hello': GraphQLField(
+        type= GraphQLString,
+        resolve=lambda *_: 'world'
+      )
+    }
+  )
+)
+```
+
+This defines a simple schema with one type and one field, that resolves
+to a fixed value. The `resolve` function can return a value, a promise,
+or an array of promises. A more complex example is included in the top
+level [tests](graphql/tests) directory.
+
+Then, serve the result of a query against that type schema.
+
+```python
+query = '{ hello }'
+
+result = graphql(schema, query)
+
+# Prints
+# {
+#   "data": { "hello": "world" }
+# }
+print result
+```
+
+This runs a query fetching the one field defined. The `graphql` function will
+first ensure the query is syntactically and semantically valid before executing
+it, reporting errors otherwise.
+
+```python
+query = '{ boyhowdy }'
+
+result = graphql(schema, query)
+
+# Prints
+# {
+#   "errors": [
+#     { "message": "Cannot query field boyhowdy on RootQueryType",
+#       "locations": [ { "line": 1, "column": 3 } ] }
+#   ]
+# }
+print result
+```
+
+### Executors
+
+The graphql query is executed, by default, synchronously (using `SyncExecutor`).
+However the following executors are available if we want to resolve our fields in parallel:
+
+* `graphql.execution.executors.asyncio.AsyncioExecutor`: This executor executes the resolvers in the Python asyncio event loop.
+* `graphql.execution.executors.asyncio.GeventExecutor`: This executor executes the resolvers in the Gevent event loop.
+* `graphql.execution.executors.asyncio.ProcessExecutor`: This executor executes each resolver as a process.
+* `graphql.execution.executors.asyncio.ThreadExecutor`: This executor executes each resolver in a Thread.
+* `graphql.execution.executors.asyncio.SyncExecutor`: This executor executes each resolver synchronusly (default).
+
+#### Usage
+
+You can specify the executor to use via the executor keyword argument in the `grapqhl.execution.execute` function.
+
+```python
+from graphql.execution.execute import execute
+
+execute(schema, ast, executor=SyncExecutor())
+```
 
 ## Main Contributors
 
