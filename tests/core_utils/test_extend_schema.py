@@ -102,6 +102,7 @@ def test_cannot_be_used_for_execution():
     clientQuery = parse('{ newField }')
 
     result = execute(extended_schema, object(), clientQuery)
+    print(result)
     assert result.data['newField'] is None
     assert str(result.errors[0]
                ) == 'Client Schema cannot be used for execution.'

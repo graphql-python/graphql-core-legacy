@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from pytest import raises
 
-from graphql.core.error import GraphQLError
+from graphql.core.error.graphql_error import GraphQLError
 from graphql.core.execution import Executor, execute
 from graphql.core.execution.middlewares.sync import \
     SynchronousExecutionMiddleware

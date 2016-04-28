@@ -1,5 +1,8 @@
 import collections
 import functools
+import sys
+
+from six import reraise
 
 from ..error import GraphQLError
 from ..language import ast
@@ -15,6 +18,14 @@ from ..validation import validate
 from .base import (ExecutionContext, ExecutionResult, ResolveInfo, Undefined,
                    collect_fields, default_resolve_fn, get_field_def,
                    get_operation_root_type)
+
+
+def _raise_with_original_stack_trace(original_error, new_error_type, new_error):
+    try:
+        raise original_error
+    except:
+        _, __, original_traceback = sys.exc_info()
+        reraise(new_error_type, new_error, original_traceback)
 
 
 class Executor(object):
@@ -227,11 +238,16 @@ class Executor(object):
                     info,
                     resolved
                 ),
-                lambda error: GraphQLError(error.value and str(error.value), field_asts, error)
+                lambda error: _raise_with_original_stack_trace(
+                    error,
+                    GraphQLError,
+                    GraphQLError(error.value and str(error.value), field_asts, original_error=error)
+                )
             )
 
         if isinstance(result, Exception):
-            raise GraphQLError(str(result), field_asts, result)
+            _raise_with_original_stack_trace(
+                result, GraphQLError, GraphQLError(result.message or str(result), field_asts, original_error=result))
 
         if isinstance(return_type, GraphQLNonNull):
             completed = self.complete_value(
