@@ -1,4 +1,4 @@
-from ...error import GraphQLError
+from ...error.graphql_error import GraphQLError
 from .base import ValidationRule
 
 

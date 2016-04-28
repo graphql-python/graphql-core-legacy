@@ -2,7 +2,7 @@ import json
 
 from pytest import raises
 
-from graphql.core.error import GraphQLError, format_error
+from graphql.core.error.graphql_error import GraphQLError, format_error
 from graphql.core.execution import execute
 from graphql.core.language.parser import parse
 from graphql.core.type import (GraphQLArgument, GraphQLField,

@@ -1,20 +1,16 @@
-from .language.location import get_location
+from ..language.location import get_location
 
 
-class Error(Exception):
-    pass
+class GraphQLError(Exception):
+    __slots__ = 'message', 'nodes', '_source', '_positions', 'original_error'
 
-
-class GraphQLError(Error):
-    __slots__ = 'message', 'nodes', 'stack', '_source', '_positions'
-
-    def __init__(self, message, nodes=None, stack=None, source=None, positions=None):
+    def __init__(self, message, nodes=None, source=None, positions=None, original_error=None):
         super(GraphQLError, self).__init__(message)
         self.message = message or 'An unknown error occurred.'
         self.nodes = nodes
-        self.stack = stack or message
         self._source = source
         self._positions = positions
+        self.original_error = original_error
 
     @property
     def source(self):
