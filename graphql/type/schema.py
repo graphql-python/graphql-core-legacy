@@ -38,8 +38,6 @@ class GraphQLSchema(object):
         self._query = query
         self._mutation = mutation
         self._subscription = subscription
-        self._type_map = self._build_type_map()
-
         if directives is None:
             directives = [
                 GraphQLIncludeDirective,
@@ -52,7 +50,9 @@ class GraphQLSchema(object):
         )
 
         self._directives = directives
+        self._type_map = self._build_type_map()
 
+        # Enforce correct interface implementations.
         for type in self._type_map.values():
             if isinstance(type, GraphQLObjectType):
                 for interface in type.get_interfaces():

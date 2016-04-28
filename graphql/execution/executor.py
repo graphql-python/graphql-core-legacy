@@ -13,7 +13,6 @@ from .base import (ExecutionContext, ExecutionResult, ResolveInfo, Undefined,
                    get_operation_root_type)
 from .executors.sync import SyncExecutor
 
-
 logger = logging.getLogger(__name__)
 
 

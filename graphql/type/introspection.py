@@ -7,9 +7,8 @@ from .definition import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
                          GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                          GraphQLObjectType, GraphQLScalarType,
                          GraphQLUnionType)
-from .scalars import GraphQLBoolean, GraphQLString
 from .directives import DirectiveLocation
-
+from .scalars import GraphQLBoolean, GraphQLString
 
 __Schema = GraphQLObjectType(
     '__Schema',

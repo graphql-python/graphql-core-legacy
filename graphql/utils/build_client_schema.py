@@ -8,7 +8,7 @@ from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
                     GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
                     GraphQLSchema, GraphQLString, GraphQLUnionType,
                     is_input_type, is_output_type)
-from ..type.directives import GraphQLDirective, DirectiveLocation
+from ..type.directives import DirectiveLocation, GraphQLDirective
 from ..type.introspection import TypeKind
 from .value_from_ast import value_from_ast
 

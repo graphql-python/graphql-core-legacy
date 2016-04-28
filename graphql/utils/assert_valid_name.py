@@ -1,6 +1,5 @@
 import re
 
-
 NAME_PATTERN = r'^[_a-zA-Z][_a-zA-Z0-9]*$'
 COMPILED_NAME_PATTERN = re.compile(NAME_PATTERN)
 

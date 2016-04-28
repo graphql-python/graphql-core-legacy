@@ -1,8 +1,8 @@
 import collections
 
+from ..utils.assert_valid_name import assert_valid_name
 from .definition import GraphQLArgument, GraphQLNonNull
 from .scalars import GraphQLBoolean
-from ..utils.assert_valid_name import assert_valid_name
 
 
 class DirectiveLocation(object):
