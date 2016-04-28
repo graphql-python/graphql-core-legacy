@@ -3,7 +3,7 @@
 import asyncio
 import functools
 from graphql.error import format_error
-from graphql.execution.execute import execute
+from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.execution.executors.asyncio import AsyncioExecutor
 from graphql.type import (
