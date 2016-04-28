@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from functools import reduce
 
 from ..utils.type_comparators import is_equal_type, is_type_sub_type_of
 from .definition import (GraphQLInputObjectType, GraphQLInterfaceType,
