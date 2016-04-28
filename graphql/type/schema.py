@@ -83,11 +83,8 @@ class GraphQLSchema(object):
         return None
 
     def _build_type_map(self):
-        type_map = OrderedDict()
-        types = (self.get_query_type(), self.get_mutation_type(), self.get_subscription_type(), IntrospectionSchema)
-        for type in types:
-            type_map = type_map_reducer(type_map, type)
-
+        types = [self.get_query_type(), self.get_mutation_type(), self.get_subscription_type(), IntrospectionSchema]
+        type_map = reduce(type_map_reducer, types, OrderedDict())
         return type_map
 
 

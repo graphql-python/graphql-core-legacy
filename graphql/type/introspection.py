@@ -8,6 +8,8 @@ from .definition import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
                          GraphQLObjectType, GraphQLScalarType,
                          GraphQLUnionType)
 from .scalars import GraphQLBoolean, GraphQLString
+from .directives import DirectiveLocation
+
 
 __Schema = GraphQLObjectType(
     '__Schema',
@@ -44,6 +46,10 @@ __Schema = GraphQLObjectType(
         )),
     ]))
 
+_on_operation_locations = set(DirectiveLocation.OPERATION_LOCATIONS)
+_on_fragment_locations = set(DirectiveLocation.FRAGMENT_LOCATIONS)
+_on_field_locations = set(DirectiveLocation.FIELD_LOCATIONS)
+
 __Directive = GraphQLObjectType(
     '__Directive',
     description='A Directive provides a way to describe alternate runtime execution and '
@@ -55,22 +61,65 @@ __Directive = GraphQLObjectType(
     fields=lambda: OrderedDict([
         ('name', GraphQLField(GraphQLNonNull(GraphQLString))),
         ('description', GraphQLField(GraphQLString)),
+        ('locations', GraphQLField(
+            type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__DirectiveLocation))),
+        )),
         ('args', GraphQLField(
             type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
             resolver=lambda directive, *args: directive.args or [],
         )),
         ('onOperation', GraphQLField(
             type=GraphQLNonNull(GraphQLBoolean),
-            resolver=lambda directive, *args: directive.on_operation,
+            deprecation_reason='Use `locations`.',
+            resolver=lambda directive, *args: set(directive.locations) & _on_operation_locations,
         )),
         ('onFragment', GraphQLField(
             type=GraphQLNonNull(GraphQLBoolean),
-            resolver=lambda directive, *args: directive.on_fragment,
+            deprecation_reason='Use `locations`.',
+            resolver=lambda directive, *args: set(directive.locations) & _on_fragment_locations,
         )),
         ('onField', GraphQLField(
             type=GraphQLNonNull(GraphQLBoolean),
-            resolver=lambda directive, *args: directive.on_field,
+            deprecation_reason='Use `locations`.',
+            resolver=lambda directive, *args: set(directive.locations) & _on_field_locations,
         ))
+    ]))
+
+__DirectiveLocation = GraphQLEnumType(
+    '__DirectiveLocation',
+    description=(
+        'A Directive can be adjacent to many parts of the GraphQL language, a ' +
+        '__DirectiveLocation describes one such possible adjacencies.'
+    ),
+    values=OrderedDict([
+        ('QUERY', GraphQLEnumValue(
+            DirectiveLocation.QUERY,
+            description='Location adjacent to a query operation.'
+        )),
+        ('MUTATION', GraphQLEnumValue(
+            DirectiveLocation.MUTATION,
+            description='Location adjacent to a mutation operation.'
+        )),
+        ('SUBSCRIPTION', GraphQLEnumValue(
+            DirectiveLocation.SUBSCRIPTION,
+            description='Location adjacent to a subscription operation.'
+        )),
+        ('FIELD', GraphQLEnumValue(
+            DirectiveLocation.FIELD,
+            description='Location adjacent to a field.'
+        )),
+        ('FRAGMENT_DEFINITION', GraphQLEnumValue(
+            DirectiveLocation.FRAGMENT_DEFINITION,
+            description='Location adjacent to a fragment definition.'
+        )),
+        ('FRAGMENT_SPREAD', GraphQLEnumValue(
+            DirectiveLocation.FRAGMENT_SPREAD,
+            description='Location adjacent to a fragment spread.'
+        )),
+        ('INLINE_FRAGMENT', GraphQLEnumValue(
+            DirectiveLocation.INLINE_FRAGMENT,
+            description='Location adjacent to an inline fragment.'
+        )),
     ]))
 
 

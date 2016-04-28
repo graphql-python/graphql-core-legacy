@@ -15,6 +15,8 @@ from graphql.type.directives import GraphQLDirective
 from graphql.utils.build_client_schema import build_client_schema
 from graphql.utils.introspection_query import introspection_query
 
+from ...pyutils.contain_subset import contain_subset
+
 
 def _test_schema(server_schema):
     initial_introspection = graphql(server_schema, introspection_query)
@@ -388,12 +390,79 @@ def test_builds_a_schema_with_custom_directives():
             GraphQLDirective(
                 name='customDirective',
                 description='This is a custom directive',
-                on_field=True
+                locations=['FIELD']
             )
         ]
     )
 
     _test_schema(schema)
+
+
+def test_builds_a_schema_with_legacy_directives():
+    old_introspection = {
+        "__schema": {
+            "queryType": {
+                "name": "Simple"
+            },
+            "types": [{
+                "name": "Simple",
+                "kind": "OBJECT",
+                "fields": [{
+                    "name": "simple",
+                    "args": [],
+                    "type": {
+                        "name": "Simple"
+                    }
+                }],
+                "interfaces": []
+            }],
+            "directives": [{
+                "name": "Old1",
+                "args": [],
+                "onField": True
+            }, {
+                "name": "Old2",
+                "args": [],
+                "onFragment": True
+            }, {
+                "name": "Old3",
+                "args": [],
+                "onOperation": True
+            }, {
+                "name": "Old4",
+                "args": [],
+                "onField": True,
+                "onFragment": True
+            }]
+        }
+    }
+
+    new_introspection = {
+        "__schema": {
+            "directives": [{
+                "name": "Old1",
+                "args": [],
+                "locations": ["FIELD"]
+            }, {
+                "name": "Old2",
+                "args": [],
+                "locations": ["FRAGMENT_DEFINITION", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"]
+            }, {
+                "name": "Old3",
+                "args": [],
+                "locations": ["QUERY", "MUTATION", "SUBSCRIPTION"]
+            }, {
+                "name": "Old4",
+                "args": [],
+                "locations": ["FIELD", "FRAGMENT_DEFINITION", "FRAGMENT_SPREAD", "INLINE_FRAGMENT"]
+            }]
+        }
+    }
+
+    client_schema = build_client_schema(old_introspection)
+    second_introspection = graphql(client_schema, introspection_query).data
+
+    assert contain_subset(new_introspection, second_introspection)
 
 
 def test_builds_a_schema_aware_of_deprecation():

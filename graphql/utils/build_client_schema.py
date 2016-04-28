@@ -8,7 +8,7 @@ from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
                     GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
                     GraphQLSchema, GraphQLString, GraphQLUnionType,
                     is_input_type, is_output_type)
-from ..type.directives import GraphQLDirective
+from ..type.directives import GraphQLDirective, DirectiveLocation
 from ..type.introspection import TypeKind
 from .value_from_ast import value_from_ast
 
@@ -105,7 +105,7 @@ def build_client_schema(introspection):
     def build_scalar_def(scalar_introspection):
         return GraphQLScalarType(
             name=scalar_introspection['name'],
-            description=scalar_introspection['description'],
+            description=scalar_introspection.get('description'),
             serialize=_none,
             parse_value=_false,
             parse_literal=_false
@@ -114,15 +114,15 @@ def build_client_schema(introspection):
     def build_object_def(object_introspection):
         return GraphQLObjectType(
             name=object_introspection['name'],
-            description=object_introspection['description'],
-            interfaces=[get_interface_type(i) for i in object_introspection['interfaces']],
+            description=object_introspection.get('description'),
+            interfaces=[get_interface_type(i) for i in object_introspection.get('interfaces', [])],
             fields=lambda: build_field_def_map(object_introspection)
         )
 
     def build_interface_def(interface_introspection):
         return GraphQLInterfaceType(
             name=interface_introspection['name'],
-            description=interface_introspection['description'],
+            description=interface_introspection.get('description'),
             fields=lambda: build_field_def_map(interface_introspection),
             resolve_type=no_execution
         )
@@ -130,28 +130,28 @@ def build_client_schema(introspection):
     def build_union_def(union_introspection):
         return GraphQLUnionType(
             name=union_introspection['name'],
-            description=union_introspection['description'],
-            types=[get_object_type(t) for t in union_introspection['possibleTypes']],
+            description=union_introspection.get('description'),
+            types=[get_object_type(t) for t in union_introspection.get('possibleTypes', [])],
             resolve_type=no_execution
         )
 
     def build_enum_def(enum_introspection):
         return GraphQLEnumType(
             name=enum_introspection['name'],
-            description=enum_introspection['description'],
+            description=enum_introspection.get('description'),
             values=OrderedDict([(value_introspection['name'],
-                                 GraphQLEnumValue(description=value_introspection['description'],
-                                                  deprecation_reason=value_introspection['deprecationReason']))
-                                for value_introspection in enum_introspection['enumValues']
+                                 GraphQLEnumValue(description=value_introspection.get('description'),
+                                                  deprecation_reason=value_introspection.get('deprecationReason')))
+                                for value_introspection in enum_introspection.get('enumValues', [])
                                 ])
         )
 
     def build_input_object_def(input_object_introspection):
         return GraphQLInputObjectType(
             name=input_object_introspection['name'],
-            description=input_object_introspection['description'],
+            description=input_object_introspection.get('description'),
             fields=lambda: build_input_value_def_map(
-                input_object_introspection['inputFields'], GraphQLInputObjectField
+                input_object_introspection.get('inputFields'), GraphQLInputObjectField
             )
         )
 
@@ -168,11 +168,11 @@ def build_client_schema(introspection):
         return OrderedDict([
             (f['name'], GraphQLField(
                 type=get_output_type(f['type']),
-                description=f['description'],
+                description=f.get('description'),
                 resolver=no_execution,
-                deprecation_reason=f['deprecationReason'],
-                args=build_input_value_def_map(f['args'], GraphQLArgument)))
-            for f in type_introspection['fields']
+                deprecation_reason=f.get('deprecationReason'),
+                args=build_input_value_def_map(f.get('args'), GraphQLArgument)))
+            for f in type_introspection.get('fields', [])
         ])
 
     def build_default_value(f):
@@ -197,13 +197,23 @@ def build_client_schema(introspection):
         return input_value
 
     def build_directive(directive_introspection):
+        # Support deprecated `on****` fields for building `locations`, as this
+        # is used by GraphiQL which may need to support outdated servers.
+        locations = list(directive_introspection.get('locations', []))
+        if not locations:
+            locations = []
+            if directive_introspection.get('onField', False):
+                locations += list(DirectiveLocation.FIELD_LOCATIONS)
+            if directive_introspection.get('onOperation', False):
+                locations += list(DirectiveLocation.OPERATION_LOCATIONS)
+            if directive_introspection.get('onFragment', False):
+                locations += list(DirectiveLocation.FRAGMENT_LOCATIONS)
+
         return GraphQLDirective(
             name=directive_introspection['name'],
-            description=directive_introspection['description'],
-            args=[build_input_value(a, GraphQLArgument) for a in directive_introspection['args']],
-            on_operation=directive_introspection['onOperation'],
-            on_fragment=directive_introspection['onFragment'],
-            on_field=directive_introspection['onField']
+            description=directive_introspection.get('description'),
+            args=[build_input_value(a, GraphQLArgument) for a in directive_introspection.get('args', [])],
+            locations=locations
         )
 
     for type_introspection_name in type_introspection_map:

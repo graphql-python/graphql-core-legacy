@@ -1,17 +1,48 @@
+import collections
+
 from .definition import GraphQLArgument, GraphQLNonNull
 from .scalars import GraphQLBoolean
+from ..utils.assert_valid_name import assert_valid_name
+
+
+class DirectiveLocation(object):
+    QUERY = 'QUERY'
+    MUTATION = 'MUTATION'
+    SUBSCRIPTION = 'SUBSCRIPTION'
+    FIELD = 'FIELD'
+    FRAGMENT_DEFINITION = 'FRAGMENT_DEFINITION'
+    FRAGMENT_SPREAD = 'FRAGMENT_SPREAD'
+    INLINE_FRAGMENT = 'INLINE_FRAGMENT'
+
+    OPERATION_LOCATIONS = [
+        QUERY,
+        MUTATION,
+        SUBSCRIPTION
+    ]
+
+    FRAGMENT_LOCATIONS = [
+        FRAGMENT_DEFINITION,
+        FRAGMENT_SPREAD,
+        INLINE_FRAGMENT
+    ]
+
+    FIELD_LOCATIONS = [
+        FIELD
+    ]
 
 
 class GraphQLDirective(object):
-    __slots__ = 'name', 'args', 'description', 'on_operation', 'on_fragment', 'on_field'
+    __slots__ = 'name', 'args', 'description', 'locations'
 
-    def __init__(self, name, description=None, args=None, on_operation=False, on_fragment=False, on_field=False):
+    def __init__(self, name, description=None, args=None, locations=None):
+        assert name, 'Directive must be named.'
+        assert_valid_name(name)
+        assert isinstance(locations, collections.Iterable), 'Must provide locations for directive.'
+
         self.name = name
         self.description = description
         self.args = args or []
-        self.on_operation = on_operation
-        self.on_fragment = on_fragment
-        self.on_field = on_field
+        self.locations = locations
 
 
 def arg(name, *args, **kwargs):
@@ -27,9 +58,11 @@ GraphQLIncludeDirective = GraphQLDirective(
         type=GraphQLNonNull(GraphQLBoolean),
         description='Directs the executor to include this field or fragment only when the `if` argument is true.',
     )],
-    on_operation=False,
-    on_fragment=True,
-    on_field=True
+    locations=[
+        DirectiveLocation.FIELD,
+        DirectiveLocation.FRAGMENT_SPREAD,
+        DirectiveLocation.INLINE_FRAGMENT,
+    ]
 )
 
 GraphQLSkipDirective = GraphQLDirective(
@@ -39,7 +72,9 @@ GraphQLSkipDirective = GraphQLDirective(
         type=GraphQLNonNull(GraphQLBoolean),
         description='Directs the executor to skip this field or fragment only when the `if` argument is true.',
     )],
-    on_operation=False,
-    on_fragment=True,
-    on_field=True
+    locations=[
+        DirectiveLocation.FIELD,
+        DirectiveLocation.FRAGMENT_SPREAD,
+        DirectiveLocation.INLINE_FRAGMENT,
+    ]
 )

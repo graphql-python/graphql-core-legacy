@@ -1,8 +1,8 @@
 import collections
 import copy
-import re
 
 from ..language import ast
+from ..utils.assert_valid_name import assert_valid_name
 
 
 def is_type(type):
@@ -751,11 +751,3 @@ class GraphQLNonNull(GraphQLType):
 
     def is_same_type(self, other):
         return isinstance(other, GraphQLNonNull) and self.of_type.is_same_type(other.of_type)
-
-
-NAME_PATTERN = r'^[_a-zA-Z][_a-zA-Z0-9]*$'
-COMPILED_NAME_PATTERN = re.compile(NAME_PATTERN)
-
-
-def assert_valid_name(name):
-    assert COMPILED_NAME_PATTERN.match(name), 'Names must match /{}/ but "{}" does not.'.format(NAME_PATTERN, name)

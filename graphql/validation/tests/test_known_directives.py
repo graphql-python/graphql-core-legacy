@@ -94,8 +94,8 @@ def test_with_misplaced_directives():
         ...Frag @operationOnly
       }
     ''', [
-        misplaced_directive('include', 'operation', 2, 17),
-        misplaced_directive('operationOnly', 'field', 3, 14),
-        misplaced_directive('operationOnly', 'fragment', 4, 17),
+        misplaced_directive('include', 'QUERY', 2, 17),
+        misplaced_directive('operationOnly', 'FIELD', 3, 14),
+        misplaced_directive('operationOnly', 'FRAGMENT_SPREAD', 4, 17),
 
     ])

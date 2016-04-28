@@ -176,7 +176,7 @@ QueryRoot = GraphQLObjectType('QueryRoot', {
 })
 
 test_schema = GraphQLSchema(query=QueryRoot, directives=[
-    GraphQLDirective(name='operationOnly', on_operation=True),
+    GraphQLDirective(name='operationOnly', locations=['QUERY']),
     GraphQLIncludeDirective,
     GraphQLSkipDirective
 ])
