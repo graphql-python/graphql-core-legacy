@@ -4,10 +4,10 @@ from pytest import raises
 
 from graphql import parse
 from graphql.execution import execute
-from graphql.type import (GraphQLArgument, GraphQLField, GraphQLID,
-                          GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
-                          GraphQLObjectType, GraphQLSchema, GraphQLString,
-                          GraphQLUnionType)
+from graphql.type import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
+                          GraphQLField, GraphQLID, GraphQLInterfaceType,
+                          GraphQLList, GraphQLNonNull, GraphQLObjectType,
+                          GraphQLSchema, GraphQLString, GraphQLUnionType)
 from graphql.utils.extend_schema import extend_schema
 from graphql.utils.schema_printer import print_schema
 
@@ -55,12 +55,21 @@ SomeUnionType = GraphQLUnionType(
     types=[FooType, BizType],
 )
 
+SomeEnumType = GraphQLEnumType(
+    name='SomeEnum',
+    values=OrderedDict([
+        ('ONE', GraphQLEnumValue(1)),
+        ('TWO', GraphQLEnumValue(2)),
+    ])
+)
+
 test_schema = GraphQLSchema(
     query=GraphQLObjectType(
         name='Query',
         fields=lambda: OrderedDict([
             ('foo', GraphQLField(FooType)),
             ('someUnion', GraphQLField(SomeUnionType)),
+            ('someEnum', GraphQLField(SomeEnumType)),
             ('someInterface', GraphQLField(
                 SomeInterfaceType,
                 args={
@@ -143,7 +152,13 @@ type Foo implements SomeInterface {
 type Query {
   foo: Foo
   someUnion: SomeUnion
+  someEnum: SomeEnum
   someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
 }
 
 interface SomeInterface {
@@ -201,7 +216,72 @@ input NewInputObj {
 type Query {
   foo: Foo
   someUnion: SomeUnion
+  someEnum: SomeEnum
   someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
+}
+
+interface SomeInterface {
+  name: String
+  some: SomeInterface
+}
+
+union SomeUnion = Foo | Biz
+'''
+
+
+def test_extends_objects_by_adding_new_fields_with_existing_types():
+    ast = parse('''
+      extend type Foo {
+        newField(arg1: SomeEnum!): SomeEnum
+      }
+
+      input NewInputObj {
+        field1: Int
+        field2: [Float]
+        field3: String!
+      }
+    ''')
+    original_print = print_schema(test_schema)
+    extended_schema = extend_schema(test_schema, ast)
+    assert extended_schema != test_schema
+    assert print_schema(test_schema) == original_print
+    assert print_schema(extended_schema) == \
+        '''schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
+  name: String
+  some: SomeInterface
+  foo: Foo
+}
+
+type Biz {
+  fizz: String
+}
+
+type Foo implements SomeInterface {
+  name: String
+  some: SomeInterface
+  tree: [Foo]!
+  newField(arg1: SomeEnum!): SomeEnum
+}
+
+type Query {
+  foo: Foo
+  someUnion: SomeUnion
+  someEnum: SomeEnum
+  someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
 }
 
 interface SomeInterface {
@@ -250,7 +330,13 @@ type Foo implements SomeInterface {
 type Query {
   foo: Foo
   someUnion: SomeUnion
+  someEnum: SomeEnum
   someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
 }
 
 interface SomeInterface {
@@ -343,7 +429,13 @@ union NewUnion = NewObject | NewOtherObject
 type Query {
   foo: Foo
   someUnion: SomeUnion
+  someEnum: SomeEnum
   someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
 }
 
 interface SomeInterface {
@@ -397,7 +489,13 @@ interface NewInterface {
 type Query {
   foo: Foo
   someUnion: SomeUnion
+  someEnum: SomeEnum
   someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
 }
 
 interface SomeInterface {
@@ -464,7 +562,13 @@ interface NewInterface {
 type Query {
   foo: Foo
   someUnion: SomeUnion
+  someEnum: SomeEnum
   someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
 }
 
 interface SomeInterface {

@@ -495,11 +495,14 @@ class GraphQLEnumType(GraphQLType):
 
     Example:
 
-        RGBType = GraphQLEnumType('RGB', {
-            'RED': 0,
-            'GREEN': 1,
-            'BLUE': 2,
-        })
+        RGBType = GraphQLEnumType(
+            name='RGB',
+            values=OrderedDict([
+                ('RED', GraphQLEnumValue(0)),
+                ('GREEN', GraphQLEnumValue(1)),
+                ('BLUE', GraphQLEnumValue(2))
+            ])
+        )
 
     Note: If a value is not provided in a definition, the name of the enum value will be used as it's internal value.
     """
