@@ -1,12 +1,13 @@
 from collections import OrderedDict
 
 from ..language import ast
-from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
-                    GraphQLEnumValue, GraphQLField, GraphQLFloat, GraphQLID,
-                    GraphQLInputObjectField, GraphQLInputObjectType,
-                    GraphQLInt, GraphQLInterfaceType, GraphQLList,
-                    GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
-                    GraphQLSchema, GraphQLString, GraphQLUnionType, GraphQLDirective)
+from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLDirective,
+                    GraphQLEnumType, GraphQLEnumValue, GraphQLField,
+                    GraphQLFloat, GraphQLID, GraphQLInputObjectField,
+                    GraphQLInputObjectType, GraphQLInt, GraphQLInterfaceType,
+                    GraphQLList, GraphQLNonNull, GraphQLObjectType,
+                    GraphQLScalarType, GraphQLSchema, GraphQLString,
+                    GraphQLUnionType)
 from ..utils.value_from_ast import value_from_ast
 
 
