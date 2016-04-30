@@ -240,7 +240,7 @@ def test_nulls_out_error_subtrees():
     # TODO: check error location
 
 
-def test_uses_the_inline_operation_if_no_operation_is_provided():
+def test_uses_the_inline_operation_if_no_operation_name_is_provided():
     doc = '{ a }'
 
     class Data(object):
@@ -255,7 +255,7 @@ def test_uses_the_inline_operation_if_no_operation_is_provided():
     assert result.data == {'a': 'b'}
 
 
-def test_uses_the_only_operation_if_no_operation_is_provided():
+def test_uses_the_only_operation_if_no_operation_name_is_provided():
     doc = 'query Example { a }'
 
     class Data(object):
@@ -270,7 +270,67 @@ def test_uses_the_only_operation_if_no_operation_is_provided():
     assert result.data == {'a': 'b'}
 
 
-def test_raises_the_inline_operation_if_no_operation_is_provided():
+def test_uses_the_named_operation_if_operation_name_is_provided():
+    doc = 'query Example { first: a } query OtherExample { second: a }'
+
+    class Data(object):
+        a = 'b'
+
+    ast = parse(doc)
+    Type = GraphQLObjectType('Type', {
+        'a': GraphQLField(GraphQLString)
+    })
+    result = execute(GraphQLSchema(Type), ast, Data(), operation_name='OtherExample')
+    assert not result.errors
+    assert result.data == {'second': 'b'}
+
+
+def test_uses_the_named_operation_if_operation_name_is_provided():
+    doc = 'query Example { first: a } query OtherExample { second: a }'
+
+    class Data(object):
+        a = 'b'
+
+    ast = parse(doc)
+    Type = GraphQLObjectType('Type', {
+        'a': GraphQLField(GraphQLString)
+    })
+    result = execute(GraphQLSchema(Type), ast, Data(), operation_name='OtherExample')
+    assert not result.errors
+    assert result.data == {'second': 'b'}
+
+
+def test_raises_if_no_operation_is_provided():
+    doc = 'fragment Example on Type { a }'
+
+    class Data(object):
+        a = 'b'
+
+    ast = parse(doc)
+    Type = GraphQLObjectType('Type', {
+        'a': GraphQLField(GraphQLString)
+    })
+    with raises(GraphQLError) as excinfo:
+        execute(GraphQLSchema(Type), ast, Data())
+    assert 'Must provide an operation.' == str(excinfo.value)
+
+
+def test_raises_if_no_operation_name_is_provided_with_multiple_operations():
+    doc = 'query Example { a } query OtherExample { a }'
+
+    class Data(object):
+        a = 'b'
+
+    ast = parse(doc)
+    Type = GraphQLObjectType('Type', {
+        'a': GraphQLField(GraphQLString)
+    })
+    with raises(GraphQLError) as excinfo:
+        execute(GraphQLSchema(Type), ast, Data(), operation_name="UnknownExample")
+    assert 'Unknown operation named "UnknownExample".' == str(excinfo.value)
+
+
+def test_raises_if_unknown_operation_name_is_provided():
     doc = 'query Example { a } query OtherExample { a }'
 
     class Data(object):
@@ -282,7 +342,7 @@ def test_raises_the_inline_operation_if_no_operation_is_provided():
     })
     with raises(GraphQLError) as excinfo:
         execute(GraphQLSchema(Type), ast, Data())
-    assert 'Must provide operation name if query contains multiple operations' in str(excinfo.value)
+    assert 'Must provide operation name if query contains multiple operations.' == str(excinfo.value)
 
 
 def test_uses_the_query_schema_for_queries():
