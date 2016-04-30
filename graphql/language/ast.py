@@ -1196,3 +1196,42 @@ class TypeExtensionDefinition(TypeDefinition):
 
     def __hash__(self):
         return id(self)
+
+
+class DirectiveDefinition(TypeDefinition):
+    __slots__ = ('loc', 'name', 'arguments', 'locations')
+    _fields = ('name', 'locations')
+
+    def __init__(self, name, locations, arguments=None, loc=None):
+        self.name = name
+        self.locations = locations
+        self.loc = loc
+        self.arguments = arguments
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, DirectiveDefinition) and
+                self.name == other.name and
+                self.locations == other.locations and
+                self.loc == other.loc and
+                self.arguments == other.arguments
+            )
+        )
+
+    def __repr__(self):
+        return ('DirectiveDefinition('
+                'name={self.name!r}, '
+                'locations={self.locations!r}'
+                ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.name,
+            self.locations,
+            self.arguments,
+            self.loc,
+        )
+
+    def __hash__(self):
+        return id(self)

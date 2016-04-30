@@ -40,6 +40,7 @@ QUERY_DOCUMENT_KEYS = {
     ast.EnumValueDefinition: ('name',),
     ast.InputObjectTypeDefinition: ('name', 'fields'),
     ast.TypeExtensionDefinition: ('definition',),
+    ast.DirectiveDefinition: ('name', 'arguments', 'locations'),
 }
 
 AST_KIND_TO_TYPE = {c.__name__: c for c in QUERY_DOCUMENT_KEYS.keys()}

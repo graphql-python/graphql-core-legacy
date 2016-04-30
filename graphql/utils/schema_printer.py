@@ -6,11 +6,15 @@ from .ast_from_value import ast_from_value
 
 
 def print_schema(schema):
-    return _print_filtered_schema(schema, _is_defined_type)
+    return _print_filtered_schema(schema, lambda n: not(is_spec_directive(n)), _is_defined_type)
 
 
 def print_introspection_schema(schema):
-    return _print_filtered_schema(schema, _is_introspection_type)
+    return _print_filtered_schema(schema, is_spec_directive, _is_introspection_type)
+
+
+def is_spec_directive(directive_name):
+    return directive_name in ('skip', 'include')
 
 
 def _is_defined_type(typename):
@@ -28,12 +32,16 @@ def _is_builtin_scalar(typename):
     return typename in _builtin_scalars
 
 
-def _print_filtered_schema(schema, type_filter):
-    return '\n\n'.join(
+def _print_filtered_schema(schema, directive_filter, type_filter):
+    return '\n\n'.join([
+        _print_directive(directive)
+        for directive in schema.get_directives()
+        if directive_filter(directive.name)
+    ] + [
         _print_type(type)
         for typename, type in sorted(schema.get_type_map().items())
         if type_filter(typename)
-    ) + '\n'
+    ]) + '\n'
 
 
 def _print_type(type):
@@ -104,11 +112,11 @@ def _print_fields(type):
     return '\n'.join('  {}{}: {}'.format(f.name, _print_args(f), f.type) for f in type.get_fields().values())
 
 
-def _print_args(field):
-    if not field.args:
+def _print_args(field_or_directives):
+    if not field_or_directives.args:
         return ''
 
-    return '({})'.format(', '.join(_print_input_value(arg) for arg in field.args))
+    return '({})'.format(', '.join(_print_input_value(arg) for arg in field_or_directives.args))
 
 
 def _print_input_value(arg):
@@ -118,6 +126,10 @@ def _print_input_value(arg):
         default_value = ''
 
     return '{}: {}{}'.format(arg.name, arg.type, default_value)
+
+
+def _print_directive(directive):
+    return 'directive @{}{} on {}'.format(directive.name, _print_args(directive), ' | '.join(directive.locations))
 
 
 __all__ = ['print_schema', 'print_introspection_schema']

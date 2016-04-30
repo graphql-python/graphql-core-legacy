@@ -25,6 +25,18 @@ type HelloScalars {
     assert output == body
 
 
+def test_with_directives():
+    body = '''
+directive @foo(arg: Int) on FIELD
+
+type Hello {
+  str: String
+}
+'''
+    output = cycle_output(body, 'Hello')
+    assert output == body
+
+
 def test_type_modifiers():
     body = '''
 type HelloScalars {

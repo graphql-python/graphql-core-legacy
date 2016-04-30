@@ -1,7 +1,7 @@
 import collections
 
 from ..utils.assert_valid_name import assert_valid_name
-from .definition import GraphQLArgument, GraphQLNonNull
+from .definition import GraphQLArgument, GraphQLNonNull, is_input_type
 from .scalars import GraphQLBoolean
 
 
@@ -41,8 +41,23 @@ class GraphQLDirective(object):
 
         self.name = name
         self.description = description
-        self.args = args or []
         self.locations = locations
+
+        self.args = []
+        if args:
+            assert isinstance(args, dict), '{} args must be a dict with argument names as keys.'.format(name)
+            for arg_name, _arg in args.items():
+                assert_valid_name(arg_name)
+                assert is_input_type(_arg.type), '{}({}) argument type must be Input Type but got {}.'.format(
+                    name,
+                    arg_name,
+                    _arg.type)
+                self.args.append(arg(
+                    arg_name,
+                    description=_arg.description,
+                    type=_arg.type,
+                    default_value=_arg.default_value
+                ))
 
 
 def arg(name, *args, **kwargs):
@@ -53,11 +68,12 @@ def arg(name, *args, **kwargs):
 
 GraphQLIncludeDirective = GraphQLDirective(
     name='include',
-    args=[arg(
-        'if',
-        type=GraphQLNonNull(GraphQLBoolean),
-        description='Directs the executor to include this field or fragment only when the `if` argument is true.',
-    )],
+    args={
+        'if': GraphQLArgument(
+            type=GraphQLNonNull(GraphQLBoolean),
+            description='Included when true.',
+        ),
+    },
     locations=[
         DirectiveLocation.FIELD,
         DirectiveLocation.FRAGMENT_SPREAD,
@@ -67,11 +83,12 @@ GraphQLIncludeDirective = GraphQLDirective(
 
 GraphQLSkipDirective = GraphQLDirective(
     name='skip',
-    args=[arg(
-        'if',
-        type=GraphQLNonNull(GraphQLBoolean),
-        description='Directs the executor to skip this field or fragment only when the `if` argument is true.',
-    )],
+    args={
+        'if': GraphQLArgument(
+            type=GraphQLNonNull(GraphQLBoolean),
+            description='Skipped when true.',
+        ),
+    },
     locations=[
         DirectiveLocation.FIELD,
         DirectiveLocation.FRAGMENT_SPREAD,

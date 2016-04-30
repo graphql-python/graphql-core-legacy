@@ -6,7 +6,7 @@ from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
                     GraphQLInputObjectField, GraphQLInputObjectType,
                     GraphQLInt, GraphQLInterfaceType, GraphQLList,
                     GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
-                    GraphQLSchema, GraphQLString, GraphQLUnionType)
+                    GraphQLSchema, GraphQLString, GraphQLUnionType, GraphQLDirective)
 from ..utils.value_from_ast import value_from_ast
 
 
@@ -37,7 +37,24 @@ def build_ast_schema(document, query_type_name, mutation_type_name=None, subscri
     assert isinstance(document, ast.Document), 'must pass in Document ast.'
     assert query_type_name, 'must pass in query type'
 
-    type_defs = [d for d in document.definitions if isinstance(d, ast.TypeDefinition)]
+    type_asts = (
+        ast.ObjectTypeDefinition,
+        ast.InterfaceTypeDefinition,
+        ast.EnumTypeDefinition,
+        ast.UnionTypeDefinition,
+        ast.ScalarTypeDefinition,
+        ast.InputObjectTypeDefinition,
+    )
+
+    type_defs = []
+    directive_defs = []
+
+    for d in document.definitions:
+        if isinstance(d, type_asts):
+            type_defs.append(d)
+        elif isinstance(d, ast.DirectiveDefinition):
+            directive_defs.append(d)
+
     ast_map = {d.name.value: d for d in type_defs}
 
     if query_type_name not in ast_map:
@@ -158,7 +175,14 @@ def build_ast_schema(document, query_type_name, mutation_type_name=None, subscri
 
         return handler(definition)
 
-    for definition in document.definitions:
+    def get_directive(directive_ast):
+        return GraphQLDirective(
+            name=directive_ast.name.value,
+            locations=[node.value for node in directive_ast.locations],
+            args=make_input_values(directive_ast.arguments, GraphQLArgument),
+        )
+
+    for definition in type_defs:
         produce_type_def(definition)
 
     schema_kwargs = {'query': produce_type_def(ast_map[query_type_name])}
@@ -168,5 +192,8 @@ def build_ast_schema(document, query_type_name, mutation_type_name=None, subscri
 
     if subscription_type_name:
         schema_kwargs['subscription'] = produce_type_def(ast_map[subscription_type_name])
+
+    if directive_defs:
+        schema_kwargs['directives'] = [get_directive(d) for d in directive_defs]
 
     return GraphQLSchema(**schema_kwargs)

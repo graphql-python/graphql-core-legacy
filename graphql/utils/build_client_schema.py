@@ -212,7 +212,8 @@ def build_client_schema(introspection):
         return GraphQLDirective(
             name=directive_introspection['name'],
             description=directive_introspection.get('description'),
-            args=[build_input_value(a, GraphQLArgument) for a in directive_introspection.get('args', [])],
+            # TODO: {} ?
+            args=build_input_value_def_map(directive_introspection.get('args', []), GraphQLArgument),
             locations=locations
         )
 

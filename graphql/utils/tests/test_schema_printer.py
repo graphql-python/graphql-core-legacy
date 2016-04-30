@@ -457,6 +457,10 @@ def test_prints_introspection_schema():
     output = '\n' + print_introspection_schema(Schema)
 
     assert output == '''
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
 type __Directive {
   name: String!
   description: String

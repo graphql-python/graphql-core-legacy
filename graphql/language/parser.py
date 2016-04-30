@@ -213,6 +213,8 @@ def parse_definition(parser):
             return parse_type_definition(parser)
         elif name == 'extend':
             return parse_type_extension_definition(parser)
+        elif name == 'directive':
+            return parse_directive_definition(parser)
 
     raise unexpected(parser)
 
@@ -677,3 +679,33 @@ def parse_type_extension_definition(parser):
         definition=parse_object_type_definition(parser),
         loc=loc(parser, start)
     )
+
+
+def parse_directive_definition(parser):
+    start = parser.token.start
+    expect_keyword(parser, 'directive')
+    expect(parser, TokenKind.AT)
+
+    name = parse_name(parser)
+    args = parse_argument_defs(parser)
+    expect_keyword(parser, 'on')
+
+    locations = parse_directive_locations(parser)
+    return ast.DirectiveDefinition(
+        name=name,
+        locations=locations,
+        arguments=args,
+        loc=loc(parser, start)
+    )
+
+
+def parse_directive_locations(parser):
+    locations = []
+
+    while True:
+        locations.append(parse_name(parser))
+
+        if not skip(parser, TokenKind.PIPE):
+            break
+
+    return locations

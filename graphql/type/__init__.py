@@ -19,6 +19,9 @@ from .definition import (  # no import order
     is_leaf_type,
     is_output_type
 )
+from .directives import (
+    GraphQLDirective
+)
 from .scalars import (  # no import order
     GraphQLInt,
     GraphQLFloat,
