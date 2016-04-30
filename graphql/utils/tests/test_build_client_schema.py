@@ -170,6 +170,35 @@ def test_builds_a_schema_with_an_interface():
     _test_schema(schema)
 
 
+def test_builds_a_schema_with_an_implicit_interface():
+    FriendlyType = GraphQLInterfaceType(
+        name='Friendly',
+        resolve_type=lambda: None,
+        fields=lambda: {
+            'bestFriend': GraphQLField(FriendlyType, description='The best friend of this friendly thing.')
+        }
+    )
+
+    DogType = GraphQLObjectType(
+        name='DogType',
+        interfaces=[FriendlyType],
+        fields=lambda: {
+            'bestFriend': GraphQLField(DogType)
+        }
+    )
+
+    schema = GraphQLSchema(
+        query=GraphQLObjectType(
+            name='WithInterface',
+            fields={
+                'dog': GraphQLField(DogType)
+            }
+        )
+    )
+
+    _test_schema(schema)
+
+
 def test_builds_a_schema_with_a_union():
     DogType = GraphQLObjectType(
         name='Dog',
