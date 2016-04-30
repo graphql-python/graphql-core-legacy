@@ -209,12 +209,8 @@ def parse_definition(parser):
             return parse_operation_definition(parser)
         elif name == 'fragment':
             return parse_fragment_definition(parser)
-        elif name in ('type', 'interface', 'union', 'scalar', 'enum', 'input'):
-            return parse_type_definition(parser)
-        elif name == 'extend':
-            return parse_type_extension_definition(parser)
-        elif name == 'directive':
-            return parse_directive_definition(parser)
+        elif name in ('scalar', 'type', 'interface', 'union', 'enum', 'input', 'extend', 'directive'):
+            return parse_type_system_definition(parser)
 
     raise unexpected(parser)
 
@@ -510,13 +506,16 @@ def parse_named_type(parser):
     )
 
 
-def parse_type_definition(parser):
+def parse_type_system_definition(parser):
     if not peek(parser, TokenKind.NAME):
         raise unexpected(parser)
 
     name = parser.token.value
 
-    if name == 'type':
+    if name == 'scalar':
+        return parse_scalar_type_definition(parser)
+
+    elif name == 'type':
         return parse_object_type_definition(parser)
 
     elif name == 'interface':
@@ -525,16 +524,29 @@ def parse_type_definition(parser):
     elif name == 'union':
         return parse_union_type_definition(parser)
 
-    elif name == 'scalar':
-        return parse_scalar_type_definition(parser)
-
     elif name == 'enum':
         return parse_enum_type_definition(parser)
 
     elif name == 'input':
         return parse_input_object_type_definition(parser)
 
+    elif name == 'extend':
+        return parse_type_extension_definition(parser)
+
+    elif name == 'directive':
+        return parse_directive_definition(parser)
+
     raise unexpected(parser)
+
+
+def parse_scalar_type_definition(parser):
+    start = parser.token.start
+    expect_keyword(parser, 'scalar')
+
+    return ast.ScalarTypeDefinition(
+        name=parse_name(parser),
+        loc=loc(parser, start)
+    )
 
 
 def parse_object_type_definition(parser):
@@ -628,16 +640,6 @@ def parse_union_members(parser):
             break
 
     return members
-
-
-def parse_scalar_type_definition(parser):
-    start = parser.token.start
-    expect_keyword(parser, 'scalar')
-
-    return ast.ScalarTypeDefinition(
-        name=parse_name(parser),
-        loc=loc(parser, start)
-    )
 
 
 def parse_enum_type_definition(parser):

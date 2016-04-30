@@ -111,6 +111,9 @@ class PrintingVisitor(Visitor):
 
     # Type Definitions:
 
+    def leave_ScalarTypeDefinition(self, node, *args):
+        return 'scalar ' + node.name
+
     def leave_ObjectTypeDefinition(self, node, *args):
         return (
             'type ' + node.name + ' ' +
@@ -129,9 +132,6 @@ class PrintingVisitor(Visitor):
 
     def leave_UnionTypeDefinition(self, node, *args):
         return 'union ' + node.name + ' = ' + join(node.types, ' | ')
-
-    def leave_ScalarTypeDefinition(self, node, *args):
-        return 'scalar ' + node.name
 
     def leave_EnumTypeDefinition(self, node, *args):
         return 'enum ' + node.name + ' ' + block(node.values)
