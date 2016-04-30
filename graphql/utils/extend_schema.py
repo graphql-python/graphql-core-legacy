@@ -137,7 +137,7 @@ def extend_schema(schema, documentAST=None):
             name=type.name,
             description=type.description,
             fields=lambda: extend_field_map(type),
-            resolve_type=raise_client_schema_execution_error,
+            resolve_type=cannot_execute_client_schema,
         )
 
     def extend_union_type(type):
@@ -145,7 +145,7 @@ def extend_schema(schema, documentAST=None):
             name=type.name,
             description=type.description,
             types=list(map(get_type_from_def, type.get_possible_types())),
-            resolve_type=raise_client_schema_execution_error,
+            resolve_type=cannot_execute_client_schema,
         )
 
     def extend_implemented_interfaces(type):
@@ -176,7 +176,7 @@ def extend_schema(schema, documentAST=None):
                 description=field.description,
                 deprecation_reason=field.deprecation_reason,
                 args={arg.name: arg for arg in field.args},
-                resolver=raise_client_schema_execution_error,
+                resolver=cannot_execute_client_schema,
             )
 
         # If there are any extensions to the fields, apply those here.
@@ -194,7 +194,7 @@ def extend_schema(schema, documentAST=None):
                 new_field_map[field_name] = GraphQLField(
                     build_field_type(field.type),
                     args=build_input_values(field.arguments),
-                    resolver=raise_client_schema_execution_error,
+                    resolver=cannot_execute_client_schema,
                 )
 
         return new_field_map
@@ -230,14 +230,14 @@ def extend_schema(schema, documentAST=None):
         return GraphQLInterfaceType(
             type_ast.name.value,
             fields=lambda: build_field_map(type_ast),
-            resolve_type=raise_client_schema_execution_error,
+            resolve_type=cannot_execute_client_schema,
         )
 
     def build_union_type(type_ast):
         return GraphQLUnionType(
             type_ast.name.value,
             types=list(map(get_type_from_AST, type_ast.types)),
-            resolve_type=raise_client_schema_execution_error,
+            resolve_type=cannot_execute_client_schema,
         )
 
     def build_scalar_type(type_ast):
@@ -273,7 +273,7 @@ def extend_schema(schema, documentAST=None):
             field.name.value: GraphQLField(
                 build_field_type(field.type),
                 args=build_input_values(field.arguments),
-                resolver=raise_client_schema_execution_error,
+                resolver=cannot_execute_client_schema,
             ) for field in type_ast.fields
         }
 
@@ -340,5 +340,5 @@ def extend_schema(schema, documentAST=None):
     )
 
 
-def raise_client_schema_execution_error(*args, **kwargs):
+def cannot_execute_client_schema(*args, **kwargs):
     raise Exception('Client Schema cannot be used for execution.')
