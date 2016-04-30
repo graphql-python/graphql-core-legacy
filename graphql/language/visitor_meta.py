@@ -30,16 +30,21 @@ QUERY_DOCUMENT_KEYS = {
     ast.ListType: ('type',),
     ast.NonNullType: ('type',),
 
+    ast.SchemaDefinition: ('operation_types',),
+    ast.OperationTypeDefinition: ('type',),
+
+    ast.ScalarTypeDefinition: ('name',),
     ast.ObjectTypeDefinition: ('name', 'interfaces', 'fields'),
     ast.FieldDefinition: ('name', 'arguments', 'type'),
     ast.InputValueDefinition: ('name', 'type', 'default_value'),
     ast.InterfaceTypeDefinition: ('name', 'fields'),
     ast.UnionTypeDefinition: ('name', 'types'),
-    ast.ScalarTypeDefinition: ('name',),
     ast.EnumTypeDefinition: ('name', 'values'),
     ast.EnumValueDefinition: ('name',),
     ast.InputObjectTypeDefinition: ('name', 'fields'),
+
     ast.TypeExtensionDefinition: ('definition',),
+
     ast.DirectiveDefinition: ('name', 'arguments', 'locations'),
 }
 

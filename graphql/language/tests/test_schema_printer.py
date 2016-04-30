@@ -36,7 +36,12 @@ def test_prints_kitchen_sink():
     ast = parse(SCHEMA_KITCHEN_SINK)
     printed = print_ast(ast)
 
-    expected = '''type Foo implements Bar {
+    expected = '''schema {
+  query: QueryType
+  mutation: MutationType
+}
+
+type Foo implements Bar {
   one: Type
   two(argument: InputType!): Type
   three(argument: InputType, other: String): Int

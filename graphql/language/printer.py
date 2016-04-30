@@ -111,6 +111,12 @@ class PrintingVisitor(Visitor):
 
     # Type Definitions:
 
+    def leave_SchemaDefinition(self, node, *args):
+        return 'schema ' + block(node.operation_types)
+
+    def leave_OperationTypeDefinition(self, node, *args):
+        return '{}: {}'.format(node.operation, node.type)
+
     def leave_ScalarTypeDefinition(self, node, *args):
         return 'scalar ' + node.name
 

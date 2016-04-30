@@ -119,7 +119,11 @@ def test_extends_objects_by_adding_new_fields():
     assert print_schema(test_schema) == original_print
     # print original_print
     assert print_schema(extended_schema) == \
-        '''type Bar implements SomeInterface {
+        '''schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
   name: String
   some: SomeInterface
   foo: Foo
@@ -167,7 +171,11 @@ def test_extends_objects_by_adding_new_fields_with_arguments():
     assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
     assert print_schema(extended_schema) == \
-        '''type Bar implements SomeInterface {
+        '''schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
   name: String
   some: SomeInterface
   foo: Foo
@@ -217,7 +225,11 @@ def test_extends_objects_by_adding_implemented_interfaces():
     assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
     assert print_schema(extended_schema) == \
-        '''type Bar implements SomeInterface {
+        '''schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
   name: String
   some: SomeInterface
   foo: Foo
@@ -250,7 +262,7 @@ union SomeUnion = Foo | Biz
 '''
 
 
-def test_extends_objects_by_adding_implemented_interfaces():
+def test_extends_objects_by_adding_implemented_interfaces_2():
     ast = parse('''
       extend type Foo {
         newObject: NewObject
@@ -281,7 +293,11 @@ def test_extends_objects_by_adding_implemented_interfaces():
     assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
     assert print_schema(extended_schema) == \
-        '''type Bar implements SomeInterface {
+        '''schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
   name: String
   some: SomeInterface
   foo: Foo
@@ -353,7 +369,11 @@ def test_extends_objects_by_adding_implemented_new_interfaces():
     assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
     assert print_schema(extended_schema) == \
-        '''type Bar implements SomeInterface {
+        '''schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
   name: String
   some: SomeInterface
   foo: Foo
@@ -412,7 +432,11 @@ def test_extends_objects_multiple_times():
     assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
     assert print_schema(extended_schema) == \
-        '''type Bar implements SomeInterface {
+        '''schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
   name: String
   some: SomeInterface
   foo: Foo
@@ -490,7 +514,13 @@ def test_may_extend_mutations_and_subscriptions():
     assert extended_schema != mutationSchema
     assert print_schema(mutationSchema) == original_print
     assert print_schema(extended_schema) == \
-        '''type Mutation {
+        '''schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type Mutation {
   mutationField: String
   newMutationField: Int
 }

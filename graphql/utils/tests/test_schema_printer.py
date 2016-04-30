@@ -28,6 +28,10 @@ def print_single_field_schema(field_config):
 def test_prints_string_field():
     output = print_single_field_schema(GraphQLField(GraphQLString))
     assert output == '''
+schema {
+  query: Root
+}
+
 type Root {
   singleField: String
 }
@@ -37,6 +41,10 @@ type Root {
 def test_prints_list_string_field():
     output = print_single_field_schema(GraphQLField(GraphQLList(GraphQLString)))
     assert output == '''
+schema {
+  query: Root
+}
+
 type Root {
   singleField: [String]
 }
@@ -46,6 +54,10 @@ type Root {
 def test_prints_non_null_list_string_field():
     output = print_single_field_schema(GraphQLField(GraphQLNonNull(GraphQLList(GraphQLString))))
     assert output == '''
+schema {
+  query: Root
+}
+
 type Root {
   singleField: [String]!
 }
@@ -55,6 +67,10 @@ type Root {
 def test_prints_list_non_null_string_field():
     output = print_single_field_schema(GraphQLField((GraphQLList(GraphQLNonNull(GraphQLString)))))
     assert output == '''
+schema {
+  query: Root
+}
+
 type Root {
   singleField: [String!]
 }
@@ -64,6 +80,10 @@ type Root {
 def test_prints_non_null_list_non_null_string_field():
     output = print_single_field_schema(GraphQLField(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString)))))
     assert output == '''
+schema {
+  query: Root
+}
+
 type Root {
   singleField: [String!]!
 }
@@ -90,6 +110,10 @@ def test_prints_object_field():
     output = print_for_test(Schema)
 
     assert output == '''
+schema {
+  query: Root
+}
+
 type Foo {
   str: String
 }
@@ -106,6 +130,10 @@ def test_prints_string_field_with_int_arg():
         args={'argOne': GraphQLArgument(GraphQLInt)}
     ))
     assert output == '''
+schema {
+  query: Root
+}
+
 type Root {
   singleField(argOne: Int): String
 }
@@ -118,6 +146,10 @@ def test_prints_string_field_with_int_arg_with_default():
         args={'argOne': GraphQLArgument(GraphQLInt, default_value=2)}
     ))
     assert output == '''
+schema {
+  query: Root
+}
+
 type Root {
   singleField(argOne: Int = 2): String
 }
@@ -130,6 +162,10 @@ def test_prints_string_field_with_non_null_int_arg():
         args={'argOne': GraphQLArgument(GraphQLNonNull(GraphQLInt))}
     ))
     assert output == '''
+schema {
+  query: Root
+}
+
 type Root {
   singleField(argOne: Int!): String
 }
@@ -146,6 +182,10 @@ def test_prints_string_field_with_multiple_args():
     ))
 
     assert output == '''
+schema {
+  query: Root
+}
+
 type Root {
   singleField(argOne: Int, argTwo: String): String
 }
@@ -163,6 +203,10 @@ def test_prints_string_field_with_multiple_args_first_is_default():
     ))
 
     assert output == '''
+schema {
+  query: Root
+}
+
 type Root {
   singleField(argOne: Int = 1, argTwo: String, argThree: Boolean): String
 }
@@ -180,6 +224,10 @@ def test_prints_string_field_with_multiple_args_second_is_default():
     ))
 
     assert output == '''
+schema {
+  query: Root
+}
+
 type Root {
   singleField(argOne: Int, argTwo: String = "foo", argThree: Boolean): String
 }
@@ -197,6 +245,10 @@ def test_prints_string_field_with_multiple_args_last_is_default():
     ))
 
     assert output == '''
+schema {
+  query: Root
+}
+
 type Root {
   singleField(argOne: Int, argTwo: String, argThree: Boolean = false): String
 }
@@ -231,6 +283,10 @@ def test_prints_interface():
     output = print_for_test(Schema)
 
     assert output == '''
+schema {
+  query: Root
+}
+
 type Bar implements Foo {
   str: String
 }
@@ -281,6 +337,10 @@ def test_prints_multiple_interfaces():
     output = print_for_test(Schema)
 
     assert output == '''
+schema {
+  query: Root
+}
+
 interface Baaz {
   int: Int
 }
@@ -339,6 +399,10 @@ def test_prints_unions():
     output = print_for_test(Schema)
 
     assert output == '''
+schema {
+  query: Root
+}
+
 type Bar {
   str: String
 }
@@ -377,6 +441,10 @@ def test_prints_input_type():
     output = print_for_test(Schema)
 
     assert output == '''
+schema {
+  query: Root
+}
+
 input InputType {
   int: Int
 }
@@ -404,6 +472,10 @@ def test_prints_custom_scalar():
     output = print_for_test(Schema)
 
     assert output == '''
+schema {
+  query: Root
+}
+
 scalar Odd
 
 type Root {
@@ -433,6 +505,10 @@ def test_print_enum():
     output = print_for_test(Schema)
 
     assert output == '''
+schema {
+  query: Root
+}
+
 enum RGB {
   RED
   GREEN
@@ -457,6 +533,10 @@ def test_prints_introspection_schema():
     output = '\n' + print_introspection_schema(Schema)
 
     assert output == '''
+schema {
+  query: Root
+}
+
 directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT

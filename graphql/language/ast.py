@@ -834,8 +834,80 @@ class Name(Node):
         return id(self)
 
 
+# Type System Definition
+
 class TypeDefinition(Node):
-    __slots__ = ()
+    pass
+
+
+class TypeSystemDefinition(TypeDefinition):
+    pass
+
+
+class SchemaDefinition(TypeSystemDefinition):
+    __slots__ = ('loc', 'operation_types',)
+    _fields = ('operation_types',)
+
+    def __init__(self, operation_types, loc=None):
+        self.operation_types = operation_types
+        self.loc = loc
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, SchemaDefinition) and
+                self.operation_types == other.operation_types
+            )
+        )
+
+    def __repr__(self):
+        return ('SchemaDefinition('
+                'operation_types={self.operation_types!r}'
+                ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.operation_types,
+            self.loc
+        )
+
+    def __hash__(self):
+        return id(self)
+
+
+class OperationTypeDefinition(Node):
+    __slots__ = ('loc', 'operation', 'type',)
+    _fields = ('operation', 'type',)
+
+    def __init__(self, operation, type, loc=None):
+        self.operation = operation
+        self.type = type
+        self.loc = loc
+
+    def __eq__(self, other):
+        return (
+            self is other or (
+                isinstance(other, OperationTypeDefinition) and
+                self.operation == other.operation and
+                self.type == other.type
+            )
+        )
+
+    def __repr__(self):
+        return ('OperationTypeDefinition('
+                'operation={self.operation!r}'
+                ', type={self.type!r}'
+                ')').format(self=self)
+
+    def __copy__(self):
+        return type(self)(
+            self.operation,
+            self.type,
+            self.loc
+        )
+
+    def __hash__(self):
+        return id(self)
 
 
 class ObjectTypeDefinition(TypeDefinition):
@@ -1166,7 +1238,7 @@ class InputObjectTypeDefinition(TypeDefinition):
         return id(self)
 
 
-class TypeExtensionDefinition(TypeDefinition):
+class TypeExtensionDefinition(TypeSystemDefinition):
     __slots__ = ('loc', 'definition',)
     _fields = ('definition',)
 
@@ -1198,7 +1270,7 @@ class TypeExtensionDefinition(TypeDefinition):
         return id(self)
 
 
-class DirectiveDefinition(TypeDefinition):
+class DirectiveDefinition(TypeSystemDefinition):
     __slots__ = ('loc', 'name', 'arguments', 'locations')
     _fields = ('name', 'locations')
 

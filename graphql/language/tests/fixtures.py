@@ -67,6 +67,11 @@ SCHEMA_KITCHEN_SINK = """
 # LICENSE file in the root directory of this source tree. An additional grant
 # of patent rights can be found in the PATENTS file in the same directory.
 
+schema {
+  query: QueryType
+  mutation: MutationType
+}
+
 type Foo implements Bar {
   one: Type
   two(argument: InputType!): Type

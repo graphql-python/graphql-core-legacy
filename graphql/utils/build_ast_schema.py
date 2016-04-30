@@ -34,16 +34,17 @@ def _false(*_): return False
 def _none(*_): return None
 
 
-def build_ast_schema(document, query_type_name, mutation_type_name=None, subscription_type_name=None):
+def build_ast_schema(document):
     assert isinstance(document, ast.Document), 'must pass in Document ast.'
-    assert query_type_name, 'must pass in query type'
+
+    schema_def = None
 
     type_asts = (
+        ast.ScalarTypeDefinition,
         ast.ObjectTypeDefinition,
         ast.InterfaceTypeDefinition,
         ast.EnumTypeDefinition,
         ast.UnionTypeDefinition,
-        ast.ScalarTypeDefinition,
         ast.InputObjectTypeDefinition,
     )
 
@@ -51,21 +52,16 @@ def build_ast_schema(document, query_type_name, mutation_type_name=None, subscri
     directive_defs = []
 
     for d in document.definitions:
+        if isinstance(d, ast.SchemaDefinition):
+            if schema_def:
+                raise Exception('Must provide only one schema definition.')
+            schema_def = d
         if isinstance(d, type_asts):
             type_defs.append(d)
         elif isinstance(d, ast.DirectiveDefinition):
             directive_defs.append(d)
 
     ast_map = {d.name.value: d for d in type_defs}
-
-    if query_type_name not in ast_map:
-        raise Exception('Specified query type {} not found in document.'.format(query_type_name))
-
-    if mutation_type_name and mutation_type_name not in ast_map:
-        raise Exception('Specified mutation type {} not found in document.'.format(mutation_type_name))
-
-    if subscription_type_name and subscription_type_name not in ast_map:
-        raise Exception('Specified subscription type {} not found in document.'.format(subscription_type_name))
 
     inner_type_map = OrderedDict([
         ('String', GraphQLString),
@@ -81,11 +77,11 @@ def build_ast_schema(document, query_type_name, mutation_type_name=None, subscri
             return _build_wrapped_type(inner_type_map[type_name], type_ast)
 
         if type_name not in ast_map:
-            raise Exception('Type {} not found in document.'.format(type_name))
+            raise Exception('Type "{}" not found in document.'.format(type_name))
 
         inner_type_def = make_schema_def(ast_map[type_name])
         if not inner_type_def:
-            raise Exception('Nothing constructed for {}.'.format(type_name))
+            raise Exception('Nothing constructed for "{}".'.format(type_name))
 
         inner_type_map[type_name] = inner_type_def
         return _build_wrapped_type(inner_type_def, type_ast)
@@ -172,7 +168,7 @@ def build_ast_schema(document, query_type_name, mutation_type_name=None, subscri
 
         handler = _schema_def_handlers.get(type(definition))
         if not handler:
-            raise Exception('{} not supported.'.format(type(definition).__name__))
+            raise Exception('Type kind "{}" not supported.'.format(type(definition).__name__))
 
         return handler(definition)
 
@@ -185,6 +181,33 @@ def build_ast_schema(document, query_type_name, mutation_type_name=None, subscri
 
     for definition in type_defs:
         produce_type_def(definition)
+
+    if not schema_def:
+        raise Exception('Must provide a schema definition.')
+
+    query_type_name = None
+    mutation_type_name = None
+    subscription_type_name = None
+    for operation_type in schema_def.operation_types:
+        type_name = operation_type.type.name.value
+        if operation_type.operation == 'query':
+            query_type_name = type_name
+        elif operation_type.operation == 'mutation':
+            mutation_type_name = type_name
+        elif operation_type.operation == 'subscription':
+            subscription_type_name = type_name
+
+    if not query_type_name:
+        raise Exception('Must provide schema definition with query type.')
+
+    if query_type_name not in ast_map:
+        raise Exception('Specified query type "{}" not found in document.'.format(query_type_name))
+
+    if mutation_type_name and mutation_type_name not in ast_map:
+        raise Exception('Specified mutation type "{}" not found in document.'.format(mutation_type_name))
+
+    if subscription_type_name and subscription_type_name not in ast_map:
+        raise Exception('Specified subscription type "{}" not found in document.'.format(subscription_type_name))
 
     schema_kwargs = {'query': produce_type_def(ast_map[query_type_name])}
 

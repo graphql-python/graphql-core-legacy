@@ -34,6 +34,8 @@ def _is_builtin_scalar(typename):
 
 def _print_filtered_schema(schema, directive_filter, type_filter):
     return '\n\n'.join([
+        _print_schema_definition(schema)
+    ] + [
         _print_directive(directive)
         for directive in schema.get_directives()
         if directive_filter(directive.name)
@@ -42,6 +44,24 @@ def _print_filtered_schema(schema, directive_filter, type_filter):
         for typename, type in sorted(schema.get_type_map().items())
         if type_filter(typename)
     ]) + '\n'
+
+
+def _print_schema_definition(schema):
+    operation_types = []
+
+    query_type = schema.get_query_type()
+    if query_type:
+        operation_types.append('  query: {}'.format(query_type))
+
+    mutation_type = schema.get_mutation_type()
+    if mutation_type:
+        operation_types.append('  mutation: {}'.format(mutation_type))
+
+    subscription_type = schema.get_subscription_type()
+    if subscription_type:
+        operation_types.append('  subscription: {}'.format(subscription_type))
+
+    return 'schema {{\n{}\n}}'.format('\n'.join(operation_types))
 
 
 def _print_type(type):

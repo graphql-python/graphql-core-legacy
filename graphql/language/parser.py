@@ -209,7 +209,7 @@ def parse_definition(parser):
             return parse_operation_definition(parser)
         elif name == 'fragment':
             return parse_fragment_definition(parser)
-        elif name in ('scalar', 'type', 'interface', 'union', 'enum', 'input', 'extend', 'directive'):
+        elif name in ('schema', 'scalar', 'type', 'interface', 'union', 'enum', 'input', 'extend', 'directive'):
             return parse_type_system_definition(parser)
 
     raise unexpected(parser)
@@ -228,8 +228,7 @@ def parse_operation_definition(parser):
             loc=loc(parser, start)
         )
 
-    operation_token = expect(parser, TokenKind.NAME)
-    operation = operation_token.value
+    operation = parse_operation_type(parser)
 
     name = None
     if peek(parser, TokenKind.NAME):
@@ -243,6 +242,19 @@ def parse_operation_definition(parser):
         selection_set=parse_selection_set(parser),
         loc=loc(parser, start)
     )
+
+
+def parse_operation_type(parser):
+    operation_token = expect(parser, TokenKind.NAME)
+    operation = operation_token.value
+    if operation == 'query':
+        return 'query'
+    elif operation == 'mutation':
+        return 'mutation'
+    elif operation == 'subscription':
+        return 'subscription'
+
+    raise unexpected(parser, operation_token)
 
 
 def parse_variable_definitions(parser):
@@ -512,7 +524,10 @@ def parse_type_system_definition(parser):
 
     name = parser.token.value
 
-    if name == 'scalar':
+    if name == 'schema':
+        return parse_schema_definition(parser)
+
+    elif name == 'scalar':
         return parse_scalar_type_definition(parser)
 
     elif name == 'type':
@@ -537,6 +552,34 @@ def parse_type_system_definition(parser):
         return parse_directive_definition(parser)
 
     raise unexpected(parser)
+
+
+def parse_schema_definition(parser):
+    start = parser.token.start
+    expect_keyword(parser, 'schema')
+    operation_types = many(
+        parser,
+        TokenKind.BRACE_L,
+        parse_operation_type_definition,
+        TokenKind.BRACE_R
+    )
+
+    return ast.SchemaDefinition(
+        operation_types=operation_types,
+        loc=loc(parser, start)
+    )
+
+
+def parse_operation_type_definition(parser):
+    start = parser.token.start
+    operation = parse_operation_type(parser)
+    expect(parser, TokenKind.COLON)
+
+    return ast.OperationTypeDefinition(
+        operation=operation,
+        type=parse_named_type(parser),
+        loc=loc(parser, start)
+    )
 
 
 def parse_scalar_type_definition(parser):
