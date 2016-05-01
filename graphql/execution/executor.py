@@ -301,21 +301,31 @@ def complete_abstract_value(exe_context, return_type, field_asts, info, result):
     Complete an value of an abstract type by determining the runtime type of that value, then completing based
     on that type.
     """
-    # Field type must be Object, Interface or Union and expect sub-selections.
     runtime_type = None
 
+    # Field type must be Object, Interface or Union and expect sub-selections.
     if isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
-        runtime_type = return_type.resolve_type(result, info)
-        if runtime_type and not return_type.is_possible_type(runtime_type):
-            raise GraphQLError(
-                u'Runtime Object type "{}" is not a possible type for "{}".'.format(runtime_type, return_type),
-                field_asts
-            )
+        if return_type.resolve_type:
+            runtime_type = return_type.resolve_type(result, info)
+            if runtime_type and not return_type.is_possible_type(runtime_type):
+                raise GraphQLError(
+                    u'Runtime Object type "{}" is not a possible type for "{}".'.format(runtime_type, return_type),
+                    field_asts
+                )
+        else:
+            runtime_type = get_default_resolve_type_fn(result, info, return_type)
 
     if not runtime_type:
         return None
 
     return complete_object_value(exe_context, runtime_type, field_asts, info, result)
+
+
+def get_default_resolve_type_fn(value, info, abstract_type):
+    possible_types = abstract_type.get_possible_types()
+    for type in possible_types:
+        if callable(type.is_type_of) and type.is_type_of(value, info):
+            return type
 
 
 def complete_object_value(exe_context, return_type, field_asts, info, result):

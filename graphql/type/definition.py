@@ -278,7 +278,7 @@ def define_interfaces(type, interfaces):
             '{} may only implement Interface types, it cannot implement: {}.'.format(type, interface)
         )
 
-        if not callable(interface.type_resolver):
+        if not callable(interface.resolve_type):
             assert callable(type.is_type_of), (
                 'Interface Type {} does not provide a "resolve_type" function '
                 'and implementing Type {} does not provide a "is_type_of" '
@@ -360,7 +360,7 @@ class GraphQLInterfaceType(GraphQLType):
                 'name': GraphQLField(GraphQLString),
             })
     """
-    __slots__ = 'name', 'description', 'type_resolver', '_fields', '_impls', '_field_map', '_possible_type_names'
+    __slots__ = 'name', 'description', 'resolve_type', '_fields', '_impls', '_field_map', '_possible_type_names'
 
     def __init__(self, name, fields=None, resolve_type=None, description=None):
         assert name, 'Type must be named.'
@@ -371,7 +371,7 @@ class GraphQLInterfaceType(GraphQLType):
         if resolve_type is not None:
             assert callable(resolve_type), '{} must provide "resolve_type" as a function.'.format(self)
 
-        self.type_resolver = resolve_type
+        self.resolve_type = resolve_type
         self._fields = fields
 
         self._impls = []
@@ -394,19 +394,6 @@ class GraphQLInterfaceType(GraphQLType):
             )
         return type.name in self._possible_type_names
 
-    def resolve_type(self, value, info):
-        if self.type_resolver:
-            return self.type_resolver(value, info)
-
-        return get_type_of(value, info, self)
-
-
-def get_type_of(value, info, abstract_type):
-    possible_types = abstract_type.get_possible_types()
-    for type in possible_types:
-        if callable(type.is_type_of) and type.is_type_of(value, info):
-            return type
-
 
 class GraphQLUnionType(GraphQLType):
     """Union Type Definition
@@ -426,7 +413,7 @@ class GraphQLUnionType(GraphQLType):
                 if isinstance(value, Cat):
                     return CatType()
     """
-    __slots__ = 'name', 'description', '_resolve_type', '_types', '_possible_type_names', '_possible_types'
+    __slots__ = 'name', 'description', 'resolve_type', '_types', '_possible_type_names', '_possible_types'
 
     def __init__(self, name, types=None, resolve_type=None, description=None):
         assert name, 'Type must be named.'
@@ -437,7 +424,7 @@ class GraphQLUnionType(GraphQLType):
         if resolve_type is not None:
             assert callable(resolve_type), '{} must provide "resolve_type" as a function.'.format(self)
 
-        self._resolve_type = resolve_type
+        self.resolve_type = resolve_type
         self._types = types
         self._possible_types = None
         self._possible_type_names = None
@@ -456,12 +443,6 @@ class GraphQLUnionType(GraphQLType):
 
         return type.name in self._possible_type_names
 
-    def resolve_type(self, value, info):
-        if self._resolve_type:
-            return self._resolve_type(value, info)
-
-        return get_type_of(value, info, self)
-
 
 def define_types(union_type, types):
     if callable(types):
@@ -469,7 +450,7 @@ def define_types(union_type, types):
 
     assert isinstance(types, (list, tuple)) and len(
         types) > 0, 'Must provide types for Union {}.'.format(union_type.name)
-    has_resolve_type_fn = callable(union_type._resolve_type)
+    has_resolve_type_fn = callable(union_type.resolve_type)
 
     for type in types:
         assert isinstance(type, GraphQLObjectType), (
