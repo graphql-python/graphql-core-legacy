@@ -35,7 +35,7 @@ def graphql(schema, request='', root=None, args=None, operation_name=None):
         return execute(
             schema,
             ast,
-            root or object(),
+            root,
             operation_name=operation_name,
             variable_values=args or {},
         )
