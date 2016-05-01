@@ -292,26 +292,48 @@ def test_reports_deep_conflict_to_nearest_common_ancestor():
     ], sort_list=False)
 
 
-SomeBox = GraphQLInterfaceType('SomeBox', {
-    'unrelatedField': GraphQLField(GraphQLString)
-}, resolve_type=lambda *_: StringBox)
+SomeBox = GraphQLInterfaceType(
+    'SomeBox',
+    fields=lambda: {
+        'deepBox': GraphQLField(SomeBox),
+        'unrelatedField': GraphQLField(GraphQLString)
+    },
+    resolve_type=lambda *_: StringBox
+)
 
-StringBox = GraphQLObjectType('StringBox', {
-    'scalar': GraphQLField(GraphQLString),
-    'unrelatedField': GraphQLField(GraphQLString)
-}, interfaces=[SomeBox])
+StringBox = GraphQLObjectType(
+    'StringBox',
+    fields=lambda: {
+        'scalar': GraphQLField(GraphQLString),
+        'deepBox': GraphQLField(StringBox),
+        'unrelatedField': GraphQLField(GraphQLString),
+        'listStringBox': GraphQLField(GraphQLList(StringBox)),
+        'stringBox': GraphQLField(StringBox),
+        'intBox': GraphQLField(IntBox),
+    },
+    interfaces=[SomeBox]
+)
 
-IntBox = GraphQLObjectType('IntBox', {
-    'scalar': GraphQLField(GraphQLInt),
-    'unrelatedField': GraphQLField(GraphQLString)
-}, interfaces=[SomeBox])
+IntBox = GraphQLObjectType(
+    'IntBox',
+    fields=lambda: {
+        'scalar': GraphQLField(GraphQLInt),
+        'deepBox': GraphQLField(IntBox),
+        'unrelatedField': GraphQLField(GraphQLString),
+        'listStringBox': GraphQLField(GraphQLList(StringBox)),
+        'stringBox': GraphQLField(StringBox),
+        'intBox': GraphQLField(IntBox),
+    },
+    interfaces=[SomeBox]
+)
 
 NonNullStringBox1 = GraphQLInterfaceType('NonNullStringBox1', {
-    'scalar': GraphQLField(GraphQLNonNull(GraphQLString))
+    'scalar': GraphQLField(GraphQLNonNull(GraphQLString)),
 }, resolve_type=lambda *_: StringBox)
 
 NonNullStringBox1Impl = GraphQLObjectType('NonNullStringBox1Impl', {
     'scalar': GraphQLField(GraphQLNonNull(GraphQLString)),
+    'deepBox': GraphQLField(StringBox),
     'unrelatedField': GraphQLField(GraphQLString)
 }, interfaces=[SomeBox, NonNullStringBox1])
 
@@ -321,7 +343,8 @@ NonNullStringBox2 = GraphQLInterfaceType('NonNullStringBox2', {
 
 NonNullStringBox2Impl = GraphQLObjectType('NonNullStringBox2Impl', {
     'scalar': GraphQLField(GraphQLNonNull(GraphQLString)),
-    'unrelatedField': GraphQLField(GraphQLString)
+    'unrelatedField': GraphQLField(GraphQLString),
+    'deepBox': GraphQLField(StringBox),
 }, interfaces=[SomeBox, NonNullStringBox2])
 
 Connection = GraphQLObjectType('Connection', {
@@ -338,7 +361,7 @@ schema = GraphQLSchema(
         'someBox': GraphQLField(SomeBox),
         'connection': GraphQLField(Connection),
     }),
-    types=[IntBox, NonNullStringBox1Impl, NonNullStringBox2Impl]
+    types=[IntBox, StringBox, NonNullStringBox1Impl, NonNullStringBox2Impl]
 )
 
 
@@ -356,22 +379,190 @@ def test_conflicting_return_types_which_potentially_overlap():
     }
 
     ''', [
-        fields_conflict('scalar', 'they return differing types Int and String!', L(5, 17), L(8, 17))
+        fields_conflict('scalar', 'they return conflicting types Int and String!', L(5, 17), L(8, 17))
     ], sort_list=False)
 
 
-def test_allows_differing_return_types_which_cannot_overlap():
+def test_compatible_return_shapes_on_different_return_types():
+    # In this case `deepBox` returns `SomeBox` in the first usage, and
+    # `StringBox` in the second usage. These return types are not the same!
+    # however this is valid because the return *shapes* are compatible.
     expect_passes_rule_with_schema(schema, OverlappingFieldsCanBeMerged, '''
-    {
+      {
         someBox {
-            ...on IntBox {
-                scalar
+          ... on SomeBox {
+            deepBox {
+              unrelatedField
             }
-            ...on StringBox {
-                scalar
+          }
+          ... on StringBox {
+            deepBox {
+              unrelatedField
             }
+          }
         }
-    }
+      }
+    ''')
+
+
+def test_disallows_differing_return_types_despite_no_overlap():
+    expect_fails_rule_with_schema(schema, OverlappingFieldsCanBeMerged, '''
+        {
+          someBox {
+            ... on IntBox {
+              scalar
+            }
+            ... on StringBox {
+              scalar
+            }
+          }
+        }
+    ''', [
+        fields_conflict(
+            'scalar', 'they return conflicting types Int and String',
+            L(5, 15), L(8, 15),
+        )
+    ], sort_list=False)
+
+
+def test_disallows_differing_return_type_nullability_despite_no_overlap():
+    expect_fails_rule_with_schema(schema, OverlappingFieldsCanBeMerged, '''
+        {
+          someBox {
+            ... on NonNullStringBox1 {
+              scalar
+            }
+            ... on StringBox {
+              scalar
+            }
+          }
+        }
+    ''', [
+        fields_conflict(
+            'scalar',
+            'they return conflicting types String! and String',
+            L(5, 15), L(8, 15),
+        )
+    ], sort_list=False)
+
+
+def test_disallows_differing_return_type_list_despite_no_overlap_1():
+    expect_fails_rule_with_schema(schema, OverlappingFieldsCanBeMerged, '''
+        {
+          someBox {
+            ... on IntBox {
+              box: listStringBox {
+                scalar
+              }
+            }
+            ... on StringBox {
+              box: stringBox {
+                scalar
+              }
+            }
+          }
+        }
+    ''', [
+        fields_conflict(
+            'box',
+            'they return conflicting types [StringBox] and StringBox',
+            L(5, 15),
+            L(10, 15),
+        )
+    ], sort_list=False)
+
+
+def test_disallows_differing_return_type_list_despite_no_overlap_2():
+    expect_fails_rule_with_schema(schema, OverlappingFieldsCanBeMerged, '''
+        {
+          someBox {
+            ... on IntBox {
+              box: stringBox {
+                scalar
+              }
+            }
+            ... on StringBox {
+              box: listStringBox {
+                scalar
+              }
+            }
+          }
+        }
+    ''', [
+        fields_conflict(
+            'box',
+            'they return conflicting types StringBox and [StringBox]',
+            L(5, 15), L(10, 15),
+        )
+    ], sort_list=False)
+
+
+def test_disallows_differing_subfields():
+    expect_fails_rule_with_schema(schema, OverlappingFieldsCanBeMerged, '''
+        {
+          someBox {
+            ... on IntBox {
+              box: stringBox {
+                val: scalar
+                val: unrelatedField
+              }
+            }
+            ... on StringBox {
+              box: stringBox {
+                val: scalar
+              }
+            }
+          }
+        }
+    ''', [
+        fields_conflict(
+            'val',
+            'scalar and unrelatedField are different fields',
+            L(6, 17), L(7, 17),
+        )
+    ], sort_list=False)
+
+
+def test_disallows_differing_deep_return_types_despite_no_overlap():
+    expect_fails_rule_with_schema(schema, OverlappingFieldsCanBeMerged, '''
+        {
+          someBox {
+            ... on IntBox {
+              box: stringBox {
+                scalar
+              }
+            }
+            ... on StringBox {
+              box: intBox {
+                scalar
+              }
+            }
+          }
+        }
+    ''', [
+        fields_conflict(
+            'box',
+            [['scalar', 'they return conflicting types String and Int']],
+            L(5, 15),
+            L(6, 17),
+            L(10, 15),
+            L(11, 17),
+        )
+    ], sort_list=False)
+
+
+def test_allows_non_conflicting_overlaping_types():
+    expect_passes_rule_with_schema(schema, OverlappingFieldsCanBeMerged, '''
+        {
+          someBox {
+            ... on IntBox {
+              scalar: unrelatedField
+            }
+            ... on StringBox {
+              scalar
+            }
+          }
+        }
     ''')
 
 

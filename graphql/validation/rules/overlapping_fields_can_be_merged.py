@@ -5,8 +5,9 @@ from ...language import ast
 from ...language.printer import print_ast
 from ...pyutils.default_ordered_dict import DefaultOrderedDict
 from ...pyutils.pair_set import PairSet
-from ...type.definition import (GraphQLInterfaceType, GraphQLObjectType,
-                                get_named_type)
+from ...type.definition import (GraphQLInterfaceType, GraphQLList,
+                                GraphQLNonNull, GraphQLObjectType,
+                                get_named_type, is_leaf_type)
 from ...utils.type_comparators import is_equal_type
 from ...utils.type_from_ast import type_from_ast
 from .base import ValidationRule
@@ -19,7 +20,7 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
         super(OverlappingFieldsCanBeMerged, self).__init__(context)
         self.compared_set = PairSet()
 
-    def find_conflicts(self, field_map):
+    def find_conflicts(self, parent_fields_are_mutually_exclusive, field_map):
         conflicts = []
         for response_name, fields in field_map.items():
             field_len = len(fields)
@@ -28,13 +29,18 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
 
             for field_a in fields:
                 for field_b in fields:
-                    conflict = self.find_conflict(response_name, field_a, field_b)
+                    conflict = self.find_conflict(
+                        parent_fields_are_mutually_exclusive,
+                        response_name,
+                        field_a,
+                        field_b
+                    )
                     if conflict:
                         conflicts.append(conflict)
 
         return conflicts
 
-    def find_conflict(self, response_name, field1, field2):
+    def find_conflict(self, parent_fields_are_mutually_exclusive, response_name, field1, field2):
         parent_type1, ast1, def1 = field1
         parent_type2, ast2, def2 = field2
 
@@ -42,50 +48,79 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
         if ast1 is ast2:
             return
 
-        # If the statically known parent types could not possibly apply at the same
-        # time, then it is safe to permit them to diverge as they will not present
-        # any ambiguity by differing.
-        # It is known that two parent types could never overlap if they are
-        # different Object types. Interface or Union types might overlap - if not
-        # in the current state of the schema, then perhaps in some future version,
-        # thus may not safely diverge.
-        if parent_type1 != parent_type2 and \
-                isinstance(parent_type1, GraphQLObjectType) and \
-                isinstance(parent_type2, GraphQLObjectType):
-            return
+        # Memoize, do not report the same issue twice.
+        # Note: Two overlapping ASTs could be encountered both when
+        # `parentFieldsAreMutuallyExclusive` is true and is false, which could
+        # produce different results (when `true` being a subset of `false`).
+        # However we do not need to include this piece of information when
+        # memoizing since this rule visits leaf fields before their parent fields,
+        # ensuring that `parentFieldsAreMutuallyExclusive` is `false` the first
+        # time two overlapping fields are encountered, ensuring that the full
+        # set of validation rules are always checked when necessary.
+
+        # if parent_type1 != parent_type2 and \
+        #         isinstance(parent_type1, GraphQLObjectType) and \
+        #         isinstance(parent_type2, GraphQLObjectType):
+        #     return
 
         if self.compared_set.has(ast1, ast2):
             return
 
         self.compared_set.add(ast1, ast2)
 
-        name1 = ast1.name.value
-        name2 = ast2.name.value
 
-        if name1 != name2:
-            return (
-                (response_name, '{} and {} are different fields'.format(name1, name2)),
-                [ast1],
-                [ast2]
-            )
-
+        # The return type for each field.
         type1 = def1 and def1.type
         type2 = def2 and def2.type
 
-        if type1 and type2 and not self.same_type(type1, type2):
+        # If it is known that two fields could not possibly apply at the same
+        # time, due to the parent types, then it is safe to permit them to diverge
+        # in aliased field or arguments used as they will not present any ambiguity
+        # by differing.
+        # It is known that two parent types could never overlap if they are
+        # different Object types. Interface or Union types might overlap - if not
+        # in the current state of the schema, then perhaps in some future version,
+        # thus may not safely diverge.
+
+        fields_are_mutually_exclusive = (
+            parent_fields_are_mutually_exclusive or (
+                parent_type1 != parent_type2 and
+                isinstance(parent_type1, GraphQLObjectType) and
+                isinstance(parent_type2, GraphQLObjectType)
+            )
+        )
+
+        if not fields_are_mutually_exclusive:
+            name1 = ast1.name.value
+            name2 = ast2.name.value
+
+            if name1 != name2:
+                return (
+                    (response_name, '{} and {} are different fields'.format(name1, name2)),
+                    [ast1],
+                    [ast2]
+                )
+
+            if not self.same_arguments(ast1.arguments, ast2.arguments):
+                return (
+                    (response_name, 'they have differing arguments'),
+                    [ast1],
+                    [ast2]
+                )
+
+        if type1 and type2 and do_types_conflict(type1, type2):
             return (
-                (response_name, 'they return differing types {} and {}'.format(type1, type2)),
+                (response_name, 'they return conflicting types {} and {}'.format(type1, type2)),
                 [ast1],
                 [ast2]
             )
 
-        if not self.same_arguments(ast1.arguments, ast2.arguments):
-            return (
-                (response_name, 'they have differing arguments'),
-                [ast1],
-                [ast2]
-            )
+        subfield_map = self.get_subfield_map(ast1, type1, ast2, type2)
+        if subfield_map:
+            conflicts = self.find_conflicts(fields_are_mutually_exclusive, subfield_map)
+            return self.subfield_conflicts(conflicts, response_name, ast1, ast2)
 
+    def get_subfield_map(self, ast1, type1, ast2, type2):
         selection_set1 = ast1.selection_set
         selection_set2 = ast2.selection_set
 
@@ -104,22 +139,26 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
                 visited_fragment_names,
                 subfield_map
             )
+            return subfield_map
 
-            conflicts = self.find_conflicts(subfield_map)
-            if conflicts:
-                return (
-                    (response_name, [conflict[0] for conflict in conflicts]),
-                    tuple(itertools.chain([ast1], *[conflict[1] for conflict in conflicts])),
-                    tuple(itertools.chain([ast2], *[conflict[2] for conflict in conflicts]))
-                )
+    def subfield_conflicts(self, conflicts, response_name, ast1, ast2):
+        if conflicts:
+            return (
+                (response_name, [conflict[0] for conflict in conflicts]),
+                tuple(itertools.chain([ast1], *[conflict[1] for conflict in conflicts])),
+                tuple(itertools.chain([ast2], *[conflict[2] for conflict in conflicts]))
+            )
 
     def leave_SelectionSet(self, node, key, parent, path, ancestors):
+        # Note: we validate on the reverse traversal so deeper conflicts will be
+        # caught first, for correct calculation of mutual exclusivity and for
+        # clearer error messages.
         field_map = self.collect_field_asts_and_defs(
             self.context.get_parent_type(),
             node
         )
 
-        conflicts = self.find_conflicts(field_map)
+        conflicts = self.find_conflicts(False, field_map)
         if conflicts:
             for (reason_name, reason), fields1, fields2 in conflicts:
                 self.context.report_error(
@@ -228,3 +267,30 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
                                 for reason_name, sub_reason in reason)
 
         return reason
+
+
+def do_types_conflict(type1, type2):
+    if isinstance(type1, GraphQLList):
+        if isinstance(type2, GraphQLList):
+            return do_types_conflict(type1.of_type, type2.of_type)
+        return True
+
+    if isinstance(type2, GraphQLList):
+        if isinstance(type1, GraphQLList):
+            return do_types_conflict(type1.of_type, type2.of_type)
+        return True
+
+    if isinstance(type1, GraphQLNonNull):
+        if isinstance(type2, GraphQLNonNull):
+            return do_types_conflict(type1.of_type, type2.of_type)
+        return True
+
+    if isinstance(type2, GraphQLNonNull):
+        if isinstance(type1, GraphQLNonNull):
+            return do_types_conflict(type1.of_type, type2.of_type)
+        return True
+
+    if is_leaf_type(type1) or is_leaf_type(type2):
+        return type1 != type2
+
+    return False
