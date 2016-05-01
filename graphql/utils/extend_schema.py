@@ -8,20 +8,13 @@ from ..type.definition import (GraphQLArgument, GraphQLEnumType,
                                GraphQLInterfaceType, GraphQLList,
                                GraphQLNonNull, GraphQLObjectType,
                                GraphQLScalarType, GraphQLUnionType)
+from ..type.introspection import (__Directive, __DirectiveLocation,
+                                  __EnumValue, __Field, __InputValue, __Schema,
+                                  __Type, __TypeKind)
 from ..type.scalars import (GraphQLBoolean, GraphQLFloat, GraphQLID,
                             GraphQLInt, GraphQLString)
 from ..type.schema import GraphQLSchema
 from .value_from_ast import value_from_ast
-from ..type.introspection import (
-  __Schema,
-  __Directive,
-  __DirectiveLocation,
-  __Type,
-  __Field,
-  __InputValue,
-  __EnumValue,
-  __TypeKind,
-)
 
 
 def extend_schema(schema, documentAST=None):
