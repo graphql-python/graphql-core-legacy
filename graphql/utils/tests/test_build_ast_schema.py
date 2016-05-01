@@ -430,6 +430,74 @@ type Hello {
     assert 'Must provide schema definition with query type.' == str(excinfo.value)
 
 
+def test_allows_only_a_single_query_type():
+    body = '''
+schema {
+  query: Hello
+  query: Yellow
+}
+
+type Hello {
+  bar: Bar
+}
+
+type Yellow {
+  isColor: Boolean
+}
+'''
+    doc = parse(body)
+    with raises(Exception) as excinfo:
+        build_ast_schema(doc)
+
+    assert 'Must provide only one query type in schema.' == str(excinfo.value)
+
+
+def test_allows_only_a_single_mutation_type():
+    body = '''
+schema {
+  query: Hello
+  mutation: Hello
+  mutation: Yellow
+}
+
+type Hello {
+  bar: Bar
+}
+
+type Yellow {
+  isColor: Boolean
+}
+'''
+    doc = parse(body)
+    with raises(Exception) as excinfo:
+        build_ast_schema(doc)
+
+    assert 'Must provide only one mutation type in schema.' == str(excinfo.value)
+
+
+def test_allows_only_a_single_subscription_type():
+    body = '''
+schema {
+  query: Hello
+  subscription: Hello
+  subscription: Yellow
+}
+
+type Hello {
+  bar: Bar
+}
+
+type Yellow {
+  isColor: Boolean
+}
+'''
+    doc = parse(body)
+    with raises(Exception) as excinfo:
+        build_ast_schema(doc)
+
+    assert 'Must provide only one subscription type in schema.' == str(excinfo.value)
+
+
 def test_unknown_type_referenced():
     body = '''
 schema {

@@ -82,10 +82,16 @@ def build_ast_schema(document):
     for operation_type in schema_def.operation_types:
         type_name = operation_type.type.name.value
         if operation_type.operation == 'query':
+            if query_type_name:
+                raise Exception('Must provide only one query type in schema.')
             query_type_name = type_name
         elif operation_type.operation == 'mutation':
+            if mutation_type_name:
+                raise Exception('Must provide only one mutation type in schema.')
             mutation_type_name = type_name
         elif operation_type.operation == 'subscription':
+            if subscription_type_name:
+                raise Exception('Must provide only one subscription type in schema.')
             subscription_type_name = type_name
 
     if not query_type_name:
