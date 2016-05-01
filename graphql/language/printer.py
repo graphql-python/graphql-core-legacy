@@ -152,7 +152,8 @@ class PrintingVisitor(Visitor):
         return 'extend ' + node.definition
 
     def leave_DirectiveDefinition(self, node, *args):
-        return 'directive @{}{} on {}'.format(node.name, wrap('(', join(node.arguments, ', '), ')'), ' | '.join(node.locations))
+        return 'directive @{}{} on {}'.format(node.name, wrap(
+            '(', join(node.arguments, ', '), ')'), ' | '.join(node.locations))
 
 
 def join(maybe_list, separator=''):

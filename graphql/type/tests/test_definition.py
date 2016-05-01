@@ -196,7 +196,12 @@ def test_includes_interfaces_subtypes_in_the_type_map():
         interfaces=[SomeInterface],
         is_type_of=lambda: None
     )
-    schema = GraphQLSchema(query=GraphQLObjectType(name='Query', fields={'iface': GraphQLField(SomeInterface)}), types=[SomeSubtype])
+    schema = GraphQLSchema(
+        query=GraphQLObjectType(
+            name='Query',
+            fields={
+                'iface': GraphQLField(SomeInterface)}),
+        types=[SomeSubtype])
     assert schema.get_type_map()['SomeSubtype'] == SomeSubtype
 
 

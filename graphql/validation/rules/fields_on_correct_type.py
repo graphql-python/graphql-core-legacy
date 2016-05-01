@@ -1,7 +1,7 @@
 from collections import Counter, OrderedDict
 
 from ...error import GraphQLError
-from ...type.definition import GraphQLObjectType, is_abstract_type
+from ...type.definition import is_abstract_type
 from .base import ValidationRule
 
 try:

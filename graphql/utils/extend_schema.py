@@ -8,13 +8,20 @@ from ..type.definition import (GraphQLArgument, GraphQLEnumType,
                                GraphQLInterfaceType, GraphQLList,
                                GraphQLNonNull, GraphQLObjectType,
                                GraphQLScalarType, GraphQLUnionType)
-from ..type.introspection import (__Directive, __DirectiveLocation,
-                                  __EnumValue, __Field, __InputValue, __Schema,
-                                  __Type, __TypeKind)
 from ..type.scalars import (GraphQLBoolean, GraphQLFloat, GraphQLID,
                             GraphQLInt, GraphQLString)
 from ..type.schema import GraphQLSchema
 from .value_from_ast import value_from_ast
+from ..type.introspection import (
+  __Schema,
+  __Directive,
+  __DirectiveLocation,
+  __Type,
+  __Field,
+  __InputValue,
+  __EnumValue,
+  __TypeKind,
+)
 
 
 def extend_schema(schema, documentAST=None):
@@ -336,10 +343,10 @@ def extend_schema(schema, documentAST=None):
 
     # Iterate through all types, getting the type definition for each, ensuring
     # that any type not directly referenced by a field will get created.
-    types = [get_type_from_def(schema.get_type(type_name)) for type_name in schema.get_type_map().keys()]
+    types = [get_type_from_def(_def) for _def in schema.get_type_map().values()]
 
     # Do the same with new types, appending to the list of defined types.
-    types += [get_type_from_AST(type_definition_map[type_name]) for type_name in type_definition_map.keys()]
+    types += [get_type_from_AST(_def) for _def in type_definition_map.values()]
 
     # Then produce and return a Schema with these types.
     return GraphQLSchema(

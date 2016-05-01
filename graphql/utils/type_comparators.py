@@ -34,8 +34,9 @@ def is_type_sub_type_of(schema, maybe_subtype, super_type):
     elif isinstance(maybe_subtype, GraphQLList):
         return False
 
-    if is_abstract_type(super_type) and isinstance(maybe_subtype,
-                                                   GraphQLObjectType) and schema.is_possible_type(super_type, maybe_subtype):
+    if is_abstract_type(super_type) and isinstance(
+            maybe_subtype, GraphQLObjectType) and schema.is_possible_type(
+            super_type, maybe_subtype):
         return True
 
     return False

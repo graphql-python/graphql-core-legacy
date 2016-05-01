@@ -229,7 +229,7 @@ def build_client_schema(introspection):
         )
 
     # Iterate through all types, getting the type definition for each, ensuring
-    # that any type not directly referenced by a field will get created.       
+    # that any type not directly referenced by a field will get created.
     types = [get_named_type(type_introspection_name) for type_introspection_name in type_introspection_map.keys()]
 
     query_type = get_object_type(schema_introspection['queryType'])
