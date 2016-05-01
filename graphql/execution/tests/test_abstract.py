@@ -81,7 +81,8 @@ def test_is_type_of_used_to_resolve_runtime_type_for_interface():
                     resolver=lambda *_: [Dog('Odie', True), Cat('Garfield', False)]
                 )
             }
-        )
+        ),
+        types=[CatType, DogType]
     )
 
     query = '''
@@ -136,7 +137,8 @@ def test_is_type_of_used_to_resolve_runtime_type_for_union():
                     resolver=lambda *_: [Dog('Odie', True), Cat('Garfield', False)]
                 )
             }
-        )
+        ),
+        types=[CatType, DogType]
     )
 
     query = '''
@@ -206,7 +208,8 @@ def test_resolve_type_on_interface_yields_useful_error():
                     resolver=lambda *_: [Dog('Odie', True), Cat('Garfield', False), Human('Jon')]
                 )
             }
-        )
+        ),
+        types=[DogType, CatType]
     )
 
     query = '''

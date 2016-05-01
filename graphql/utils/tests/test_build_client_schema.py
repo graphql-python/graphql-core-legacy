@@ -150,7 +150,15 @@ def test_builds_a_schema_with_an_interface():
         }
     )
 
-    GraphQLObjectType(
+    DogType = GraphQLObjectType(
+        name='DogType',
+        interfaces=[FriendlyType],
+        fields=lambda: {
+            'bestFriend': GraphQLField(FriendlyType)
+        }
+    )
+
+    HumanType = GraphQLObjectType(
         name='Human',
         interfaces=[FriendlyType],
         fields=lambda: {
@@ -164,7 +172,8 @@ def test_builds_a_schema_with_an_interface():
             fields={
                 'friendly': GraphQLField(FriendlyType)
             }
-        )
+        ),
+        types=[DogType, HumanType]
     )
 
     _test_schema(schema)

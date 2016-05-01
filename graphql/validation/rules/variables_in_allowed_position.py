@@ -24,8 +24,14 @@ class VariablesInAllowedPosition(ValidationRule):
             var_name = node.name.value
             var_def = self.var_def_map.get(var_name)
             if var_def and type:
-                var_type = type_from_ast(self.context.get_schema(), var_def.type)
-                if var_type and not is_type_sub_type_of(self.effective_type(var_type, var_def), type):
+                # A var type is allowed if it is the same or more strict (e.g. is
+                # a subtype of) than the expected type. It can be more strict if
+                # the variable type is non-null when the expected type is nullable.
+                # If both are list types, the variable item type can be more strict
+                # than the expected item type (contravariant).
+                schema = self.context.get_schema()
+                var_type = type_from_ast(schema, var_def.type)
+                if var_type and not is_type_sub_type_of(schema, self.effective_type(var_type, var_def), type):
                     self.context.report_error(GraphQLError(
                         self.bad_var_pos_message(var_name, var_type, type),
                         [var_def, node]

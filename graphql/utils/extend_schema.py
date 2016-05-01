@@ -8,6 +8,9 @@ from ..type.definition import (GraphQLArgument, GraphQLEnumType,
                                GraphQLInterfaceType, GraphQLList,
                                GraphQLNonNull, GraphQLObjectType,
                                GraphQLScalarType, GraphQLUnionType)
+from ..type.introspection import (__Directive, __DirectiveLocation,
+                                  __EnumValue, __Field, __InputValue, __Schema,
+                                  __Type, __TypeKind)
 from ..type.scalars import (GraphQLBoolean, GraphQLFloat, GraphQLID,
                             GraphQLInt, GraphQLString)
 from ..type.schema import GraphQLSchema
@@ -144,7 +147,7 @@ def extend_schema(schema, documentAST=None):
         return GraphQLUnionType(
             name=type.name,
             description=type.description,
-            types=list(map(get_type_from_def, type.get_possible_types())),
+            types=list(map(get_type_from_def, type.get_types())),
             resolve_type=cannot_execute_client_schema,
         )
 
@@ -300,14 +303,24 @@ def extend_schema(schema, documentAST=None):
         return schema
 
     # A cache to use to store the actual GraphQLType definition objects by name.
-    # Initialize to the GraphQL built in scalars. All functions below are inline
-    # so that this type def cache is within the scope of the closure.
+    # Initialize to the GraphQL built in scalars and introspection types. All
+    # functions below are inline so that this type def cache is within the scope
+    # of the closure.
+
     type_def_cache = {
         'String': GraphQLString,
         'Int': GraphQLInt,
         'Float': GraphQLFloat,
         'Boolean': GraphQLBoolean,
         'ID': GraphQLID,
+        '__Schema': __Schema,
+        '__Directive': __Directive,
+        '__DirectiveLocation': __DirectiveLocation,
+        '__Type': __Type,
+        '__Field': __Field,
+        '__InputValue': __InputValue,
+        '__EnumValue': __EnumValue,
+        '__TypeKind': __TypeKind,
     }
 
     # Get the root Query, Mutation, and Subscription types.
@@ -323,12 +336,10 @@ def extend_schema(schema, documentAST=None):
 
     # Iterate through all types, getting the type definition for each, ensuring
     # that any type not directly referenced by a field will get created.
-    for typeName, _def in schema.get_type_map().items():
-        get_type_from_def(_def)
+    types = [get_type_from_def(schema.get_type(type_name)) for type_name in schema.get_type_map().keys()]
 
-    # Do the same with new types.
-    for typeName, _def in type_definition_map.items():
-        get_type_from_AST(_def)
+    # Do the same with new types, appending to the list of defined types.
+    types += [get_type_from_AST(type_definition_map[type_name]) for type_name in type_definition_map.keys()]
 
     # Then produce and return a Schema with these types.
     return GraphQLSchema(
@@ -337,6 +348,7 @@ def extend_schema(schema, documentAST=None):
         subscription=subscription_type,
         # Copy directives.
         directives=schema.get_directives(),
+        types=types
     )
 
 

@@ -109,7 +109,7 @@ def _print_interface(type):
 
 
 def _print_union(type):
-    return 'union {} = {}'.format(type.name, ' | '.join(str(t) for t in type.get_possible_types()))
+    return 'union {} = {}'.format(type.name, ' | '.join(str(t) for t in type.get_types()))
 
 
 def _print_enum(type):

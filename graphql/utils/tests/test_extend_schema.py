@@ -77,7 +77,8 @@ test_schema = GraphQLSchema(
                 },
             )),
         ])
-    )
+    ),
+    types=[FooType, BarType]
 )
 
 
@@ -170,6 +171,63 @@ union SomeUnion = Foo | Biz
 '''
 
 
+def test_extends_objects_by_adding_new_unused_types():
+    ast = parse('''
+      type Unused {
+        someField: String
+      }
+    ''')
+    original_print = print_schema(test_schema)
+    extended_schema = extend_schema(test_schema, ast)
+    assert extended_schema != test_schema
+    assert print_schema(test_schema) == original_print
+    # print original_print
+    assert print_schema(extended_schema) == \
+        '''schema {
+  query: Query
+}
+
+type Bar implements SomeInterface {
+  name: String
+  some: SomeInterface
+  foo: Foo
+}
+
+type Biz {
+  fizz: String
+}
+
+type Foo implements SomeInterface {
+  name: String
+  some: SomeInterface
+  tree: [Foo]!
+}
+
+type Query {
+  foo: Foo
+  someUnion: SomeUnion
+  someEnum: SomeEnum
+  someInterface(id: ID!): SomeInterface
+}
+
+enum SomeEnum {
+  ONE
+  TWO
+}
+
+interface SomeInterface {
+  name: String
+  some: SomeInterface
+}
+
+union SomeUnion = Foo | Biz
+
+type Unused {
+  someField: String
+}
+'''
+
+
 def test_extends_objects_by_adding_new_fields_with_arguments():
     ast = parse('''
       extend type Foo {
@@ -238,12 +296,6 @@ def test_extends_objects_by_adding_new_fields_with_existing_types():
     ast = parse('''
       extend type Foo {
         newField(arg1: SomeEnum!): SomeEnum
-      }
-
-      input NewInputObj {
-        field1: Int
-        field2: [Float]
-        field3: String!
       }
     ''')
     original_print = print_schema(test_schema)

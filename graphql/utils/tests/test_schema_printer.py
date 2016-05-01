@@ -279,7 +279,7 @@ def test_prints_interface():
         }
     )
 
-    Schema = GraphQLSchema(Root)
+    Schema = GraphQLSchema(Root, types=[BarType])
     output = print_for_test(Schema)
 
     assert output == '''
@@ -333,7 +333,7 @@ def test_prints_multiple_interfaces():
         }
     )
 
-    Schema = GraphQLSchema(Root)
+    Schema = GraphQLSchema(Root, types=[BarType])
     output = print_for_test(Schema)
 
     assert output == '''

@@ -1,8 +1,9 @@
-from collections import OrderedDict
 import json
+from collections import OrderedDict
 
 from graphql import graphql
-from graphql.type import GraphQLSchema, GraphQLString, GraphQLObjectType, GraphQLInt, GraphQLField, GraphQLArgument
+from graphql.type import (GraphQLArgument, GraphQLField, GraphQLInt,
+                          GraphQLObjectType, GraphQLSchema, GraphQLString)
 
 
 def _test_schema(test_field):

@@ -107,7 +107,8 @@ def schema_with_field_type(t):
             fields={
                 'f': GraphQLField(t)
             }
-        )
+        ),
+        types=[t]
     )
 
 
@@ -218,7 +219,7 @@ class TestTypeSystem_ASchemaMustContainUniquelyNamedTypes:
         )
 
         with raises(AssertionError) as excinfo:
-            GraphQLSchema(query=QueryType)
+            GraphQLSchema(query=QueryType, types=[FirstBadObject, SecondBadObject])
 
         assert str(excinfo.value) == 'Schema must contain unique named types but contains multiple types named ' \
                                      '"BadObject".'

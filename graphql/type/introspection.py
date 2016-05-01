@@ -168,9 +168,9 @@ class TypeFieldResolvers(object):
             return type.get_interfaces()
 
     @staticmethod
-    def possible_types(type, *_):
+    def possible_types(type, args, info):
         if isinstance(type, (GraphQLInterfaceType, GraphQLUnionType)):
-            return type.get_possible_types()
+            return info.schema.get_possible_types(type)
 
     @staticmethod
     def enum_values(type, args, *_):

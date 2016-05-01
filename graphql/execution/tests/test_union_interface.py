@@ -73,7 +73,7 @@ PersonType = GraphQLObjectType(
     is_type_of=lambda value, info: isinstance(value, Person)
 )
 
-schema = GraphQLSchema(PersonType)
+schema = GraphQLSchema(query=PersonType, types=[PetType])
 
 garfield = Cat('Garfield', False)
 odie = Dog('Odie', True)
@@ -114,7 +114,7 @@ def test_can_introspect_on_union_and_intersection_types():
             'kind': 'INTERFACE',
             'interfaces': None,
             'fields': [{'name': 'name'}],
-            'possibleTypes': [{'name': 'Dog'}, {'name': 'Cat'}, {'name': 'Person'}],
+            'possibleTypes': [{'name': 'Person'}, {'name': 'Dog'}, {'name': 'Cat'}],
             'inputFields': None
         },
         'Pet': {

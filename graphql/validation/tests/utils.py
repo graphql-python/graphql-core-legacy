@@ -175,11 +175,15 @@ QueryRoot = GraphQLObjectType('QueryRoot', {
     'complicatedArgs': GraphQLField(ComplicatedArgs),
 })
 
-test_schema = GraphQLSchema(query=QueryRoot, directives=[
-    GraphQLDirective(name='operationOnly', locations=['QUERY']),
-    GraphQLIncludeDirective,
-    GraphQLSkipDirective
-])
+test_schema = GraphQLSchema(
+    query=QueryRoot,
+    directives=[
+        GraphQLDirective(name='operationOnly', locations=['QUERY']),
+        GraphQLIncludeDirective,
+        GraphQLSkipDirective
+    ],
+    types=[Cat, Dog, Human, Alien]
+)
 
 
 def expect_valid(schema, rules, query):

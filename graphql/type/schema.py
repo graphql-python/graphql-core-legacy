@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from collections import Iterable, OrderedDict, defaultdict
 from functools import reduce
 
 from ..utils.type_comparators import is_equal_type, is_type_sub_type_of
@@ -23,9 +23,9 @@ class GraphQLSchema(object):
             mutation=MyAppMutationRootType
         )
     """
-    __slots__ = '_query', '_mutation', '_subscription', '_type_map', '_directives',
+    __slots__ = '_query', '_mutation', '_subscription', '_type_map', '_directives', '_implementations', '_possible_type_map'
 
-    def __init__(self, query, mutation=None, subscription=None, directives=None):
+    def __init__(self, query, mutation=None, subscription=None, directives=None, types=None):
         assert isinstance(query, GraphQLObjectType), 'Schema query must be Object Type but got: {}.'.format(query)
         if mutation:
             assert isinstance(mutation, GraphQLObjectType), \
@@ -34,6 +34,10 @@ class GraphQLSchema(object):
         if subscription:
             assert isinstance(subscription, GraphQLObjectType), \
                 'Schema subscription must be Object Type but got: {}.'.format(subscription)
+
+        if types:
+            assert isinstance(types, Iterable), \
+                'Schema types must be iterable if provided but got: {}.'.format(types)
 
         self._query = query
         self._mutation = mutation
@@ -50,13 +54,20 @@ class GraphQLSchema(object):
         )
 
         self._directives = directives
-        self._type_map = self._build_type_map()
+        self._possible_type_map = defaultdict(set)
+        self._type_map = self._build_type_map(types)
+        # Keep track of all implementations by interface name.
+        self._implementations = defaultdict(list)
+        for type in self._type_map.values():
+            if isinstance(type, GraphQLObjectType):
+                for interface in type.get_interfaces():
+                    self._implementations[interface.name].append(type)
 
         # Enforce correct interface implementations.
         for type in self._type_map.values():
             if isinstance(type, GraphQLObjectType):
                 for interface in type.get_interfaces():
-                    assert_object_implements_interface(type, interface)
+                    assert_object_implements_interface(self, type, interface)
 
     def get_query_type(self):
         return self._query
@@ -83,10 +94,31 @@ class GraphQLSchema(object):
 
         return None
 
-    def _build_type_map(self):
-        types = [self.get_query_type(), self.get_mutation_type(), self.get_subscription_type(), IntrospectionSchema]
+    def _build_type_map(self, _types):
+        types = [
+            self.get_query_type(),
+            self.get_mutation_type(),
+            self.get_subscription_type(),
+            IntrospectionSchema
+        ]
+        if _types:
+            types += _types
+
         type_map = reduce(type_map_reducer, types, OrderedDict())
         return type_map
+
+    def get_possible_types(self, abstract_type):
+        if isinstance(abstract_type, GraphQLUnionType):
+            return abstract_type.get_types()
+        assert isinstance(abstract_type, GraphQLInterfaceType)
+        return self._implementations[abstract_type.name]
+
+    def is_possible_type(self, abstract_type, possible_type):
+        if not self._possible_type_map[abstract_type.name]:
+            possible_types = self.get_possible_types(abstract_type)
+            self._possible_type_map[abstract_type.name].update([p.name for p in possible_types])
+
+        return possible_type.name in self._possible_type_map[abstract_type.name]
 
 
 def type_map_reducer(map, type):
@@ -107,8 +139,8 @@ def type_map_reducer(map, type):
 
     reduced_map = map
 
-    if isinstance(type, (GraphQLUnionType, GraphQLInterfaceType)):
-        for t in type.get_possible_types():
+    if isinstance(type, (GraphQLUnionType)):
+        for t in type.get_types():
             reduced_map = type_map_reducer(reduced_map, t)
 
     if isinstance(type, GraphQLObjectType):
@@ -129,7 +161,7 @@ def type_map_reducer(map, type):
     return reduced_map
 
 
-def assert_object_implements_interface(object, interface):
+def assert_object_implements_interface(schema, object, interface):
     object_field_map = object.get_fields()
     interface_field_map = interface.get_fields()
 
@@ -140,7 +172,7 @@ def assert_object_implements_interface(object, interface):
             interface, field_name, object
         )
 
-        assert is_type_sub_type_of(object_field.type, interface_field.type), (
+        assert is_type_sub_type_of(schema, object_field.type, interface_field.type), (
             '{}.{} expects type "{}" but {}.{} provides type "{}".'
         ).format(interface, field_name, interface_field.type, object, field_name, object_field.type)
 

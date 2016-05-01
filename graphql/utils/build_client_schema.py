@@ -9,7 +9,9 @@ from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
                     GraphQLSchema, GraphQLString, GraphQLUnionType,
                     is_input_type, is_output_type)
 from ..type.directives import DirectiveLocation, GraphQLDirective
-from ..type.introspection import TypeKind
+from ..type.introspection import (TypeKind, __Directive, __DirectiveLocation,
+                                  __EnumValue, __Field, __InputValue, __Schema,
+                                  __Type, __TypeKind)
 from .value_from_ast import value_from_ast
 
 
@@ -33,7 +35,16 @@ def build_client_schema(introspection):
         'Int': GraphQLInt,
         'Float': GraphQLFloat,
         'Boolean': GraphQLBoolean,
-        'ID': GraphQLID
+        'ID': GraphQLID,
+        '__Schema': __Schema,
+        '__Directive': __Directive,
+        '__DirectiveLocation': __DirectiveLocation,
+        '__Type': __Type,
+        '__Field': __Field,
+        '__InputValue': __InputValue,
+        '__EnumValue': __EnumValue,
+        '__TypeKind': __TypeKind,
+
     }
 
     def get_type(type_ref):
@@ -217,8 +228,9 @@ def build_client_schema(introspection):
             locations=locations
         )
 
-    for type_introspection_name in type_introspection_map:
-        get_named_type(type_introspection_name)
+    # Iterate through all types, getting the type definition for each, ensuring
+    # that any type not directly referenced by a field will get created.       
+    types = [get_named_type(type_introspection_name) for type_introspection_name in type_introspection_map.keys()]
 
     query_type = get_object_type(schema_introspection['queryType'])
     mutation_type = get_object_type(
@@ -233,5 +245,6 @@ def build_client_schema(introspection):
         query=query_type,
         mutation=mutation_type,
         subscription=subscription_type,
-        directives=directives
+        directives=directives,
+        types=types
     )

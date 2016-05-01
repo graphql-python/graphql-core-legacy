@@ -230,7 +230,7 @@ def does_fragment_condition_match(ctx, fragment, type_):
         return True
 
     if isinstance(conditional_type, (GraphQLInterfaceType, GraphQLUnionType)):
-        return conditional_type.is_possible_type(type_)
+        return ctx.schema.is_possible_type(conditional_type, type_)
 
     return False
 

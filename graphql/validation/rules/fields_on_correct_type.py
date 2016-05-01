@@ -25,10 +25,12 @@ class FieldsOnCorrectType(ValidationRule):
 
         field_def = self.context.get_field_def()
         if not field_def:
+            # This isn't valid. Let's find suggestions, if any.
             suggested_types = []
             if is_abstract_type(type):
-                suggested_types = get_sibling_interfaces_including_field(type, node.name.value)
-                suggested_types += get_implementations_including_field(type, node.name.value)
+                schema = self.context.get_schema()
+                suggested_types = get_sibling_interfaces_including_field(schema, type, node.name.value)
+                suggested_types += get_implementations_including_field(schema, type, node.name.value)
             self.context.report_error(GraphQLError(
                 self.undefined_field_message(node.name.value, type.name, suggested_types),
                 [node]
@@ -48,18 +50,18 @@ class FieldsOnCorrectType(ValidationRule):
         return message
 
 
-def get_implementations_including_field(type, field_name):
+def get_implementations_including_field(schema, type, field_name):
     '''Return implementations of `type` that include `fieldName` as a valid field.'''
-    return sorted(map(lambda t: t.name, filter(lambda t: field_name in t.get_fields(), type.get_possible_types())))
+    return sorted(map(lambda t: t.name, filter(lambda t: field_name in t.get_fields(), schema.get_possible_types(type))))
 
 
-def get_sibling_interfaces_including_field(type, field_name):
+def get_sibling_interfaces_including_field(schema, type, field_name):
     '''Go through all of the implementations of type, and find other interaces
     that they implement. If those interfaces include `field` as a valid field,
     return them, sorted by how often the implementations include the other
     interface.'''
 
-    implementing_objects = filter(lambda t: isinstance(t, GraphQLObjectType), type.get_possible_types())
+    implementing_objects = schema.get_possible_types(type)
     suggested_interfaces = OrderedCounter()
     for t in implementing_objects:
         for i in t.get_interfaces():

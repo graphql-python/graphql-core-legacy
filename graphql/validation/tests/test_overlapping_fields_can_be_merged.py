@@ -333,10 +333,13 @@ Connection = GraphQLObjectType('Connection', {
     })))
 })
 
-schema = GraphQLSchema(GraphQLObjectType('QueryRoot', {
-    'someBox': GraphQLField(SomeBox),
-    'connection': GraphQLField(Connection)
-}))
+schema = GraphQLSchema(
+    GraphQLObjectType('QueryRoot', {
+        'someBox': GraphQLField(SomeBox),
+        'connection': GraphQLField(Connection),
+    }),
+    types=[IntBox, NonNullStringBox1Impl, NonNullStringBox2Impl]
+)
 
 
 def test_conflicting_return_types_which_potentially_overlap():

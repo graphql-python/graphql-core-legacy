@@ -8,6 +8,9 @@ from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLDirective,
                     GraphQLList, GraphQLNonNull, GraphQLObjectType,
                     GraphQLScalarType, GraphQLSchema, GraphQLString,
                     GraphQLUnionType)
+from ..type.introspection import (__Directive, __DirectiveLocation,
+                                  __EnumValue, __Field, __InputValue, __Schema,
+                                  __Type, __TypeKind)
 from ..utils.value_from_ast import value_from_ast
 
 
@@ -26,6 +29,14 @@ def _get_inner_type_name(type_ast):
         return _get_inner_type_name(type_ast.type)
 
     return type_ast.name.value
+
+
+def _get_named_type_ast(type_ast):
+    named_type = type_ast
+    while isinstance(named_type, (ast.ListType, ast.NonNullType)):
+        named_type = named_type.type
+
+    return named_type
 
 
 def _false(*_): return False
@@ -61,30 +72,92 @@ def build_ast_schema(document):
         elif isinstance(d, ast.DirectiveDefinition):
             directive_defs.append(d)
 
+    if not schema_def:
+        raise Exception('Must provide a schema definition.')
+
+    query_type_name = None
+    mutation_type_name = None
+    subscription_type_name = None
+
+    for operation_type in schema_def.operation_types:
+        type_name = operation_type.type.name.value
+        if operation_type.operation == 'query':
+            query_type_name = type_name
+        elif operation_type.operation == 'mutation':
+            mutation_type_name = type_name
+        elif operation_type.operation == 'subscription':
+            subscription_type_name = type_name
+
+    if not query_type_name:
+        raise Exception('Must provide schema definition with query type.')
+
     ast_map = {d.name.value: d for d in type_defs}
+
+    if query_type_name not in ast_map:
+        raise Exception('Specified query type "{}" not found in document.'.format(query_type_name))
+
+    if mutation_type_name and mutation_type_name not in ast_map:
+        raise Exception('Specified mutation type "{}" not found in document.'.format(mutation_type_name))
+
+    if subscription_type_name and subscription_type_name not in ast_map:
+        raise Exception('Specified subscription type "{}" not found in document.'.format(subscription_type_name))
 
     inner_type_map = OrderedDict([
         ('String', GraphQLString),
         ('Int', GraphQLInt),
         ('Float', GraphQLFloat),
         ('Boolean', GraphQLBoolean),
-        ('ID', GraphQLID)
+        ('ID', GraphQLID),
+        ('__Schema', __Schema),
+        ('__Directive', __Directive),
+        ('__DirectiveLocation', __DirectiveLocation),
+        ('__Type', __Type),
+        ('__Field', __Field),
+        ('__InputValue', __InputValue),
+        ('__EnumValue', __EnumValue),
+        ('__TypeKind', __TypeKind),
     ])
 
+    def get_directive(directive_ast):
+        return GraphQLDirective(
+            name=directive_ast.name.value,
+            locations=[node.value for node in directive_ast.locations],
+            args=make_input_values(directive_ast.arguments, GraphQLArgument),
+        )
+
+    def get_object_type(type_ast):
+        type = type_def_named(type_ast.name.value)
+        assert isinstance(type, GraphQLObjectType), 'AST must provide object type'
+        return type
+
     def produce_type_def(type_ast):
-        type_name = _get_inner_type_name(type_ast)
+        type_name = _get_named_type_ast(type_ast).name.value
+        type_def = type_def_named(type_name)
+        return _build_wrapped_type(type_def, type_ast)
+
+    def type_def_named(type_name):
         if type_name in inner_type_map:
-            return _build_wrapped_type(inner_type_map[type_name], type_ast)
+            return inner_type_map[type_name]
 
         if type_name not in ast_map:
-            raise Exception('Type "{}" not found in document.'.format(type_name))
+            raise Exception('Type "{}" not found in document'.format(type_name))
 
         inner_type_def = make_schema_def(ast_map[type_name])
         if not inner_type_def:
             raise Exception('Nothing constructed for "{}".'.format(type_name))
 
         inner_type_map[type_name] = inner_type_def
-        return _build_wrapped_type(inner_type_def, type_ast)
+        return inner_type_def
+
+    def make_schema_def(definition):
+        if not definition:
+            raise Exception('def must be defined.')
+
+        handler = _schema_def_handlers.get(type(definition))
+        if not handler:
+            raise Exception('Type kind "{}" not supported.'.format(type(definition).__name__))
+
+        return handler(definition)
 
     def make_type_def(definition):
         return GraphQLObjectType(
@@ -161,63 +234,21 @@ def build_ast_schema(document):
         ast.ScalarTypeDefinition: make_scalar_def,
         ast.InputObjectTypeDefinition: make_input_object_def
     }
+    types = [type_def_named(definition.name.value) for definition in type_defs]
+    directives = [get_directive(d) for d in directive_defs]
 
-    def make_schema_def(definition):
-        if not definition:
-            raise Exception('definition must be defined.')
-
-        handler = _schema_def_handlers.get(type(definition))
-        if not handler:
-            raise Exception('Type kind "{}" not supported.'.format(type(definition).__name__))
-
-        return handler(definition)
-
-    def get_directive(directive_ast):
-        return GraphQLDirective(
-            name=directive_ast.name.value,
-            locations=[node.value for node in directive_ast.locations],
-            args=make_input_values(directive_ast.arguments, GraphQLArgument),
-        )
-
-    for definition in type_defs:
-        produce_type_def(definition)
-
-    if not schema_def:
-        raise Exception('Must provide a schema definition.')
-
-    query_type_name = None
-    mutation_type_name = None
-    subscription_type_name = None
-    for operation_type in schema_def.operation_types:
-        type_name = operation_type.type.name.value
-        if operation_type.operation == 'query':
-            query_type_name = type_name
-        elif operation_type.operation == 'mutation':
-            mutation_type_name = type_name
-        elif operation_type.operation == 'subscription':
-            subscription_type_name = type_name
-
-    if not query_type_name:
-        raise Exception('Must provide schema definition with query type.')
-
-    if query_type_name not in ast_map:
-        raise Exception('Specified query type "{}" not found in document.'.format(query_type_name))
-
-    if mutation_type_name and mutation_type_name not in ast_map:
-        raise Exception('Specified mutation type "{}" not found in document.'.format(mutation_type_name))
-
-    if subscription_type_name and subscription_type_name not in ast_map:
-        raise Exception('Specified subscription type "{}" not found in document.'.format(subscription_type_name))
-
-    schema_kwargs = {'query': produce_type_def(ast_map[query_type_name])}
+    schema_kwargs = {'query': get_object_type(ast_map[query_type_name])}
 
     if mutation_type_name:
-        schema_kwargs['mutation'] = produce_type_def(ast_map[mutation_type_name])
+        schema_kwargs['mutation'] = get_object_type(ast_map[mutation_type_name])
 
     if subscription_type_name:
-        schema_kwargs['subscription'] = produce_type_def(ast_map[subscription_type_name])
+        schema_kwargs['subscription'] = get_object_type(ast_map[subscription_type_name])
 
     if directive_defs:
-        schema_kwargs['directives'] = [get_directive(d) for d in directive_defs]
+        schema_kwargs['directives'] = directives
+
+    if types:
+        schema_kwargs['types'] = types
 
     return GraphQLSchema(**schema_kwargs)
