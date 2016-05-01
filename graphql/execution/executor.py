@@ -295,7 +295,6 @@ def complete_leaf_value(return_type, result):
     return serialized_result
 
 
-# TODO: Refactor based on js implementation
 def complete_abstract_value(exe_context, return_type, field_asts, info, result):
     """
     Complete an value of an abstract type by determining the runtime type of that value, then completing based
@@ -307,16 +306,17 @@ def complete_abstract_value(exe_context, return_type, field_asts, info, result):
     if isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
         if return_type.resolve_type:
             runtime_type = return_type.resolve_type(result, info)
-            if runtime_type and not return_type.is_possible_type(runtime_type):
-                raise GraphQLError(
-                    u'Runtime Object type "{}" is not a possible type for "{}".'.format(runtime_type, return_type),
-                    field_asts
-                )
         else:
             runtime_type = get_default_resolve_type_fn(result, info, return_type)
 
     if not runtime_type:
         return None
+
+    if not return_type.is_possible_type(runtime_type):
+        raise GraphQLError(
+            u'Runtime Object type "{}" is not a possible type for "{}".'.format(runtime_type, return_type),
+            field_asts
+        )
 
     return complete_object_value(exe_context, runtime_type, field_asts, info, result)
 
