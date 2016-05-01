@@ -158,7 +158,7 @@ def test_merges_parallel_fragments():
         }
 
 
-def test_threads_context_correctly():
+def test_threads_root_value_context_correctly():
     doc = 'query Example { a }'
 
     class Data(object):
@@ -166,8 +166,8 @@ def test_threads_context_correctly():
 
     ast = parse(doc)
 
-    def resolver(context, *_):
-        assert context.context_thing == 'thing'
+    def resolver(root_value, *_):
+        assert root_value.context_thing == 'thing'
         resolver.got_here = True
 
     resolver.got_here = False
