@@ -22,7 +22,7 @@ def _test_schema(server_schema):
     initial_introspection = graphql(server_schema, introspection_query)
     client_schema = build_client_schema(initial_introspection.data)
     second_introspection = graphql(client_schema, introspection_query)
-    assert initial_introspection.data == second_introspection.data
+    assert contain_subset(initial_introspection.data, second_introspection.data)
 
     return client_schema
 
