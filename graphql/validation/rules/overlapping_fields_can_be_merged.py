@@ -68,7 +68,6 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
 
         self.compared_set.add(ast1, ast2)
 
-
         # The return type for each field.
         type1 = def1 and def1.type
         type2 = def2 and def2.type
