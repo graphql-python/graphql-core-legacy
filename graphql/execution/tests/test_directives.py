@@ -295,3 +295,21 @@ def test_include_on_inline_anonymous_fragment_does_not_omit_field():
     result = execute_test_query(q)
     assert not result.errors
     assert result.data == {'a': 'a', 'b': 'b'}
+
+
+def test_works_directives_include_and_no_skip():
+    result = execute_test_query('{ a, b @include(if: true) @skip(if: false) }')
+    assert not result.errors
+    assert result.data == {'a': 'a', 'b': 'b'}
+
+
+def test_works_directives_include_and_skip():
+    result = execute_test_query('{ a, b @include(if: true) @skip(if: true) }')
+    assert not result.errors
+    assert result.data == {'a': 'a'}
+
+
+def test_works_directives_no_include_or_skip():
+    result = execute_test_query('{ a, b @include(if: false) @skip(if: false) }')
+    assert not result.errors
+    assert result.data == {'a': 'a'}

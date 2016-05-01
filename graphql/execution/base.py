@@ -199,7 +199,8 @@ def should_include_node(ctx, directives):
                 skip_ast.arguments,
                 ctx.variable_values,
             )
-            return not args.get('if')
+            if args.get('if') is True:
+                return False
 
         include_ast = None
 
@@ -215,7 +216,8 @@ def should_include_node(ctx, directives):
                 ctx.variable_values,
             )
 
-            return bool(args.get('if'))
+            if args.get('if') is False:
+                return False
 
     return True
 
