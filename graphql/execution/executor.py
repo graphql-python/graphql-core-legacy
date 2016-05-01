@@ -309,11 +309,23 @@ def complete_abstract_value(exe_context, return_type, field_asts, info, result):
         else:
             runtime_type = get_default_resolve_type_fn(result, info, return_type)
 
-    if not runtime_type:
-        return None
+    assert runtime_type, (
+        'Could not determine runtime type of value "{}" for field {}.{}.'.format(
+            result,
+            info.parent_type,
+            info.field_name
+        ))
 
-    schema = exe_context.schema
-    if not schema.is_possible_type(return_type, runtime_type):
+    assert isinstance(runtime_type, GraphQLObjectType), (
+        '{}.resolveType must return an instance of GraphQLObjectType ' +
+        'for field {}.{}, received "{}".'.format(
+            return_type,
+            info.parent_type,
+            info.field_name,
+            result,
+        ))
+
+    if not exe_context.schema.is_possible_type(return_type, runtime_type):
         raise GraphQLError(
             u'Runtime Object type "{}" is not a possible type for "{}".'.format(runtime_type, return_type),
             field_asts
