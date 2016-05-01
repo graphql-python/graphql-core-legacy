@@ -131,6 +131,11 @@ def resolve_field(exe_context, parent_type, source, field_asts):
     # fulfill any variable references.
     args = exe_context.get_argument_values(field_def, field_ast)
 
+    # The resolve function's optional third argument is a context value that
+    # is provided to every resolve function within an execution. It is commonly
+    # used to represent an authenticated user, or request-specific caches.
+    context = exe_context.context_value
+
     # The resolve function's optional third argument is a collection of
     # information about the current execution state.
     info = ResolveInfo(
@@ -145,7 +150,8 @@ def resolve_field(exe_context, parent_type, source, field_asts):
         variable_values=exe_context.variable_values,
     )
 
-    result = resolve_or_error(resolve_fn, source, args, exe_context, info)
+    executor = exe_context.executor
+    result = resolve_or_error(resolve_fn, source, args, context, info, executor)
 
     return complete_value_catching_error(
         exe_context,
@@ -156,10 +162,9 @@ def resolve_field(exe_context, parent_type, source, field_asts):
     )
 
 
-def resolve_or_error(resolve_fn, source, args, exe_context, info):
+def resolve_or_error(resolve_fn, source, args, context, info, executor):
     try:
-        # return resolve_fn(source, args, exe_context, info)
-        return exe_context.executor.execute(resolve_fn, source, args, info)
+        return executor.execute(resolve_fn, source, args, info)
     except Exception as e:
         logger.exception("An error occurred while resolving field {}.{}".format(
             info.parent_type.name, info.field_name
@@ -307,7 +312,7 @@ def complete_abstract_value(exe_context, return_type, field_asts, info, result):
         if return_type.resolve_type:
             runtime_type = return_type.resolve_type(result, info)
         else:
-            runtime_type = get_default_resolve_type_fn(result, info, return_type)
+            runtime_type = get_default_resolve_type_fn(result, exe_context.context_value, info, return_type)
 
     assert runtime_type, (
         'Could not determine runtime type of value "{}" for field {}.{}.'.format(
@@ -334,7 +339,7 @@ def complete_abstract_value(exe_context, return_type, field_asts, info, result):
     return complete_object_value(exe_context, runtime_type, field_asts, info, result)
 
 
-def get_default_resolve_type_fn(value, info, abstract_type):
+def get_default_resolve_type_fn(value, context, info, abstract_type):
     possible_types = info.schema.get_possible_types(abstract_type)
     for type in possible_types:
         if callable(type.is_type_of) and type.is_type_of(value, info):
