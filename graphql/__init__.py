@@ -1,5 +1,5 @@
 '''
-GraphQL provides a Python implementation for the GraphQL specification
+GraphQL.js provides a reference implementation for the GraphQL specification
 but is also a useful utility for operating on GraphQL files and building
 sophisticated tools.
 
@@ -14,33 +14,143 @@ utilities for every part of the GraphQL specification:
 
 This also includes utility functions for operating on GraphQL types and
 GraphQL documents to facilitate building tools.
+
+You may also import from each sub-directory directly. For example, the
+following two import statements are equivalent:
+
+    from graphql import parse
+    from graphql.language.base import parse
 '''
 
-from .execution import ExecutionResult, execute
-from .language.parser import parse
-from .language.source import Source
-from .validation import validate
+
+# The primary entry point into fulfilling a GraphQL request.
+from .graphql import (
+  graphql
+)
 
 
-def graphql(schema, request='', root=None, args=None, operation_name=None):
-    try:
-        source = Source(request, 'GraphQL request')
-        ast = parse(source)
-        validation_errors = validate(schema, ast)
-        if validation_errors:
-            return ExecutionResult(
-                errors=validation_errors,
-                invalid=True,
-            )
-        return execute(
-            schema,
-            ast,
-            root,
-            operation_name=operation_name,
-            variable_values=args or {},
-        )
-    except Exception as e:
-        return ExecutionResult(
-            errors=[e],
-            invalid=True,
-        )
+# Create and operate on GraphQL type definitions and schema.
+from .type import (  # no import order
+  GraphQLSchema,
+
+  # Definitions
+  GraphQLScalarType,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+  GraphQLUnionType,
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLList,
+  GraphQLNonNull,
+
+  # Scalars
+  GraphQLInt,
+  GraphQLFloat,
+  GraphQLString,
+  GraphQLBoolean,
+  GraphQLID,
+
+  # Predicates
+  is_type,
+  is_input_type,
+  is_output_type,
+  is_leaf_type,
+  is_composite_type,
+  is_abstract_type,
+
+  # Un-modifiers
+  get_nullable_type,
+  get_named_type,
+)
+
+
+# Parse and operate on GraphQL language source files.
+from .language.base import (  # no import order
+  Source,
+  get_location,
+
+  # Parse
+  parse,
+  parse_value,
+
+  # Print
+  print_ast,
+
+  # Visit
+  visit,
+  ParallelVisitor,
+  TypeInfoVisitor,
+  BREAK,
+)
+
+
+# Execute GraphQL queries.
+from .execution import (  # no import order
+  execute,
+)
+
+
+# Validate GraphQL queries.
+from .validation import (  # no import order
+  validate,
+  specified_rules,
+)
+
+# Create and format GraphQL errors.
+from .error import (  # no import order
+  GraphQLError,
+  format_error,
+)
+
+
+# Utilities for operating on GraphQL type schema and parsed sources.
+from .utils.base import (  # no import order
+  # The GraphQL query recommended for a full schema introspection.
+  introspection_query,
+
+  # Gets the target Operation from a Document
+  get_operation_ast,
+
+  # Build a GraphQLSchema from an introspection result.
+  build_client_schema,
+
+  # Build a GraphQLSchema from a parsed GraphQL Schema language AST.
+  build_ast_schema,
+
+  # Extends an existing GraphQLSchema from a parsed GraphQL Schema
+  # language AST.
+  extend_schema,
+
+  # Print a GraphQLSchema to GraphQL Schema language.
+  print_schema,
+
+  # Create a GraphQLType from a GraphQL language AST.
+  type_from_ast,
+
+  # Create a JavaScript value from a GraphQL language AST.
+  value_from_ast,
+
+  # Create a GraphQL language AST from a JavaScript value.
+  ast_from_value,
+
+  # A helper to use within recursive-descent visitors which need to be aware of
+  # the GraphQL type system.
+  TypeInfo,
+
+  # Determine if JavaScript values adhere to a GraphQL type.
+  is_valid_value,
+
+  # Determine if AST values adhere to a GraphQL type.
+  is_valid_literal_value,
+
+  # Concatenates multiple AST together.
+  concat_ast,
+
+  # Comparators for types
+  is_equal_type,
+  is_type_sub_type_of,
+  do_types_overlap,
+
+  # Asserts a string is a valid GraphQL name.
+  assert_valid_name,
+)

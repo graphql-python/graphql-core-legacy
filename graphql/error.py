@@ -6,13 +6,13 @@ class Error(Exception):
 
 
 class GraphQLError(Error):
-    __slots__ = 'message', 'nodes', 'stack', '_source', '_positions'
+    __slots__ = 'message', 'nodes', 'original_error', '_source', '_positions'
 
-    def __init__(self, message, nodes=None, stack=None, source=None, positions=None):
+    def __init__(self, message, nodes=None, original_error=None, source=None, positions=None):
         super(GraphQLError, self).__init__(message)
         self.message = message or 'An unknown error occurred.'
         self.nodes = nodes
-        self.stack = stack or message
+        self.original_error = original_error
         self._source = source
         self._positions = positions
 
