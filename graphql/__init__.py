@@ -97,14 +97,14 @@ from .validation import (  # no import order
 )
 
 # Create and format GraphQL errors.
-from .error import (  # no import order
+from .error import (
   GraphQLError,
   format_error,
 )
 
 
 # Utilities for operating on GraphQL type schema and parsed sources.
-from .utils.base import (  # no import order
+from .utils.base import (
   # The GraphQL query recommended for a full schema introspection.
   introspection_query,
 
@@ -153,4 +153,61 @@ from .utils.base import (  # no import order
 
   # Asserts a string is a valid GraphQL name.
   assert_valid_name,
+)
+
+__all__ = (
+    'graphql',
+    'GraphQLBoolean',
+    'GraphQLEnumType',
+    'GraphQLFloat',
+    'GraphQLID',
+    'GraphQLInputObjectType',
+    'GraphQLInt',
+    'GraphQLInterfaceType',
+    'GraphQLList',
+    'GraphQLNonNull',
+    'GraphQLObjectType',
+    'GraphQLScalarType',
+    'GraphQLSchema',
+    'GraphQLString',
+    'GraphQLUnionType',
+    'get_named_type',
+    'get_nullable_type',
+    'is_abstract_type',
+    'is_composite_type',
+    'is_input_type',
+    'is_leaf_type',
+    'is_output_type',
+    'is_type',
+    'BREAK',
+    'ParallelVisitor',
+    'Source',
+    'TypeInfoVisitor',
+    'get_location',
+    'parse',
+    'parse_value',
+    'print_ast',
+    'visit',
+    'execute',
+    'specified_rules',
+    'validate',
+    'GraphQLError',
+    'format_error',
+    'TypeInfo',
+    'assert_valid_name',
+    'ast_from_value',
+    'build_ast_schema',
+    'build_client_schema',
+    'concat_ast',
+    'do_types_overlap',
+    'extend_schema',
+    'get_operation_ast',
+    'introspection_query',
+    'is_equal_type',
+    'is_type_sub_type_of',
+    'is_valid_literal_value',
+    'is_valid_value',
+    'print_schema',
+    'type_from_ast',
+    'value_from_ast',
 )
