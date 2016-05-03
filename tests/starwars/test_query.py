@@ -162,7 +162,7 @@ def test_fetch_some_id_query():
             'name': 'Luke Skywalker',
         }
     }
-    result = graphql(StarWarsSchema, query, None, params)
+    result = graphql(StarWarsSchema, query, variable_values=params)
     assert not result.errors
     assert result.data == expected
 
@@ -183,7 +183,7 @@ def test_fetch_some_id_query2():
             'name': 'Han Solo',
         }
     }
-    result = graphql(StarWarsSchema, query, None, params)
+    result = graphql(StarWarsSchema, query, variable_values=params)
     assert not result.errors
     assert result.data == expected
 
@@ -202,7 +202,7 @@ def test_invalid_id_query():
     expected = {
         'human': None
     }
-    result = graphql(StarWarsSchema, query, None, params)
+    result = graphql(StarWarsSchema, query, variable_values=params)
     assert not result.errors
     assert result.data == expected
 
