@@ -130,40 +130,40 @@ def test_does_not_accept_enum_literal_in_place_of_int():
 
 
 def test_accepts_json_string_as_enum_variable():
-    result = graphql(Schema, 'query test($color: Color!) { colorEnum(fromEnum: $color) }', None, {'color': 'BLUE'})
+    result = graphql(Schema, 'query test($color: Color!) { colorEnum(fromEnum: $color) }', variable_values={'color': 'BLUE'})
     assert not result.errors
     assert result.data == {'colorEnum': 'BLUE'}
 
 
 def test_accepts_enum_literals_as_input_arguments_to_mutations():
-    result = graphql(Schema, 'mutation x($color: Color!) { favoriteEnum(color: $color) }', None, {'color': 'GREEN'})
+    result = graphql(Schema, 'mutation x($color: Color!) { favoriteEnum(color: $color) }', variable_values={'color': 'GREEN'})
     assert not result.errors
     assert result.data == {'favoriteEnum': 'GREEN'}
 
 
 def test_accepts_enum_literals_as_input_arguments_to_subscriptions():
     result = graphql(
-        Schema, 'subscription x($color: Color!) { subscribeToEnum(color: $color) }', None, {
+        Schema, 'subscription x($color: Color!) { subscribeToEnum(color: $color) }', variable_values={
             'color': 'GREEN'})
     assert not result.errors
     assert result.data == {'subscribeToEnum': 'GREEN'}
 
 
 def test_does_not_accept_internal_value_as_enum_variable():
-    result = graphql(Schema, 'query test($color: Color!) { colorEnum(fromEnum: $color) }', None, {'color': 2})
+    result = graphql(Schema, 'query test($color: Color!) { colorEnum(fromEnum: $color) }', variable_values={'color': 2})
     assert not result.data
     assert result.errors[0].message == 'Variable "$color" got invalid value 2.\n' \
                                        'Expected type "Color", found 2.'
 
 
 def test_does_not_accept_string_variables_as_enum_input():
-    result = graphql(Schema, 'query test($color: String!) { colorEnum(fromEnum: $color) }', None, {'color': 'BLUE'})
+    result = graphql(Schema, 'query test($color: String!) { colorEnum(fromEnum: $color) }', variable_values={'color': 'BLUE'})
     assert not result.data
     assert result.errors[0].message == 'Variable "color" of type "String!" used in position expecting type "Color".'
 
 
 def test_does_not_accept_internal_value_as_enum_input():
-    result = graphql(Schema, 'query test($color: Int!) { colorEnum(fromEnum: $color) }', None, {'color': 2})
+    result = graphql(Schema, 'query test($color: Int!) { colorEnum(fromEnum: $color) }', variable_values={'color': 2})
     assert not result.data
     assert result.errors[0].message == 'Variable "color" of type "Int!" used in position expecting type "Color".'
 
