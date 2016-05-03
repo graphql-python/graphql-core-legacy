@@ -259,7 +259,7 @@ class ResolveInfo(object):
         self.variable_values = variable_values
 
 
-def default_resolve_fn(source, args, info):
+def default_resolve_fn(source, args, context, info):
     """If a resolve function is not given, then a default resolve behavior is used which takes the property of the source object
     of the same name as the field and returns it as the result, or if it's a function, returns the result of calling that function."""
     name = info.field_name

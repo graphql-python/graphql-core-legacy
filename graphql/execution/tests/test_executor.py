@@ -485,7 +485,7 @@ def test_fails_when_an_is_type_of_check_is_not_met():
         fields={
             'value': GraphQLField(GraphQLString),
         },
-        is_type_of=lambda obj, info: isinstance(obj, Special)
+        is_type_of=lambda obj, context, info: isinstance(obj, Special)
     )
 
     schema = GraphQLSchema(

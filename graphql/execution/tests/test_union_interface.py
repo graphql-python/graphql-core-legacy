@@ -38,7 +38,7 @@ DogType = GraphQLObjectType(
         'name': GraphQLField(GraphQLString),
         'barks': GraphQLField(GraphQLBoolean),
     },
-    is_type_of=lambda value, info: isinstance(value, Dog)
+    is_type_of=lambda value, context, info: isinstance(value, Dog)
 )
 
 CatType = GraphQLObjectType(
@@ -48,11 +48,11 @@ CatType = GraphQLObjectType(
         'name': GraphQLField(GraphQLString),
         'meows': GraphQLField(GraphQLBoolean),
     },
-    is_type_of=lambda value, info: isinstance(value, Cat)
+    is_type_of=lambda value, context, info: isinstance(value, Cat)
 )
 
 
-def resolve_pet_type(value, info):
+def resolve_pet_type(value, context, info):
     if isinstance(value, Dog):
         return DogType
     if isinstance(value, Cat):
@@ -70,7 +70,7 @@ PersonType = GraphQLObjectType(
         'pets': GraphQLField(GraphQLList(PetType)),
         'friends': GraphQLField(GraphQLList(NamedType)),
     },
-    is_type_of=lambda value, info: isinstance(value, Person)
+    is_type_of=lambda value, context, info: isinstance(value, Person)
 )
 
 schema = GraphQLSchema(query=PersonType, types=[PetType])
@@ -107,6 +107,7 @@ def test_can_introspect_on_union_and_intersection_types():
     }''')
 
     result = execute(schema, ast)
+    assert not result.errors
     assert result.data == {
         'Named': {
             'enumValues': None,
@@ -311,12 +312,15 @@ def test_only_include_fields_from_matching_fragment_condition():
 
 
 def test_gets_execution_info_in_resolver():
-    encountered_schema = [None]
-    encountered_root_value = [None]
+    class encountered:
+        schema = None
+        root_value = None
+        context = None
 
-    def resolve_type(obj, info):
-        encountered_schema[0] = info.schema
-        encountered_root_value[0] = info.root_value
+    def resolve_type(obj, context, info):
+        encountered.schema = info.schema
+        encountered.root_value = info.root_value
+        encountered.context = context
         return PersonType2
 
     NamedType2 = GraphQLInterfaceType(
@@ -338,12 +342,15 @@ def test_gets_execution_info_in_resolver():
 
     schema2 = GraphQLSchema(query=PersonType2)
     john2 = Person('John', [], [liz])
+    context = {'hey'}
     ast = parse('''{ name, friends { name } }''')
 
-    result = execute(schema2, ast, john2)
+    result = execute(schema2, ast, john2, context_value=context)
+    assert not result.errors
     assert result.data == {
         'name': 'John', 'friends': [{'name': 'Liz'}]
     }
 
-    assert encountered_schema[0] == schema2
-    assert encountered_root_value[0] == john2
+    assert encountered.schema == schema2
+    assert encountered.root_value == john2
+    assert encountered.context == context

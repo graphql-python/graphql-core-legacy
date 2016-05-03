@@ -164,7 +164,7 @@ def resolve_field(exe_context, parent_type, source, field_asts):
 
 def resolve_or_error(resolve_fn, source, args, context, info, executor):
     try:
-        return executor.execute(resolve_fn, source, args, info)
+        return executor.execute(resolve_fn, source, args, context, info)
     except Exception as e:
         logger.exception("An error occurred while resolving field {}.{}".format(
             info.parent_type.name, info.field_name
@@ -310,7 +310,7 @@ def complete_abstract_value(exe_context, return_type, field_asts, info, result):
     # Field type must be Object, Interface or Union and expect sub-selections.
     if isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
         if return_type.resolve_type:
-            runtime_type = return_type.resolve_type(result, info)
+            runtime_type = return_type.resolve_type(result, exe_context.context_value, info)
         else:
             runtime_type = get_default_resolve_type_fn(result, exe_context.context_value, info, return_type)
 
@@ -342,7 +342,7 @@ def complete_abstract_value(exe_context, return_type, field_asts, info, result):
 def get_default_resolve_type_fn(value, context, info, abstract_type):
     possible_types = info.schema.get_possible_types(abstract_type)
     for type in possible_types:
-        if callable(type.is_type_of) and type.is_type_of(value, info):
+        if callable(type.is_type_of) and type.is_type_of(value, context, info):
             return type
 
 
@@ -350,7 +350,7 @@ def complete_object_value(exe_context, return_type, field_asts, info, result):
     """
     Complete an Object value by evaluating all sub-selections.
     """
-    if return_type.is_type_of and not return_type.is_type_of(result, info):
+    if return_type.is_type_of and not return_type.is_type_of(result, exe_context.context_value, info):
         raise GraphQLError(
             u'Expected value of type "{}" but got: {}.'.format(return_type, type(result).__name__),
             field_asts

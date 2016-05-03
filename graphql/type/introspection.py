@@ -168,7 +168,7 @@ class TypeFieldResolvers(object):
             return type.get_interfaces()
 
     @staticmethod
-    def possible_types(type, args, info):
+    def possible_types(type, args, context, info):
         if isinstance(type, (GraphQLInterfaceType, GraphQLUnionType)):
             return info.schema.get_possible_types(type)
 
@@ -350,7 +350,7 @@ IntrospectionSchema = __Schema
 SchemaMetaFieldDef = GraphQLField(
     type=GraphQLNonNull(__Schema),
     description='Access the current type schema of this server.',
-    resolver=lambda source, args, info: info.schema,
+    resolver=lambda source, args, context, info: info.schema,
     args=[]
 )
 SchemaMetaFieldDef.name = '__schema'
@@ -361,7 +361,7 @@ TypeMetaFieldDef = GraphQLField(
     type=__Type,
     description='Request the type information of a single type.',
     args=[TypeMetaFieldDef_args_name],
-    resolver=lambda source, args, info: info.schema.get_type(args['name'])
+    resolver=lambda source, args, context, info: info.schema.get_type(args['name'])
 )
 TypeMetaFieldDef.name = '__type'
 del TypeMetaFieldDef_args_name
@@ -369,7 +369,7 @@ del TypeMetaFieldDef_args_name
 TypeNameMetaFieldDef = GraphQLField(
     type=GraphQLNonNull(GraphQLString),
     description='The name of the current Object type at runtime.',
-    resolver=lambda source, args, info: info.parent_type.name,
+    resolver=lambda source, args, context, info: info.parent_type.name,
     args=[]
 )
 TypeNameMetaFieldDef.name = '__typename'

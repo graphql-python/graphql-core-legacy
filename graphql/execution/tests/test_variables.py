@@ -27,7 +27,7 @@ TestInputObject = GraphQLInputObjectType('TestInputObject', {
 stringify = lambda obj: json.dumps(obj, sort_keys=True)
 
 
-def input_to_json(obj, args, info):
+def input_to_json(obj, args, context, info):
     input = args.get('input')
     if input:
         return stringify(input)
