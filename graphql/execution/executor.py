@@ -2,8 +2,9 @@ import collections
 import functools
 import logging
 
+from promise import Promise, is_thenable, promise_for_dict, promisify
+
 from ..error import GraphQLError
-from ..pyutils.aplus import Promise, is_thenable, promise_for_dict, promisify
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
 from ..type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
                     GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,

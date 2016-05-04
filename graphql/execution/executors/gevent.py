@@ -2,7 +2,8 @@ from __future__ import absolute_import
 
 import gevent
 
-from ...pyutils.aplus import Promise
+from promise import Promise
+
 from .utils import process
 
 

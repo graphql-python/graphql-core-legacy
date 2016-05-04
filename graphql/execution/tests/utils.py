@@ -1,4 +1,4 @@
-from graphql.pyutils.aplus import Promise
+from promise import Promise
 
 
 def resolved(value):

@@ -1,7 +1,8 @@
 from multiprocessing.pool import ThreadPool
 from threading import Thread
 
-from ...pyutils.aplus import Promise
+from promise import Promise
+
 from .utils import process
 
 

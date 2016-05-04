@@ -1,8 +1,7 @@
 from __future__ import absolute_import
 
 from asyncio import Future, ensure_future, get_event_loop, iscoroutine, wait
-
-from graphql.pyutils.aplus import Promise
+from promise import Promise
 
 
 def process_future_result(promise):
