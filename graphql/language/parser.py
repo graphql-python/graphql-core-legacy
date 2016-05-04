@@ -1,7 +1,7 @@
 from six import string_types
 
 from . import ast
-from .error import LanguageError
+from ..error import GraphQLSyntaxError
 from .lexer import Lexer, TokenKind, get_token_desc, get_token_kind_desc
 from .source import Source
 
@@ -109,7 +109,7 @@ def expect(parser, kind):
         advance(parser)
         return token
 
-    raise LanguageError(
+    raise GraphQLSyntaxError(
         parser.source,
         token.start,
         u'Expected {}, found {}'.format(
@@ -128,7 +128,7 @@ def expect_keyword(parser, value):
         advance(parser)
         return token
 
-    raise LanguageError(
+    raise GraphQLSyntaxError(
         parser.source,
         token.start,
         u'Expected "{}", found {}'.format(value, get_token_desc(token))
@@ -139,7 +139,7 @@ def unexpected(parser, at_token=None):
     """Helper function for creating an error when an unexpected lexed token
     is encountered."""
     token = at_token or parser.token
-    return LanguageError(
+    return GraphQLSyntaxError(
         parser.source,
         token.start,
         u'Unexpected {}'.format(get_token_desc(token))

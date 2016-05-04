@@ -1,14 +1,14 @@
-from ..error import GraphQLError
-from .location import get_location
+from ..language.location import get_location
+from .base import GraphQLError
 
-__all__ = ['LanguageError']
+__all__ = ['GraphQLSyntaxError']
 
 
-class LanguageError(GraphQLError):
+class GraphQLSyntaxError(GraphQLError):
 
     def __init__(self, source, position, description):
         location = get_location(source, position)
-        super(LanguageError, self).__init__(
+        super(GraphQLSyntaxError, self).__init__(
             message=u'Syntax Error {} ({}:{}) {}\n\n{}'.format(
                 source.name,
                 location.line,

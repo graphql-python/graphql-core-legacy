@@ -1,7 +1,7 @@
 from pytest import raises
 
+from graphql.error import GraphQLSyntaxError
 from graphql.language import ast
-from graphql.language.error import LanguageError
 from graphql.language.location import SourceLocation
 from graphql.language.parser import Loc, parse
 from graphql.language.source import Source
@@ -15,7 +15,7 @@ def test_repr_loc():
 
 
 def test_parse_provides_useful_errors():
-    with raises(LanguageError) as excinfo:
+    with raises(GraphQLSyntaxError) as excinfo:
         parse("""{""")
     assert (
         u'Syntax Error GraphQL (1:2) Expected Name, found EOF\n'
@@ -28,27 +28,27 @@ def test_parse_provides_useful_errors():
     assert excinfo.value.positions == [1]
     assert excinfo.value.locations == [SourceLocation(line=1, column=2)]
 
-    with raises(LanguageError) as excinfo:
+    with raises(GraphQLSyntaxError) as excinfo:
         parse("""{ ...MissingOn }
 fragment MissingOn Type
 """)
     assert 'Syntax Error GraphQL (2:20) Expected "on", found Name "Type"' in str(excinfo.value)
 
-    with raises(LanguageError) as excinfo:
+    with raises(GraphQLSyntaxError) as excinfo:
         parse('{ field: {} }')
     assert 'Syntax Error GraphQL (1:10) Expected Name, found {' in str(excinfo.value)
 
-    with raises(LanguageError) as excinfo:
+    with raises(GraphQLSyntaxError) as excinfo:
         parse('notanoperation Foo { field }')
     assert 'Syntax Error GraphQL (1:1) Unexpected Name "notanoperation"' in str(excinfo.value)
 
-    with raises(LanguageError) as excinfo:
+    with raises(GraphQLSyntaxError) as excinfo:
         parse('...')
     assert 'Syntax Error GraphQL (1:1) Unexpected ...' in str(excinfo.value)
 
 
 def test_parse_provides_useful_error_when_using_source():
-    with raises(LanguageError) as excinfo:
+    with raises(GraphQLSyntaxError) as excinfo:
         parse(Source('query', 'MyQuery.graphql'))
     assert 'Syntax Error MyQuery.graphql (1:6) Expected {, found EOF' in str(excinfo.value)
 
@@ -58,27 +58,27 @@ def test_parses_variable_inline_values():
 
 
 def test_parses_constant_default_values():
-    with raises(LanguageError) as excinfo:
+    with raises(GraphQLSyntaxError) as excinfo:
         parse('query Foo($x: Complex = { a: { b: [ $var ] } }) { field }')
     assert 'Syntax Error GraphQL (1:37) Unexpected $' in str(excinfo.value)
 
 
 def test_does_not_accept_fragments_named_on():
-    with raises(LanguageError) as excinfo:
+    with raises(GraphQLSyntaxError) as excinfo:
         parse('fragment on on on { on }')
 
     assert 'Syntax Error GraphQL (1:10) Unexpected Name "on"' in excinfo.value.message
 
 
 def test_does_not_accept_fragments_spread_of_on():
-    with raises(LanguageError) as excinfo:
+    with raises(GraphQLSyntaxError) as excinfo:
         parse('{ ...on }')
 
     assert 'Syntax Error GraphQL (1:9) Expected Name, found }' in excinfo.value.message
 
 
 def test_does_not_allow_null_value():
-    with raises(LanguageError) as excinfo:
+    with raises(GraphQLSyntaxError) as excinfo:
         parse('{ fieldWithNullableStringInput(input: null) }')
 
     assert 'Syntax Error GraphQL (1:39) Unexpected Name "null"' in excinfo.value.message

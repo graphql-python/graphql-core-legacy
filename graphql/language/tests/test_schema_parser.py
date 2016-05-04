@@ -1,8 +1,8 @@
 from pytest import raises
 
 from graphql import Source, parse
+from graphql.error import GraphQLSyntaxError
 from graphql.language import ast
-from graphql.language.error import LanguageError
 from graphql.language.parser import Loc
 
 
@@ -689,7 +689,7 @@ input Hello {
   world(foo: Int): String
 }
 '''
-    with raises(LanguageError) as excinfo:
+    with raises(GraphQLSyntaxError) as excinfo:
         parse(body)
 
     assert 'Syntax Error GraphQL (3:8) Expected :, found (' in excinfo.value.message

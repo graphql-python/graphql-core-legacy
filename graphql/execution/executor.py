@@ -4,7 +4,7 @@ import logging
 
 from promise import Promise, is_thenable, promise_for_dict, promisify
 
-from ..error import GraphQLError
+from ..error import GraphQLError, GraphQLLocatedError
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
 from ..type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
                     GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
@@ -226,11 +226,11 @@ def complete_value(exe_context, return_type, field_asts, info, result):
                 info,
                 resolved
             ),
-            lambda error: Promise.rejected(GraphQLError(error and str(error), field_asts, error))
+            lambda error: Promise.rejected(GraphQLLocatedError(field_asts, original_error=error))
         )
 
     if isinstance(result, Exception):
-        raise GraphQLError(str(result), field_asts, result)
+        raise GraphQLLocatedError(field_asts, original_error=result)
 
     if isinstance(return_type, GraphQLNonNull):
         completed = complete_value(
