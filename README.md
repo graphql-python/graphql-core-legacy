@@ -52,7 +52,7 @@ schema = GraphQLSchema(
     fields={
       'hello': GraphQLField(
         type= GraphQLString,
-        resolve=lambda *_: 'world'
+        resolver=lambda *_: 'world'
       )
     }
   )
@@ -72,10 +72,9 @@ query = '{ hello }'
 result = graphql(schema, query)
 
 # Prints
-# {
-#   "data": { "hello": "world" }
-# }
-print result
+# {'hello': 'world'} (as OrderedDict)
+
+print result.data
 ```
 
 This runs a query fetching the one field defined. The `graphql` function will
@@ -88,13 +87,9 @@ query = '{ boyhowdy }'
 result = graphql(schema, query)
 
 # Prints
-# {
-#   "errors": [
-#     { "message": "Cannot query field boyhowdy on RootQueryType",
-#       "locations": [ { "line": 1, "column": 3 } ] }
-#   ]
-# }
-print result
+# [GraphQLError('Cannot query field "boyhowdy" on type "RootQueryType".',)]
+
+print result.errors
 ```
 
 ### Executors
