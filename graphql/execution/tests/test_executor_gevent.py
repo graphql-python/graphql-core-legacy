@@ -1,31 +1,27 @@
 # flake8: noqa
+import gevent
 
-import asyncio
-import functools
 from graphql.error import format_error
 from graphql.execution import execute
+from graphql.language.location import SourceLocation
 from graphql.language.parser import parse
-from graphql.execution.executors.asyncio import AsyncioExecutor
-from graphql.type import (
-    GraphQLSchema,
-    GraphQLObjectType,
-    GraphQLField,
-    GraphQLString
-)
+from graphql.type import (GraphQLField, GraphQLObjectType, GraphQLSchema,
+                          GraphQLString)
+
+from ..executors.gevent import GeventExecutor
+from .test_mutations import assert_evaluate_mutations_serially
 
 
-def test_asyncio_py35_executor():
-    ast = parse('query Example { a, b, c }')
-
-    async def resolver(context, *_):
-        await asyncio.sleep(0.001)
+def test_gevent_executor():
+    def resolver(context, *_):
+        gevent.sleep(0.001)
         return 'hey'
 
-    async def resolver_2(context, *_):
-        await asyncio.sleep(0.003)
+    def resolver_2(context, *_):
+        gevent.sleep(0.003)
         return 'hey2'
 
-    def resolver_3(context, *_):
+    def resolver_3(contest, *_):
         return 'hey3'
 
     Type = GraphQLObjectType('Type', {
@@ -34,20 +30,21 @@ def test_asyncio_py35_executor():
         'c': GraphQLField(GraphQLString, resolver=resolver_3)
     })
 
-    result = execute(GraphQLSchema(Type), ast, executor=AsyncioExecutor())
+    ast = parse('{ a b c }')
+    result = execute(GraphQLSchema(Type), ast, executor=GeventExecutor())
     assert not result.errors
     assert result.data == {'a': 'hey', 'b': 'hey2', 'c': 'hey3'}
 
 
-def test_asyncio_py35_executor_with_error():
+def test_gevent_executor_with_error():
     ast = parse('query Example { a, b }')
 
-    async def resolver(context, *_):
-        await asyncio.sleep(0.001)
+    def resolver(context, *_):
+        gevent.sleep(0.001)
         return 'hey'
 
-    async def resolver_2(context, *_):
-        await asyncio.sleep(0.003)
+    def resolver_2(context, *_):
+        gevent.sleep(0.003)
         raise Exception('resolver_2 failed!')
 
     Type = GraphQLObjectType('Type', {
@@ -55,7 +52,11 @@ def test_asyncio_py35_executor_with_error():
         'b': GraphQLField(GraphQLString, resolver=resolver_2)
     })
 
-    result = execute(GraphQLSchema(Type), ast, executor=AsyncioExecutor())
+    result = execute(GraphQLSchema(Type), ast, executor=GeventExecutor())
     formatted_errors = list(map(format_error, result.errors))
     assert formatted_errors == [{'locations': [{'line': 1, 'column': 20}], 'message': 'resolver_2 failed!'}]
     assert result.data == {'a': 'hey', 'b': None}
+
+
+def test_evaluates_mutations_serially():
+    assert_evaluate_mutations_serially(executor=GeventExecutor())
