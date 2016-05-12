@@ -26,8 +26,8 @@ from .pyutils.version import get_version
 
 try:
     # This variable is injected in the __builtins__ by the build
-    # process. It used to enable importing subpackages of sklearn when
-    # the binaries are not built
+    # process. It used to enable importing subpackages when
+    # the required packages are not installed
     __GRAPHQL_SETUP__
 except NameError:
     __GRAPHQL_SETUP__ = False
