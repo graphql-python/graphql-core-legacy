@@ -1,4 +1,18 @@
 from setuptools import setup, find_packages
+import sys
+
+if sys.version_info[0] < 3:
+    import __builtin__ as builtins
+else:
+    import builtins
+
+# This is a bit (!) hackish: we are setting a global variable so that the main
+# graphql __init__ can detect if it is being loaded by the setup routine, to
+# avoid attempting to load components that aren't built yet:
+# the numpy distutils extensions that are used by scikit-learn to recursively
+# build the compiled extensions in sub-packages is based on the Python import
+# machinery.
+builtins.__GRAPHQL_SETUP__ = True
 
 version = __import__('graphql').get_version()
 
@@ -29,8 +43,16 @@ setup(
 
     keywords='api graphql protocol rest',
     packages=find_packages(exclude=['tests', 'tests_py35']),
-    install_requires=['six>=1.10.0','pypromise>=0.4.0'],
-    tests_require=['pytest>=2.7.3', 'gevent==1.1rc1', 'six>=1.10.0', 'pytest-mock'],
+    install_requires=[
+        'six>=1.10.0',
+        'pypromise>=0.4.0'
+    ],
+    tests_require=[
+        'pytest>=2.7.3',
+        'gevent==1.1rc1',
+        'six>=1.10.0',
+        'pytest-mock'
+    ],
     extras_require={
         'gevent': [
             'gevent==1.1rc1'

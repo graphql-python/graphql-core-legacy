@@ -23,200 +23,207 @@ following two import statements are equivalent:
 '''
 from .pyutils.version import get_version
 
-# The primary entry point into fulfilling a GraphQL request.
-from .graphql import (
-    graphql
-)
+
+try:
+    # This variable is injected in the __builtins__ by the build
+    # process. It used to enable importing subpackages of sklearn when
+    # the binaries are not built
+    __GRAPHQL_SETUP__
+except NameError:
+    __GRAPHQL_SETUP__ = False
 
 
-# Create and operate on GraphQL type definitions and schema.
-from .type import (  # no import order
-    GraphQLSchema,
-
-    # Definitions
-    GraphQLScalarType,
-    GraphQLObjectType,
-    GraphQLInterfaceType,
-    GraphQLUnionType,
-    GraphQLEnumType,
-    GraphQLInputObjectType,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLField,
-    GraphQLArgument,
-
-    # Scalars
-    GraphQLInt,
-    GraphQLFloat,
-    GraphQLString,
-    GraphQLBoolean,
-    GraphQLID,
-
-    # Predicates
-    is_type,
-    is_input_type,
-    is_output_type,
-    is_leaf_type,
-    is_composite_type,
-    is_abstract_type,
-
-    # Un-modifiers
-    get_nullable_type,
-    get_named_type,
-)
-
-
-# Parse and operate on GraphQL language source files.
-from .language.base import (  # no import order
-    Source,
-    get_location,
-
-    # Parse
-    parse,
-    parse_value,
-
-    # Print
-    print_ast,
-
-    # Visit
-    visit,
-    ParallelVisitor,
-    TypeInfoVisitor,
-    BREAK,
-)
-
-
-# Execute GraphQL queries.
-from .execution import (  # no import order
-    execute,
-)
-
-
-# Validate GraphQL queries.
-from .validation import (  # no import order
-    validate,
-    specified_rules,
-)
-
-# Create and format GraphQL errors.
-from .error import (
-    GraphQLError,
-    format_error,
-)
-
-
-# Utilities for operating on GraphQL type schema and parsed sources.
-from .utils.base import (
-    # The GraphQL query recommended for a full schema introspection.
-    introspection_query,
-
-    # Gets the target Operation from a Document
-    get_operation_ast,
-
-    # Build a GraphQLSchema from an introspection result.
-    build_client_schema,
-
-    # Build a GraphQLSchema from a parsed GraphQL Schema language AST.
-    build_ast_schema,
-
-    # Extends an existing GraphQLSchema from a parsed GraphQL Schema
-    # language AST.
-    extend_schema,
-
-    # Print a GraphQLSchema to GraphQL Schema language.
-    print_schema,
-
-    # Create a GraphQLType from a GraphQL language AST.
-    type_from_ast,
-
-    # Create a JavaScript value from a GraphQL language AST.
-    value_from_ast,
-
-    # Create a GraphQL language AST from a JavaScript value.
-    ast_from_value,
-
-    # A helper to use within recursive-descent visitors which need to be aware of
-    # the GraphQL type system.
-    TypeInfo,
-
-    # Determine if JavaScript values adhere to a GraphQL type.
-    is_valid_value,
-
-    # Determine if AST values adhere to a GraphQL type.
-    is_valid_literal_value,
-
-    # Concatenates multiple AST together.
-    concat_ast,
-
-    # Comparators for types
-    is_equal_type,
-    is_type_sub_type_of,
-    do_types_overlap,
-
-    # Asserts a string is a valid GraphQL name.
-    assert_valid_name,
-)
-
-
-VERSION = (0, 5, 0, 'beta', 2)
+VERSION = (0, 5, 0, 'beta', 3)
 
 __version__ = get_version(VERSION)
 
-__all__ = (
-    'graphql',
-    'GraphQLBoolean',
-    'GraphQLEnumType',
-    'GraphQLFloat',
-    'GraphQLID',
-    'GraphQLInputObjectType',
-    'GraphQLInt',
-    'GraphQLInterfaceType',
-    'GraphQLList',
-    'GraphQLNonNull',
-    'GraphQLField',
-    'GraphQLArgument',
-    'GraphQLObjectType',
-    'GraphQLScalarType',
-    'GraphQLSchema',
-    'GraphQLString',
-    'GraphQLUnionType',
-    'get_named_type',
-    'get_nullable_type',
-    'is_abstract_type',
-    'is_composite_type',
-    'is_input_type',
-    'is_leaf_type',
-    'is_output_type',
-    'is_type',
-    'BREAK',
-    'ParallelVisitor',
-    'Source',
-    'TypeInfoVisitor',
-    'get_location',
-    'parse',
-    'parse_value',
-    'print_ast',
-    'visit',
-    'execute',
-    'specified_rules',
-    'validate',
-    'GraphQLError',
-    'format_error',
-    'TypeInfo',
-    'assert_valid_name',
-    'ast_from_value',
-    'build_ast_schema',
-    'build_client_schema',
-    'concat_ast',
-    'do_types_overlap',
-    'extend_schema',
-    'get_operation_ast',
-    'introspection_query',
-    'is_equal_type',
-    'is_type_sub_type_of',
-    'is_valid_literal_value',
-    'is_valid_value',
-    'print_schema',
-    'type_from_ast',
-    'value_from_ast',
-)
+
+if not __GRAPHQL_SETUP__:
+    # The primary entry point into fulfilling a GraphQL request.
+    from .graphql import (
+        graphql
+    )
+
+    # Create and operate on GraphQL type definitions and schema.
+    from .type import (  # no import order
+        GraphQLSchema,
+
+        # Definitions
+        GraphQLScalarType,
+        GraphQLObjectType,
+        GraphQLInterfaceType,
+        GraphQLUnionType,
+        GraphQLEnumType,
+        GraphQLInputObjectType,
+        GraphQLList,
+        GraphQLNonNull,
+        GraphQLField,
+        GraphQLArgument,
+
+        # Scalars
+        GraphQLInt,
+        GraphQLFloat,
+        GraphQLString,
+        GraphQLBoolean,
+        GraphQLID,
+
+        # Predicates
+        is_type,
+        is_input_type,
+        is_output_type,
+        is_leaf_type,
+        is_composite_type,
+        is_abstract_type,
+
+        # Un-modifiers
+        get_nullable_type,
+        get_named_type,
+    )
+
+    # Parse and operate on GraphQL language source files.
+    from .language.base import (  # no import order
+        Source,
+        get_location,
+
+        # Parse
+        parse,
+        parse_value,
+
+        # Print
+        print_ast,
+
+        # Visit
+        visit,
+        ParallelVisitor,
+        TypeInfoVisitor,
+        BREAK,
+    )
+
+    # Execute GraphQL queries.
+    from .execution import (  # no import order
+        execute,
+    )
+
+    # Validate GraphQL queries.
+    from .validation import (  # no import order
+        validate,
+        specified_rules,
+    )
+
+    # Create and format GraphQL errors.
+    from .error import (
+        GraphQLError,
+        format_error,
+    )
+
+    # Utilities for operating on GraphQL type schema and parsed sources.
+    from .utils.base import (
+        # The GraphQL query recommended for a full schema introspection.
+        introspection_query,
+
+        # Gets the target Operation from a Document
+        get_operation_ast,
+
+        # Build a GraphQLSchema from an introspection result.
+        build_client_schema,
+
+        # Build a GraphQLSchema from a parsed GraphQL Schema language AST.
+        build_ast_schema,
+
+        # Extends an existing GraphQLSchema from a parsed GraphQL Schema
+        # language AST.
+        extend_schema,
+
+        # Print a GraphQLSchema to GraphQL Schema language.
+        print_schema,
+
+        # Create a GraphQLType from a GraphQL language AST.
+        type_from_ast,
+
+        # Create a JavaScript value from a GraphQL language AST.
+        value_from_ast,
+
+        # Create a GraphQL language AST from a JavaScript value.
+        ast_from_value,
+
+        # A helper to use within recursive-descent visitors which need to be aware of
+        # the GraphQL type system.
+        TypeInfo,
+
+        # Determine if JavaScript values adhere to a GraphQL type.
+        is_valid_value,
+
+        # Determine if AST values adhere to a GraphQL type.
+        is_valid_literal_value,
+
+        # Concatenates multiple AST together.
+        concat_ast,
+
+        # Comparators for types
+        is_equal_type,
+        is_type_sub_type_of,
+        do_types_overlap,
+
+        # Asserts a string is a valid GraphQL name.
+        assert_valid_name,
+    )
+
+    __all__ = (
+        'graphql',
+        'GraphQLBoolean',
+        'GraphQLEnumType',
+        'GraphQLFloat',
+        'GraphQLID',
+        'GraphQLInputObjectType',
+        'GraphQLInt',
+        'GraphQLInterfaceType',
+        'GraphQLList',
+        'GraphQLNonNull',
+        'GraphQLField',
+        'GraphQLArgument',
+        'GraphQLObjectType',
+        'GraphQLScalarType',
+        'GraphQLSchema',
+        'GraphQLString',
+        'GraphQLUnionType',
+        'get_named_type',
+        'get_nullable_type',
+        'is_abstract_type',
+        'is_composite_type',
+        'is_input_type',
+        'is_leaf_type',
+        'is_output_type',
+        'is_type',
+        'BREAK',
+        'ParallelVisitor',
+        'Source',
+        'TypeInfoVisitor',
+        'get_location',
+        'parse',
+        'parse_value',
+        'print_ast',
+        'visit',
+        'execute',
+        'specified_rules',
+        'validate',
+        'GraphQLError',
+        'format_error',
+        'TypeInfo',
+        'assert_valid_name',
+        'ast_from_value',
+        'build_ast_schema',
+        'build_client_schema',
+        'concat_ast',
+        'do_types_overlap',
+        'extend_schema',
+        'get_operation_ast',
+        'introspection_query',
+        'is_equal_type',
+        'is_type_sub_type_of',
+        'is_valid_literal_value',
+        'is_valid_value',
+        'print_schema',
+        'type_from_ast',
+        'value_from_ast',
+        'get_version',
+    )
