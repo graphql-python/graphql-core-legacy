@@ -21,7 +21,7 @@ following two import statements are equivalent:
     from graphql import parse
     from graphql.language.base import parse
 '''
-
+from .pyutils.version import get_version
 
 # The primary entry point into fulfilling a GraphQL request.
 from .graphql import (
@@ -156,6 +156,11 @@ from .utils.base import (
     # Asserts a string is a valid GraphQL name.
     assert_valid_name,
 )
+
+
+VERSION = (0, 5, 0, 'beta', 1)
+
+__version__ = get_version(VERSION)
 
 __all__ = (
     'graphql',

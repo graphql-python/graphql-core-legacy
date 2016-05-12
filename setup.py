@@ -1,8 +1,10 @@
 from setuptools import setup, find_packages
 
+version = __import__('graphql').get_version()
+
 setup(
     name='graphql-core',
-    version='0.4.18',
+    version=version,
     description='GraphQL implementation for Python',
     url='https://github.com/graphql-python/graphql-core',
     download_url='https://github.com/graphql-python/graphql-core/releases',
