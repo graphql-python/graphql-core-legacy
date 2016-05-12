@@ -158,7 +158,7 @@ from .utils.base import (
 )
 
 
-VERSION = (0, 5, 0, 'beta', 1)
+VERSION = (0, 5, 0, 'beta', 2)
 
 __version__ = get_version(VERSION)
 
