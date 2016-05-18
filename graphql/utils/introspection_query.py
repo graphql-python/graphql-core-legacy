@@ -1,74 +1,90 @@
 introspection_query = '''
-query IntrospectionQuery {
+  query IntrospectionQuery {
     __schema {
-        queryType { name }
-        mutationType { name }
-        subscriptionType { name }
-        types {
-            ...FullType
+      queryType { name }
+      mutationType { name }
+      subscriptionType { name }
+      types {
+        ...FullType
+      }
+      directives {
+        name
+        description
+        locations
+        args {
+          ...InputValue
         }
-        directives {
-            name
-            description
-            locations
-            args {
-                ...InputValue
-            }
-        }
+      }
     }
-}
-fragment FullType on __Type {
+  }
+  fragment FullType on __Type {
     kind
     name
     description
     fields(includeDeprecated: true) {
-        name
-        description
-        args {
-            ...InputValue
-        }
-        type {
-            ...TypeRef
-        }
-        isDeprecated
-        deprecationReason
+      name
+      description
+      args {
+        ...InputValue
+      }
+      type {
+        ...TypeRef
+      }
+      isDeprecated
+      deprecationReason
     }
     inputFields {
-        ...InputValue
+      ...InputValue
     }
     interfaces {
-        ...TypeRef
+      ...TypeRef
     }
     enumValues(includeDeprecated: true) {
-        name
-        description
-        isDeprecated
-        deprecationReason
+      name
+      description
+      isDeprecated
+      deprecationReason
     }
     possibleTypes {
-        ...TypeRef
+      ...TypeRef
     }
-}
-fragment InputValue on __InputValue {
+  }
+  fragment InputValue on __InputValue {
     name
     description
     type { ...TypeRef }
     defaultValue
-}
-fragment TypeRef on __Type {
+  }
+  fragment TypeRef on __Type {
     kind
     name
     ofType {
+      kind
+      name
+      ofType {
         kind
         name
         ofType {
+          kind
+          name
+          ofType {
             kind
             name
             ofType {
+              kind
+              name
+              ofType {
                 kind
                 name
+                ofType {
+                  kind
+                  name
+                }
+              }
             }
+          }
         }
+      }
     }
-}
+  }
 '''

@@ -615,7 +615,11 @@ def test_fails_on_very_deep_lists():
             name='Query',
             fields={
                 'foo': GraphQLField(
-                    GraphQLList(GraphQLList(GraphQLList(GraphQLList(GraphQLString))))
+                    GraphQLList(GraphQLList(GraphQLList(GraphQLList(
+                        GraphQLList(GraphQLList(GraphQLList(GraphQLList(
+                            GraphQLList(GraphQLString)
+                        ))))
+                    ))))
                 )
             }
         )
@@ -629,13 +633,17 @@ def test_fails_on_very_deep_lists():
     assert str(excinfo.value) == 'Decorated type deeper than introspection query.'
 
 
-def test_fails_on_a_deep_non_null():
+def test_fails_on_a_very_deep_non_null():
     schema = GraphQLSchema(
         query=GraphQLObjectType(
             name='Query',
             fields={
                 'foo': GraphQLField(
-                    GraphQLList(GraphQLList(GraphQLList(GraphQLNonNull(GraphQLString))))
+                    GraphQLList(GraphQLList(GraphQLList(GraphQLList(
+                        GraphQLList(GraphQLList(GraphQLList(GraphQLList(
+                            GraphQLNonNull(GraphQLString)
+                        ))))
+                    ))))
                 )
             }
         )
