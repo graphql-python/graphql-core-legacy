@@ -121,9 +121,6 @@ def test_if_false_omits_inline_fragment():
             b
           }
         }
-        fragment Frag on TestType {
-          b
-        }
     '''
     result = execute_test_query(q)
     assert not result.errors
@@ -137,9 +134,6 @@ def test_if_true_includes_inline_fragment():
           ... on TestType @include(if: true) {
             b
           }
-        }
-        fragment Frag on TestType {
-          b
         }
     '''
     result = execute_test_query(q)
@@ -155,9 +149,6 @@ def test_skip_false_includes_inline_fragment():
             b
           }
         }
-        fragment Frag on TestType {
-          b
-        }
     '''
     result = execute_test_query(q)
     assert not result.errors
@@ -171,9 +162,6 @@ def test_skip_true_omits_inline_fragment():
           ... on TestType @skip(if: true) {
             b
           }
-        }
-        fragment Frag on TestType {
-          b
         }
     '''
     result = execute_test_query(q)
