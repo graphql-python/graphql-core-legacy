@@ -635,3 +635,13 @@ def test_ignores_unknown_types():
         }
     }
     ''')
+
+
+def test_error_message_contains_hint_for_alias_conflict():
+    error = OverlappingFieldsCanBeMerged.fields_conflict_message('x', 'a and b are different fields')
+    hint = (
+        'Fields "x" conflict because a and b are different fields. '
+        'Use different aliases on the fields to fetch both '
+        'if this was intentional.'
+    )
+    assert error == hint

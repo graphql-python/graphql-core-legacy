@@ -257,7 +257,11 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
 
     @classmethod
     def fields_conflict_message(cls, reason_name, reason):
-        return 'Fields "{}" conflict because {}'.format(reason_name, cls.reason_message(reason))
+        return (
+            'Fields "{}" conflict because {}. '
+            'Use different aliases on the fields to fetch both if this was '
+            'intentional.'
+        ).format(reason_name, cls.reason_message(reason))
 
     @classmethod
     def reason_message(cls, reason):
