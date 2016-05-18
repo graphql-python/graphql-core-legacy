@@ -45,7 +45,7 @@ setup(
     packages=find_packages(exclude=['tests', 'tests_py35']),
     install_requires=[
         'six>=1.10.0',
-        'pypromise>=0.4.0'
+        'promise>=0.4.0'
     ],
     tests_require=[
         'pytest>=2.7.3',
