@@ -13,10 +13,7 @@ class GraphQLLocatedError(GraphQLError):
         else:
             message = 'An unknown error occurred.'
 
-        if isinstance(original_error, GraphQLError):
-            stack = original_error.stack
-        else:
-            stack = sys.exc_info()[2]
+        stack = original_error.stack
 
         super(GraphQLLocatedError, self).__init__(
             message=message,
