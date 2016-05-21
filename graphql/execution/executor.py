@@ -1,6 +1,7 @@
 import collections
 import functools
 import logging
+import sys
 
 from promise import Promise, is_thenable, promise_for_dict, promisify
 
@@ -170,6 +171,7 @@ def resolve_or_error(resolve_fn, source, args, context, info, executor):
         logger.exception("An error occurred while resolving field {}.{}".format(
             info.parent_type.name, info.field_name
         ))
+        e.stack = sys.exc_info()[2]
         return e
 
 
