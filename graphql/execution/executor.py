@@ -51,7 +51,7 @@ def execute(schema, document_ast, root_value=None, context_value=None,
 
     p = Promise(executor).catch(on_rejected).then(on_resolve)
     context.executor.wait_until_finished()
-    return p.value
+    return p.get()
 
 
 def execute_operation(exe_context, operation, root_value):
