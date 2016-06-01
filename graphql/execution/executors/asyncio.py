@@ -5,8 +5,10 @@ from asyncio import Future, ensure_future, get_event_loop, iscoroutine, wait
 
 class AsyncioExecutor(object):
 
-    def __init__(self):
-        self.loop = get_event_loop()
+    def __init__(self, loop=None):
+        if loop is None:
+            loop = get_event_loop()
+        self.loop = loop
         self.futures = []
 
     def wait_until_finished(self):
