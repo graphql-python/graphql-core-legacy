@@ -1,6 +1,7 @@
 import collections
 import functools
 import logging
+import sys
 
 from promise import Promise, is_thenable, promise_for_dict, promisify
 
@@ -50,7 +51,7 @@ def execute(schema, document_ast, root_value=None, context_value=None,
 
     p = Promise(executor).catch(on_rejected).then(on_resolve)
     context.executor.wait_until_finished()
-    return p.value
+    return p.get()
 
 
 def execute_operation(exe_context, operation, root_value):
@@ -170,6 +171,7 @@ def resolve_or_error(resolve_fn, source, args, context, info, executor):
         logger.exception("An error occurred while resolving field {}.{}".format(
             info.parent_type.name, info.field_name
         ))
+        e.stack = sys.exc_info()[2]
         return e
 
 
