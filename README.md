@@ -98,10 +98,10 @@ The graphql query is executed, by default, synchronously (using `SyncExecutor`).
 However the following executors are available if we want to resolve our fields in parallel:
 
 * `graphql.execution.executors.asyncio.AsyncioExecutor`: This executor executes the resolvers in the Python asyncio event loop.
-* `graphql.execution.executors.asyncio.GeventExecutor`: This executor executes the resolvers in the Gevent event loop.
-* `graphql.execution.executors.asyncio.ProcessExecutor`: This executor executes each resolver as a process.
-* `graphql.execution.executors.asyncio.ThreadExecutor`: This executor executes each resolver in a Thread.
-* `graphql.execution.executors.asyncio.SyncExecutor`: This executor executes each resolver synchronusly (default).
+* `graphql.execution.executors.gevent.GeventExecutor`: This executor executes the resolvers in the Gevent event loop.
+* `graphql.execution.executors.process.ProcessExecutor`: This executor executes each resolver as a process.
+* `graphql.execution.executors.thread.ThreadExecutor`: This executor executes each resolver in a Thread.
+* `graphql.execution.executors.sync.SyncExecutor`: This executor executes each resolver synchronusly (default).
 
 #### Usage
 
