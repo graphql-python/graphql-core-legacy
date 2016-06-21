@@ -1,7 +1,7 @@
 import collections
 
 from ..utils.assert_valid_name import assert_valid_name
-from .definition import GraphQLArgument, GraphQLNonNull, is_input_type
+from .definition import GraphQLArgument, GraphQLArgumentDefinition, GraphQLNonNull, is_input_type
 from .scalars import GraphQLBoolean
 
 
@@ -52,18 +52,12 @@ class GraphQLDirective(object):
                     name,
                     arg_name,
                     _arg.type)
-                self.args.append(arg(
-                    arg_name,
-                    description=_arg.description,
+                self.args.append(GraphQLArgumentDefinition(
                     type=_arg.type,
-                    default_value=_arg.default_value
+                    name=arg_name,
+                    description=_arg.description,
+                    default_value=_arg.default_value,
                 ))
-
-
-def arg(name, *args, **kwargs):
-    a = GraphQLArgument(*args, **kwargs)
-    a.name = name
-    return a
 
 
 GraphQLIncludeDirective = GraphQLDirective(

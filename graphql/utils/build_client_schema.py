@@ -15,10 +15,12 @@ from ..type.introspection import (TypeKind, __Directive, __DirectiveLocation,
 from .value_from_ast import value_from_ast
 
 
-def _false(*_): return False
+def _false(*_):
+    return False
 
 
-def _none(*_): return None
+def _none(*_):
+    return None
 
 
 def no_execution(*args):
@@ -204,7 +206,6 @@ def build_client_schema(introspection):
             type=get_input_type(input_value_introspection['type']),
             default_value=build_default_value(input_value_introspection)
         )
-        input_value.name = input_value_introspection['name']
         return input_value
 
     def build_directive(directive_introspection):

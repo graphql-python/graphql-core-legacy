@@ -2,11 +2,11 @@ from collections import OrderedDict
 
 from ..language.printer import print_ast
 from ..utils.ast_from_value import ast_from_value
-from .definition import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
+from .definition import (GraphQLArgument, GraphQLArgumentDefinition, GraphQLEnumType, GraphQLEnumValue,
                          GraphQLField, GraphQLInputObjectType,
                          GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                          GraphQLObjectType, GraphQLScalarType,
-                         GraphQLUnionType)
+                         GraphQLUnionType, GraphQLFieldDefinition)
 from .directives import DirectiveLocation
 from .scalars import GraphQLBoolean, GraphQLString
 
@@ -347,29 +347,28 @@ __TypeKind = GraphQLEnumType(
 
 IntrospectionSchema = __Schema
 
-SchemaMetaFieldDef = GraphQLField(
+SchemaMetaFieldDef = GraphQLFieldDefinition(
+    name='__schema',
     type=GraphQLNonNull(__Schema),
     description='Access the current type schema of this server.',
     resolver=lambda source, args, context, info: info.schema,
     args=[]
 )
-SchemaMetaFieldDef.name = '__schema'
 
-TypeMetaFieldDef_args_name = GraphQLArgument(GraphQLNonNull(GraphQLString))
-TypeMetaFieldDef_args_name.name = 'name'
-TypeMetaFieldDef = GraphQLField(
+TypeMetaFieldDef_args_name = GraphQLArgumentDefinition(GraphQLNonNull(GraphQLString), name='name')
+TypeMetaFieldDef = GraphQLFieldDefinition(
     type=__Type,
+    name='__type',
     description='Request the type information of a single type.',
     args=[TypeMetaFieldDef_args_name],
     resolver=lambda source, args, context, info: info.schema.get_type(args['name'])
 )
-TypeMetaFieldDef.name = '__type'
 del TypeMetaFieldDef_args_name
 
-TypeNameMetaFieldDef = GraphQLField(
+TypeNameMetaFieldDef = GraphQLFieldDefinition(
     type=GraphQLNonNull(GraphQLString),
+    name='__typename',
     description='The name of the current Object type at runtime.',
     resolver=lambda source, args, context, info: info.parent_type.name,
     args=[]
 )
-TypeNameMetaFieldDef.name = '__typename'
