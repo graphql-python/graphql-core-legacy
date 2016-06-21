@@ -104,7 +104,7 @@ class GraphQLSchema(object):
         if _types:
             types += _types
 
-        type_map = reduce(type_map_reducer, types, OrderedDict())
+        type_map = reduce(self._type_map_reducer, types, OrderedDict())
         return type_map
 
     def get_possible_types(self, abstract_type):
@@ -120,45 +120,44 @@ class GraphQLSchema(object):
 
         return possible_type.name in self._possible_type_map[abstract_type.name]
 
+    def _type_map_reducer(self, map, type):
+        if not type:
+            return map
 
-def type_map_reducer(map, type):
-    if not type:
-        return map
+        if isinstance(type, GraphQLList) or isinstance(type, GraphQLNonNull):
+            return self._type_map_reducer(map, type.of_type)
 
-    if isinstance(type, GraphQLList) or isinstance(type, GraphQLNonNull):
-        return type_map_reducer(map, type.of_type)
+        if type.name in map:
+            assert map[type.name] == type, (
+                'Schema must contain unique named types but contains multiple types named "{}".'
+            ).format(type.name)
 
-    if type.name in map:
-        assert map[type.name] == type, (
-            'Schema must contain unique named types but contains multiple types named "{}".'
-        ).format(type.name)
+            return map
 
-        return map
+        map[type.name] = type
 
-    map[type.name] = type
+        reduced_map = map
 
-    reduced_map = map
+        if isinstance(type, (GraphQLUnionType)):
+            for t in type.get_types():
+                reduced_map = self._type_map_reducer(reduced_map, t)
 
-    if isinstance(type, (GraphQLUnionType)):
-        for t in type.get_types():
-            reduced_map = type_map_reducer(reduced_map, t)
+        if isinstance(type, GraphQLObjectType):
+            for t in type.get_interfaces():
+                reduced_map = self._type_map_reducer(reduced_map, t)
 
-    if isinstance(type, GraphQLObjectType):
-        for t in type.get_interfaces():
-            reduced_map = type_map_reducer(reduced_map, t)
+        if isinstance(type, (GraphQLObjectType, GraphQLInterfaceType, GraphQLInputObjectType)):
+            field_map = type.get_fields()
+            for field in field_map.values():
+                args = getattr(field, 'args', None)
+                if args:
+                    field_arg_types = [arg.type for arg in field.args]
+                    for t in field_arg_types:
+                        reduced_map = self._type_map_reducer(reduced_map, t)
 
-    if isinstance(type, (GraphQLObjectType, GraphQLInterfaceType, GraphQLInputObjectType)):
-        field_map = type.get_fields()
-        for field in field_map.values():
-            args = getattr(field, 'args', None)
-            if args:
-                field_arg_types = [arg.type for arg in field.args]
-                for t in field_arg_types:
-                    reduced_map = type_map_reducer(reduced_map, t)
+                reduced_map = self._type_map_reducer(reduced_map, getattr(field, 'type', None))
 
-            reduced_map = type_map_reducer(reduced_map, getattr(field, 'type', None))
-
-    return reduced_map
+        return reduced_map
 
 
 def assert_object_implements_interface(schema, object, interface):

@@ -1,7 +1,8 @@
 import collections
 
 from ..utils.assert_valid_name import assert_valid_name
-from .definition import GraphQLArgument, GraphQLArgumentDefinition, GraphQLNonNull, is_input_type
+from .definition import (GraphQLArgument, GraphQLArgumentDefinition,
+                         GraphQLNonNull, is_input_type)
 from .scalars import GraphQLBoolean
 
 
