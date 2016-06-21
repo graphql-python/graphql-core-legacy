@@ -1,5 +1,5 @@
 # flake8: noqa
-
+import pytest
 import asyncio
 import functools
 from graphql.error import format_error
@@ -39,8 +39,7 @@ def test_asyncio_py35_executor():
     assert result.data == {'a': 'hey', 'b': 'hey2', 'c': 'hey3'}
 
 
-@pytest.mark.asyncio
-async def test_asyncio_py35_executor_return_promise(event_loop):
+def test_asyncio_py35_executor_return_promise():
     ast = parse('query Example { a, b, c }')
 
     async def resolver(context, *_):
@@ -60,9 +59,14 @@ async def test_asyncio_py35_executor_return_promise(event_loop):
         'c': GraphQLField(GraphQLString, resolver=resolver_3)
     })
 
-    result = await execute(GraphQLSchema(Type), ast, executor=AsyncioExecutor(loop=event_loop), return_promise=True)
-    assert not result.errors
-    assert result.data == {'a': 'hey', 'b': 'hey2', 'c': 'hey3'}
+    loop = asyncio.get_event_loop()
+
+    async def do_exec():
+        result = await execute(GraphQLSchema(Type), ast, executor=AsyncioExecutor(loop), return_promise=True)
+        assert not result.errors
+        assert result.data == {'a': 'hey', 'b': 'hey2', 'c': 'hey3'}
+
+    loop.run_until_complete(do_exec())
 
 
 def test_asyncio_py35_executor_with_error():

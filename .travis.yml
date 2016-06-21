@@ -22,7 +22,7 @@ before_install:
         source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
       fi
 install:
-- pip install --cache-dir $HOME/.cache/pip pytest-cov pytest-mock coveralls flake8 isort==3.9.6 gevent==1.1b5 six>=1.10.0 promise>=0.4.0
+- pip install --cache-dir $HOME/.cache/pip pytest-cov pytest-mock coveralls flake8 isort==3.9.6 gevent==1.1b5 six>=1.10.0 promise>=0.4.2
 - pip install --cache-dir $HOME/.cache/pip pytest>=2.7.3 --upgrade
 - pip install -e .
 script:

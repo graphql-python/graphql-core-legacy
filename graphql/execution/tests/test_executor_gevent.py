@@ -2,6 +2,7 @@
    isort:skip_file
 """
 # flake8: noqa
+
 import pytest
 gevent = pytest.importorskip("gevent")
 
