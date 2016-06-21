@@ -39,6 +39,32 @@ def test_asyncio_py35_executor():
     assert result.data == {'a': 'hey', 'b': 'hey2', 'c': 'hey3'}
 
 
+@pytest.mark.asyncio
+async def test_asyncio_py35_executor_return_promise(event_loop):
+    ast = parse('query Example { a, b, c }')
+
+    async def resolver(context, *_):
+        await asyncio.sleep(0.001)
+        return 'hey'
+
+    async def resolver_2(context, *_):
+        await asyncio.sleep(0.003)
+        return 'hey2'
+
+    def resolver_3(context, *_):
+        return 'hey3'
+
+    Type = GraphQLObjectType('Type', {
+        'a': GraphQLField(GraphQLString, resolver=resolver),
+        'b': GraphQLField(GraphQLString, resolver=resolver_2),
+        'c': GraphQLField(GraphQLString, resolver=resolver_3)
+    })
+
+    result = await execute(GraphQLSchema(Type), ast, executor=AsyncioExecutor(loop=event_loop), return_promise=True)
+    assert not result.errors
+    assert result.data == {'a': 'hey', 'b': 'hey2', 'c': 'hey3'}
+
+
 def test_asyncio_py35_executor_with_error():
     ast = parse('query Example { a, b }')
 

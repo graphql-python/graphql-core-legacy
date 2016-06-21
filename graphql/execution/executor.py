@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
 
 
 def execute(schema, document_ast, root_value=None, context_value=None,
-            variable_values=None, operation_name=None, executor=None):
+            variable_values=None, operation_name=None, executor=None,
+            return_promise=False):
     assert schema, 'Must provide schema'
     assert isinstance(schema, GraphQLSchema), (
         'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
@@ -49,9 +50,11 @@ def execute(schema, document_ast, root_value=None, context_value=None,
     def on_resolve(data):
         return ExecutionResult(data=data, errors=context.errors)
 
-    p = Promise(executor).catch(on_rejected).then(on_resolve)
+    promise = Promise(executor).catch(on_rejected).then(on_resolve)
+    if return_promise:
+        return promise
     context.executor.wait_until_finished()
-    return p.get()
+    return promise.get()
 
 
 def execute_operation(exe_context, operation, root_value):
@@ -318,15 +321,15 @@ def complete_abstract_value(exe_context, return_type, field_asts, info, result):
             runtime_type = get_default_resolve_type_fn(result, exe_context.context_value, info, return_type)
 
     assert isinstance(runtime_type, GraphQLObjectType), (
-            'Abstract type {} must resolve to an Object type at runtime ' +
-            'for field {}.{} with value "{}", received "{}".'
-        ).format(
-            return_type,
-            info.parent_type,
-            info.field_name,
-            result,
-            runtime_type,
-        )
+        'Abstract type {} must resolve to an Object type at runtime ' +
+        'for field {}.{} with value "{}", received "{}".'
+    ).format(
+        return_type,
+        info.parent_type,
+        info.field_name,
+        result,
+        runtime_type,
+    )
 
     if not exe_context.schema.is_possible_type(return_type, runtime_type):
         raise GraphQLError(
