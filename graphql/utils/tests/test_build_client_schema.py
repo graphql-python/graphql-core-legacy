@@ -609,6 +609,26 @@ def test_throws_when_missing_kind():
                                  'introspection query is used in order to build a client schema.'
 
 
+def test_succeds_on_smaller_equals_than_7_deep_lists():
+    schema = GraphQLSchema(
+        query=GraphQLObjectType(
+            name='Query',
+            fields={
+                'foo': GraphQLField(
+                    GraphQLNonNull(GraphQLList(
+                        GraphQLNonNull(GraphQLList(GraphQLNonNull(
+                            GraphQLList(GraphQLNonNull(GraphQLString))
+                        ))
+                    )))
+                )
+            }
+        )
+    )
+
+    introspection = graphql(schema, introspection_query)
+    build_client_schema(introspection.data)
+
+
 def test_fails_on_very_deep_lists():
     schema = GraphQLSchema(
         query=GraphQLObjectType(
