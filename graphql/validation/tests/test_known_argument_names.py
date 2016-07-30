@@ -1,19 +1,20 @@
 from graphql.language.location import SourceLocation
-from graphql.validation.rules import KnownArgumentNames
+from graphql.validation.rules.known_argument_names import (KnownArgumentNames, _unknown_arg_message,
+                                                           _unknown_directive_arg_message)
 
 from .utils import expect_fails_rule, expect_passes_rule
 
 
-def unknown_arg(arg_name, field_name, type_name, line, column):
+def unknown_arg(arg_name, field_name, type_name, suggested_args, line, column):
     return {
-        'message': KnownArgumentNames.unknown_arg_message(arg_name, field_name, type_name),
+        'message': _unknown_arg_message(arg_name, field_name, type_name, suggested_args),
         'locations': [SourceLocation(line, column)]
     }
 
 
-def unknown_directive_arg(arg_name, directive_name, line, column):
+def unknown_directive_arg(arg_name, directive_name, suggested_args, line, column):
     return {
-        'message': KnownArgumentNames.unknown_directive_arg_message(arg_name, directive_name),
+        'message': _unknown_directive_arg_message(arg_name, directive_name, suggested_args),
         'locations': [SourceLocation(line, column)]
     }
 
@@ -89,7 +90,7 @@ def test_undirective_args_are_invalid():
         dog @skip(unless: true)
       }
     ''', [
-        unknown_directive_arg('unless', 'skip', 3, 19)
+        unknown_directive_arg('unless', 'skip', [], 3, 19)
     ])
 
 
@@ -99,7 +100,7 @@ def test_invalid_arg_name():
         doesKnowCommand(unknown: true)
       }
     ''', [
-        unknown_arg('unknown', 'doesKnowCommand', 'Dog', 3, 25)
+        unknown_arg('unknown', 'doesKnowCommand', 'Dog', [], 3, 25)
     ])
 
 
@@ -109,8 +110,8 @@ def test_unknown_args_amongst_known_args():
         doesKnowCommand(whoknows: 1, dogCommand: SIT, unknown: true)
       }
     ''', [
-        unknown_arg('whoknows', 'doesKnowCommand', 'Dog', 3, 25),
-        unknown_arg('unknown', 'doesKnowCommand', 'Dog', 3, 55)
+        unknown_arg('whoknows', 'doesKnowCommand', 'Dog', [], 3, 25),
+        unknown_arg('unknown', 'doesKnowCommand', 'Dog', [], 3, 55)
     ])
 
 
@@ -129,6 +130,6 @@ def test_unknown_args_deeply():
         }
       }
     ''', [
-        unknown_arg('unknown', 'doesKnowCommand', 'Dog', 4, 27),
-        unknown_arg('unknown', 'doesKnowCommand', 'Dog', 9, 31)
+        unknown_arg('unknown', 'doesKnowCommand', 'Dog', [], 4, 27),
+        unknown_arg('unknown', 'doesKnowCommand', 'Dog', [], 9, 31)
     ])

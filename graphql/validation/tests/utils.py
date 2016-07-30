@@ -210,6 +210,7 @@ def expect_invalid(schema, rules, query, expected_errors, sort_list=True):
             {'line': loc.line, 'column': loc.column}
             for loc in error['locations']
         ]
+
     if sort_list:
         assert sort_lists(list(map(format_error, errors))) == sort_lists(expected_errors)
 

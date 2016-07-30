@@ -1,7 +1,5 @@
 from collections import OrderedDict
 
-from pytest import raises
-
 from graphql import graphql
 from graphql.error import format_error
 from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
@@ -14,6 +12,8 @@ from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
 from graphql.type.directives import GraphQLDirective
 from graphql.utils.build_client_schema import build_client_schema
 from graphql.utils.introspection_query import introspection_query
+
+from pytest import raises
 
 from ...pyutils.contain_subset import contain_subset
 
