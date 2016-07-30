@@ -14,18 +14,24 @@ from .base import (ExecutionContext, ExecutionResult, ResolveInfo, Undefined,
                    collect_fields, default_resolve_fn, get_field_def,
                    get_operation_root_type)
 from .executors.sync import SyncExecutor
+from .middleware import MiddlewareManager
 
 logger = logging.getLogger(__name__)
 
 
 def execute(schema, document_ast, root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
-            return_promise=False):
+            return_promise=False, middlewares=None):
     assert schema, 'Must provide schema'
     assert isinstance(schema, GraphQLSchema), (
         'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
         'not multiple versions of GraphQL installed in your node_modules directory.'
     )
+    if middlewares:
+        assert isinstance(middlewares, MiddlewareManager), (
+            'middlewares have to be an instance'
+            ' of MiddlewareManager. Received "{}".'.format(middlewares)
+        )
 
     if executor is None:
         executor = SyncExecutor()
@@ -37,7 +43,8 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         context_value,
         variable_values,
         operation_name,
-        executor
+        executor,
+        middlewares
     )
 
     def executor(resolve, reject):
@@ -132,6 +139,9 @@ def resolve_field(exe_context, parent_type, source, field_asts):
     return_type = field_def.type
     resolve_fn = field_def.resolver or default_resolve_fn
 
+    # We wrap the resolve_fn from the middleware
+    resolve_fn_middleware = exe_context.get_field_resolver(resolve_fn)
+
     # Build a dict of arguments from the field.arguments AST, using the variables scope to
     # fulfill any variable references.
     args = exe_context.get_argument_values(field_def, field_ast)
@@ -156,7 +166,7 @@ def resolve_field(exe_context, parent_type, source, field_asts):
     )
 
     executor = exe_context.executor
-    result = resolve_or_error(resolve_fn, source, args, context, info, executor)
+    result = resolve_or_error(resolve_fn_middleware, source, args, context, info, executor)
 
     return complete_value_catching_error(
         exe_context,
