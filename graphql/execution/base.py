@@ -228,7 +228,7 @@ def does_fragment_condition_match(ctx, fragment, type_):
         return True
 
     conditional_type = type_from_ast(ctx.schema, type_condition_ast)
-    if conditional_type == type_:
+    if conditional_type.is_same_type(type_):
         return True
 
     if isinstance(conditional_type, (GraphQLInterfaceType, GraphQLUnionType)):
