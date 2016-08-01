@@ -1,12 +1,12 @@
 from graphql.language.location import SourceLocation
-from graphql.validation.rules import KnownTypeNames
+from graphql.validation.rules.known_type_names import KnownTypeNames, _unknown_type_message
 
 from .utils import expect_fails_rule, expect_passes_rule
 
 
-def unknown_type(type_name, line, column):
+def unknown_type(type_name, suggested_types, line, column):
     return {
-        'message': KnownTypeNames.unknown_type_message(type_name),
+        'message': _unknown_type_message(type_name, suggested_types),
         'locations': [SourceLocation(line, column)]
     }
 
@@ -36,9 +36,9 @@ def test_unknown_type_names_are_invalid():
         name
       }
     ''', [
-        unknown_type('JumbledUpLetters', 2, 23),
-        unknown_type('Badger', 5, 25),
-        unknown_type('Peettt', 8, 29),
+        unknown_type('JumbledUpLetters', [], 2, 23),
+        unknown_type('Badger', [], 5, 25),
+        unknown_type('Peettt', ['Pet'], 8, 29),
     ])
 
 
@@ -60,5 +60,5 @@ def test_ignores_type_definitions():
         }
       }
     ''', [
-        unknown_type('NotInTheSchema', 12, 23),
+        unknown_type('NotInTheSchema', [], 12, 23),
     ])
