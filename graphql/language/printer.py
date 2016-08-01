@@ -162,10 +162,11 @@ def join(maybe_list, separator=''):
     return ''
 
 
-def block(maybe_list):
-    if maybe_list:
-        return indent('{\n' + join(maybe_list, '\n')) + '\n}'
-    return ''
+def block(_list):
+    '''Given a list, print each item on its own line, wrapped in an indented "{ }" block.'''
+    if _list:
+        return indent('{\n' + join(_list, '\n')) + '\n}'
+    return '{}'
 
 
 def wrap(start, maybe_str, end=''):
