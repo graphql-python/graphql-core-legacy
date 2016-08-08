@@ -39,10 +39,12 @@ def _get_named_type_ast(type_ast):
     return named_type
 
 
-def _false(*_): return False
+def _false(*_):
+    return False
 
 
-def _none(*_): return None
+def _none(*_):
+    return None
 
 
 def build_ast_schema(document):

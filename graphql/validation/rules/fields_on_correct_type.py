@@ -1,9 +1,8 @@
 from collections import Counter, OrderedDict
-import functools
 
 from ...error import GraphQLError
-from ...type.definition import (GraphQLInputObjectType, GraphQLInterfaceType,
-                                GraphQLObjectType, GraphQLUnionType, is_abstract_type)
+from ...type.definition import (GraphQLInterfaceType, GraphQLObjectType,
+                                GraphQLUnionType)
 from ...utils.suggestion_list import suggestion_list
 from ...utils.quoted_or_list import quoted_or_list
 from .base import ValidationRule
@@ -15,13 +14,13 @@ except ImportError:
     # Python 3
     izip = zip
 
+
 def _undefined_field_message(field_name, type, suggested_types,
                              suggested_fields):
     message = 'Cannot query field "{}" on type "{}".'.format(field_name, type)
 
     if suggested_types:
         suggestions = quoted_or_list(suggested_types)
-        print('suggest', suggestions)
         message += " Did you mean to use an inline fragment on {}?".format(suggestions)
     elif suggested_fields:
         suggestions = quoted_or_list(suggested_fields)
@@ -64,17 +63,16 @@ class FieldsOnCorrectType(ValidationRule):
             ))
 
 
-
-def get_suggested_type_names(schema, type, field_name):
+def get_suggested_type_names(schema, output_type, field_name):
     '''Go through all of the implementations of type, as well as the interfaces
       that they implement. If any of those types include the provided field,
       suggest them, sorted by how often the type is referenced,  starting
       with Interfaces.'''
 
-    if isinstance(type, (GraphQLInterfaceType, GraphQLUnionType)):
+    if isinstance(output_type, (GraphQLInterfaceType, GraphQLUnionType)):
         suggested_object_types = []
         interface_usage_count = {}
-        for possible_type in schema.get_possible_types(type):
+        for possible_type in schema.get_possible_types(output_type):
             if not possible_type.get_fields().get(field_name):
                 return
 
@@ -92,7 +90,6 @@ def get_suggested_type_names(schema, type, field_name):
         # Suggest interface types based on how common they are.
         suggested_interface_types = sorted(list(interface_usage_count.keys()), key=lambda k: interface_usage_count[k],
                                            reverse=True)
-
 
         # Suggest both interface and object types.
         suggested_interface_types.extend(suggested_object_types)

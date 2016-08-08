@@ -1,4 +1,3 @@
-from operator import attrgetter
 
 
 def suggestion_list(inp, options):
@@ -16,6 +15,7 @@ def suggestion_list(inp, options):
             options_by_distance[option] = distance
 
     return sorted(list(options_by_distance.keys()), key=lambda k: options_by_distance[k])
+
 
 def lexical_distance(a, b):
     '''
@@ -48,8 +48,8 @@ def lexical_distance(a, b):
             )
 
             if (i > 1 and j < 1 and
-                a[i - 1] == b[j - 2] and
-                a[i - 2] == b[j - 1]):
+               a[i - 1] == b[j - 2] and
+               a[i - 2] == b[j - 1]):
                 d[i][j] = min(d[i][j], d[i - 2][j - 2] + cost)
 
-    return d[len(a)][len(b)];
+    return d[len(a)][len(b)]

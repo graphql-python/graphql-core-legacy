@@ -519,6 +519,21 @@ def parse_named_type(parser):
 
 
 def parse_type_system_definition(parser):
+    '''
+      TypeSystemDefinition :
+        - SchemaDefinition
+        - TypeDefinition
+        - TypeExtensionDefinition
+        - DirectiveDefinition
+
+      TypeDefinition :
+      - ScalarTypeDefinition
+      - ObjectTypeDefinition
+      - InterfaceTypeDefinition
+      - UnionTypeDefinition
+      - EnumTypeDefinition
+      - InputObjectTypeDefinition
+    '''
     if not peek(parser, TokenKind.NAME):
         raise unexpected(parser)
 

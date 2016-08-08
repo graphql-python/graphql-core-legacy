@@ -6,11 +6,11 @@ from .base import ValidationRule
 
 def _unknown_type_message(type, suggested_types):
     message = 'Unknown type "{}".'.format(type)
-    MAX_LENGTH = 5
     if suggested_types:
         message += ' Perhaps you meant {}?'.format(quoted_or_list(suggested_types))
 
     return message
+
 
 class KnownTypeNames(ValidationRule):
 

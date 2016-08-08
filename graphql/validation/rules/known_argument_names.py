@@ -12,12 +12,14 @@ def _unknown_arg_message(arg_name, field_name, type, suggested_args):
 
     return message
 
+
 def _unknown_directive_arg_message(arg_name, directive_name, suggested_args):
     message = 'Unknown argument "{}" on directive "@{}".'.format(arg_name, directive_name)
     if suggested_args:
         message += ' Did you mean {}?'.format(quoted_or_list(suggested_args))
 
     return message
+
 
 class KnownArgumentNames(ValidationRule):
 

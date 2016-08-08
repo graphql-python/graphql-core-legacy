@@ -97,10 +97,12 @@ def test_allows_object_fields_in_inline_fragments():
         query DroidFieldInFragment {
           hero {
             name
-            ... on Droid {
-              primaryFunction
-            }
+            ...DroidFields
           }
+        }
+
+        fragment DroidFields on Droid {
+            primaryFunction
         }
     '''
     assert not validation_errors(query)
