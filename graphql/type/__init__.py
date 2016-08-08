@@ -24,7 +24,10 @@ from .definition import (  # no import order
     is_output_type
 )
 from .directives import (
+    # directive definition
     GraphQLDirective,
+
+    # built-in directives
     GraphQLSkipDirective,
     GraphQLIncludeDirective
 )

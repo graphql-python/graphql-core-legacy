@@ -67,6 +67,13 @@ if not __GRAPHQL_SETUP__:
         GraphQLBoolean,
         GraphQLID,
 
+        # Directive definition
+        GraphQLDirective,
+
+        # Built-in directives
+        GraphQLSkipDirective,
+        GraphQLIncludeDirective,
+
         # Predicates
         is_type,
         is_input_type,
@@ -186,6 +193,9 @@ if not __GRAPHQL_SETUP__:
         'GraphQLSchema',
         'GraphQLString',
         'GraphQLUnionType',
+        'GraphQLDirective',
+        'GraphQLSkipDirective',
+        'GraphQLIncludeDirective',
         'get_named_type',
         'get_nullable_type',
         'is_abstract_type',
