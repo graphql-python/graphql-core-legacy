@@ -41,8 +41,8 @@ class FieldsOnCorrectType(ValidationRule):
     '''
 
     def enter_Field(self, node, key, parent, path, ancestors):
-        type = self.context.get_parent_type()
-        if not type:
+        parent_type = self.context.get_parent_type()
+        if not parent_type:
             return
 
         field_def = self.context.get_field_def()
@@ -52,13 +52,13 @@ class FieldsOnCorrectType(ValidationRule):
             field_name = node.name.value
 
             # First determine if there are any suggested types to condition on.
-            suggested_type_names = get_suggested_type_names(schema, type, field_name)
+            suggested_type_names = get_suggested_type_names(schema, parent_type, field_name)
             # if there are no suggested types perhaps it was a typo?
-            suggested_field_names = [] if suggested_type_names else get_suggested_field_names(schema, type, field_name)
+            suggested_field_names = [] if suggested_type_names else get_suggested_field_names(schema, parent_type, field_name)
 
             # report an error including helpful suggestions.
             self.context.report_error(GraphQLError(
-                _undefined_field_message(field_name, type.name, suggested_type_names, suggested_field_names),
+                _undefined_field_message(field_name, parent_type.name, suggested_type_names, suggested_field_names),
                 [node]
             ))
 
@@ -71,7 +71,7 @@ def get_suggested_type_names(schema, output_type, field_name):
 
     if isinstance(output_type, (GraphQLInterfaceType, GraphQLUnionType)):
         suggested_object_types = []
-        interface_usage_count = {}
+        interface_usage_count = OrderedDict()
         for possible_type in schema.get_possible_types(output_type):
             if not possible_type.get_fields().get(field_name):
                 return

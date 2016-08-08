@@ -127,7 +127,6 @@ class GraphQLSchema(object):
 
     def is_possible_type(self, abstract_type, possible_type):
         possible_types = self.get_possible_types(abstract_type)
-        print(possible_types)
         assert isinstance(possible_types, Sequence), (
             'Could not find possible implementing types for ${} in ' +
             'schema. Check that schema.types is defined and is an array of' +

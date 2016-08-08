@@ -5,9 +5,9 @@ from graphql.validation.rules.fields_on_correct_type import (FieldsOnCorrectType
 from .utils import expect_fails_rule, expect_passes_rule
 
 
-def undefined_field(field, type, suggested_types, suggested_fields, line, column):
+def undefined_field(field, gql_type, suggested_types, suggested_fields, line, column):
     return {
-        'message': _undefined_field_message(field, type, suggested_types, suggested_fields),
+        'message': _undefined_field_message(field, gql_type, suggested_types, suggested_fields),
         'locations': [SourceLocation(line, column)]
     }
 
@@ -216,6 +216,7 @@ def test_fields_correct_type_no_suggestion():
     message = _undefined_field_message('f', 'T', [], [])
     assert message == 'Cannot query field "f" on type "T".'
 
+
 def test_works_with_no_small_numbers_of_type_suggestion():
     message = _undefined_field_message('f', 'T', ['A', 'B'], [])
     assert message == (
@@ -223,12 +224,14 @@ def test_works_with_no_small_numbers_of_type_suggestion():
         'Did you mean to use an inline fragment on "A" or "B"?'
     )
 
+
 def test_works_with_no_small_numbers_of_field_suggestion():
-    message = _undefined_field_message('f', 'T', [], [ 'z', 'y' ])
+    message = _undefined_field_message('f', 'T', [], ['z', 'y'])
     assert message == (
         'Cannot query field "f" on type "T". ' +
         'Did you mean "z" or "y"?'
     )
+
 
 def test_only_shows_one_set_of_suggestions_at_a_time_preferring_types():
     message = _undefined_field_message('f', 'T', ['A', 'B'], ['z', 'y'])
@@ -244,6 +247,7 @@ def test_limits_lots_of_type_suggestions():
         'Cannot query field "f" on type "T". ' +
         'Did you mean to use an inline fragment on "A", "B", "C", "D" or "E"?'
     )
+
 
 def test_limits_lots_of_field_suggestions():
     message = _undefined_field_message('f', 'T', [], ['z', 'y', 'x', 'w', 'v', 'u'])

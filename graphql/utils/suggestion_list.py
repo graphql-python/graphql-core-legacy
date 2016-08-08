@@ -1,3 +1,4 @@
+from collections import OrderedDict
 
 
 def suggestion_list(inp, options):
@@ -5,7 +6,7 @@ def suggestion_list(inp, options):
      Given an invalid input string and a list of valid options, returns a filtered
      list of valid options sorted based on their similarity with the input.
     '''
-    options_by_distance = {}
+    options_by_distance = OrderedDict()
     input_threshold = len(inp) / 2
 
     for option in options:
