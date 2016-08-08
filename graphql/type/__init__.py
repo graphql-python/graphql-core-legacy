@@ -24,7 +24,9 @@ from .definition import (  # no import order
     is_output_type
 )
 from .directives import (
-    GraphQLDirective
+    GraphQLDirective,
+    GraphQLSkipDirective,
+    GraphQLIncludeDirective
 )
 from .scalars import (  # no import order
     GraphQLInt,

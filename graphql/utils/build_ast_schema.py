@@ -3,10 +3,11 @@ from collections import OrderedDict
 from ..language import ast
 from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLDirective,
                     GraphQLEnumType, GraphQLEnumValue, GraphQLField,
-                    GraphQLFloat, GraphQLID, GraphQLInputObjectField,
-                    GraphQLInputObjectType, GraphQLInt, GraphQLInterfaceType,
-                    GraphQLList, GraphQLNonNull, GraphQLObjectType,
-                    GraphQLScalarType, GraphQLSchema, GraphQLString,
+                    GraphQLFloat, GraphQLID, GraphQLIncludeDirective,
+                    GraphQLInputObjectField, GraphQLInputObjectType,
+                    GraphQLInt, GraphQLInterfaceType, GraphQLList,
+                    GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
+                    GraphQLSchema, GraphQLSkipDirective, GraphQLString,
                     GraphQLUnionType)
 from ..type.introspection import (__Directive, __DirectiveLocation,
                                   __EnumValue, __Field, __InputValue, __Schema,
@@ -244,6 +245,16 @@ def build_ast_schema(document):
     }
     types = [type_def_named(definition.name.value) for definition in type_defs]
     directives = [get_directive(d) for d in directive_defs]
+
+    # If skip and include were not explicitly declared, add them.
+    filtered_default_directive = ''.join(directive.name for directive in directives if directive.name == 'skip' or
+                                         directive.name == 'include')
+    default_directives = {
+        'skip': [GraphQLIncludeDirective],
+        'include': [GraphQLSkipDirective],
+        '': [GraphQLIncludeDirective, GraphQLSkipDirective]
+    }
+    directives.extend(default_directives.get(filtered_default_directive, []))
 
     schema_kwargs = {'query': get_object_type(ast_map[query_type_name])}
 

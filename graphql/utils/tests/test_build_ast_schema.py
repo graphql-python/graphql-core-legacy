@@ -1,11 +1,15 @@
-from pytest import raises
-
 from graphql import parse
 from graphql.utils.build_ast_schema import build_ast_schema
 from graphql.utils.schema_printer import print_schema
+from pytest import raises
+
+from ...type import GraphQLIncludeDirective, GraphQLSkipDirective
 
 
 def cycle_output(body):
+    """This function does a full cycle of going from a string with the contents of the DSL,
+    parsed in a schema AST, materializing that schema AST into an in-memory GraphQLSchema,
+    and then finally printing that GraphQL into the DSL"""
     ast = parse(body)
     schema = build_ast_schema(ast)
     return '\n' + print_schema(schema)
@@ -43,6 +47,104 @@ type Hello {
 '''
     output = cycle_output(body)
     assert output == body
+
+
+def test_maintains_skip_and_include_directives():
+    body = '''
+    schema {
+        query: Hello
+    }
+
+    type Hello {
+        str: String
+    }
+    '''
+
+    schema = build_ast_schema(parse(body))
+    assert len(schema.get_directives()) == 2
+    assert schema.get_directive('skip') == GraphQLSkipDirective
+    assert schema.get_directive('include') == GraphQLIncludeDirective
+
+
+def test_overriding_directives_excludes_built_ins():
+    body = '''
+    schema {
+        query: Hello
+    }
+
+    directive @skip on FIELD
+    directive @include on FIELD
+
+    type Hello {
+        str: String
+    }
+    '''
+
+    schema = build_ast_schema(parse(body))
+    assert len(schema.get_directives()) == 2
+    assert schema.get_directive('skip') != GraphQLSkipDirective
+    assert schema.get_directive('skip') is not None
+    assert schema.get_directive('include') != GraphQLIncludeDirective
+    assert schema.get_directive('include') is not None
+
+
+def test_overriding_skip_directive_excludes_built_in_one():
+    body = '''
+    schema {
+        query: Hello
+    }
+
+    directive @skip on FIELD
+
+    type Hello {
+        str: String
+    }
+    '''
+
+    schema = build_ast_schema(parse(body))
+    assert len(schema.get_directives()) == 2
+    assert schema.get_directive('skip') != GraphQLSkipDirective
+    assert schema.get_directive('skip') is not None
+    assert schema.get_directive('include') == GraphQLIncludeDirective
+
+
+def test_overriding_include_directive_excludes_built_in_one():
+    body = '''
+    schema {
+        query: Hello
+    }
+
+    directive @include on FIELD
+
+    type Hello {
+        str: String
+    }
+    '''
+
+    schema = build_ast_schema(parse(body))
+    assert len(schema.get_directives()) == 2
+    assert schema.get_directive('skip') == GraphQLSkipDirective
+    assert schema.get_directive('include') != GraphQLIncludeDirective
+    assert schema.get_directive('include') is not None
+
+
+def test_adding_directives_maintains_skip_and_include_directives():
+    body = '''
+    schema {
+        query: Hello
+    }
+
+    directive @foo(arg: Int) on FIELD
+
+    type Hello {
+        str: String
+    }
+    '''
+
+    schema = build_ast_schema(parse(body))
+    assert len(schema.get_directives()) == 3
+    assert schema.get_directive('skip') == GraphQLSkipDirective
+    assert schema.get_directive('include') == GraphQLIncludeDirective
 
 
 def test_type_modifiers():
