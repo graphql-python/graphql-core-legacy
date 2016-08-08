@@ -3,7 +3,6 @@ from graphql.language import ast
 from graphql.language.location import SourceLocation
 from graphql.language.parser import Loc, parse
 from graphql.language.source import Source
-
 from pytest import raises
 
 from .fixtures import KITCHEN_SINK

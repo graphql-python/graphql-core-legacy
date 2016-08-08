@@ -1,5 +1,6 @@
 from graphql.language.location import SourceLocation
-from graphql.validation.rules.known_type_names import KnownTypeNames, _unknown_type_message
+from graphql.validation.rules.known_type_names import (KnownTypeNames,
+                                                       _unknown_type_message)
 
 from .utils import expect_fails_rule, expect_passes_rule
 

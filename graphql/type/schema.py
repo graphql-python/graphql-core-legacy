@@ -1,4 +1,4 @@
-from collections import Iterable, OrderedDict, defaultdict, Sequence
+from collections import Iterable, OrderedDict, Sequence, defaultdict
 from functools import reduce
 
 from ..utils.type_comparators import is_equal_type, is_type_sub_type_of

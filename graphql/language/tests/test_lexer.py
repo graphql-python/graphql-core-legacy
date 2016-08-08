@@ -1,7 +1,6 @@
 from graphql.error import GraphQLSyntaxError
 from graphql.language.lexer import Lexer, Token, TokenKind
 from graphql.language.source import Source
-
 from pytest import raises
 
 

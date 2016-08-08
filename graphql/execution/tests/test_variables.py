@@ -7,7 +7,6 @@ from graphql.type import (GraphQLArgument, GraphQLField,
                           GraphQLInputObjectField, GraphQLInputObjectType,
                           GraphQLList, GraphQLNonNull, GraphQLObjectType,
                           GraphQLScalarType, GraphQLSchema, GraphQLString)
-
 from pytest import raises
 
 TestComplexScalar = GraphQLScalarType(
