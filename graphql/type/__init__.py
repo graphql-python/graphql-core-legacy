@@ -24,10 +24,13 @@ from .definition import (  # no import order
     is_output_type
 )
 from .directives import (
-    # directive definition
+    # "Enum" of Directive locations
+    DirectiveLocation,
+
+    # Directive definition
     GraphQLDirective,
 
-    # built-in directives
+    # Built-in directives
     GraphQLSkipDirective,
     GraphQLIncludeDirective
 )
@@ -39,3 +42,23 @@ from .scalars import (  # no import order
     GraphQLID,
 )
 from .schema import GraphQLSchema
+
+from .introspection import (
+    # "Enum" of Type Kinds
+    TypeKind,
+
+    # GraphQL Types for introspection.
+    __Schema,
+    __Directive,
+    __DirectiveLocation,
+    __Type,
+    __Field,
+    __InputValue,
+    __EnumValue,
+    __TypeKind,
+
+    # Meta-field definitions.
+    SchemaMetaFieldDef,
+    TypeMetaFieldDef,
+    TypeNameMetaFieldDef
+)

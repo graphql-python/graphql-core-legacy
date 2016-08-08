@@ -60,6 +60,12 @@ if not __GRAPHQL_SETUP__:
         GraphQLField,
         GraphQLArgument,
 
+        # "Enum" of Type Kinds
+        TypeKind,
+
+        # "Enum" of Directive locations
+        DirectiveLocation,
+
         # Scalars
         GraphQLInt,
         GraphQLFloat,
@@ -73,6 +79,21 @@ if not __GRAPHQL_SETUP__:
         # Built-in directives
         GraphQLSkipDirective,
         GraphQLIncludeDirective,
+
+        # GraphQL Types for introspection.
+        __Schema,
+        __Directive,
+        __DirectiveLocation,
+        __Type,
+        __Field,
+        __InputValue,
+        __EnumValue,
+        __TypeKind,
+
+        # Meta-field definitions.
+        SchemaMetaFieldDef,
+        TypeMetaFieldDef,
+        TypeNameMetaFieldDef,
 
         # Predicates
         is_type,
@@ -196,6 +217,19 @@ if not __GRAPHQL_SETUP__:
         'GraphQLDirective',
         'GraphQLSkipDirective',
         'GraphQLIncludeDirective',
+        'TypeKind',
+        'DirectiveLocation',
+        '__Schema',
+        '__Directive',
+        '__DirectiveLocation',
+        '__Type',
+        '__Field',
+        '__InputValue',
+        '__EnumValue',
+        '__TypeKind',
+        'SchemaMetaFieldDef',
+        'TypeMetaFieldDef',
+        'TypeNameMetaFieldDef',
         'get_named_type',
         'get_nullable_type',
         'is_abstract_type',
