@@ -1,9 +1,7 @@
-from ...type import (GraphQLSchema,
-                     GraphQLInterfaceType,
-                     GraphQLObjectType,
-                     GraphQLField,
-                     GraphQLString)
 from pytest import raises
+
+from ...type import (GraphQLField, GraphQLInterfaceType, GraphQLObjectType,
+                     GraphQLSchema, GraphQLString)
 
 interface_type = GraphQLInterfaceType(
     name='Interface',

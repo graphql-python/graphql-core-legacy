@@ -2,6 +2,7 @@ from pytest import raises
 
 from ..quoted_or_list import quoted_or_list
 
+
 def test_does_not_accept_an_empty_list():
     with raises(StopIteration):
         quoted_or_list([])

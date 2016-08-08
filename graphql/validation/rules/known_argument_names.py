@@ -1,7 +1,7 @@
 from ...error import GraphQLError
 from ...language import ast
-from ...utils.suggestion_list import suggestion_list
 from ...utils.quoted_or_list import quoted_or_list
+from ...utils.suggestion_list import suggestion_list
 from .base import ValidationRule
 
 

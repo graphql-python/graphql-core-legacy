@@ -1,7 +1,8 @@
 from __future__ import absolute_import
 
-import gevent
 from promise import Promise
+
+import gevent
 
 from .utils import process
 

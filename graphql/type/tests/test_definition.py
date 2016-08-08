@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+from py.test import raises
+
 from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
                           GraphQLEnumValue, GraphQLField,
                           GraphQLInputObjectField, GraphQLInputObjectType,
@@ -7,8 +9,6 @@ from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
                           GraphQLNonNull, GraphQLObjectType, GraphQLSchema,
                           GraphQLString, GraphQLUnionType)
 from graphql.type.definition import is_input_type, is_output_type
-
-from py.test import raises
 
 BlogImage = GraphQLObjectType('Image', {
     'url': GraphQLField(GraphQLString),

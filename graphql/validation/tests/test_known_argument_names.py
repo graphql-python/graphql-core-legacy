@@ -1,5 +1,6 @@
 from graphql.language.location import SourceLocation
-from graphql.validation.rules.known_argument_names import (KnownArgumentNames, _unknown_arg_message,
+from graphql.validation.rules.known_argument_names import (KnownArgumentNames,
+                                                           _unknown_arg_message,
                                                            _unknown_directive_arg_message)
 
 from .utils import expect_fails_rule, expect_passes_rule
