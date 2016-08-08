@@ -247,14 +247,15 @@ def build_ast_schema(document):
     directives = [get_directive(d) for d in directive_defs]
 
     # If skip and include were not explicitly declared, add them.
-    filtered_default_directive = ''.join(directive.name for directive in directives if directive.name == 'skip' or
-                                         directive.name == 'include')
+    filter_directives = (directive.name for directive in directives if directive.name == 'skip' or
+                         directive.name == 'include')
+    possible_default_directives = ''.join((next(filter_directives, ''), next(filter_directives, '')))
     default_directives = {
         'skip': [GraphQLIncludeDirective],
         'include': [GraphQLSkipDirective],
         '': [GraphQLIncludeDirective, GraphQLSkipDirective]
     }
-    directives.extend(default_directives.get(filtered_default_directive, []))
+    directives.extend(default_directives.get(possible_default_directives, []))
 
     schema_kwargs = {'query': get_object_type(ast_map[query_type_name])}
 
