@@ -323,14 +323,13 @@ def complete_abstract_value(exe_context, return_type, field_asts, info, result):
     if not isinstance(runtime_type, GraphQLObjectType):
         raise GraphQLError(
             ('Abstract type {} must resolve to an Object type at runtime ' +
-             'for field {}.{} with value "{}", received "{}".'
-            ).format(
-                return_type,
-                info.parent_type,
-                info.field_name,
-                result,
-                runtime_type,
-            ),
+             'for field {}.{} with value "{}", received "{}".').format(
+                 return_type,
+                 info.parent_type,
+                 info.field_name,
+                 result,
+                 runtime_type,
+                 ),
             field_asts
         )
 
