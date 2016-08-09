@@ -216,23 +216,15 @@ def define_field_map(type, field_map):
     result_field_map = collections.OrderedDict()
     for field_name, field in field_map.items():
         assert_valid_name(field_name)
-        assert isinstance(field, GraphQLField), (
-            '{}.{} must be an instance of GraphQLField.'.format(type, field_name)
-        )
-
         field_args = field.args
 
         field = GraphQLFieldDefinition(
             type=field.type,
             name=field_name,
-            args=[],
+            args={},
             resolver=field.resolver,
             deprecation_reason=field.deprecation_reason,
             description=field.description,
-        )
-
-        assert is_output_type(field.type), (
-            '{}.{} field type must be Output Type but got: {}.'.format(type, field_name, field.type)
         )
 
         if field_args:
@@ -240,27 +232,13 @@ def define_field_map(type, field_map):
                 '{}.{} args must be a mapping (dict / OrderedDict) with argument names as keys.'.format(type,
                                                                                                         field_name)
             )
-            args = []
+            args = collections.OrderedDict()
             if not isinstance(field_args, collections.OrderedDict):
                 field_args = collections.OrderedDict(sorted(list(field_args.items())))
 
             for arg_name, arg in field_args.items():
                 assert_valid_name(arg_name)
-                assert isinstance(arg, (GraphQLArgument, GraphQLArgumentDefinition)), (
-                    '{}.{}({}:) argument must be an instance of GraphQLArgument.'.format(type, field_name, arg_name)
-                )
-                assert is_input_type(arg.type), (
-                    '{}.{}({}:) argument type must be Input Type but got: {}.'.format(type, field_name, arg_name,
-                                                                                      arg.type)
-                )
-
-                arg = GraphQLArgumentDefinition(
-                    type=arg.type,
-                    name=arg_name,
-                    default_value=arg.default_value,
-                    description=arg.description,
-                )
-                args.append(arg)
+                args[arg_name] = arg
 
             field.args = args
 
@@ -362,30 +340,6 @@ class GraphQLArgument(object):
         return (
             self is other or (
                 isinstance(other, GraphQLArgument) and
-                self.type == other.type and
-                self.default_value == other.default_value and
-                self.description == other.description
-            )
-        )
-
-    def __hash__(self):
-        return id(self)
-
-
-class GraphQLArgumentDefinition(object):
-    __slots__ = 'name', 'type', 'default_value', 'description'
-
-    def __init__(self, type, name, default_value=None, description=None):
-        self.type = type
-        self.name = name
-        self.default_value = default_value
-        self.description = description
-
-    def __eq__(self, other):
-        return (
-            self is other or (
-                isinstance(other, GraphQLArgumentDefinition) and
-                self.name == other.name and
                 self.type == other.type and
                 self.default_value == other.default_value and
                 self.description == other.description

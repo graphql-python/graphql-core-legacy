@@ -1,7 +1,7 @@
 import collections
 
 from ..utils.assert_valid_name import assert_valid_name
-from .definition import (GraphQLArgument, GraphQLArgumentDefinition,
+from .definition import (GraphQLArgument,
                          GraphQLNonNull, is_input_type)
 from .scalars import GraphQLBoolean
 
@@ -44,7 +44,7 @@ class GraphQLDirective(object):
         self.description = description
         self.locations = locations
 
-        self.args = []
+        self.args = collections.OrderedDict()
         if args:
             assert isinstance(args, dict), '{} args must be a dict with argument names as keys.'.format(name)
             for arg_name, _arg in args.items():
@@ -53,12 +53,11 @@ class GraphQLDirective(object):
                     name,
                     arg_name,
                     _arg.type)
-                self.args.append(GraphQLArgumentDefinition(
+                self.args[arg_name] = GraphQLArgument(
                     type=_arg.type,
-                    name=arg_name,
                     description=_arg.description,
                     default_value=_arg.default_value,
-                ))
+                )
 
 
 GraphQLIncludeDirective = GraphQLDirective(

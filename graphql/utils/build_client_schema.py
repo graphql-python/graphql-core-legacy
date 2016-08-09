@@ -225,7 +225,7 @@ def build_client_schema(introspection):
             name=directive_introspection['name'],
             description=directive_introspection.get('description'),
             # TODO: {} ?
-            args=build_input_value_def_map(directive_introspection.get('args', []), GraphQLArgument),
+            args=build_input_value_def_map(directive_introspection.get('args', {}), GraphQLArgument),
             locations=locations
         )
 

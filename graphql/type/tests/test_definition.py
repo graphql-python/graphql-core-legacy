@@ -325,7 +325,7 @@ def test_sorts_fields_and_argument_keys_if_not_using_ordered_dict():
     ordered_fields = test_object.get_fields()
     assert list(ordered_fields.keys()) == ['a', 'b', 'c', 'd']
     field_with_args = test_object.get_fields().get('d')
-    assert [a.name for a in field_with_args.args] == ['a', 'n', 'q', 'v', 'x']
+    assert list(field_with_args.args.keys()) == ['a', 'n', 'q', 'v', 'x']
 
 
 def test_does_not_sort_fields_and_argument_keys_when_using_ordered_dict():
@@ -346,4 +346,4 @@ def test_does_not_sort_fields_and_argument_keys_when_using_ordered_dict():
     ordered_fields = test_object.get_fields()
     assert list(ordered_fields.keys()) == ['b', 'c', 'a', 'd']
     field_with_args = test_object.get_fields().get('d')
-    assert [a.name for a in field_with_args.args] == ['q', 'x', 'v', 'a', 'n']
+    assert list(field_with_args.args.keys()) == ['q', 'x', 'v', 'a', 'n']

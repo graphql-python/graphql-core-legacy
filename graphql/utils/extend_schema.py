@@ -178,7 +178,7 @@ def extend_schema(schema, documentAST=None):
                 extend_field_type(field.type),
                 description=field.description,
                 deprecation_reason=field.deprecation_reason,
-                args={arg.name: arg for arg in field.args},
+                args=field.args,
                 resolver=cannot_execute_client_schema,
             )
 

@@ -4,7 +4,7 @@ from functools import reduce
 from ..utils.type_comparators import is_equal_type, is_type_sub_type_of
 from .definition import (GraphQLInputObjectType, GraphQLInterfaceType,
                          GraphQLList, GraphQLNonNull, GraphQLObjectType,
-                         GraphQLUnionType, GraphQLInputObjectField, is_input_type, is_output_type, GraphQLFieldDefinition)
+                         GraphQLUnionType, GraphQLInputObjectField, is_input_type, is_output_type, GraphQLFieldDefinition, GraphQLField, GraphQLArgument)
 from .directives import (GraphQLDirective, GraphQLIncludeDirective,
                          GraphQLSkipDirective)
 from .introspection import IntrospectionSchema
@@ -157,12 +157,22 @@ class GraphQLSchema(object):
                     assert is_input_type(field.type), (
                         '{}.{} field type must be Input Type but got: {}.'.format(type, field_name, field.type)
                     )
-
-                args = getattr(field, 'args', None)
-                if args:
-                    field_arg_types = [arg.type for arg in field.args]
-                    for t in field_arg_types:
-                        reduced_map = self._type_map_reducer(reduced_map, t)
+                else:
+                    assert isinstance(field, (GraphQLField, GraphQLFieldDefinition)), (
+                        '{}.{} must be an instance of GraphQLField.'.format(type, field_name)
+                    )
+                    assert is_output_type(field.type), (
+                        '{}.{} field type must be Output Type but got: {}.'.format(type, field_name, field.type)
+                    )
+                    for arg_name, arg in field.args.items():
+                        assert isinstance(arg, (GraphQLArgument, GraphQLArgument)), (
+                            '{}.{}({}:) argument must be an instance of GraphQLArgument.'.format(type, field_name, arg_name)
+                        )
+                        assert is_input_type(arg.type), (
+                            '{}.{}({}:) argument type must be Input Type but got: {}.'.format(type, field_name, arg_name,
+                                                                                              arg.type)
+                        )
+                        reduced_map = self._type_map_reducer(reduced_map, arg.type)
 
                 reduced_map = self._type_map_reducer(reduced_map, getattr(field, 'type', None))
 
@@ -184,10 +194,8 @@ def assert_object_implements_interface(schema, object, interface):
             '{}.{} expects type "{}" but {}.{} provides type "{}".'
         ).format(interface, field_name, interface_field.type, object, field_name, object_field.type)
 
-        object_arg_map = {arg.name: arg for arg in object_field.args}
-        for interface_arg in interface_field.args:
-            arg_name = interface_arg.name
-            object_arg = object_arg_map.get(arg_name)
+        for arg_name, interface_arg in interface_field.args.items():
+            object_arg = object_field.args.get(arg_name)
 
             assert object_arg, (
                 '{}.{} expects argument "{}" but {}.{} does not provide it.'
@@ -197,10 +205,8 @@ def assert_object_implements_interface(schema, object, interface):
                 '{}.{}({}:) expects type "{}" but {}.{}({}:) provides type "{}".'
             ).format(interface, field_name, arg_name, interface_arg.type, object, field_name, arg_name, object_arg.type)
 
-        interface_arg_map = {arg.name: arg for arg in interface_field.args}
-        for object_arg in object_field.args:
-            arg_name = object_arg.name
-            interface_arg = interface_arg_map.get(arg_name)
+        for arg_name, object_arg in object_field.args.items():
+            interface_arg = interface_field.args.get(arg_name)
             if not interface_arg:
                 assert not isinstance(object_arg.type, GraphQLNonNull), (
                     '{}.{}({}:) is of required type '

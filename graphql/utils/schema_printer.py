@@ -136,7 +136,7 @@ def _print_args(field_or_directives):
     if not field_or_directives.args:
         return ''
 
-    return '({})'.format(', '.join(_print_input_value(arg.name, arg) for arg in field_or_directives.args))
+    return '({})'.format(', '.join(_print_input_value(arg_name, arg) for arg_name, arg in field_or_directives.args.items()))
 
 
 def _print_input_value(name, arg):

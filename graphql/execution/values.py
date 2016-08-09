@@ -41,8 +41,7 @@ def get_argument_values(arg_defs, arg_asts, variables):
         arg_ast_map = {}
 
     result = {}
-    for arg_def in arg_defs:
-        name = arg_def.name
+    for name, arg_def in arg_defs.items():
         value_ast = arg_ast_map.get(name)
         if value_ast:
             value_ast = value_ast.value

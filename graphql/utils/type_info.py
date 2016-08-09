@@ -103,12 +103,9 @@ class TypeInfo(object):
         arg_type = None
         field_or_directive = self.get_directive() or self.get_field_def()
         if field_or_directive:
-            arg_def = [arg for arg in field_or_directive.args if arg.name == node.name.value]
+            arg_def = field_or_directive.args.get(node.name.value)
             if arg_def:
-                arg_def = arg_def[0]
                 arg_type = arg_def.type
-            else:
-                arg_def = None
         self._argument = arg_def
         self._input_type_stack.append(arg_type)
 

@@ -13,7 +13,7 @@ class KnownArgumentNames(ValidationRule):
             if not field_def:
                 return
 
-            field_arg_def = next((arg for arg in field_def.args if arg.name == node.name.value), None)
+            field_arg_def = field_def.args.get(node.name.value)
 
             if not field_arg_def:
                 parent_type = self.context.get_parent_type()
@@ -28,7 +28,7 @@ class KnownArgumentNames(ValidationRule):
             if not directive:
                 return
 
-            directive_arg_def = next((arg for arg in directive.args if arg.name == node.name.value), None)
+            directive_arg_def = directive.args.get(node.name.value)
 
             if not directive_arg_def:
                 self.context.report_error(GraphQLError(
