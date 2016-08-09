@@ -216,7 +216,7 @@ def define_field_map(type, field_map):
     result_field_map = collections.OrderedDict()
     for field_name, field in field_map.items():
         assert_valid_name(field_name)
-        field_args = field.args
+        field_args = getattr(field, 'args', None)
 
         if field_args:
             assert isinstance(field_args, collections.Mapping), (
