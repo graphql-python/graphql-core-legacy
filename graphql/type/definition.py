@@ -586,10 +586,9 @@ class GraphQLInputObjectType(GraphQLType):
 
 
 class GraphQLInputObjectField(object):
-    __slots__ = 'name', 'type', 'default_value', 'description'
+    __slots__ = 'type', 'default_value', 'description'
 
-    def __init__(self, type, name=None, default_value=None, description=None):
-        self.name = name
+    def __init__(self, type, default_value=None, description=None):
         self.type = type
         self.default_value = default_value
         self.description = description
@@ -598,7 +597,6 @@ class GraphQLInputObjectField(object):
         return (
             self is other or (
                 isinstance(other, GraphQLInputObjectField) and
-                self.name == other.name and
                 self.type == other.type and
                 self.description == other.description
             )
