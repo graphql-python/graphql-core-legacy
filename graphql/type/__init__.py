@@ -11,7 +11,6 @@ from .definition import (  # no import order
     GraphQLEnumValue,
     GraphQLInputObjectType,
     GraphQLInputObjectField,
-    GraphQLInputFieldDefinition,
     GraphQLList,
     GraphQLNonNull,
     get_named_type,

@@ -4,7 +4,7 @@ from functools import reduce
 from ..utils.type_comparators import is_equal_type, is_type_sub_type_of
 from .definition import (GraphQLInputObjectType, GraphQLInterfaceType,
                          GraphQLList, GraphQLNonNull, GraphQLObjectType,
-                         GraphQLUnionType)
+                         GraphQLUnionType, GraphQLInputObjectField, is_input_type, is_output_type, GraphQLFieldDefinition)
 from .directives import (GraphQLDirective, GraphQLIncludeDirective,
                          GraphQLSkipDirective)
 from .introspection import IntrospectionSchema
@@ -148,7 +148,16 @@ class GraphQLSchema(object):
 
         if isinstance(type, (GraphQLObjectType, GraphQLInterfaceType, GraphQLInputObjectType)):
             field_map = type.get_fields()
-            for field in field_map.values():
+            type_is_input = isinstance(type, GraphQLInputObjectType)
+            for field_name, field in field_map.items():
+                if type_is_input:
+                    assert isinstance(field, GraphQLInputObjectField), (
+                        '{}.{} must be an instance of GraphQLInputObjectField.'.format(type, field_name)
+                    )
+                    assert is_input_type(field.type), (
+                        '{}.{} field type must be Input Type but got: {}.'.format(type, field_name, field.type)
+                    )
+
                 args = getattr(field, 'args', None)
                 if args:
                     field_arg_types = [arg.type for arg in field.args]

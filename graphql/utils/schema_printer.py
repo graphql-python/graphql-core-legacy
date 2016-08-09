@@ -125,7 +125,7 @@ def _print_input_object(type):
         'input {} {{\n'
         '{}\n'
         '}}'
-    ).format(type.name, '\n'.join('  ' + _print_input_value(field) for field in type.get_fields().values()))
+    ).format(type.name, '\n'.join('  ' + _print_input_value(name, field) for name, field in type.get_fields().items()))
 
 
 def _print_fields(type):
@@ -136,16 +136,16 @@ def _print_args(field_or_directives):
     if not field_or_directives.args:
         return ''
 
-    return '({})'.format(', '.join(_print_input_value(arg) for arg in field_or_directives.args))
+    return '({})'.format(', '.join(_print_input_value(arg.name, arg) for arg in field_or_directives.args))
 
 
-def _print_input_value(arg):
+def _print_input_value(name, arg):
     if arg.default_value is not None:
         default_value = ' = ' + print_ast(ast_from_value(arg.default_value, arg.type))
     else:
         default_value = ''
 
-    return '{}: {}{}'.format(arg.name, arg.type, default_value)
+    return '{}: {}{}'.format(name, arg.type, default_value)
 
 
 def _print_directive(directive):

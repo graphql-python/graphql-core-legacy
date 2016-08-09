@@ -663,47 +663,15 @@ class GraphQLInputObjectType(GraphQLType):
         field_map = collections.OrderedDict()
         for field_name, field in fields.items():
             assert_valid_name(field_name)
-            assert isinstance(field, GraphQLInputObjectField), (
-                '{}.{} must be an instance of GraphQLInputObjectField.'.format(self, field_name)
-            )
-            assert is_input_type(field.type), (
-                '{}.{} field type must be Input Type but got: {}.'.format(self, field_name, field.type)
-            )
-
-            field = GraphQLInputFieldDefinition(
-                type=field.type,
-                name=field_name,
-                default_value=field.default_value,
-                description=field.description,
-            )
-
             field_map[field_name] = field
 
         return field_map
 
 
 class GraphQLInputObjectField(object):
-    __slots__ = 'type', 'default_value', 'description'
-
-    def __init__(self, type, default_value=None, description=None):
-        self.type = type
-        self.default_value = default_value
-        self.description = description
-
-    def __eq__(self, other):
-        return (
-            self is other or (
-                isinstance(other, GraphQLInputObjectField) and
-                self.type == other.type and
-                self.description == other.description
-            )
-        )
-
-
-class GraphQLInputFieldDefinition(object):
     __slots__ = 'name', 'type', 'default_value', 'description'
 
-    def __init__(self, type, name, default_value=None, description=None):
+    def __init__(self, type, name=None, default_value=None, description=None):
         self.name = name
         self.type = type
         self.default_value = default_value
@@ -712,7 +680,7 @@ class GraphQLInputFieldDefinition(object):
     def __eq__(self, other):
         return (
             self is other or (
-                isinstance(other, GraphQLInputFieldDefinition) and
+                isinstance(other, GraphQLInputObjectField) and
                 self.name == other.name and
                 self.type == other.type and
                 self.description == other.description

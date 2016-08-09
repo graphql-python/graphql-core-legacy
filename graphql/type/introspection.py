@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 
 from ..language.printer import print_ast
 from ..utils.ast_from_value import ast_from_value
@@ -10,6 +10,9 @@ from .definition import (GraphQLArgument, GraphQLArgumentDefinition,
                          GraphQLUnionType)
 from .directives import DirectiveLocation
 from .scalars import GraphQLBoolean, GraphQLString
+
+
+InputField = namedtuple('InputField', ['name', 'description', 'type', 'default_value'])
 
 __Schema = GraphQLObjectType(
     '__Schema',
@@ -185,7 +188,14 @@ class TypeFieldResolvers(object):
     @staticmethod
     def input_fields(type, *_):
         if isinstance(type, GraphQLInputObjectType):
-            return type.get_fields().values()
+            fields = []
+            for field_name, field in type.get_fields().items():
+                fields.append(InputField(
+                    name=field_name,
+                    description=field.description,
+                    type=field.type,
+                    default_value=field.default_value))
+            return fields
 
 
 __Type = GraphQLObjectType(
