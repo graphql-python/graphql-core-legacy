@@ -4,7 +4,7 @@ from ..language.printer import print_ast
 from ..utils.ast_from_value import ast_from_value
 from .definition import (GraphQLArgument, GraphQLArgument,
                          GraphQLEnumType, GraphQLEnumValue, GraphQLField,
-                         GraphQLFieldDefinition, GraphQLInputObjectType,
+                         GraphQLInputObjectType,
                          GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                          GraphQLObjectType, GraphQLScalarType,
                          GraphQLUnionType)
@@ -13,6 +13,8 @@ from .scalars import GraphQLBoolean, GraphQLString
 
 
 InputField = namedtuple('InputField', ['name', 'description', 'type', 'default_value'])
+Field = namedtuple('Field', ['name', 'type', 'description', 'args', 'deprecation_reason'])
+
 
 def input_fields_to_list(input_fields):
     fields = []
@@ -171,9 +173,18 @@ class TypeFieldResolvers(object):
     @staticmethod
     def fields(type, args, *_):
         if isinstance(type, (GraphQLObjectType, GraphQLInterfaceType)):
-            fields = type.get_fields().values()
-            if not args.get('includeDeprecated'):
-                fields = [f for f in fields if not f.deprecation_reason]
+            fields = []
+            include_deprecated = args.get('includeDeprecated')
+            for field_name, field in type.get_fields().items():
+                if field.deprecation_reason and not include_deprecated:
+                    continue
+                fields.append(Field(
+                    name=field_name,
+                    description=field.description,
+                    type=field.type,
+                    args=field.args,
+                    deprecation_reason=field.deprecation_reason
+                ))
             return fields
         return None
 
@@ -362,25 +373,25 @@ __TypeKind = GraphQLEnumType(
 
 IntrospectionSchema = __Schema
 
-SchemaMetaFieldDef = GraphQLFieldDefinition(
-    name='__schema',
+SchemaMetaFieldDef = GraphQLField(
+    # name='__schema',
     type=GraphQLNonNull(__Schema),
     description='Access the current type schema of this server.',
     resolver=lambda source, args, context, info: info.schema,
     args={}
 )
 
-TypeMetaFieldDef = GraphQLFieldDefinition(
+TypeMetaFieldDef = GraphQLField(
     type=__Type,
-    name='__type',
+    # name='__type',
     description='Request the type information of a single type.',
     args={'name': GraphQLArgument(GraphQLNonNull(GraphQLString))},
     resolver=lambda source, args, context, info: info.schema.get_type(args['name'])
 )
 
-TypeNameMetaFieldDef = GraphQLFieldDefinition(
+TypeNameMetaFieldDef = GraphQLField(
     type=GraphQLNonNull(GraphQLString),
-    name='__typename',
+    # name='__typename',
     description='The name of the current Object type at runtime.',
     resolver=lambda source, args, context, info: info.parent_type.name,
     args={}

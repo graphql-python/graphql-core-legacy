@@ -3,7 +3,6 @@ from .definition import (  # no import order
     GraphQLScalarType,
     GraphQLObjectType,
     GraphQLField,
-    GraphQLFieldDefinition,
     GraphQLArgument,
     GraphQLInterfaceType,
     GraphQLUnionType,

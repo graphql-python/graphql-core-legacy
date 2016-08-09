@@ -19,7 +19,7 @@ class KnownArgumentNames(ValidationRule):
                 parent_type = self.context.get_parent_type()
                 assert parent_type
                 self.context.report_error(GraphQLError(
-                    self.unknown_arg_message(node.name.value, field_def.name, parent_type.name),
+                    self.unknown_arg_message(node.name.value, argument_of.name.value, parent_type.name),
                     [node]
                 ))
 

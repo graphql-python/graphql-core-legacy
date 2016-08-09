@@ -218,15 +218,6 @@ def define_field_map(type, field_map):
         assert_valid_name(field_name)
         field_args = field.args
 
-        field = GraphQLFieldDefinition(
-            type=field.type,
-            name=field_name,
-            args={},
-            resolver=field.resolver,
-            deprecation_reason=field.deprecation_reason,
-            description=field.description,
-        )
-
         if field_args:
             assert isinstance(field_args, collections.Mapping), (
                 '{}.{} args must be a mapping (dict / OrderedDict) with argument names as keys.'.format(type,
@@ -279,7 +270,7 @@ class GraphQLField(object):
 
     def __init__(self, type, args=None, resolver=None, deprecation_reason=None, description=None):
         self.type = type
-        self.args = args
+        self.args = args or collections.OrderedDict()
         self.resolver = resolver
         self.deprecation_reason = deprecation_reason
         self.description = description
@@ -289,34 +280,6 @@ class GraphQLField(object):
             self is other or (
                 isinstance(other, GraphQLField) and
                 self.type == other.type and
-                self.args == other.args and
-                self.resolver == other.resolver and
-                self.deprecation_reason == other.deprecation_reason and
-                self.description == other.description
-            )
-        )
-
-    def __hash__(self):
-        return id(self)
-
-
-class GraphQLFieldDefinition(object):
-    __slots__ = 'name', 'type', 'args', 'resolver', 'deprecation_reason', 'description'
-
-    def __init__(self, type, name, args=None, resolver=None, deprecation_reason=None, description=None):
-        self.type = type
-        self.name = name
-        self.args = args
-        self.resolver = resolver
-        self.deprecation_reason = deprecation_reason
-        self.description = description
-
-    def __eq__(self, other):
-        return (
-            self is other or (
-                isinstance(other, GraphQLFieldDefinition) and
-                self.type == other.type and
-                self.name == other.name and
                 self.args == other.args and
                 self.resolver == other.resolver and
                 self.deprecation_reason == other.deprecation_reason and

@@ -129,7 +129,7 @@ def _print_input_object(type):
 
 
 def _print_fields(type):
-    return '\n'.join('  {}{}: {}'.format(f.name, _print_args(f), f.type) for f in type.get_fields().values())
+    return '\n'.join('  {}{}: {}'.format(f_name, _print_args(f), f.type) for f_name, f in type.get_fields().items())
 
 
 def _print_args(field_or_directives):

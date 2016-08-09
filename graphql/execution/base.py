@@ -277,10 +277,10 @@ def get_field_def(schema, parent_type, field_name):
     are allowed, like on a Union. __schema could get automatically
     added to the query type, but that would require mutating type
     definitions, which would cause issues."""
-    if field_name == SchemaMetaFieldDef.name and schema.get_query_type() == parent_type:
+    if field_name == '__schema' and schema.get_query_type() == parent_type:
         return SchemaMetaFieldDef
-    elif field_name == TypeMetaFieldDef.name and schema.get_query_type() == parent_type:
+    elif field_name == '__type' and schema.get_query_type() == parent_type:
         return TypeMetaFieldDef
-    elif field_name == TypeNameMetaFieldDef.name:
+    elif field_name == '__typename':
         return TypeNameMetaFieldDef
     return parent_type.get_fields().get(field_name)

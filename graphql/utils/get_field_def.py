@@ -9,13 +9,13 @@ def get_field_def(schema, parent_type, field_ast):
     statically evaluated environment we do not always have an Object type,
     and need to handle Interface and Union types."""
     name = field_ast.name.value
-    if name == SchemaMetaFieldDef.name and schema.get_query_type() == parent_type:
+    if name == '__schema' and schema.get_query_type() == parent_type:
         return SchemaMetaFieldDef
 
-    elif name == TypeMetaFieldDef.name and schema.get_query_type() == parent_type:
+    elif name == '__type' and schema.get_query_type() == parent_type:
         return TypeMetaFieldDef
 
-    elif name == TypeNameMetaFieldDef.name and \
+    elif name == '__typename' and \
             isinstance(parent_type, (
                 GraphQLObjectType,
                 GraphQLInterfaceType,
