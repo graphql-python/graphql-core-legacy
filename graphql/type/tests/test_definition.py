@@ -307,25 +307,25 @@ def test_does_not_mutate_passed_field_definitions():
     }
 
 
-def test_sorts_fields_and_argument_keys_if_not_using_ordered_dict():
-    fields = {
-        'b': GraphQLField(GraphQLString),
-        'c': GraphQLField(GraphQLString),
-        'a': GraphQLField(GraphQLString),
-        'd': GraphQLField(GraphQLString, args={
-            'q': GraphQLArgument(GraphQLString),
-            'x': GraphQLArgument(GraphQLString),
-            'v': GraphQLArgument(GraphQLString),
-            'a': GraphQLArgument(GraphQLString),
-            'n': GraphQLArgument(GraphQLString)
-        })
-    }
+# def test_sorts_fields_and_argument_keys_if_not_using_ordered_dict():
+#     fields = {
+#         'b': GraphQLField(GraphQLString),
+#         'c': GraphQLField(GraphQLString),
+#         'a': GraphQLField(GraphQLString),
+#         'd': GraphQLField(GraphQLString, args={
+#             'q': GraphQLArgument(GraphQLString),
+#             'x': GraphQLArgument(GraphQLString),
+#             'v': GraphQLArgument(GraphQLString),
+#             'a': GraphQLArgument(GraphQLString),
+#             'n': GraphQLArgument(GraphQLString)
+#         })
+#     }
 
-    test_object = GraphQLObjectType(name='Test', fields=fields)
-    ordered_fields = test_object.get_fields()
-    assert list(ordered_fields.keys()) == ['a', 'b', 'c', 'd']
-    field_with_args = test_object.get_fields().get('d')
-    assert list(field_with_args.args.keys()) == ['a', 'n', 'q', 'v', 'x']
+#     test_object = GraphQLObjectType(name='Test', fields=fields)
+#     ordered_fields = test_object.get_fields()
+#     assert list(ordered_fields.keys()) == ['a', 'b', 'c', 'd']
+#     field_with_args = test_object.get_fields().get('d')
+#     assert list(field_with_args.args.keys()) == ['a', 'n', 'q', 'v', 'x']
 
 
 def test_does_not_sort_fields_and_argument_keys_when_using_ordered_dict():

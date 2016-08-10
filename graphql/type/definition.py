@@ -210,10 +210,6 @@ def define_field_map(type, field_map):
         'function which returns such a mapping.'
     ).format(type)
 
-    if not isinstance(field_map, collections.OrderedDict):
-        field_map = collections.OrderedDict(sorted(list(field_map.items())))
-
-    result_field_map = collections.OrderedDict()
     for field_name, field in field_map.items():
         assert_valid_name(field_name)
         field_args = getattr(field, 'args', None)
@@ -223,19 +219,11 @@ def define_field_map(type, field_map):
                 '{}.{} args must be a mapping (dict / OrderedDict) with argument names as keys.'.format(type,
                                                                                                         field_name)
             )
-            args = collections.OrderedDict()
-            if not isinstance(field_args, collections.OrderedDict):
-                field_args = collections.OrderedDict(sorted(list(field_args.items())))
 
             for arg_name, arg in field_args.items():
                 assert_valid_name(arg_name)
-                args[arg_name] = arg
 
-            field.args = args
-
-        result_field_map[field_name] = field
-
-    return result_field_map
+    return field_map
 
 
 def define_interfaces(type, interfaces):
@@ -574,15 +562,10 @@ class GraphQLInputObjectType(GraphQLType):
             'function which returns such a mapping.'
         ).format(self)
 
-        if not isinstance(fields, collections.OrderedDict):
-            fields = collections.OrderedDict(sorted(list(fields.items())))
-
-        field_map = collections.OrderedDict()
         for field_name, field in fields.items():
             assert_valid_name(field_name)
-            field_map[field_name] = field
 
-        return field_map
+        return fields
 
 
 class GraphQLInputObjectField(object):

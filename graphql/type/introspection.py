@@ -2,8 +2,8 @@ from collections import OrderedDict, namedtuple
 
 from ..language.printer import print_ast
 from ..utils.ast_from_value import ast_from_value
-from .definition import (GraphQLArgument, GraphQLArgument,
-                         GraphQLEnumType, GraphQLEnumValue, GraphQLField,
+from .definition import (GraphQLArgument, GraphQLEnumType,
+                         GraphQLEnumValue, GraphQLField,
                          GraphQLInputObjectType,
                          GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                          GraphQLObjectType, GraphQLScalarType,
