@@ -102,6 +102,8 @@ if not __GRAPHQL_SETUP__:
     # Execute GraphQL queries.
     from .execution import (  # no import order
         execute,
+        MiddlewareManager,
+        middlewares
     )
 
     # Validate GraphQL queries.
@@ -204,6 +206,8 @@ if not __GRAPHQL_SETUP__:
         'print_ast',
         'visit',
         'execute',
+        'MiddlewareManager',
+        'middlewares',
         'specified_rules',
         'validate',
         'GraphQLError',

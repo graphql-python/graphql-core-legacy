@@ -28,7 +28,7 @@ from .validation import validate
 #    one operation.
 def graphql(schema, request_string='', root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
-            return_promise=False):
+            return_promise=False, middlewares=None):
     try:
         source = Source(request_string, 'GraphQL request')
         ast = parse(source)
@@ -46,7 +46,8 @@ def graphql(schema, request_string='', root_value=None, context_value=None,
             operation_name=operation_name,
             variable_values=variable_values or {},
             executor=executor,
-            return_promise=return_promise
+            return_promise=return_promise,
+            middlewares=middlewares,
         )
     except Exception as e:
         return ExecutionResult(
