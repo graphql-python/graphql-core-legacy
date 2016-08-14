@@ -58,6 +58,7 @@ if not __GRAPHQL_SETUP__:
         GraphQLList,
         GraphQLNonNull,
         GraphQLField,
+        GraphQLInputObjectField,
         GraphQLArgument,
 
         # Scalars
@@ -180,6 +181,7 @@ if not __GRAPHQL_SETUP__:
         'GraphQLList',
         'GraphQLNonNull',
         'GraphQLField',
+        'GraphQLInputObjectField',
         'GraphQLArgument',
         'GraphQLObjectType',
         'GraphQLScalarType',
