@@ -11,7 +11,7 @@ class MiddlewareManager(object):
 
     def __init__(self, *middlewares):
         self.middlewares = middlewares
-        self._middleware_resolvers = get_middleware_resolvers(middlewares)
+        self._middleware_resolvers = list(get_middleware_resolvers(middlewares))
         self._cached_resolvers = {}
 
     def get_field_resolver(self, field_resolver):
