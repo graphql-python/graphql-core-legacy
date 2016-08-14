@@ -566,6 +566,7 @@ def test_exceptions_are_reraised_if_specified(mocker):
 def test_middleware():
     doc = '''{
         ok
+        not_ok
     }'''
 
     class Data(object):
@@ -573,14 +574,54 @@ def test_middleware():
         def ok(self):
             return 'ok'
 
+        def not_ok(self):
+            return 'not_ok'
+
     doc_ast = parse(doc)
 
     Type = GraphQLObjectType('Type', {
         'ok': GraphQLField(GraphQLString),
+        'not_ok': GraphQLField(GraphQLString),
     })
-    middlewares = MiddlewareManager(lambda *_: None)
+
+    def reversed_middleware(next, *args, **kwargs):
+        p = next(*args, **kwargs)
+        return p.then(lambda x: x[::-1])
+
+    middlewares = MiddlewareManager(reversed_middleware)
     result = execute(GraphQLSchema(Type), doc_ast, Data(), middlewares=middlewares)
-    assert result.data == {'ok': None}
+    assert result.data == {'ok': 'ko', 'not_ok': 'ko_ton'}
+
+
+def test_middleware_class():
+    doc = '''{
+        ok
+        not_ok
+    }'''
+
+    class Data(object):
+
+        def ok(self):
+            return 'ok'
+
+        def not_ok(self):
+            return 'not_ok'
+
+    doc_ast = parse(doc)
+
+    Type = GraphQLObjectType('Type', {
+        'ok': GraphQLField(GraphQLString),
+        'not_ok': GraphQLField(GraphQLString),
+    })
+
+    class MyMiddleware(object):
+        def resolve(self, next, *args, **kwargs):
+            p = next(*args, **kwargs)
+            return p.then(lambda x: x[::-1])
+
+    middlewares = MiddlewareManager(MyMiddleware())
+    result = execute(GraphQLSchema(Type), doc_ast, Data(), middlewares=middlewares)
+    assert result.data == {'ok': 'ko', 'not_ok': 'ko_ton'}
 
 
 def test_middleware_wrong():
