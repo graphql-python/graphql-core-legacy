@@ -33,7 +33,7 @@ except NameError:
     __GRAPHQL_SETUP__ = False
 
 
-VERSION = (0, 5, 3, 'final', 0)
+VERSION = (1, 0, 0, 'alpha', 0)
 
 __version__ = get_version(VERSION)
 
