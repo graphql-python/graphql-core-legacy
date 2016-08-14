@@ -3,7 +3,7 @@ import json
 from pytest import raises
 
 from graphql.error import GraphQLError
-from graphql.execution import execute
+from graphql.execution import execute, MiddlewareManager
 from graphql.language.parser import parse
 from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLField,
                           GraphQLInt, GraphQLList, GraphQLObjectType,
@@ -561,3 +561,45 @@ def test_exceptions_are_reraised_if_specified(mocker):
 
     execute(schema, query)
     logger.exception.assert_called_with("An error occurred while resolving field Query.foo")
+
+
+def test_middleware():
+    doc = '''{
+        ok
+    }'''
+
+    class Data(object):
+
+        def ok(self):
+            return 'ok'
+
+    doc_ast = parse(doc)
+
+    Type = GraphQLObjectType('Type', {
+        'ok': GraphQLField(GraphQLString),
+    })
+    middlewares = MiddlewareManager(lambda *_: None)
+    result = execute(GraphQLSchema(Type), doc_ast, Data(), middlewares=middlewares)
+    assert result.data == {'ok': None}
+
+
+def test_middleware_wrong():
+    doc = '''{
+        ok
+    }'''
+
+    class Data(object):
+
+        def ok(self):
+            return 'ok'
+
+    doc_ast = parse(doc)
+
+    Type = GraphQLObjectType('Type', {
+        'ok': GraphQLField(GraphQLString),
+    })
+    middlewares = [None]
+    with raises(AssertionError) as excinfo:
+        execute(GraphQLSchema(Type), doc_ast, Data(), middlewares=middlewares)
+
+    assert 'middlewares have to be an instance of MiddlewareManager. Received "[None]".' == str(excinfo.value)
