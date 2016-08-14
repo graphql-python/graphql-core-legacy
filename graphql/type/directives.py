@@ -44,20 +44,15 @@ class GraphQLDirective(object):
         self.description = description
         self.locations = locations
 
-        self.args = collections.OrderedDict()
         if args:
-            assert isinstance(args, dict), '{} args must be a dict with argument names as keys.'.format(name)
+            assert isinstance(args, collections.Mapping), '{} args must be a dict with argument names as keys.'.format(name)
             for arg_name, _arg in args.items():
                 assert_valid_name(arg_name)
                 assert is_input_type(_arg.type), '{}({}) argument type must be Input Type but got {}.'.format(
                     name,
                     arg_name,
                     _arg.type)
-                self.args[arg_name] = GraphQLArgument(
-                    type=_arg.type,
-                    description=_arg.description,
-                    default_value=_arg.default_value,
-                )
+        self.args = args or collections.OrderedDict()
 
 
 GraphQLIncludeDirective = GraphQLDirective(
