@@ -41,7 +41,7 @@ QUERY_DOCUMENT_KEYS = {
     ast.UnionTypeDefinition: ('name', 'directives', 'types'),
     ast.EnumTypeDefinition: ('name', 'directives', 'values'),
     ast.EnumValueDefinition: ('name', 'directives',),
-    ast.InputObjectTypeDefinition: ('name', 'fields'),
+    ast.InputObjectTypeDefinition: ('name', 'directives', 'fields'),
 
     ast.TypeExtensionDefinition: ('definition',),
 
