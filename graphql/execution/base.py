@@ -268,6 +268,8 @@ def get_field_entry_key(node):
 
 
 class ResolveInfo(object):
+    __slots__ = ('field_name', 'field_asts', 'return_type', 'parent_type',
+                 'schema', 'fragments', 'root_value', 'operation', 'variable_values')
 
     def __init__(self, field_name, field_asts, return_type, parent_type,
                  schema, fragments, root_value, operation, variable_values):
