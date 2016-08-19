@@ -89,6 +89,9 @@ class GraphQLType(object):
         return self.__class__ is other.__class__ and self.name == other.name
 
 
+def none_func(x):
+    None
+
 class GraphQLScalarType(GraphQLType):
     """Scalar Type Definition
 
@@ -106,7 +109,7 @@ class GraphQLScalarType(GraphQLType):
         OddType = GraphQLScalarType(name='Odd', serialize=coerce_odd)
     """
 
-    __slots__ = 'name', 'description', '_serialize', '_parse_value', '_parse_literal'
+    __slots__ = 'name', 'description', 'serialize', 'parse_value', 'parse_literal'
 
     def __init__(self, name, description=None, serialize=None, parse_value=None, parse_literal=None):
         assert name, 'Type must be named.'
@@ -125,24 +128,9 @@ class GraphQLScalarType(GraphQLType):
                 '{} must provide both "parse_value" and "parse_literal" functions.'.format(self)
             )
 
-        self._serialize = serialize
-        self._parse_value = parse_value
-        self._parse_literal = parse_literal
-
-    def serialize(self, value):
-        return self._serialize(value)
-
-    def parse_value(self, value):
-        if self._parse_value:
-            return self._parse_value(value)
-
-        return None
-
-    def parse_literal(self, value_ast):
-        if self._parse_literal:
-            return self._parse_literal(value_ast)
-
-        return None
+        self.serialize = serialize
+        self.parse_value = parse_value or none_func
+        self.parse_literal = parse_literal or none_func
 
     def __str__(self):
         return self.name
