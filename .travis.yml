@@ -22,7 +22,7 @@ before_install:
       fi
 install:
 - pip install pytest-cov pytest-mock coveralls flake8 isort==3.9.6 gevent==1.1b5 six>=1.10.0 promise>=0.4.2 pytest-benchmark
-- pip install pytest
+- pip install pytest --upgrade
 - pip install -e .
 script:
 - flake8
