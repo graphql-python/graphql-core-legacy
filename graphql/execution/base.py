@@ -6,6 +6,7 @@ from ..type.directives import GraphQLIncludeDirective, GraphQLSkipDirective
 from ..type.introspection import (SchemaMetaFieldDef, TypeMetaFieldDef,
                                   TypeNameMetaFieldDef)
 from ..utils.type_from_ast import type_from_ast
+from ..pyutils.default_ordered_dict import DefaultOrderedDict
 from .values import get_argument_values, get_variable_values
 
 Undefined = object()
@@ -18,7 +19,7 @@ class ExecutionContext(object):
     and the fragments defined in the query document"""
 
     __slots__ = 'schema', 'fragments', 'root_value', 'operation', 'variable_values', 'errors', 'context_value', \
-                'argument_values_cache', 'executor', 'middleware_manager'
+                'argument_values_cache', 'executor', 'middleware_manager', '_subfields_cache'
 
     def __init__(self, schema, document_ast, root_value, context_value, variable_values, operation_name, executor, middleware_manager):
         """Constructs a ExecutionContext object from the arguments passed
@@ -64,6 +65,7 @@ class ExecutionContext(object):
         self.argument_values_cache = {}
         self.executor = executor
         self.middleware_manager = middleware_manager
+        self._subfields_cache = {}
 
     def get_field_resolver(self, field_resolver):
         if not self.middleware_manager:
@@ -79,6 +81,21 @@ class ExecutionContext(object):
                                                                          self.variable_values)
 
         return result
+
+    def get_sub_fields(self, return_type, field_asts):
+        k = return_type, tuple(field_asts)
+        if k not in self._subfields_cache:
+            subfield_asts = DefaultOrderedDict(list)
+            visited_fragment_names = set()
+            for field_ast in field_asts:
+                selection_set = field_ast.selection_set
+                if selection_set:
+                    subfield_asts = collect_fields(
+                        self, return_type, selection_set,
+                        subfield_asts, visited_fragment_names
+                    )
+            self._subfields_cache[k] = subfield_asts
+        return self._subfields_cache[k]
 
 
 class ExecutionResult(object):

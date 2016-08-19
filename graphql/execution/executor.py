@@ -368,14 +368,5 @@ def complete_object_value(exe_context, return_type, field_asts, info, result):
         )
 
     # Collect sub-fields to execute to complete this value.
-    subfield_asts = DefaultOrderedDict(list)
-    visited_fragment_names = set()
-    for field_ast in field_asts:
-        selection_set = field_ast.selection_set
-        if selection_set:
-            subfield_asts = collect_fields(
-                exe_context, return_type, selection_set,
-                subfield_asts, visited_fragment_names
-            )
-
+    subfield_asts = exe_context.get_sub_fields(return_type, field_asts)
     return execute_fields(exe_context, return_type, result, subfield_asts)
