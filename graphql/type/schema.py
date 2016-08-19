@@ -60,7 +60,6 @@ class GraphQLSchema(object):
             initial_types += types
         self._type_map = GraphQLTypeMap(initial_types)
 
-
     def get_query_type(self):
         return self._query
 

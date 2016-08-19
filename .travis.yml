@@ -6,7 +6,6 @@ python:
 - 3.4
 - 3.5
 - pypy
-cache: pip
 before_install:
   - |
       if [ "$TRAVIS_PYTHON_VERSION" = "pypy" ]; then
@@ -22,8 +21,8 @@ before_install:
         source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
       fi
 install:
-- pip install pytest-mock coveralls flake8 isort==3.9.6 gevent==1.1b5 six>=1.10.0 promise>=0.4.2 pytest-benchmark
-- pip install pytest>=2.7.3
+- pip install pytest-cov pytest-mock coveralls flake8 isort==3.9.6 gevent==1.1b5 six>=1.10.0 promise>=0.4.2 pytest-benchmark
+- pip install pytest
 - pip install -e .
 script:
 - flake8
