@@ -53,7 +53,7 @@ class FieldsOnCorrectType(ValidationRule):
 
 def get_implementations_including_field(schema, type, field_name):
     '''Return implementations of `type` that include `fieldName` as a valid field.'''
-    return sorted(map(lambda t: t.name, filter(lambda t: field_name in t.get_fields(), schema.get_possible_types(type))))
+    return sorted(map(lambda t: t.name, filter(lambda t: field_name in t.fields, schema.get_possible_types(type))))
 
 
 def get_sibling_interfaces_including_field(schema, type, field_name):
@@ -65,8 +65,8 @@ def get_sibling_interfaces_including_field(schema, type, field_name):
     implementing_objects = schema.get_possible_types(type)
     suggested_interfaces = OrderedCounter()
     for t in implementing_objects:
-        for i in t.get_interfaces():
-            if field_name not in i.get_fields():
+        for i in t.interfaces:
+            if field_name not in i.fields:
                 continue
             suggested_interfaces[i.name] += 1
     most_common = suggested_interfaces.most_common()

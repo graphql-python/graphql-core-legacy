@@ -148,12 +148,12 @@ def extend_schema(schema, documentAST=None):
         return GraphQLUnionType(
             name=type.name,
             description=type.description,
-            types=list(map(get_type_from_def, type.get_types())),
+            types=list(map(get_type_from_def, type.types)),
             resolve_type=cannot_execute_client_schema,
         )
 
     def extend_implemented_interfaces(type):
-        interfaces = list(map(get_type_from_def, type.get_interfaces()))
+        interfaces = list(map(get_type_from_def, type.interfaces))
 
         # If there are any extensions to the interfaces, apply those here.
         extensions = type_extensions_map[type.name]
@@ -173,7 +173,7 @@ def extend_schema(schema, documentAST=None):
 
     def extend_field_map(type):
         new_field_map = OrderedDict()
-        old_field_map = type.get_fields()
+        old_field_map = type.fields
         for field_name, field in old_field_map.items():
             new_field_map[field_name] = GraphQLField(
                 extend_field_type(field.type),

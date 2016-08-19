@@ -308,4 +308,4 @@ def get_field_def(schema, parent_type, field_name):
         return TypeMetaFieldDef
     elif field_name == '__typename':
         return TypeNameMetaFieldDef
-    return parent_type.get_fields().get(field_name)
+    return parent_type.fields.get(field_name)
