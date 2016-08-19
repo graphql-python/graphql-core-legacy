@@ -21,6 +21,10 @@ from .middleware import MiddlewareManager
 logger = logging.getLogger(__name__)
 
 
+def is_thenable(obj):
+    return type(obj) == Promise
+
+
 def execute(schema, document_ast, root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
             return_promise=False, middlewares=None):
