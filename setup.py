@@ -49,6 +49,7 @@ setup(
     ],
     tests_require=[
         'pytest>=2.7.3',
+        'pytest-benchmark',
         'gevent==1.1rc1',
         'six>=1.10.0',
         'pytest-mock'
