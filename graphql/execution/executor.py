@@ -248,16 +248,7 @@ def complete_value(exe_context, return_type, field_asts, info, result):
         raise GraphQLLocatedError(field_asts, original_error=result)
 
     if isinstance(return_type, GraphQLNonNull):
-        completed = complete_value(
-            exe_context, return_type.of_type, field_asts, info, result
-        )
-        if completed is None:
-            raise GraphQLError(
-                'Cannot return null for non-nullable field {}.{}.'.format(info.parent_type, info.field_name),
-                field_asts
-            )
-
-        return completed
+        return complete_nonnull_value(exe_context, return_type, field_asts, info, result)
 
     # If result is null-like, return null.
     if result is None:
@@ -305,15 +296,10 @@ def complete_leaf_value(return_type, result):
     """
     Complete a Scalar or Enum by serializing to a valid value, returning null if serialization is not possible.
     """
-    serialize = getattr(return_type, 'serialize', None)
-    assert serialize, 'Missing serialize method on type'
+    # serialize = getattr(return_type, 'serialize', None)
+    # assert serialize, 'Missing serialize method on type'
 
-    serialized_result = serialize(result)
-
-    if serialized_result is None:
-        return None
-
-    return serialized_result
+    return return_type.serialize(result)
 
 
 def complete_abstract_value(exe_context, return_type, field_asts, info, result):
@@ -370,3 +356,19 @@ def complete_object_value(exe_context, return_type, field_asts, info, result):
     # Collect sub-fields to execute to complete this value.
     subfield_asts = exe_context.get_sub_fields(return_type, field_asts)
     return execute_fields(exe_context, return_type, result, subfield_asts)
+
+
+def complete_nonnull_value(exe_context, return_type, field_asts, info, result):
+    """
+    Complete a NonNull value by completing the inner type
+    """
+    completed = complete_value(
+        exe_context, return_type.of_type, field_asts, info, result
+    )
+    if completed is None:
+        raise GraphQLError(
+            'Cannot return null for non-nullable field {}.{}.'.format(info.parent_type, info.field_name),
+            field_asts
+        )
+
+    return completed
