@@ -1,4 +1,5 @@
-from collections import Counter, OrderedDict
+from collections import Counter
+from ...pyutils.ordereddict import OrderedDict
 
 from ...error import GraphQLError
 from ...type.definition import is_abstract_type

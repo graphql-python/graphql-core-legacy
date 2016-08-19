@@ -3,6 +3,8 @@ import functools
 import logging
 import sys
 
+from ..pyutils.ordereddict import OrderedDict
+
 from promise import Promise, is_thenable, promise_for_dict, promisify
 
 from ..error import GraphQLError, GraphQLLocatedError
@@ -111,7 +113,7 @@ def execute_fields_serially(exe_context, parent_type, source_value, fields):
 def execute_fields(exe_context, parent_type, source_value, fields):
     contains_promise = False
 
-    final_results = collections.OrderedDict()
+    final_results = OrderedDict()
 
     for response_name, field_asts in fields.items():
         result = resolve_field(exe_context, parent_type, source_value, field_asts)

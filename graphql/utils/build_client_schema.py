@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from ..pyutils.ordereddict import OrderedDict
 
 from ..language.parser import parse_value
 from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,

@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from ..pyutils.ordereddict import OrderedDict
 
 from ..language import ast
 from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLDirective,

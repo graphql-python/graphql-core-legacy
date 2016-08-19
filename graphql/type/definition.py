@@ -1,6 +1,8 @@
 import collections
 import copy
 
+from ..pyutils.ordereddict import OrderedDict
+
 from ..language import ast
 from ..utils.assert_valid_name import assert_valid_name
 
@@ -223,7 +225,7 @@ def define_field_map(type, field_map):
             for arg_name, arg in field_args.items():
                 assert_valid_name(arg_name)
 
-    return field_map
+    return OrderedDict(field_map)
 
 
 def define_interfaces(type, interfaces):
@@ -258,7 +260,7 @@ class GraphQLField(object):
 
     def __init__(self, type, args=None, resolver=None, deprecation_reason=None, description=None):
         self.type = type
-        self.args = args or collections.OrderedDict()
+        self.args = args or OrderedDict()
         self.resolver = resolver
         self.deprecation_reason = deprecation_reason
         self.description = description
@@ -476,8 +478,8 @@ def define_enum_values(type, value_map):
     )
 
     values = []
-    if not isinstance(value_map, collections.OrderedDict):
-        value_map = collections.OrderedDict(sorted(list(value_map.items())))
+    if not isinstance(value_map, (collections.OrderedDict, OrderedDict)):
+        value_map = OrderedDict(sorted(list(value_map.items())))
 
     for value_name, value in value_map.items():
         assert_valid_name(value_name)

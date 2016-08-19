@@ -1,4 +1,5 @@
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
+from ..pyutils.ordereddict import OrderedDict
 
 from ..error import GraphQLError
 from ..language import ast
