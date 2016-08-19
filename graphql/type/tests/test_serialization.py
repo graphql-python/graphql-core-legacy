@@ -1,3 +1,4 @@
+import pytest
 from graphql.type import (GraphQLBoolean, GraphQLFloat, GraphQLInt,
                           GraphQLString)
 
@@ -10,12 +11,17 @@ def test_serializes_output_int():
     assert GraphQLInt.serialize(1.1) == 1
     assert GraphQLInt.serialize(-1.1) == -1
     assert GraphQLInt.serialize(1e5) == 100000
-    assert GraphQLInt.serialize(9876504321) is None
-    assert GraphQLInt.serialize(-9876504321) is None
-    assert GraphQLInt.serialize(1e100) is None
-    assert GraphQLInt.serialize(-1e100) is None
+    with pytest.raises(Exception):
+        GraphQLInt.serialize(9876504321)
+    with pytest.raises(Exception):
+        GraphQLInt.serialize(-9876504321)
+    with pytest.raises(Exception):
+        GraphQLInt.serialize(1e100)
+    with pytest.raises(Exception):
+        GraphQLInt.serialize(-1e100)
     assert GraphQLInt.serialize('-1.1') == -1
-    assert GraphQLInt.serialize('one') is None
+    with pytest.raises(Exception):
+        GraphQLInt.serialize('one')
     assert GraphQLInt.serialize(False) == 0
     assert GraphQLInt.serialize(True) == 1
 
@@ -28,7 +34,8 @@ def test_serializes_output_float():
     assert GraphQLFloat.serialize(1.1) == 1.1
     assert GraphQLFloat.serialize(-1.1) == -1.1
     assert GraphQLFloat.serialize('-1.1') == -1.1
-    assert GraphQLFloat.serialize('one') is None
+    with pytest.raises(Exception):
+        GraphQLFloat.serialize('one')
     assert GraphQLFloat.serialize(False) == 0
     assert GraphQLFloat.serialize(True) == 1
 

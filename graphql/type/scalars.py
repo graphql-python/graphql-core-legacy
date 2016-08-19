@@ -16,13 +16,12 @@ def coerce_int(value):
     try:
         num = int(value)
     except ValueError:
-        try:
-            num = int(float(value))
-        except ValueError:
-            return None
+        num = int(float(value))
     if MIN_INT <= num <= MAX_INT:
         return num
-    return None
+    raise Exception((
+        "Int cannot represent non 32-bit signed integer value: {}"
+    ).format(value))
 
 
 def parse_int_literal(ast):
@@ -43,16 +42,6 @@ GraphQLInt = GraphQLScalarType(
     parse_literal=parse_int_literal)
 
 
-def coerce_float(value):
-    try:
-        num = float(value)
-    except ValueError:
-        return None
-    if num == num:  # is NaN?
-        return num
-    return None
-
-
 def parse_float_literal(ast):
     if isinstance(ast, (FloatValue, IntValue)):
         return float(ast.value)
@@ -64,8 +53,8 @@ GraphQLFloat = GraphQLScalarType(
     description='The `Float` scalar type represents signed double-precision fractional '
                 'values as specified by '
                 '[IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point). ',
-    serialize=coerce_float,
-    parse_value=coerce_float,
+    serialize=float,
+    parse_value=float,
     parse_literal=parse_float_literal)
 
 
