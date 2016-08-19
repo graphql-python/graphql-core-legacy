@@ -1,4 +1,4 @@
-from six import text_type
+from six import text_type, string_types
 
 from ..language.ast import BooleanValue, FloatValue, IntValue, StringValue
 from .definition import GraphQLScalarType
@@ -13,6 +13,8 @@ MIN_INT = -2147483648
 
 
 def coerce_int(value):
+    if isinstance(value, int):
+        return value
     try:
         num = int(value)
     except ValueError:
@@ -59,6 +61,9 @@ GraphQLFloat = GraphQLScalarType(
 
 
 def coerce_string(value):
+    if isinstance(value, string_types):
+        return value
+
     if isinstance(value, bool):
         return u'true' if value else u'false'
 
