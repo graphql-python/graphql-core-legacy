@@ -14,11 +14,12 @@ MIN_INT = -2147483648
 
 def coerce_int(value):
     if isinstance(value, int):
-        return value
-    try:
-        num = int(value)
-    except ValueError:
-        num = int(float(value))
+        num = value
+    else:
+        try:
+            num = int(value)
+        except ValueError:
+            num = int(float(value))
     if MIN_INT <= num <= MAX_INT:
         return num
     raise Exception((
