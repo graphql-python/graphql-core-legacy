@@ -45,6 +45,12 @@ GraphQLInt = GraphQLScalarType(
     parse_literal=parse_int_literal)
 
 
+def coerce_float(value):
+    if isinstance(value, float):
+        return value
+    return float(value)
+
+
 def parse_float_literal(ast):
     if isinstance(ast, (FloatValue, IntValue)):
         return float(ast.value)
@@ -56,8 +62,8 @@ GraphQLFloat = GraphQLScalarType(
     description='The `Float` scalar type represents signed double-precision fractional '
                 'values as specified by '
                 '[IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point). ',
-    serialize=float,
-    parse_value=float,
+    serialize=coerce_float,
+    parse_value=coerce_float,
     parse_literal=parse_float_literal)
 
 
@@ -67,6 +73,13 @@ def coerce_string(value):
 
     if isinstance(value, bool):
         return u'true' if value else u'false'
+
+    return text_type(value)
+
+
+def coerce_str(value):
+    if isinstance(value, string_types):
+        return value
 
     return text_type(value)
 
@@ -115,6 +128,6 @@ GraphQLID = GraphQLScalarType(
                 'response as a String; however, it is not intended to be human-readable. '
                 'When expected as an input type, any string (such as `"4"`) or integer '
                 '(such as `4`) input value will be accepted as an ID.',
-    serialize=str,
-    parse_value=str,
+    serialize=coerce_str,
+    parse_value=coerce_str,
     parse_literal=parse_id_literal)
