@@ -4,7 +4,7 @@ from graphql import GraphQLObjectType, GraphQLField, GraphQLList, GraphQLInt, Gr
 
 
 def test_big_list_of_ints(benchmark):
-    big_int_list = [x for x in range(10000)]
+    big_int_list = [x for x in range(5000)]
 
     def resolve_all_ints(root, args, context, info):
         return big_int_list
@@ -25,6 +25,19 @@ def test_big_list_of_ints(benchmark):
     assert result.data == {'allInts': big_int_list}
 
 
+
+def test_big_list_of_ints(benchmark):
+    big_int_list = [x for x in range(5000)]
+    from ..executor import complete_leaf_value
+    # def convert_item(i):
+    #     return i
+
+    def convert_list():
+        r = []
+        for i in big_int_list:
+            r.append(GraphQLInt.serialize(i))
+        return r
+    benchmark(convert_list)
 def test_big_list_of_containers_with_one_field(benchmark):
     Container = namedtuple('Container', 'x y z o')
 
@@ -35,7 +48,7 @@ def test_big_list_of_containers_with_one_field(benchmark):
         'o': GraphQLField(GraphQLInt),
     })
 
-    big_container_list = [Container(x=x, y=x, z=x, o=x) for x in range(10000)]
+    big_container_list = [Container(x=x, y=x, z=x, o=x) for x in range(5000)]
 
     def resolve_all_containers(root, args, context, info):
         return big_container_list
@@ -66,7 +79,7 @@ def test_big_list_of_containers_with_multiple_fields(benchmark):
         'o': GraphQLField(GraphQLInt),
     })
 
-    big_container_list = [Container(x=x, y=x, z=x, o=x) for x in range(10000)]
+    big_container_list = [Container(x=x, y=x, z=x, o=x) for x in range(5000)]
 
     def resolve_all_containers(root, args, context, info):
         return big_container_list
