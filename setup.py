@@ -48,7 +48,7 @@ setup(
         'promise>=0.4.2'
     ],
     tests_require=[
-        'pytest',
+        'pytest==2.9.2',
         'pytest-benchmark',
         'pytest-cov',
         'gevent==1.1rc1',
