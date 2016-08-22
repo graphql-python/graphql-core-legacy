@@ -2,15 +2,13 @@ from collections import OrderedDict, namedtuple
 
 from ..language.printer import print_ast
 from ..utils.ast_from_value import ast_from_value
-from .definition import (GraphQLArgument, GraphQLEnumType,
-                         GraphQLEnumValue, GraphQLField,
-                         GraphQLInputObjectType,
+from .definition import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
+                         GraphQLField, GraphQLInputObjectType,
                          GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                          GraphQLObjectType, GraphQLScalarType,
                          GraphQLUnionType)
 from .directives import DirectiveLocation
 from .scalars import GraphQLBoolean, GraphQLString
-
 
 InputField = namedtuple('InputField', ['name', 'description', 'type', 'default_value'])
 Field = namedtuple('Field', ['name', 'type', 'description', 'args', 'deprecation_reason'])
@@ -175,7 +173,7 @@ class TypeFieldResolvers(object):
         if isinstance(type, (GraphQLObjectType, GraphQLInterfaceType)):
             fields = []
             include_deprecated = args.get('includeDeprecated')
-            for field_name, field in type.get_fields().items():
+            for field_name, field in type.fields.items():
                 if field.deprecation_reason and not include_deprecated:
                     continue
                 fields.append(Field(
@@ -191,7 +189,7 @@ class TypeFieldResolvers(object):
     @staticmethod
     def interfaces(type, *_):
         if isinstance(type, GraphQLObjectType):
-            return type.get_interfaces()
+            return type.interfaces
 
     @staticmethod
     def possible_types(type, args, context, info):
@@ -201,7 +199,7 @@ class TypeFieldResolvers(object):
     @staticmethod
     def enum_values(type, args, *_):
         if isinstance(type, GraphQLEnumType):
-            values = type.get_values()
+            values = type.values
             if not args.get('includeDeprecated'):
                 values = [v for v in values if not v.deprecation_reason]
 
@@ -210,7 +208,7 @@ class TypeFieldResolvers(object):
     @staticmethod
     def input_fields(type, *_):
         if isinstance(type, GraphQLInputObjectType):
-            return input_fields_to_list(type.get_fields())
+            return input_fields_to_list(type.fields)
 
 
 __Type = GraphQLObjectType(

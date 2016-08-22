@@ -217,7 +217,7 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
                 field_name = selection.name.value
                 field_def = None
                 if isinstance(parent_type, (GraphQLObjectType, GraphQLInterfaceType)):
-                    field_def = parent_type.get_fields().get(field_name)
+                    field_def = parent_type.fields.get(field_name)
 
                 response_name = selection.alias.value if selection.alias else field_name
                 ast_and_defs[response_name].append((parent_type, selection, field_def))

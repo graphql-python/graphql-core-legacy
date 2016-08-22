@@ -320,7 +320,7 @@ def test_builds_a_schema_with_an_enum():
     clientFoodEnum = client_schema.get_type('Food')
     assert isinstance(clientFoodEnum, GraphQLEnumType)
 
-    assert clientFoodEnum.get_values() == [
+    assert clientFoodEnum.values == [
         GraphQLEnumValue(name='VEGETABLES', value='VEGETABLES', description='Foods that are vegetables.',
                          deprecation_reason=None),
         GraphQLEnumValue(name='FRUITS', value='FRUITS', description='Foods that are fruits.', deprecation_reason=None),

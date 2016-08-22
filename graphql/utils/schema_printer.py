@@ -89,7 +89,7 @@ def _print_scalar(type):
 
 
 def _print_object(type):
-    interfaces = type.get_interfaces()
+    interfaces = type.interfaces
     implemented_interfaces = \
         ' implements {}'.format(', '.join(i.name for i in interfaces)) if interfaces else ''
 
@@ -109,7 +109,7 @@ def _print_interface(type):
 
 
 def _print_union(type):
-    return 'union {} = {}'.format(type.name, ' | '.join(str(t) for t in type.get_types()))
+    return 'union {} = {}'.format(type.name, ' | '.join(str(t) for t in type.types))
 
 
 def _print_enum(type):
@@ -117,7 +117,7 @@ def _print_enum(type):
         'enum {} {{\n'
         '{}\n'
         '}}'
-    ).format(type.name, '\n'.join('  ' + v.name for v in type.get_values()))
+    ).format(type.name, '\n'.join('  ' + v.name for v in type.values))
 
 
 def _print_input_object(type):
@@ -125,11 +125,11 @@ def _print_input_object(type):
         'input {} {{\n'
         '{}\n'
         '}}'
-    ).format(type.name, '\n'.join('  ' + _print_input_value(name, field) for name, field in type.get_fields().items()))
+    ).format(type.name, '\n'.join('  ' + _print_input_value(name, field) for name, field in type.fields.items()))
 
 
 def _print_fields(type):
-    return '\n'.join('  {}{}: {}'.format(f_name, _print_args(f), f.type) for f_name, f in type.get_fields().items())
+    return '\n'.join('  {}{}: {}'.format(f_name, _print_args(f), f.type) for f_name, f in type.fields.items())
 
 
 def _print_args(field_or_directives):

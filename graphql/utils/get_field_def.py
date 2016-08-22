@@ -24,4 +24,4 @@ def get_field_def(schema, parent_type, field_ast):
         return TypeNameMetaFieldDef
 
     elif isinstance(parent_type, (GraphQLObjectType, GraphQLInterfaceType)):
-        return parent_type.get_fields().get(name)
+        return parent_type.fields.get(name)

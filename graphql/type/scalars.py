@@ -1,4 +1,4 @@
-from six import text_type
+from six import string_types, text_type
 
 from ..language.ast import BooleanValue, FloatValue, IntValue, StringValue
 from .definition import GraphQLScalarType
@@ -13,16 +13,18 @@ MIN_INT = -2147483648
 
 
 def coerce_int(value):
-    try:
-        num = int(value)
-    except ValueError:
+    if isinstance(value, int):
+        num = value
+    else:
         try:
-            num = int(float(value))
+            num = int(value)
         except ValueError:
-            return None
+            num = int(float(value))
     if MIN_INT <= num <= MAX_INT:
         return num
-    return None
+    raise Exception((
+        "Int cannot represent non 32-bit signed integer value: {}"
+    ).format(value))
 
 
 def parse_int_literal(ast):
@@ -44,13 +46,9 @@ GraphQLInt = GraphQLScalarType(
 
 
 def coerce_float(value):
-    try:
-        num = float(value)
-    except ValueError:
-        return None
-    if num == num:  # is NaN?
-        return num
-    return None
+    if isinstance(value, float):
+        return value
+    return float(value)
 
 
 def parse_float_literal(ast):
@@ -70,8 +68,18 @@ GraphQLFloat = GraphQLScalarType(
 
 
 def coerce_string(value):
+    if isinstance(value, string_types):
+        return value
+
     if isinstance(value, bool):
         return u'true' if value else u'false'
+
+    return text_type(value)
+
+
+def coerce_str(value):
+    if isinstance(value, string_types):
+        return value
 
     return text_type(value)
 
@@ -120,6 +128,6 @@ GraphQLID = GraphQLScalarType(
                 'response as a String; however, it is not intended to be human-readable. '
                 'When expected as an input type, any string (such as `"4"`) or integer '
                 '(such as `4`) input value will be accepted as an ID.',
-    serialize=str,
-    parse_value=str,
+    serialize=coerce_str,
+    parse_value=coerce_str,
     parse_literal=parse_id_literal)

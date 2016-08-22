@@ -119,7 +119,7 @@ class TypeInfo(object):
         object_type = get_named_type(self.get_input_type())
         field_type = None
         if isinstance(object_type, GraphQLInputObjectType):
-            input_field = object_type.get_fields().get(node.name.value)
+            input_field = object_type.fields.get(node.name.value)
             field_type = input_field.type if input_field else None
         self._input_type_stack.append(field_type)
 

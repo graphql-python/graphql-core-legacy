@@ -1,8 +1,8 @@
 import collections
 
+from ..pyutils.ordereddict import OrderedDict
 from ..utils.assert_valid_name import assert_valid_name
-from .definition import (GraphQLArgument,
-                         GraphQLNonNull, is_input_type)
+from .definition import GraphQLArgument, GraphQLNonNull, is_input_type
 from .scalars import GraphQLBoolean
 
 
@@ -52,7 +52,7 @@ class GraphQLDirective(object):
                     name,
                     arg_name,
                     _arg.type)
-        self.args = args or collections.OrderedDict()
+        self.args = args or OrderedDict()
 
 
 GraphQLIncludeDirective = GraphQLDirective(

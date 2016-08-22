@@ -2,11 +2,11 @@ from collections import OrderedDict, defaultdict
 from functools import reduce
 
 from ..utils.type_comparators import is_equal_type, is_type_sub_type_of
-from .definition import (GraphQLInputObjectType, GraphQLInterfaceType,
-                         GraphQLList, GraphQLNonNull, GraphQLObjectType,
-                         GraphQLUnionType, GraphQLInputObjectField,
-                         is_output_type, is_input_type, GraphQLField,
-                         GraphQLArgument)
+from .definition import (GraphQLArgument, GraphQLField,
+                         GraphQLInputObjectField, GraphQLInputObjectType,
+                         GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
+                         GraphQLObjectType, GraphQLUnionType, is_input_type,
+                         is_output_type)
 
 
 class GraphQLTypeMap(OrderedDict):
@@ -20,18 +20,18 @@ class GraphQLTypeMap(OrderedDict):
         self._implementations = defaultdict(list)
         for type in self.values():
             if isinstance(type, GraphQLObjectType):
-                for interface in type.get_interfaces():
+                for interface in type.interfaces:
                     self._implementations[interface.name].append(type)
 
         # Enforce correct interface implementations.
         for type in self.values():
             if isinstance(type, GraphQLObjectType):
-                for interface in type.get_interfaces():
+                for interface in type.interfaces:
                     self.assert_object_implements_interface(self, type, interface)
 
     def get_possible_types(self, abstract_type):
         if isinstance(abstract_type, GraphQLUnionType):
-            return abstract_type.get_types()
+            return abstract_type.types
         assert isinstance(abstract_type, GraphQLInterfaceType)
         return self._implementations[abstract_type.name]
 
@@ -62,15 +62,15 @@ class GraphQLTypeMap(OrderedDict):
         reduced_map = map
 
         if isinstance(type, (GraphQLUnionType)):
-            for t in type.get_types():
+            for t in type.types:
                 reduced_map = cls.reducer(reduced_map, t)
 
         if isinstance(type, GraphQLObjectType):
-            for t in type.get_interfaces():
+            for t in type.interfaces:
                 reduced_map = cls.reducer(reduced_map, t)
 
         if isinstance(type, (GraphQLObjectType, GraphQLInterfaceType, GraphQLInputObjectType)):
-            field_map = type.get_fields()
+            field_map = type.fields
             type_is_input = isinstance(type, GraphQLInputObjectType)
             for field_name, field in field_map.items():
                 if type_is_input:
@@ -103,8 +103,8 @@ class GraphQLTypeMap(OrderedDict):
 
     @classmethod
     def assert_object_implements_interface(cls, schema, object, interface):
-        object_field_map = object.get_fields()
-        interface_field_map = interface.get_fields()
+        object_field_map = object.fields
+        interface_field_map = interface.fields
 
         for field_name, interface_field in interface_field_map.items():
             object_field = object_field_map.get(field_name)

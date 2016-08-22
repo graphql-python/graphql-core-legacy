@@ -1,4 +1,5 @@
 from collections import Iterable
+
 from .definition import GraphQLObjectType
 from .directives import (GraphQLDirective, GraphQLIncludeDirective,
                          GraphQLSkipDirective)
@@ -59,7 +60,6 @@ class GraphQLSchema(object):
         if types:
             initial_types += types
         self._type_map = GraphQLTypeMap(initial_types)
-
 
     def get_query_type(self):
         return self._query

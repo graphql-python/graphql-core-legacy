@@ -125,7 +125,7 @@ def coerce_value(type, value):
             return [coerce_value(item_type, value)]
 
     if isinstance(type, GraphQLInputObjectType):
-        fields = type.get_fields()
+        fields = type.fields
         obj = {}
         for field_name, field in fields.items():
             field_value = coerce_value(field.type, value.get(field_name))
