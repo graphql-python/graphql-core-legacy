@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from ..error import GraphQLError
 from ..language import ast
+from ..pyutils.default_ordered_dict import DefaultOrderedDict
 from ..type.definition import GraphQLInterfaceType, GraphQLUnionType
 from ..type.directives import GraphQLIncludeDirective, GraphQLSkipDirective
 from ..type.introspection import (SchemaMetaFieldDef, TypeMetaFieldDef,
                                   TypeNameMetaFieldDef)
 from ..utils.type_from_ast import type_from_ast
-from ..pyutils.default_ordered_dict import DefaultOrderedDict
 from .values import get_argument_values, get_variable_values
 
 Undefined = object()

@@ -1,4 +1,4 @@
-from six import text_type, string_types
+from six import string_types, text_type
 
 from ..language.ast import BooleanValue, FloatValue, IntValue, StringValue
 from .definition import GraphQLScalarType

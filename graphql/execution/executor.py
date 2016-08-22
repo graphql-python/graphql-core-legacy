@@ -3,12 +3,11 @@ import functools
 import logging
 import sys
 
-from ..pyutils.ordereddict import OrderedDict
-
 from promise import Promise, promise_for_dict, promisify
 
 from ..error import GraphQLError, GraphQLLocatedError
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
+from ..pyutils.ordereddict import OrderedDict
 from ..type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
                     GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
                     GraphQLSchema, GraphQLUnionType)

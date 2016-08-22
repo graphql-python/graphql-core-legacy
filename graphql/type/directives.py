@@ -2,8 +2,7 @@ import collections
 
 from ..pyutils.ordereddict import OrderedDict
 from ..utils.assert_valid_name import assert_valid_name
-from .definition import (GraphQLArgument,
-                         GraphQLNonNull, is_input_type)
+from .definition import GraphQLArgument, GraphQLNonNull, is_input_type
 from .scalars import GraphQLBoolean
 
 

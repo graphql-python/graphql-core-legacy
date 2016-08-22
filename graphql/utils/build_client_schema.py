@@ -1,6 +1,5 @@
-from ..pyutils.ordereddict import OrderedDict
-
 from ..language.parser import parse_value
+from ..pyutils.ordereddict import OrderedDict
 from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
                     GraphQLEnumValue, GraphQLField, GraphQLFloat, GraphQLID,
                     GraphQLInputObjectField, GraphQLInputObjectType,

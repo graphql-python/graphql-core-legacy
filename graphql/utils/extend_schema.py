@@ -1,8 +1,8 @@
 from collections import defaultdict
-from ..pyutils.ordereddict import OrderedDict
 
 from ..error import GraphQLError
 from ..language import ast
+from ..pyutils.ordereddict import OrderedDict
 from ..type.definition import (GraphQLArgument, GraphQLEnumType,
                                GraphQLEnumValue, GraphQLField,
                                GraphQLInputObjectField, GraphQLInputObjectType,

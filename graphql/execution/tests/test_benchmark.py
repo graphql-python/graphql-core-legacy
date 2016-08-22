@@ -1,6 +1,8 @@
-from functools import partial
 from collections import namedtuple
-from graphql import GraphQLObjectType, GraphQLField, GraphQLList, GraphQLInt, GraphQLSchema, execute, parse, Source
+from functools import partial
+
+from graphql import (GraphQLField, GraphQLInt, GraphQLList, GraphQLObjectType,
+                     GraphQLSchema, Source, execute, parse)
 
 
 def test_big_list_of_ints(benchmark):

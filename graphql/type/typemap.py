@@ -2,11 +2,11 @@ from collections import OrderedDict, defaultdict
 from functools import reduce
 
 from ..utils.type_comparators import is_equal_type, is_type_sub_type_of
-from .definition import (GraphQLInputObjectType, GraphQLInterfaceType,
-                         GraphQLList, GraphQLNonNull, GraphQLObjectType,
-                         GraphQLUnionType, GraphQLInputObjectField,
-                         is_output_type, is_input_type, GraphQLField,
-                         GraphQLArgument)
+from .definition import (GraphQLArgument, GraphQLField,
+                         GraphQLInputObjectField, GraphQLInputObjectType,
+                         GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
+                         GraphQLObjectType, GraphQLUnionType, is_input_type,
+                         is_output_type)
 
 
 class GraphQLTypeMap(OrderedDict):

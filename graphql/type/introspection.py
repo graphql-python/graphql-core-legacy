@@ -2,15 +2,13 @@ from collections import OrderedDict, namedtuple
 
 from ..language.printer import print_ast
 from ..utils.ast_from_value import ast_from_value
-from .definition import (GraphQLArgument, GraphQLEnumType,
-                         GraphQLEnumValue, GraphQLField,
-                         GraphQLInputObjectType,
+from .definition import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
+                         GraphQLField, GraphQLInputObjectType,
                          GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                          GraphQLObjectType, GraphQLScalarType,
                          GraphQLUnionType)
 from .directives import DirectiveLocation
 from .scalars import GraphQLBoolean, GraphQLString
-
 
 InputField = namedtuple('InputField', ['name', 'description', 'type', 'default_value'])
 Field = namedtuple('Field', ['name', 'type', 'description', 'args', 'deprecation_reason'])

@@ -1,7 +1,7 @@
 from collections import Counter
-from ...pyutils.ordereddict import OrderedDict
 
 from ...error import GraphQLError
+from ...pyutils.ordereddict import OrderedDict
 from ...type.definition import is_abstract_type
 from .base import ValidationRule
 
