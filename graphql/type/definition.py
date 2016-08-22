@@ -92,6 +92,7 @@ class GraphQLType(object):
 def none_func(x):
     None
 
+
 class GraphQLScalarType(GraphQLType):
     """Scalar Type Definition
 

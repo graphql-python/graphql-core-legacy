@@ -5,7 +5,7 @@ import sys
 
 from ..pyutils.ordereddict import OrderedDict
 
-from promise import Promise, is_thenable, promise_for_dict, promisify
+from promise import Promise, promise_for_dict, promisify
 
 from ..error import GraphQLError, GraphQLLocatedError
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
@@ -21,7 +21,7 @@ from .middleware import MiddlewareManager
 logger = logging.getLogger(__name__)
 
 
-def is_thenable(obj):
+def is_promise(obj):
     return type(obj) == Promise
 
 
@@ -98,7 +98,7 @@ def execute_fields_serially(exe_context, parent_type, source_value, fields):
         if result is Undefined:
             return results
 
-        if is_thenable(result):
+        if is_promise(result):
             def collect_result(resolved_result):
                 results[response_name] = resolved_result
                 return results
@@ -125,7 +125,7 @@ def execute_fields(exe_context, parent_type, source_value, fields):
             continue
 
         final_results[response_name] = result
-        if is_thenable(result):
+        if is_promise(result):
             contains_promise = True
 
     if not contains_promise:
@@ -204,7 +204,7 @@ def complete_value_catching_error(exe_context, return_type, field_asts, info, re
     # resolving a null value for this field if one is encountered.
     try:
         completed = complete_value(exe_context, return_type, field_asts, info, result)
-        if is_thenable(completed):
+        if is_promise(completed):
             def handle_error(error):
                 exe_context.errors.append(error)
                 return Promise.fulfilled(None)
@@ -238,7 +238,7 @@ def complete_value(exe_context, return_type, field_asts, info, result):
     """
     # If field type is NonNull, complete for inner type, and throw field error if result is null.
 
-    if is_thenable(result):
+    if is_promise(result):
         return promisify(result).then(
             lambda resolved: complete_value(
                 exe_context,
@@ -290,7 +290,7 @@ def complete_list_value(exe_context, return_type, field_asts, info, result):
     contains_promise = False
     for item in result:
         completed_item = complete_value_catching_error(exe_context, item_type, field_asts, info, item)
-        if not contains_promise and is_thenable(completed_item):
+        if not contains_promise and is_promise(completed_item):
             contains_promise = True
 
         completed_results.append(completed_item)
