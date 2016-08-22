@@ -522,6 +522,9 @@ class GraphQLInputObjectType(GraphQLType):
         if callable(fields):
             fields = fields()
 
+        if not isinstance(fields, OrderedDict):
+            fields = OrderedDict(sorted(list(fields.items())))
+
         assert isinstance(fields, collections.Mapping) and len(fields) > 0, (
             '{} fields must be a mapping (dict / OrderedDict) with field names as keys or a '
             'function which returns such a mapping.'
