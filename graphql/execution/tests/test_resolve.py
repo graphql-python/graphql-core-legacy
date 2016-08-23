@@ -2,10 +2,10 @@ import json
 from collections import OrderedDict
 
 from graphql import graphql
-from graphql.type import (GraphQLArgument, GraphQLField, GraphQLInt,
-                          GraphQLObjectType, GraphQLSchema, GraphQLString,
-                          GraphQLInputObjectType, GraphQLInputObjectField,
-                          GraphQLNonNull, GraphQLList)
+from graphql.type import (GraphQLArgument, GraphQLField,
+                          GraphQLInputObjectField, GraphQLInputObjectType,
+                          GraphQLInt, GraphQLList, GraphQLNonNull,
+                          GraphQLObjectType, GraphQLSchema, GraphQLString)
 
 
 def _test_schema(test_field):
