@@ -56,7 +56,9 @@ def get_argument_values(arg_defs, arg_asts, variables):
             value = arg_def.default_value
 
         if value is not None:
-            result[name] = value
+            # We use out_name as the output name for the
+            # dict if exists
+            result[arg_def.out_name or name] = value
 
     return result
 
@@ -133,7 +135,9 @@ def coerce_value(type, value):
                 field_value = field.default_value
 
             if field_value is not None:
-                obj[field_name] = field_value
+                # We use out_name as the output name for the
+                # dict if exists
+                obj[field.out_name or field_name] = field_value
 
         return obj
 
