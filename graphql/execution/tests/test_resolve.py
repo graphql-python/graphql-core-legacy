@@ -115,8 +115,6 @@ def test_maps_argument_out_names_well_with_input():
     schema = _test_schema(GraphQLField(
         GraphQLString,
         args=OrderedDict([
-            ('aStr', GraphQLArgument(GraphQLString, out_name="a_str")),
-            ('aInt', GraphQLArgument(GraphQLInt, out_name="a_int")),
             ('aInput', GraphQLArgument(TestInputObject, out_name="a_input"))
         ]),
         resolver=resolver
@@ -130,9 +128,8 @@ def test_maps_argument_out_names_well_with_input():
     assert not result.errors
     assert result.data == {'test': '["Source!",{"a_input":{"input_one":"String!"}}]'}
 
-    result = graphql(schema, '{ test(aInput: {inputOne: "String!", inputRecursive:{inputOne: "SourceRecursive!"}} ) }', 'Source!')
+    result = graphql(schema, '{ test(aInput: {inputRecursive:{inputOne: "SourceRecursive!"}} ) }', 'Source!')
     assert not result.errors
-    assert result.data in [
-        {'test': '["Source!",{"a_input":{"input_one":"String!","input_recursive":{"input_one":"SourceRecursive!"}}}]'},
-        {'test': '["Source!",{"a_input":{"input_recursive":{"input_one":"SourceRecursive!"}},"input_one":"String!"}]'}
-    ]
+    assert result.data == {
+        'test': '["Source!",{"a_input":{"input_recursive":{"input_one":"SourceRecursive!"}}}]'
+    }
