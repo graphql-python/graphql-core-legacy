@@ -476,7 +476,6 @@ def parse_directives(parser):
     directives = []
     while peek(parser, TokenKind.AT):
         directives.append(parse_directive(parser))
-
     return directives
 
 
@@ -603,8 +602,8 @@ def parse_scalar_type_definition(parser):
 
     return ast.ScalarTypeDefinition(
         name=parse_name(parser),
-        loc=loc(parser, start),
         directives=parse_directives(parser),
+        loc=loc(parser, start),
     )
 
 
@@ -614,6 +613,7 @@ def parse_object_type_definition(parser):
     return ast.ObjectTypeDefinition(
         name=parse_name(parser),
         interfaces=parse_implements_interfaces(parser),
+        directives=parse_directives(parser),
         fields=any(
             parser,
             TokenKind.BRACE_L,
@@ -621,7 +621,6 @@ def parse_object_type_definition(parser):
             TokenKind.BRACE_R
         ),
         loc=loc(parser, start),
-        directives=parse_directives(parser),
     )
 
 
@@ -646,8 +645,8 @@ def parse_field_definition(parser):
         name=parse_name(parser),
         arguments=parse_argument_defs(parser),
         type=expect(parser, TokenKind.COLON) and parse_type(parser),
-        loc=loc(parser, start),
         directives=parse_directives(parser),
+        loc=loc(parser, start),
     )
 
 
@@ -661,13 +660,14 @@ def parse_argument_defs(parser):
 def parse_input_value_def(parser):
     start = parser.token.start
 
-    return ast.InputValueDefinition(
+    bla = ast.InputValueDefinition(
         name=parse_name(parser),
         type=expect(parser, TokenKind.COLON) and parse_type(parser),
         default_value=parse_const_value(parser) if skip(parser, TokenKind.EQUALS) else None,
-        loc=loc(parser, start),
         directives=parse_directives(parser),
+        loc=loc(parser, start),
     )
+    return bla
 
 
 def parse_interface_type_definition(parser):
@@ -676,9 +676,9 @@ def parse_interface_type_definition(parser):
 
     return ast.InterfaceTypeDefinition(
         name=parse_name(parser),
+        directives=parse_directives(parser),
         fields=any(parser, TokenKind.BRACE_L, parse_field_definition, TokenKind.BRACE_R),
         loc=loc(parser, start),
-        directives=parse_directives(parser),
     )
 
 
@@ -688,9 +688,9 @@ def parse_union_type_definition(parser):
 
     return ast.UnionTypeDefinition(
         name=parse_name(parser),
+        directives=parse_directives(parser),
         types=expect(parser, TokenKind.EQUALS) and parse_union_members(parser),
         loc=loc(parser, start),
-        directives=parse_directives(parser),
     )
 
 
@@ -712,9 +712,9 @@ def parse_enum_type_definition(parser):
 
     return ast.EnumTypeDefinition(
         name=parse_name(parser),
+        directives=parse_directives(parser),
         values=many(parser, TokenKind.BRACE_L, parse_enum_value_definition, TokenKind.BRACE_R),
         loc=loc(parser, start),
-        directives=parse_directives(parser),
     )
 
 
@@ -723,8 +723,8 @@ def parse_enum_value_definition(parser):
 
     return ast.EnumValueDefinition(
         name=parse_name(parser),
-        loc=loc(parser, start),
         directives=parse_directives(parser),
+        loc=loc(parser, start),
     )
 
 
@@ -734,9 +734,9 @@ def parse_input_object_type_definition(parser):
 
     return ast.InputObjectTypeDefinition(
         name=parse_name(parser),
+        directives=parse_directives(parser),
         fields=any(parser, TokenKind.BRACE_L, parse_input_value_def, TokenKind.BRACE_R),
         loc=loc(parser, start),
-        directives=parse_directives(parser),
     )
 
 

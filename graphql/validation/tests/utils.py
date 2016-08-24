@@ -8,7 +8,7 @@ from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
                           GraphQLObjectType, GraphQLSchema, GraphQLString,
                           GraphQLUnionType)
 from graphql.type.directives import (GraphQLDirective, GraphQLIncludeDirective,
-                                     GraphQLSkipDirective)
+                                     GraphQLSkipDirective, DirectiveLocation)
 from graphql.validation import validate
 
 Being = GraphQLInterfaceType('Being', {
@@ -178,9 +178,25 @@ QueryRoot = GraphQLObjectType('QueryRoot', {
 test_schema = GraphQLSchema(
     query=QueryRoot,
     directives=[
-        GraphQLDirective(name='operationOnly', locations=['QUERY']),
         GraphQLIncludeDirective,
-        GraphQLSkipDirective
+        GraphQLSkipDirective,
+        GraphQLDirective(name='onQuery', locations=[DirectiveLocation.QUERY]),
+        GraphQLDirective(name='onMutation', locations=[DirectiveLocation.MUTATION]),
+        GraphQLDirective(name='onSubscription', locations=[DirectiveLocation.SUBSCRIPTION]),
+        GraphQLDirective(name='onField', locations=[DirectiveLocation.FIELD]),
+        GraphQLDirective(name='onFragmentDefinition', locations=[DirectiveLocation.FRAGMENT_DEFINITION]),
+        GraphQLDirective(name='onFragmentSpread', locations=[DirectiveLocation.FRAGMENT_SPREAD]),
+        GraphQLDirective(name='onInlineFragment', locations=[DirectiveLocation.INLINE_FRAGMENT]),
+        GraphQLDirective(name='onScalar', locations=[DirectiveLocation.SCALAR]),
+        GraphQLDirective(name='onObject', locations=[DirectiveLocation.OBJECT]),
+        GraphQLDirective(name='onFieldDefinition', locations=[DirectiveLocation.FIELD_DEFINITION]),
+        GraphQLDirective(name='onArgumentDefinition', locations=[DirectiveLocation.ARGUMENT_DEFINITION]),
+        GraphQLDirective(name='onInterface', locations=[DirectiveLocation.INTERFACE]),
+        GraphQLDirective(name='onUnion', locations=[DirectiveLocation.UNION]),
+        GraphQLDirective(name='onEnum', locations=[DirectiveLocation.ENUM]),
+        GraphQLDirective(name='onEnumValue', locations=[DirectiveLocation.ENUM_VALUE]),
+        GraphQLDirective(name='onInputObject', locations=[DirectiveLocation.INPUT_OBJECT]),
+        GraphQLDirective(name='onInputFieldDefinition', locations=[DirectiveLocation.INPUT_FIELD_DEFINITION]),
     ],
     types=[Cat, Dog, Human, Alien]
 )
@@ -188,7 +204,8 @@ test_schema = GraphQLSchema(
 
 def expect_valid(schema, rules, query):
     errors = validate(schema, parse(query), rules)
-    assert errors == [], 'Should validate'
+    print(errors)
+    assert errors == [], 'Error: %s, Should validate' % errors
 
 
 def sort_lists(value):
