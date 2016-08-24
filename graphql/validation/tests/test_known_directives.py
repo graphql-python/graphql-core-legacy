@@ -133,6 +133,10 @@ def test_within_schema_language_with_well_placed_directives():
       input MyInput @onInputObject {
         myField: Int @onInputFieldDefinition
       }
+
+      schema @OnSchema {
+        query: MyQuery
+      }
     ''')
 
 
@@ -157,6 +161,10 @@ def test_within_schema_language_with_misplaced_directives():
         input MyInput @onEnum {
           myField: Int @onArgumentDefinition
         }
+
+        schema @onObject {
+          query: MyQuery
+        }
     ''', [
         misplaced_directive('onInterface', 'OBJECT', 2, 43),
         misplaced_directive('onInputFieldDefinition', 'ARGUMENT_DEFINITION', 3, 30),
@@ -170,4 +178,5 @@ def test_within_schema_language_with_misplaced_directives():
         misplaced_directive('onUnion', 'ENUM_VALUE', 15, 20),
         misplaced_directive('onEnum', 'INPUT_OBJECT', 18, 23),
         misplaced_directive('onArgumentDefinition', 'INPUT_FIELD_DEFINITION', 19, 24),
+        misplaced_directive('onObject', 'SCHEMA', 22, 16),
     ])

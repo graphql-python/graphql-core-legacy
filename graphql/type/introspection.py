@@ -120,6 +120,10 @@ __DirectiveLocation = GraphQLEnumType(
             DirectiveLocation.INLINE_FRAGMENT,
             description='Location adjacent to an inline fragment.'
         )),
+        ('SCHEMA', GraphQLEnumValue(
+            DirectiveLocation.SCHEMA,
+            description='Location adjacent to a schema definition.'
+        )),
         ('SCALAR', GraphQLEnumValue(
             DirectiveLocation.SCALAR,
             description='Location adjacent to a scalar definition.'

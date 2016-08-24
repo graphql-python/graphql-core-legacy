@@ -112,7 +112,11 @@ class PrintingVisitor(Visitor):
     # Type Definitions:
 
     def leave_SchemaDefinition(self, node, *args):
-        return 'schema ' + block(node.operation_types)
+        return join([
+            'schema',
+            join(node.directives, ' '),
+            block(node.operation_types),
+            ], ' ')
 
     def leave_OperationTypeDefinition(self, node, *args):
         return '{}: {}'.format(node.operation, node.type)

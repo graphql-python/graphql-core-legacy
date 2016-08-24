@@ -17,6 +17,7 @@ class DirectiveLocation(object):
     INLINE_FRAGMENT = 'INLINE_FRAGMENT'
 
     # Schema Definitions
+    SCHEMA = 'SCHEMA'
     SCALAR = 'SCALAR'
     OBJECT = 'OBJECT'
     FIELD_DEFINITION = 'FIELD_DEFINITION'

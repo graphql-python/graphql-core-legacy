@@ -571,6 +571,7 @@ def parse_type_system_definition(parser):
 def parse_schema_definition(parser):
     start = parser.token.start
     expect_keyword(parser, 'schema')
+    directives = parse_directives(parser)
     operation_types = many(
         parser,
         TokenKind.BRACE_L,
@@ -579,6 +580,7 @@ def parse_schema_definition(parser):
     )
 
     return ast.SchemaDefinition(
+        directives=directives,
         operation_types=operation_types,
         loc=loc(parser, start)
     )

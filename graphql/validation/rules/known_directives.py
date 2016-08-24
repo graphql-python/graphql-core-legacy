@@ -63,6 +63,9 @@ def get_directive_location_for_ast_path(ancestors):
     elif isinstance(applied_to, ast.FragmentDefinition):
         return DirectiveLocation.FRAGMENT_DEFINITION
 
+    elif isinstance(applied_to, ast.SchemaDefinition):
+        return DirectiveLocation.SCHEMA
+
     elif isinstance(applied_to, ast.ScalarTypeDefinition):
         return DirectiveLocation.SCALAR
 

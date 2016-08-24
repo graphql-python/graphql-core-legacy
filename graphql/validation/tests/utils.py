@@ -187,6 +187,7 @@ test_schema = GraphQLSchema(
         GraphQLDirective(name='onFragmentDefinition', locations=[DirectiveLocation.FRAGMENT_DEFINITION]),
         GraphQLDirective(name='onFragmentSpread', locations=[DirectiveLocation.FRAGMENT_SPREAD]),
         GraphQLDirective(name='onInlineFragment', locations=[DirectiveLocation.INLINE_FRAGMENT]),
+        GraphQLDirective(name='OnSchema', locations=[DirectiveLocation.SCHEMA]),
         GraphQLDirective(name='onScalar', locations=[DirectiveLocation.SCALAR]),
         GraphQLDirective(name='onObject', locations=[DirectiveLocation.OBJECT]),
         GraphQLDirective(name='onFieldDefinition', locations=[DirectiveLocation.FIELD_DEFINITION]),
