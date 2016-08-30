@@ -1,7 +1,7 @@
 from .execution import ExecutionResult, execute
+from .language.ast import Document
 from .language.parser import parse
 from .language.source import Source
-from .language.ast import Document
 from .validation import validate
 
 
