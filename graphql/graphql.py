@@ -1,6 +1,7 @@
 from .execution import ExecutionResult, execute
 from .language.parser import parse
 from .language.source import Source
+from .language.ast import Document
 from .validation import validate
 
 
@@ -30,8 +31,11 @@ def graphql(schema, request_string='', root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
             return_promise=False):
     try:
-        source = Source(request_string, 'GraphQL request')
-        ast = parse(source)
+        if isinstance(request_string, Document):
+            ast = request_string
+        else:
+            source = Source(request_string, 'GraphQL request')
+            ast = parse(source)
         validation_errors = validate(schema, ast)
         if validation_errors:
             return ExecutionResult(
