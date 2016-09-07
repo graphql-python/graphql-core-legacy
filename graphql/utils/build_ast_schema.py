@@ -8,11 +8,12 @@ from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLDirective,
                     GraphQLInt, GraphQLInterfaceType, GraphQLList,
                     GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
                     GraphQLSchema, GraphQLSkipDirective, GraphQLString,
-                    GraphQLUnionType)
+                    GraphQLUnionType, GraphQLDeprecatedDirective)
 from ..type.introspection import (__Directive, __DirectiveLocation,
                                   __EnumValue, __Field, __InputValue, __Schema,
                                   __Type, __TypeKind)
 from ..utils.value_from_ast import value_from_ast
+from ..execution.values import get_argument_values
 
 
 def _build_wrapped_type(inner_type, input_type_ast):
@@ -179,7 +180,8 @@ def build_ast_schema(document):
         return OrderedDict(
             (f.name.value, GraphQLField(
                 type=produce_type_def(f.type),
-                args=make_input_values(f.arguments, GraphQLArgument)
+                args=make_input_values(f.arguments, GraphQLArgument),
+                deprecation_reason=get_deprecation_reason(f.directives),
             ))
             for f in definition.fields
         )
@@ -204,11 +206,11 @@ def build_ast_schema(document):
         )
 
     def make_enum_def(definition):
+        values = OrderedDict((v.name.value, GraphQLEnumValue(deprecation_reason=get_deprecation_reason(v.directives)))
+                             for v in definition.values)
         return GraphQLEnumType(
             name=definition.name.value,
-            values=OrderedDict(
-                (v.name.value, GraphQLEnumValue()) for v in definition.values
-            )
+            values=values
         )
 
     def make_union_def(definition):
@@ -246,15 +248,19 @@ def build_ast_schema(document):
     types = [type_def_named(definition.name.value) for definition in type_defs]
     directives = [get_directive(d) for d in directive_defs]
 
-    # If skip and include were not explicitly declared, add them.
+    # If specified directive were not explicitly declared, add them.
     find_skip_directive = (directive.name for directive in directives if directive.name == 'skip')
     find_include_directive = (directive.name for directive in directives if directive.name == 'include')
+    find_deprecated_directive = (directive.name for directive in directives if directive.name == 'deprecated')
 
     if not next(find_skip_directive, None):
         directives.append(GraphQLSkipDirective)
 
     if not next(find_include_directive, None):
         directives.append(GraphQLIncludeDirective)
+
+    if not next(find_deprecated_directive, None):
+        directives.append(GraphQLDeprecatedDirective)
 
     schema_kwargs = {'query': get_object_type(ast_map[query_type_name])}
 
@@ -271,3 +277,15 @@ def build_ast_schema(document):
         schema_kwargs['types'] = types
 
     return GraphQLSchema(**schema_kwargs)
+
+
+def get_deprecation_reason(directives):
+    deprecated_ast = next((directive for directive in directives
+                          if directive.name.value == GraphQLDeprecatedDirective.name),
+                          None)
+
+    if deprecated_ast:
+        args = get_argument_values(GraphQLDeprecatedDirective.args, deprecated_ast.arguments)
+        return args['reason']
+    else:
+        return None

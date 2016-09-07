@@ -3,7 +3,7 @@ import collections
 from ..utils.assert_valid_name import assert_valid_name
 from .definition import (GraphQLArgument, GraphQLArgumentDefinition,
                          GraphQLNonNull, is_input_type)
-from .scalars import GraphQLBoolean
+from .scalars import GraphQLBoolean, GraphQLString
 
 
 class DirectiveLocation(object):
@@ -74,9 +74,10 @@ class GraphQLDirective(object):
                     default_value=_arg.default_value,
                 ))
 
-
+"""Used to conditionally include fields or fragments."""
 GraphQLIncludeDirective = GraphQLDirective(
     name='include',
+    description='Directs the executor to include this field or fragment only when the `if` argument is true.',
     args={
         'if': GraphQLArgument(
             type=GraphQLNonNull(GraphQLBoolean),
@@ -90,8 +91,10 @@ GraphQLIncludeDirective = GraphQLDirective(
     ]
 )
 
+"""Used to conditionally skip (exclude) fields or fragments."""
 GraphQLSkipDirective = GraphQLDirective(
     name='skip',
+    description='Directs the executor to skip this field or fragment when the `if` argument is true.',
     args={
         'if': GraphQLArgument(
             type=GraphQLNonNull(GraphQLBoolean),
@@ -104,3 +107,31 @@ GraphQLSkipDirective = GraphQLDirective(
         DirectiveLocation.INLINE_FRAGMENT,
     ]
 )
+
+"""Constant string used for default reason for a deprecation."""
+DEFAULT_DEPRECATION_REASON = 'No longer supported'
+
+"""Used to declare element of a GraphQL schema as deprecated."""
+GraphQLDeprecatedDirective = GraphQLDirective(
+    name='deprecated',
+    description='Marks an element of a GraphQL schema as no longer supported.',
+    args={
+        'reason': GraphQLArgument(
+            type=GraphQLString,
+            description=('Explains why this element was deprecated, usually also including a suggestion for how to'
+                         'access supported similar data. Formatted in [Markdown]'
+                         '(https://daringfireball.net/projects/markdown/).'),
+            default_value=DEFAULT_DEPRECATION_REASON
+        ),
+    },
+    locations=[
+        DirectiveLocation.FIELD_DEFINITION,
+        DirectiveLocation.ENUM_VALUE,
+    ]
+)
+
+specified_directives = [
+    GraphQLIncludeDirective,
+    GraphQLSkipDirective,
+    GraphQLDeprecatedDirective
+]

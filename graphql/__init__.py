@@ -76,9 +76,14 @@ if not __GRAPHQL_SETUP__:
         # Directive definition
         GraphQLDirective,
 
-        # Built-in directives
+        # Built-in directives defined by the Spec
+        specified_directives,
         GraphQLSkipDirective,
         GraphQLIncludeDirective,
+        GraphQLDeprecatedDirective,
+
+        # Constant Deprecation Reason
+        DEFAULT_DEPRECATION_REASON,
 
         # GraphQL Types for introspection.
         __Schema,
@@ -215,8 +220,11 @@ if not __GRAPHQL_SETUP__:
         'GraphQLString',
         'GraphQLUnionType',
         'GraphQLDirective',
+        'specified_directives',
         'GraphQLSkipDirective',
         'GraphQLIncludeDirective',
+        'GraphQLDeprecatedDirective',
+        'DEFAULT_DEPRECATION_REASON',
         'TypeKind',
         'DirectiveLocation',
         '__Schema',

@@ -5,8 +5,7 @@ from ..utils.type_comparators import is_equal_type, is_type_sub_type_of
 from .definition import (GraphQLInputObjectType, GraphQLInterfaceType,
                          GraphQLList, GraphQLNonNull, GraphQLObjectType,
                          GraphQLUnionType)
-from .directives import (GraphQLDirective, GraphQLIncludeDirective,
-                         GraphQLSkipDirective)
+from .directives import (GraphQLDirective, specified_directives)
 from .introspection import IntrospectionSchema
 
 
@@ -20,20 +19,19 @@ class GraphQLSchema(object):
 
         MyAppSchema = GraphQLSchema(
             query=MyAppQueryRootType,
-            mutation=MyAppMutationRootType
+            mutation=MyAppMutationRootType,
         )
 
     Note: If an array of `directives` are provided to GraphQLSchema, that will be
     the exact list of directives represented and allowed. If `directives` is not
-    provided then a default set of the built-in `[ @include, @skip ]` directives
-    will be used. If you wish to provide *additional* directives to these
-    built-ins, you must explicitly declare them. Example:
+    provided then a default set of the specified directives (e.g. @include and
+    @skip) will be used. If you wish to provide *additional* directives to these
+    specified directives, you must explicitly declare them. Example:
 
-      directives: [
-        myCustomDirective,
-        GraphQLIncludeDirective,
-        GraphQLSkipDirective
-      ]
+      MyAppSchema = GraphQLSchema(
+          ...
+          directives=specified_directives.extend([MyCustomerDirective]),
+      )
     """
     __slots__ = '_query', '_mutation', '_subscription', '_type_map', '_directives', '_implementations', '_possible_type_map'
 
@@ -55,10 +53,7 @@ class GraphQLSchema(object):
         self._mutation = mutation
         self._subscription = subscription
         if directives is None:
-            directives = [
-                GraphQLIncludeDirective,
-                GraphQLSkipDirective
-            ]
+            directives = specified_directives
 
         assert all(isinstance(d, GraphQLDirective) for d in directives), \
             'Schema directives must be List[GraphQLDirective] if provided but got: {}.'.format(

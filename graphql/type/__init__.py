@@ -30,9 +30,14 @@ from .directives import (
     # Directive definition
     GraphQLDirective,
 
-    # Built-in directives
+    # Built-in directives defined by the Spec
+    specified_directives,
     GraphQLSkipDirective,
-    GraphQLIncludeDirective
+    GraphQLIncludeDirective,
+    GraphQLDeprecatedDirective,
+
+    # Constant Deprecation Reason
+    DEFAULT_DEPRECATION_REASON,
 )
 from .scalars import (  # no import order
     GraphQLInt,
