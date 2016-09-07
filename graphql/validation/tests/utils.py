@@ -7,8 +7,9 @@ from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
                           GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                           GraphQLObjectType, GraphQLSchema, GraphQLString,
                           GraphQLUnionType)
-from graphql.type.directives import (GraphQLDirective, GraphQLIncludeDirective,
-                                     GraphQLSkipDirective, DirectiveLocation)
+from graphql.type.directives import (DirectiveLocation, GraphQLDirective,
+                                     GraphQLIncludeDirective,
+                                     GraphQLSkipDirective)
 from graphql.validation import validate
 
 Being = GraphQLInterfaceType('Being', {

@@ -5,7 +5,7 @@ from ..utils.type_comparators import is_equal_type, is_type_sub_type_of
 from .definition import (GraphQLInputObjectType, GraphQLInterfaceType,
                          GraphQLList, GraphQLNonNull, GraphQLObjectType,
                          GraphQLUnionType)
-from .directives import (GraphQLDirective, specified_directives)
+from .directives import GraphQLDirective, specified_directives
 from .introspection import IntrospectionSchema
 
 

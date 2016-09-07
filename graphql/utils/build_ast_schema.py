@@ -1,19 +1,20 @@
 from collections import OrderedDict
 
+from ..execution.values import get_argument_values
 from ..language import ast
-from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLDirective,
+from ..type import (GraphQLArgument, GraphQLBoolean,
+                    GraphQLDeprecatedDirective, GraphQLDirective,
                     GraphQLEnumType, GraphQLEnumValue, GraphQLField,
                     GraphQLFloat, GraphQLID, GraphQLIncludeDirective,
                     GraphQLInputObjectField, GraphQLInputObjectType,
                     GraphQLInt, GraphQLInterfaceType, GraphQLList,
                     GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
                     GraphQLSchema, GraphQLSkipDirective, GraphQLString,
-                    GraphQLUnionType, GraphQLDeprecatedDirective)
+                    GraphQLUnionType)
 from ..type.introspection import (__Directive, __DirectiveLocation,
                                   __EnumValue, __Field, __InputValue, __Schema,
                                   __Type, __TypeKind)
 from ..utils.value_from_ast import value_from_ast
-from ..execution.values import get_argument_values
 
 
 def _build_wrapped_type(inner_type, input_type_ast):

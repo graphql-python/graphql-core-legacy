@@ -1,5 +1,5 @@
-from collections import OrderedDict
 import itertools
+from collections import OrderedDict
 
 from ...error import GraphQLError
 from ...language import ast
