@@ -28,7 +28,7 @@ def test_big_list_of_ints(benchmark):
 
 
 
-def test_big_list_of_ints(benchmark):
+def test_big_list_of_ints_base(benchmark):
     big_int_list = [x for x in range(5000)]
     from ..executor import complete_leaf_value
     # def convert_item(i):
@@ -40,6 +40,8 @@ def test_big_list_of_ints(benchmark):
             r.append(GraphQLInt.serialize(i))
         return r
     benchmark(convert_list)
+
+
 def test_big_list_of_containers_with_one_field(benchmark):
     Container = namedtuple('Container', 'x y z o')
 
