@@ -180,31 +180,31 @@ def test_encounters_conflict_in_fragments():
 
 def test_reports_each_conflict_once():
     expect_fails_rule(OverlappingFieldsCanBeMerged, '''
-    {
+      {
         f1 {
-            ...A
-            ...B
+          ...A
+          ...B
         }
         f2 {
-            ...B
-            ...A
+          ...B
+          ...A
         }
         f3 {
-            ...A
-            ...B
-            x: c
+          ...A
+          ...B
+          x: c
         }
-    }
-    fragment A on Type {
+      }
+      fragment A on Type {
         x: a
-    }
-    fragment B on Type {
+      }
+      fragment B on Type {
         x: b
-    }
+      }
     ''', [
         fields_conflict('x', 'a and b are different fields', L(18, 9), L(21, 9)),
-        fields_conflict('x', 'a and c are different fields', L(18, 9), L(14, 13)),
-        fields_conflict('x', 'b and c are different fields', L(21, 9), L(14, 13))
+        fields_conflict('x', 'c and a are different fields', L(14, 11), L(18, 9)),
+        fields_conflict('x', 'c and b are different fields', L(14, 11), L(21, 9))
     ], sort_list=False)
 
 
@@ -227,20 +227,20 @@ def test_deep_conflict():
 
 def test_deep_conflict_with_multiple_issues():
     expect_fails_rule(OverlappingFieldsCanBeMerged, '''
-    {
+      {
         field {
-            x: a
-            y: c
+          x: a
+          y: c
         }
         field {
-            x: b
-            y: d
+          x: b
+          y: d
         }
-    }
+      }
     ''', [
         fields_conflict(
             'field', [('x', 'a and b are different fields'), ('y', 'c and d are different fields')],
-            L(3, 9), L(4, 13), L(5, 13), L(7, 9), L(8, 13), L(9, 13)
+            L(3, 9), L(4, 11), L(5, 11), L(7, 9), L(8, 11), L(9, 11)
         )
     ], sort_list=False)
 
@@ -290,6 +290,87 @@ def test_reports_deep_conflict_to_nearest_common_ancestor():
             L(4, 13), L(5, 17), L(7, 13), L(8, 17)
         )
     ], sort_list=False)
+
+
+def test_reports_deep_conflict_to_nearest_common_ancestor_in_fragments():
+    expect_fails_rule(OverlappingFieldsCanBeMerged, '''
+      {
+        field {
+          ...F
+        },
+        field {
+          ...F
+        }
+      }
+      fragment F on T {
+        deepField {
+          deeperField {
+            x: a
+          }
+          deeperField {
+            x: b
+          }
+        }
+        deepField {
+          deeperField {
+            y
+          }
+        }
+      }
+    ''', [
+        fields_conflict(
+            'deeperField', [('x', 'a and b are different fields')],
+            L(12, 11), L(13, 13), L(15, 11), L(16, 13)
+        )
+    ], sort_list=False)
+
+
+def test_reports_deep_conflict_in_nested_fragments():
+    expect_fails_rule(OverlappingFieldsCanBeMerged, '''
+      {
+        field {
+          ...F
+        },
+        field {
+          ...I
+        }
+      }
+      fragment F on T {
+        x: a
+        ...G
+      }
+      fragment G on T {
+        y: c
+      }
+      fragment I on T {
+        y: d
+        ...J
+      }
+      fragment J on T {
+        x: b
+      }
+    ''', [
+        fields_conflict(
+            'field', [('x', 'a and b are different fields'),
+                      ('y', 'c and d are different fields')],
+            L(3, 9), L(11, 9), L(15, 9), L(6, 9), L(22, 9), L(18, 9)
+        )
+    ], sort_list=False)
+
+
+def test_ignores_unknown_fragments():
+    expect_passes_rule(OverlappingFieldsCanBeMerged, '''
+    {
+      field
+      ...Unknown
+      ...Known
+    }
+
+    fragment Known on T {
+      field
+      ...OtherUnknown
+    }
+    ''')
 
 
 SomeBox = GraphQLInterfaceType(
@@ -421,6 +502,59 @@ def test_disallows_differing_return_types_despite_no_overlap():
         fields_conflict(
             'scalar', 'they return conflicting types Int and String',
             L(5, 15), L(8, 15),
+        )
+    ], sort_list=False)
+
+
+def test_reports_correctly_when_a_non_exclusive_follows_an_exclusive():
+    expect_fails_rule_with_schema(schema, OverlappingFieldsCanBeMerged, '''
+        {
+          someBox {
+            ... on IntBox {
+              deepBox {
+                ...X
+              }
+            }
+          }
+          someBox {
+            ... on StringBox {
+              deepBox {
+                ...Y
+              }
+            }
+          }
+          memoed: someBox {
+            ... on IntBox {
+              deepBox {
+                ...X
+              }
+            }
+          }
+          memoed: someBox {
+            ... on StringBox {
+              deepBox {
+                ...Y
+              }
+            }
+          }
+          other: someBox {
+            ...X
+          }
+          other: someBox {
+            ...Y
+          }
+        }
+        fragment X on SomeBox {
+          scalar
+        }
+        fragment Y on SomeBox {
+          scalar: unrelatedField
+        }
+    ''', [
+        fields_conflict(
+            'other',
+            [('scalar', 'scalar and unrelatedField are different fields')],
+            L(31, 11), L(39, 11), L(34, 11), L(42, 11),
         )
     ], sort_list=False)
 
@@ -614,10 +748,10 @@ def test_compares_deep_types_including_list():
     }
     ''', [
         fields_conflict(
-            'edges', [['node', [['id', 'id and name are different fields']]]],
-            L(14, 9), L(15, 13),
-            L(16, 17), L(5, 13),
-            L(6, 17), L(7, 21),
+            'edges', [['node', [['id', 'name and id are different fields']]]],
+            L(5, 13), L(6, 17),
+            L(7, 21), L(14, 9),
+            L(15, 13), L(16, 17),
         )
     ], sort_list=False)
 

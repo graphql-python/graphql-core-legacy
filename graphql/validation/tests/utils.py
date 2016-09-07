@@ -205,7 +205,6 @@ test_schema = GraphQLSchema(
 
 def expect_valid(schema, rules, query):
     errors = validate(schema, parse(query), rules)
-    print(errors)
     assert errors == [], 'Error: %s, Should validate' % errors
 
 
