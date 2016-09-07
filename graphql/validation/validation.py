@@ -96,7 +96,7 @@ class ValidationContext(object):
         if not fragments:
             fragments = []
             collected_names = set()
-            nodes_to_visit = [operation]
+            nodes_to_visit = [operation.selection_set]
             while nodes_to_visit:
                 node = nodes_to_visit.pop()
                 spreads = self.get_fragment_spreads(node)
@@ -107,7 +107,7 @@ class ValidationContext(object):
                         fragment = self.get_fragment(frag_name)
                         if fragment:
                             fragments.append(fragment)
-                            nodes_to_visit.append(fragment)
+                            nodes_to_visit.append(fragment.selection_set)
             self._recursively_referenced_fragments[operation] = fragments
         return fragments
 
@@ -115,7 +115,7 @@ class ValidationContext(object):
         spreads = self._fragment_spreads.get(node)
         if not spreads:
             spreads = []
-            sets_to_visit = [node.selection_set]
+            sets_to_visit = [node]
             while sets_to_visit:
                 _set = sets_to_visit.pop()
                 for selection in _set.selections:

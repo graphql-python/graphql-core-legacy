@@ -24,7 +24,7 @@ class NoFragmentCycles(ValidationRule):
         fragment_name = fragment.name.value
         self.visited_frags.add(fragment_name)
 
-        spread_nodes = self.context.get_fragment_spreads(fragment)
+        spread_nodes = self.context.get_fragment_spreads(fragment.selection_set)
         if not spread_nodes:
             return
 
