@@ -58,7 +58,6 @@ def test_fragment_resolver():
         )
     ]
     fragment = Fragment(type=Node, field_asts=field_asts)
-    assert fragment.field_resolvers.keys() == ['id']
     assert fragment.resolver(lambda: 1) == {'id': 2}
 
 
