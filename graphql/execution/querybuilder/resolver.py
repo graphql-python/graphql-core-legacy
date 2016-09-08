@@ -7,26 +7,31 @@ from ...type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
                      GraphQLSchema, GraphQLUnionType)
 from .fragment import Fragment
 
+from promise import Promise
 
-def non_null_resolver_wrapper(resolver, *args, **kwargs):
-    completed = resolver(*args, **kwargs)
-    if completed is None:
+
+def is_promise(value):
+    return type(value) == Promise
+
+
+def on_complete_non_null(result):
+    if result is None:
         field_asts = 'TODO'
         raise GraphQLError(
             'Cannot return null for non-nullable field {}.{}.'.format(info.parent_type, info.field_name),
             field_asts
         )
-    return completed
+    return result
 
 
-def leaf_resolver_wrapper(serializer, resolver, *args, **kwargs):
+def on_complete_resolver(resolver, __func, *args, **kwargs):
     result = resolver(*args, **kwargs)
-    return serializer(result)
+    if is_promise(result):
+        return result.then(__func)
+    return __func(result)
 
 
-def list_resolver_wrapper(resolver, inner_resolver, *args, **kwargs):
-    result = resolver(*args, **kwargs)
-
+def on_complete_list(inner_resolver, result):
     assert isinstance(result, collections.Iterable), \
         ('User Error: expected iterable, but did not find one ' +
          'for field {}.{}.').format(info.parent_type, info.field_name)
@@ -66,13 +71,14 @@ def type_resolver(return_type, resolver, fragment=None):
 
 def type_resolver_non_null(return_type, resolver, fragment=None):
     resolver = type_resolver(return_type.of_type, resolver)
-    return partial(non_null_resolver_wrapper, resolver)
+    return partial(on_complete_resolver, resolver, on_complete_non_null)
 
 
 def type_resolver_leaf(return_type, resolver):
-    return partial(leaf_resolver_wrapper, return_type.serialize, resolver)
+    return partial(on_complete_resolver, resolver, return_type.serialize)
 
 
 def type_resolver_list(return_type, resolver, fragment=None):
     inner_resolver = type_resolver(return_type.of_type, lambda item: item, fragment)
-    return partial(list_resolver_wrapper, resolver, inner_resolver)
+    list_complete = partial(on_complete_list, inner_resolver)
+    return partial(on_complete_resolver, resolver, list_complete)
