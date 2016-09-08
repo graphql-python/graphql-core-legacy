@@ -5,9 +5,10 @@ from ..values import get_argument_values, get_variable_values
 
 
 class Fragment(object):
-    def __init__(self, type, field_asts):
+    def __init__(self, type, field_asts, field_fragments=None, execute_serially=False):
         self.type = type
         self.field_asts = field_asts
+        self.field_fragments = field_fragments or {}
         self.variable_values = {}
 
     @cached_property
@@ -17,7 +18,8 @@ class Fragment(object):
         for field_ast in self.field_asts:
             field_name = field_ast.name.value
             field_def = self.type.fields[field_name]
-            resolver = field_resolver(field_def)
+            field_fragment = self.field_fragments.get(field_name)
+            resolver = field_resolver(field_def, fragment=field_fragment)
             args = get_argument_values(
                 field_def.args,
                 field_ast.arguments,

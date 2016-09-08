@@ -15,26 +15,18 @@ def test_fragment_resolver():
     Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda *_, **__: 2)})
     field_asts = [
         ast.Field(
-            alias=None,
             name=ast.Name(value='id'),
-            arguments=[],
-            directives=[],
-            selection_set=None
         )
     ]
     fragment = Fragment(type=Node, field_asts=field_asts)
     assert fragment.resolver(lambda: 1) == {'id': 2}
 
 
-def test_fragment_resolver_nested():
+def test_fragment_resolver_list():
     Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, **__: obj)})
     field_asts = [
         ast.Field(
-            alias=None,
             name=ast.Name(value='id'),
-            arguments=[],
-            directives=[],
-            selection_set=None
         )
     ]
     fragment = Fragment(type=Node, field_asts=field_asts)
@@ -45,6 +37,56 @@ def test_fragment_resolver_nested():
     assert resolved == [{
         'id': n
     } for n in range(3)]
+
+
+def test_fragment_resolver_nested():
+    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, **__: obj)})
+    Query = GraphQLObjectType('Query', fields={'node': GraphQLField(Node, resolver=lambda *_, **__: 1)})
+    node_field_asts = [
+        ast.Field(
+            name=ast.Name(value='id'),
+        )
+    ]
+    field_asts = [
+        ast.Field(
+            name=ast.Name(value='node'),
+            selection_set=node_field_asts
+        )
+    ]
+    node_fragment = Fragment(type=Node, field_asts=node_field_asts)
+    query_fragment = Fragment(type=Query, field_asts=field_asts, field_fragments={'node': node_fragment})
+    resolver = type_resolver(Query, lambda: None, fragment=query_fragment)
+    resolved = resolver()
+    assert resolved == {
+        'node': {
+            'id': 1
+        }
+    }
+
+
+def test_fragment_resolver_nested_list():
+    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, **__: obj)})
+    Query = GraphQLObjectType('Query', fields={'nodes': GraphQLField(GraphQLList(Node), resolver=lambda *_, **__: range(3))})
+    node_field_asts = [
+        ast.Field(
+            name=ast.Name(value='id'),
+        )
+    ]
+    field_asts = [
+        ast.Field(
+            name=ast.Name(value='nodes'),
+            selection_set=node_field_asts
+        )
+    ]
+    node_fragment = Fragment(type=Node, field_asts=node_field_asts)
+    query_fragment = Fragment(type=Query, field_asts=field_asts, field_fragments={'nodes': node_fragment})
+    resolver = type_resolver(Query, lambda: None, fragment=query_fragment)
+    resolved = resolver()
+    assert resolved == {
+        'nodes': [{
+            'id': n
+        } for n in range(3)]
+    }
 
 # '''
 # {
