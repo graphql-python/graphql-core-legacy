@@ -106,6 +106,7 @@ def test_fragment_operation_mutation():
         execute_serially=True
     )
 
+
 def test_query_builder_operation():
     Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt)})
     Query = GraphQLObjectType('Query', fields={'nodes': GraphQLField(GraphQLList(Node))})
@@ -144,3 +145,24 @@ def test_query_builder_operation():
             )
         }
     )
+
+
+def test_query_builder_execution():
+    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, **__: obj)})
+    Query = GraphQLObjectType('Query', fields={'nodes': GraphQLField(GraphQLList(Node), resolver=lambda *_, **__: range(3))})
+
+    schema = GraphQLSchema(query=Query)
+    document_ast = parse('''query MyQuery {
+        nodes {
+            id
+        }
+    }''')
+    query_builder = QueryBuilder(schema, document_ast)
+    QueryFragment = query_builder.get_operation_fragment('MyQuery')
+    root = None
+    expected = {
+        'nodes': [{
+            'id': n
+        } for n in range(3)]
+    }
+    assert QueryFragment.resolver(lambda: root) == expected
