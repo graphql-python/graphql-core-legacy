@@ -23,7 +23,7 @@ def test_querybuilder_big_list_of_ints(benchmark):
 def test_querybuilder_big_list_of_nested_ints(benchmark):
     big_int_list = [x for x in range(SIZE)]
 
-    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj: obj)})
+    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, args: obj)})
     field_asts = [
         ast.Field(
             alias=None,
@@ -44,12 +44,12 @@ def test_querybuilder_big_list_of_nested_ints(benchmark):
 
 
 
-def test_querybuilder_big_list_of_nested_ints_two(benchmark):
+def test_querybuilder_big_list_of_objecttypes_with_two_int_fields(benchmark):
     big_int_list = [x for x in range(SIZE)]
 
     Node = GraphQLObjectType('Node', fields={
-        'id': GraphQLField(GraphQLInt, resolver=lambda obj: obj),
-        'ida': GraphQLField(GraphQLInt, resolver=lambda obj: obj*2)
+        'id': GraphQLField(GraphQLInt, resolver=lambda obj, args: obj),
+        'ida': GraphQLField(GraphQLInt, resolver=lambda obj, args: obj*2)
     })
     field_asts = [
         ast.Field(
@@ -76,3 +76,30 @@ def test_querybuilder_big_list_of_nested_ints_two(benchmark):
         'id': n,
         'ida': n*2
     } for n in big_int_list]
+
+
+
+def test_querybuilder_big_list_of_objecttypes_with_one_int_field(benchmark):
+    big_int_list = [x for x in range(SIZE)]
+    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, **__: obj)})
+    Query = GraphQLObjectType('Query', fields={'nodes': GraphQLField(GraphQLList(Node), resolver=lambda *_, **__: big_int_list)})
+    node_field_asts = [
+        ast.Field(
+            name=ast.Name(value='id'),
+        )
+    ]
+    field_asts = [
+        ast.Field(
+            name=ast.Name(value='nodes'),
+            selection_set=node_field_asts
+        )
+    ]
+    node_fragment = Fragment(type=Node, field_asts=node_field_asts)
+    query_fragment = Fragment(type=Query, field_asts=field_asts, field_fragments={'nodes': node_fragment})
+    resolver = type_resolver(Query, lambda: None, fragment=query_fragment)
+    resolved = benchmark(resolver)
+    assert resolved == {
+        'nodes': [{
+            'id': n
+        } for n in big_int_list]
+    }
