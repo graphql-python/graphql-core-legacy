@@ -10,6 +10,27 @@ from ..fragment import Fragment
 from promise import Promise
 
 
+def test_fragment_equal():
+    field_asts1 = [
+        ast.Field(
+            name=ast.Name(value='id'),
+        )
+    ]
+    field_asts2 = [
+        ast.Field(
+            name=ast.Name(value='id'),
+        )
+    ]
+    assert field_asts1 == field_asts2
+    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt)})
+    Node2 = GraphQLObjectType('Node2', fields={'id': GraphQLField(GraphQLInt)})
+    fragment1 = Fragment(type=Node, field_asts=field_asts1)
+    fragment2 = Fragment(type=Node, field_asts=field_asts2)
+    fragment3 = Fragment(type=Node2, field_asts=field_asts2)
+    assert fragment1 == fragment2
+    assert fragment1 != fragment3
+    assert fragment1 != object()
+
 
 def test_fragment_resolver():
     Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda *_, **__: 2)})
