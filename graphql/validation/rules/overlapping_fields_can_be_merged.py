@@ -442,7 +442,7 @@ def _collect_fields_and_fragment_names(context, parent_type, selection_set, ast_
         if isinstance(selection, ast.Field):
             field_name = selection.name.value
             if isinstance(parent_type, (GraphQLObjectType, GraphQLInterfaceType)):
-                field_def = parent_type.get_fields().get(field_name)
+                field_def = parent_type.fields.get(field_name)
             else:
                 field_def = None
 

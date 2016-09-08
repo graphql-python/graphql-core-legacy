@@ -22,7 +22,7 @@ class Document(Node):
         return (
             self is other or (
                 isinstance(other, Document) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.definitions == other.definitions
             )
         )
@@ -58,7 +58,7 @@ class OperationDefinition(Definition):
         return (
             self is other or (
                 isinstance(other, OperationDefinition) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.operation == other.operation and
                 self.name == other.name and
                 self.variable_definitions == other.variable_definitions and
@@ -104,7 +104,7 @@ class VariableDefinition(Node):
         return (
             self is other or (
                 isinstance(other, VariableDefinition) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.variable == other.variable and
                 self.type == other.type and
                 self.default_value == other.default_value
@@ -142,7 +142,7 @@ class SelectionSet(Node):
         return (
             self is other or (
                 isinstance(other, SelectionSet) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.selections == other.selections
             )
         )
@@ -182,7 +182,7 @@ class Field(Selection):
         return (
             self is other or (
                 isinstance(other, Field) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.alias == other.alias and
                 self.name == other.name and
                 self.arguments == other.arguments and
@@ -227,7 +227,7 @@ class Argument(Node):
         return (
             self is other or (
                 isinstance(other, Argument) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name and
                 self.value == other.value
             )
@@ -263,7 +263,7 @@ class FragmentSpread(Selection):
         return (
             self is other or (
                 isinstance(other, FragmentSpread) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name and
                 self.directives == other.directives
             )
@@ -300,7 +300,7 @@ class InlineFragment(Selection):
         return (
             self is other or (
                 isinstance(other, InlineFragment) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.type_condition == other.type_condition and
                 self.directives == other.directives and
                 self.selection_set == other.selection_set
@@ -341,7 +341,7 @@ class FragmentDefinition(Definition):
         return (
             self is other or (
                 isinstance(other, FragmentDefinition) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name and
                 self.type_condition == other.type_condition and
                 self.directives == other.directives and
@@ -386,7 +386,7 @@ class Variable(Value):
         return (
             self is other or (
                 isinstance(other, Variable) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name
             )
         )
@@ -418,7 +418,7 @@ class IntValue(Value):
         return (
             self is other or (
                 isinstance(other, IntValue) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.value == other.value
             )
         )
@@ -450,7 +450,7 @@ class FloatValue(Value):
         return (
             self is other or (
                 isinstance(other, FloatValue) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.value == other.value
             )
         )
@@ -482,7 +482,7 @@ class StringValue(Value):
         return (
             self is other or (
                 isinstance(other, StringValue) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.value == other.value
             )
         )
@@ -514,7 +514,7 @@ class BooleanValue(Value):
         return (
             self is other or (
                 isinstance(other, BooleanValue) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.value == other.value
             )
         )
@@ -546,7 +546,7 @@ class EnumValue(Value):
         return (
             self is other or (
                 isinstance(other, EnumValue) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.value == other.value
             )
         )
@@ -578,7 +578,7 @@ class ListValue(Value):
         return (
             self is other or (
                 isinstance(other, ListValue) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.values == other.values
             )
         )
@@ -610,7 +610,7 @@ class ObjectValue(Value):
         return (
             self is other or (
                 isinstance(other, ObjectValue) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.fields == other.fields
             )
         )
@@ -643,7 +643,7 @@ class ObjectField(Node):
         return (
             self is other or (
                 isinstance(other, ObjectField) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name and
                 self.value == other.value
             )
@@ -679,7 +679,7 @@ class Directive(Node):
         return (
             self is other or (
                 isinstance(other, Directive) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name and
                 self.arguments == other.arguments
             )
@@ -718,7 +718,7 @@ class NamedType(Type):
         return (
             self is other or (
                 isinstance(other, NamedType) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name
             )
         )
@@ -750,7 +750,7 @@ class ListType(Type):
         return (
             self is other or (
                 isinstance(other, ListType) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.type == other.type
             )
         )
@@ -782,7 +782,7 @@ class NonNullType(Type):
         return (
             self is other or (
                 isinstance(other, NonNullType) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.type == other.type
             )
         )
@@ -814,7 +814,7 @@ class Name(Node):
         return (
             self is other or (
                 isinstance(other, Name) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.value == other.value
             )
         )
@@ -929,7 +929,7 @@ class ObjectTypeDefinition(TypeDefinition):
         return (
             self is other or (
                 isinstance(other, ObjectTypeDefinition) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name and
                 self.interfaces == other.interfaces and
                 self.fields == other.fields and
@@ -973,7 +973,7 @@ class FieldDefinition(Node):
         return (
             self is other or (
                 isinstance(other, FieldDefinition) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name and
                 self.arguments == other.arguments and
                 self.type == other.type and
@@ -1017,7 +1017,7 @@ class InputValueDefinition(Node):
         return (
             self is other or (
                 isinstance(other, InputValueDefinition) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name and
                 self.type == other.type and
                 self.default_value == other.default_value and
@@ -1060,7 +1060,7 @@ class InterfaceTypeDefinition(TypeDefinition):
         return (
             self is other or (
                 isinstance(other, InterfaceTypeDefinition) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name and
                 self.fields == other.fields and
                 self.directives == other.directives
@@ -1100,7 +1100,7 @@ class UnionTypeDefinition(TypeDefinition):
         return (
             self is other or (
                 isinstance(other, UnionTypeDefinition) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name and
                 self.types == other.types and
                 self.directives == other.directives
@@ -1139,7 +1139,7 @@ class ScalarTypeDefinition(TypeDefinition):
         return (
             self is other or (
                 isinstance(other, ScalarTypeDefinition) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name and
                 self.directives == other.directives
             )
@@ -1176,7 +1176,7 @@ class EnumTypeDefinition(TypeDefinition):
         return (
             self is other or (
                 isinstance(other, EnumTypeDefinition) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name and
                 self.values == other.values and
                 self.directives == other.directives
@@ -1215,7 +1215,7 @@ class EnumValueDefinition(Node):
         return (
             self is other or (
                 isinstance(other, EnumValueDefinition) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name and
                 self.directives == other.directives
             )
@@ -1252,7 +1252,7 @@ class InputObjectTypeDefinition(TypeDefinition):
         return (
             self is other or (
                 isinstance(other, InputObjectTypeDefinition) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.name == other.name and
                 self.fields == other.fields and
                 self.directives == other.directives
@@ -1290,7 +1290,7 @@ class TypeExtensionDefinition(TypeSystemDefinition):
         return (
             self is other or (
                 isinstance(other, TypeExtensionDefinition) and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.definition == other.definition
             )
         )
@@ -1326,7 +1326,7 @@ class DirectiveDefinition(TypeSystemDefinition):
                 isinstance(other, DirectiveDefinition) and
                 self.name == other.name and
                 self.locations == other.locations and
-                self.loc == other.loc and
+                # self.loc == other.loc and
                 self.arguments == other.arguments
             )
         )

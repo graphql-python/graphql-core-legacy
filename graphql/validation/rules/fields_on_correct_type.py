@@ -1,8 +1,9 @@
-from collections import Counter, OrderedDict
+from collections import Counter
 
 from ...error import GraphQLError
+from ...pyutils.ordereddict import OrderedDict
 from ...type.definition import (GraphQLInterfaceType, GraphQLObjectType,
-                                GraphQLUnionType)
+                                GraphQLUnionType, is_abstract_type)
 from ...utils.quoted_or_list import quoted_or_list
 from ...utils.suggestion_list import suggestion_list
 from .base import ValidationRule
@@ -73,14 +74,14 @@ def get_suggested_type_names(schema, output_type, field_name):
         suggested_object_types = []
         interface_usage_count = OrderedDict()
         for possible_type in schema.get_possible_types(output_type):
-            if not possible_type.get_fields().get(field_name):
+            if not possible_type.fields.get(field_name):
                 return
 
             # This object type defines this field.
             suggested_object_types.append(possible_type.name)
 
-            for possible_interface in possible_type.get_interfaces():
-                if not possible_interface.get_fields().get(field_name):
+            for possible_interface in possible_type.interfaces:
+                if not possible_interface.fields.get(field_name):
                     continue
 
                 # This interface type defines this field.
@@ -104,7 +105,7 @@ def get_suggested_field_names(schema, graphql_type, field_name):
     that may be the result of a typo.'''
 
     if isinstance(graphql_type, (GraphQLInterfaceType, GraphQLObjectType)):
-        possible_field_names = list(graphql_type.get_fields().keys())
+        possible_field_names = list(graphql_type.fields.keys())
 
         return suggestion_list(field_name, possible_field_names)
 

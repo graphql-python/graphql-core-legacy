@@ -33,7 +33,7 @@ except NameError:
     __GRAPHQL_SETUP__ = False
 
 
-VERSION = (0, 5, 3, 'final', 0)
+VERSION = (1, 0, 0, 'alpha', 0)
 
 __version__ = get_version(VERSION)
 
@@ -58,6 +58,7 @@ if not __GRAPHQL_SETUP__:
         GraphQLList,
         GraphQLNonNull,
         GraphQLField,
+        GraphQLInputObjectField,
         GraphQLArgument,
 
         # "Enum" of Type Kinds
@@ -135,6 +136,8 @@ if not __GRAPHQL_SETUP__:
     # Execute GraphQL queries.
     from .execution import (  # no import order
         execute,
+        MiddlewareManager,
+        middlewares
     )
 
     # Validate GraphQL queries.
@@ -213,6 +216,7 @@ if not __GRAPHQL_SETUP__:
         'GraphQLList',
         'GraphQLNonNull',
         'GraphQLField',
+        'GraphQLInputObjectField',
         'GraphQLArgument',
         'GraphQLObjectType',
         'GraphQLScalarType',
@@ -256,6 +260,8 @@ if not __GRAPHQL_SETUP__:
         'print_ast',
         'visit',
         'execute',
+        'MiddlewareManager',
+        'middlewares',
         'specified_rules',
         'validate',
         'GraphQLError',

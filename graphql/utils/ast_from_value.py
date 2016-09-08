@@ -54,7 +54,7 @@ def ast_from_value(value, type=None):
     for field_name, field_value in value.items():
         field_type = None
         if is_graph_ql_input_object_type:
-            field_def = type.get_fields().get(field_name)
+            field_def = type.fields.get(field_name)
             field_type = field_def and field_def.type
 
         field_value = ast_from_value(field_value, field_type)

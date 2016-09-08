@@ -1,8 +1,8 @@
 import collections
 
+from ..pyutils.ordereddict import OrderedDict
 from ..utils.assert_valid_name import assert_valid_name
-from .definition import (GraphQLArgument, GraphQLArgumentDefinition,
-                         GraphQLNonNull, is_input_type)
+from .definition import GraphQLArgument, GraphQLNonNull, is_input_type
 from .scalars import GraphQLBoolean, GraphQLString
 
 
@@ -58,21 +58,15 @@ class GraphQLDirective(object):
         self.description = description
         self.locations = locations
 
-        self.args = []
         if args:
-            assert isinstance(args, dict), '{} args must be a dict with argument names as keys.'.format(name)
+            assert isinstance(args, collections.Mapping), '{} args must be a dict with argument names as keys.'.format(name)
             for arg_name, _arg in args.items():
                 assert_valid_name(arg_name)
                 assert is_input_type(_arg.type), '{}({}) argument type must be Input Type but got {}.'.format(
                     name,
                     arg_name,
                     _arg.type)
-                self.args.append(GraphQLArgumentDefinition(
-                    type=_arg.type,
-                    name=arg_name,
-                    description=_arg.description,
-                    default_value=_arg.default_value,
-                ))
+        self.args = args or OrderedDict()
 
 """Used to conditionally include fields or fragments."""
 GraphQLIncludeDirective = GraphQLDirective(

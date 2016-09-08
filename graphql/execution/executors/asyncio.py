@@ -2,6 +2,8 @@ from __future__ import absolute_import
 
 from asyncio import Future, get_event_loop, iscoroutine, wait
 
+from promise import promisify
+
 try:
     from asyncio import ensure_future
 except ImportError:
@@ -45,5 +47,5 @@ class AsyncioExecutor(object):
         if isinstance(result, Future) or iscoroutine(result):
             future = ensure_future(result, loop=self.loop)
             self.futures.append(future)
-            return future
+            return promisify(future)
         return result

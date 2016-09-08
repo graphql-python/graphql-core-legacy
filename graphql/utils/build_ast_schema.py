@@ -1,7 +1,6 @@
-from collections import OrderedDict
-
 from ..execution.values import get_argument_values
 from ..language import ast
+from ..pyutils.ordereddict import OrderedDict
 from ..type import (GraphQLArgument, GraphQLBoolean,
                     GraphQLDeprecatedDirective, GraphQLDirective,
                     GraphQLEnumType, GraphQLEnumValue, GraphQLField,

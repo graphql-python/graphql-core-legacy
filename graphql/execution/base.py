@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from ..error import GraphQLError
 from ..language import ast
+from ..pyutils.default_ordered_dict import DefaultOrderedDict
 from ..type.definition import GraphQLInterfaceType, GraphQLUnionType
 from ..type.directives import GraphQLIncludeDirective, GraphQLSkipDirective
 from ..type.introspection import (SchemaMetaFieldDef, TypeMetaFieldDef,
@@ -18,9 +19,9 @@ class ExecutionContext(object):
     and the fragments defined in the query document"""
 
     __slots__ = 'schema', 'fragments', 'root_value', 'operation', 'variable_values', 'errors', 'context_value', \
-                'argument_values_cache', 'executor'
+                'argument_values_cache', 'executor', 'middleware_manager', '_subfields_cache'
 
-    def __init__(self, schema, document_ast, root_value, context_value, variable_values, operation_name, executor):
+    def __init__(self, schema, document_ast, root_value, context_value, variable_values, operation_name, executor, middleware_manager):
         """Constructs a ExecutionContext object from the arguments passed
         to execute, which we will pass throughout the other execution
         methods."""
@@ -63,6 +64,13 @@ class ExecutionContext(object):
         self.context_value = context_value
         self.argument_values_cache = {}
         self.executor = executor
+        self.middleware_manager = middleware_manager
+        self._subfields_cache = {}
+
+    def get_field_resolver(self, field_resolver):
+        if not self.middleware_manager:
+            return field_resolver
+        return self.middleware_manager.get_field_resolver(field_resolver)
 
     def get_argument_values(self, field_def, field_ast):
         k = field_def, field_ast
@@ -73,6 +81,21 @@ class ExecutionContext(object):
                                                                          self.variable_values)
 
         return result
+
+    def get_sub_fields(self, return_type, field_asts):
+        k = return_type, tuple(field_asts)
+        if k not in self._subfields_cache:
+            subfield_asts = DefaultOrderedDict(list)
+            visited_fragment_names = set()
+            for field_ast in field_asts:
+                selection_set = field_ast.selection_set
+                if selection_set:
+                    subfield_asts = collect_fields(
+                        self, return_type, selection_set,
+                        subfield_asts, visited_fragment_names
+                    )
+            self._subfields_cache[k] = subfield_asts
+        return self._subfields_cache[k]
 
 
 class ExecutionResult(object):
@@ -228,7 +251,7 @@ def does_fragment_condition_match(ctx, fragment, type_):
         return True
 
     conditional_type = type_from_ast(ctx.schema, type_condition_ast)
-    if conditional_type == type_:
+    if conditional_type.is_same_type(type_):
         return True
 
     if isinstance(conditional_type, (GraphQLInterfaceType, GraphQLUnionType)):
@@ -245,6 +268,8 @@ def get_field_entry_key(node):
 
 
 class ResolveInfo(object):
+    __slots__ = ('field_name', 'field_asts', 'return_type', 'parent_type',
+                 'schema', 'fragments', 'root_value', 'operation', 'variable_values')
 
     def __init__(self, field_name, field_asts, return_type, parent_type,
                  schema, fragments, root_value, operation, variable_values):
@@ -277,10 +302,10 @@ def get_field_def(schema, parent_type, field_name):
     are allowed, like on a Union. __schema could get automatically
     added to the query type, but that would require mutating type
     definitions, which would cause issues."""
-    if field_name == SchemaMetaFieldDef.name and schema.get_query_type() == parent_type:
+    if field_name == '__schema' and schema.get_query_type() == parent_type:
         return SchemaMetaFieldDef
-    elif field_name == TypeMetaFieldDef.name and schema.get_query_type() == parent_type:
+    elif field_name == '__type' and schema.get_query_type() == parent_type:
         return TypeMetaFieldDef
-    elif field_name == TypeNameMetaFieldDef.name:
+    elif field_name == '__typename':
         return TypeNameMetaFieldDef
-    return parent_type.get_fields().get(field_name)
+    return parent_type.fields.get(field_name)

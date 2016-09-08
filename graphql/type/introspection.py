@@ -1,15 +1,29 @@
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 
 from ..language.printer import print_ast
 from ..utils.ast_from_value import ast_from_value
-from .definition import (GraphQLArgument, GraphQLArgumentDefinition,
-                         GraphQLEnumType, GraphQLEnumValue, GraphQLField,
-                         GraphQLFieldDefinition, GraphQLInputObjectType,
+from .definition import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
+                         GraphQLField, GraphQLInputObjectType,
                          GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                          GraphQLObjectType, GraphQLScalarType,
                          GraphQLUnionType)
 from .directives import DirectiveLocation
 from .scalars import GraphQLBoolean, GraphQLString
+
+InputField = namedtuple('InputField', ['name', 'description', 'type', 'default_value'])
+Field = namedtuple('Field', ['name', 'type', 'description', 'args', 'deprecation_reason'])
+
+
+def input_fields_to_list(input_fields):
+    fields = []
+    for field_name, field in input_fields.items():
+        fields.append(InputField(
+            name=field_name,
+            description=field.description,
+            type=field.type,
+            default_value=field.default_value))
+    return fields
+
 
 __Schema = GraphQLObjectType(
     '__Schema',
@@ -66,7 +80,7 @@ __Directive = GraphQLObjectType(
         )),
         ('args', GraphQLField(
             type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
-            resolver=lambda directive, *args: directive.args or [],
+            resolver=lambda directive, *args: input_fields_to_list(directive.args),
         )),
         ('onOperation', GraphQLField(
             type=GraphQLNonNull(GraphQLBoolean),
@@ -201,16 +215,25 @@ class TypeFieldResolvers(object):
     @staticmethod
     def fields(type, args, *_):
         if isinstance(type, (GraphQLObjectType, GraphQLInterfaceType)):
-            fields = type.get_fields().values()
-            if not args.get('includeDeprecated'):
-                fields = [f for f in fields if not f.deprecation_reason]
+            fields = []
+            include_deprecated = args.get('includeDeprecated')
+            for field_name, field in type.fields.items():
+                if field.deprecation_reason and not include_deprecated:
+                    continue
+                fields.append(Field(
+                    name=field_name,
+                    description=field.description,
+                    type=field.type,
+                    args=field.args,
+                    deprecation_reason=field.deprecation_reason
+                ))
             return fields
         return None
 
     @staticmethod
     def interfaces(type, *_):
         if isinstance(type, GraphQLObjectType):
-            return type.get_interfaces()
+            return type.interfaces
 
     @staticmethod
     def possible_types(type, args, context, info):
@@ -220,7 +243,7 @@ class TypeFieldResolvers(object):
     @staticmethod
     def enum_values(type, args, *_):
         if isinstance(type, GraphQLEnumType):
-            values = type.get_values()
+            values = type.values
             if not args.get('includeDeprecated'):
                 values = [v for v in values if not v.deprecation_reason]
 
@@ -229,7 +252,7 @@ class TypeFieldResolvers(object):
     @staticmethod
     def input_fields(type, *_):
         if isinstance(type, GraphQLInputObjectType):
-            return type.get_fields().values()
+            return input_fields_to_list(type.fields)
 
 
 __Type = GraphQLObjectType(
@@ -296,7 +319,7 @@ __Field = GraphQLObjectType(
         ('description', GraphQLField(GraphQLString)),
         ('args', GraphQLField(
             type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
-            resolver=lambda field, *_: field.args or []
+            resolver=lambda field, *_: input_fields_to_list(field.args)
         )),
         ('type', GraphQLField(GraphQLNonNull(__Type))),
         ('isDeprecated', GraphQLField(
@@ -392,28 +415,26 @@ __TypeKind = GraphQLEnumType(
 
 IntrospectionSchema = __Schema
 
-SchemaMetaFieldDef = GraphQLFieldDefinition(
-    name='__schema',
+SchemaMetaFieldDef = GraphQLField(
+    # name='__schema',
     type=GraphQLNonNull(__Schema),
     description='Access the current type schema of this server.',
     resolver=lambda source, args, context, info: info.schema,
-    args=[]
+    args={}
 )
 
-TypeMetaFieldDef_args_name = GraphQLArgumentDefinition(GraphQLNonNull(GraphQLString), name='name')
-TypeMetaFieldDef = GraphQLFieldDefinition(
+TypeMetaFieldDef = GraphQLField(
     type=__Type,
-    name='__type',
+    # name='__type',
     description='Request the type information of a single type.',
-    args=[TypeMetaFieldDef_args_name],
+    args={'name': GraphQLArgument(GraphQLNonNull(GraphQLString))},
     resolver=lambda source, args, context, info: info.schema.get_type(args['name'])
 )
-del TypeMetaFieldDef_args_name
 
-TypeNameMetaFieldDef = GraphQLFieldDefinition(
+TypeNameMetaFieldDef = GraphQLField(
     type=GraphQLNonNull(GraphQLString),
-    name='__typename',
+    # name='__typename',
     description='The name of the current Object type at runtime.',
     resolver=lambda source, args, context, info: info.parent_type.name,
-    args=[]
+    args={}
 )

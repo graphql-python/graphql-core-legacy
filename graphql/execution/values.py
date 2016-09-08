@@ -41,8 +41,7 @@ def get_argument_values(arg_defs, arg_asts, variables=None):
         arg_ast_map = {}
 
     result = {}
-    for arg_def in arg_defs:
-        name = arg_def.name
+    for name, arg_def in arg_defs.items():
         value_ast = arg_ast_map.get(name)
         if value_ast:
             value_ast = value_ast.value
@@ -57,7 +56,9 @@ def get_argument_values(arg_defs, arg_asts, variables=None):
             value = arg_def.default_value
 
         if value is not None:
-            result[name] = value
+            # We use out_name as the output name for the
+            # dict if exists
+            result[arg_def.out_name or name] = value
 
     return result
 
@@ -126,7 +127,7 @@ def coerce_value(type, value):
             return [coerce_value(item_type, value)]
 
     if isinstance(type, GraphQLInputObjectType):
-        fields = type.get_fields()
+        fields = type.fields
         obj = {}
         for field_name, field in fields.items():
             field_value = coerce_value(field.type, value.get(field_name))
@@ -134,7 +135,9 @@ def coerce_value(type, value):
                 field_value = field.default_value
 
             if field_value is not None:
-                obj[field_name] = field_value
+                # We use out_name as the output name for the
+                # dict if exists
+                obj[field.out_name or field_name] = field_value
 
         return obj
 
