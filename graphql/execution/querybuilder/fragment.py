@@ -10,6 +10,7 @@ class Fragment(object):
         self.field_asts = field_asts
         self.field_fragments = field_fragments or {}
         self.variable_values = {}
+        self.execute_serially = execute_serially
 
     @cached_property
     def partial_resolvers(self):
@@ -39,5 +40,7 @@ class Fragment(object):
     def __eq__(self, other):
         return isinstance(other, Fragment) and (
             other.type == self.type and
-            other.field_asts == self.field_asts
+            other.field_asts == self.field_asts and
+            other.field_fragments == self.field_fragments and
+            other.execute_serially == self.execute_serially
         )
