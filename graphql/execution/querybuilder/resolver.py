@@ -14,24 +14,14 @@ def is_promise(value):
     return type(value) == Promise
 
 
-def on_complete_non_null(result):
-    if result is None:
-        field_asts = 'TODO'
-        raise GraphQLError(
-            'Cannot return null for non-nullable field {}.{}.'.format(info.parent_type, info.field_name),
-            field_asts
-        )
-    return result
-
-
-def on_complete_resolver(resolver, __func, *args, **kwargs):
-    result = resolver(*args, **kwargs)
+def on_complete_resolver(__func, __resolver, *args, **kwargs):
+    result = __resolver(*args, **kwargs)
     if is_promise(result):
         return result.then(__func)
     return __func(result)
 
 
-def on_complete_list(inner_resolver, result):
+def complete_list_value(inner_resolver, result):
     assert isinstance(result, collections.Iterable), \
         ('User Error: expected iterable, but did not find one ' +
          'for field {}.{}.').format(info.parent_type, info.field_name)
@@ -42,6 +32,16 @@ def on_complete_list(inner_resolver, result):
         completed_results.append(completed_item)
 
     return completed_results
+
+
+def complete_nonnull_value(result):
+    if result is None:
+        field_asts = 'TODO'
+        raise GraphQLError(
+            'Cannot return null for non-nullable field {}.{}.'.format(info.parent_type, info.field_name),
+            field_asts
+        )
+    return result
 
 
 def field_resolver(field, fragment=None):
@@ -59,7 +59,7 @@ def type_resolver(return_type, resolver, fragment=None):
         return type_resolver_list(return_type, resolver, fragment)
 
     if isinstance(return_type, (GraphQLObjectType)):
-        assert fragment
+        assert fragment and fragment.type == return_type
         return partial(fragment.resolver, resolver)
 
     if isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
@@ -71,14 +71,14 @@ def type_resolver(return_type, resolver, fragment=None):
 
 def type_resolver_non_null(return_type, resolver, fragment=None):
     resolver = type_resolver(return_type.of_type, resolver)
-    return partial(on_complete_resolver, resolver, on_complete_non_null)
+    return partial(on_complete_resolver, complete_nonnull_value, resolver)
 
 
 def type_resolver_leaf(return_type, resolver):
-    return partial(on_complete_resolver, resolver, return_type.serialize)
+    return partial(on_complete_resolver, return_type.serialize, resolver)
 
 
 def type_resolver_list(return_type, resolver, fragment=None):
     inner_resolver = type_resolver(return_type.of_type, lambda item: item, fragment)
-    list_complete = partial(on_complete_list, inner_resolver)
-    return partial(on_complete_resolver, resolver, list_complete)
+    list_complete = partial(complete_list_value, inner_resolver)
+    return partial(on_complete_resolver, list_complete, resolver)
