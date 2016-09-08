@@ -1,10 +1,14 @@
+from functools import partial
 from ...pyutils.cached_property import cached_property
+from ..values import get_argument_values, get_variable_values
+
 
 
 class Fragment(object):
     def __init__(self, type, field_asts):
         self.type = type
         self.field_asts = field_asts
+        self.variable_values = {}
 
     @cached_property
     def partial_resolvers(self):
@@ -14,6 +18,12 @@ class Fragment(object):
             field_name = field_ast.name.value
             field_def = self.type.fields[field_name]
             resolver = field_resolver(field_def)
+            args = get_argument_values(
+                field_def.args,
+                field_ast.arguments,
+                self.variable_values
+            )
+            resolver = partial(resolver, args=args)
             resolvers.append((field_name, resolver))
         return resolvers
 

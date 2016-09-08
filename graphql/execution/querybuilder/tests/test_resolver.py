@@ -47,7 +47,7 @@ def test_type_resolver_promise(type, value, expected):
 
 
 def test_fragment_resolver():
-    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda *_: 2)})
+    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda *_, **__: 2)})
     field_asts = [
         ast.Field(
             alias=None,
@@ -62,7 +62,7 @@ def test_fragment_resolver():
 
 
 def test_fragment_resolver_nested():
-    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj: obj)})
+    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, **__: obj)})
     field_asts = [
         ast.Field(
             alias=None,
