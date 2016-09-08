@@ -33,6 +33,8 @@ class KnownArgumentNames(ValidationRule):
 
             field_arg_def = field_def.args.get(node.name.value)
 
+            print(field_def.args.items())
+
             if not field_arg_def:
                 parent_type = self.context.get_parent_type()
                 assert parent_type
@@ -43,7 +45,7 @@ class KnownArgumentNames(ValidationRule):
                         parent_type.name,
                         suggestion_list(
                             node.name.value,
-                            (arg.name for arg in field_def.args)
+                            (arg_name for arg_name in field_def.args.keys())
                         )
                     ),
                     [node]
@@ -63,7 +65,7 @@ class KnownArgumentNames(ValidationRule):
                         directive.name,
                         suggestion_list(
                             node.name.value,
-                            (arg.name for arg in directive.args)
+                            (arg_name for arg_name in directive.args.keys())
                         )
                     ),
                     [node]
