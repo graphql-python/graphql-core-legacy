@@ -1,4 +1,4 @@
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict, Sequence, defaultdict
 from functools import reduce
 
 from ..utils.type_comparators import is_equal_type, is_type_sub_type_of
@@ -17,11 +17,11 @@ class GraphQLTypeMap(OrderedDict):
         self._possible_type_map = defaultdict(set)
 
         # Keep track of all implementations by interface name.
-        self._implementations = defaultdict(list)
-        for type in self.values():
-            if isinstance(type, GraphQLObjectType):
-                for interface in type.interfaces:
-                    self._implementations[interface.name].append(type)
+        self._implementations = {}
+        for gql_type in self.values():
+            if isinstance(gql_type, GraphQLObjectType):
+                for interface in gql_type.interfaces:
+                    self._implementations.setdefault(interface.name, []).append(gql_type)
 
         # Enforce correct interface implementations.
         for type in self.values():
@@ -33,11 +33,17 @@ class GraphQLTypeMap(OrderedDict):
         if isinstance(abstract_type, GraphQLUnionType):
             return abstract_type.types
         assert isinstance(abstract_type, GraphQLInterfaceType)
-        return self._implementations[abstract_type.name]
+        return self._implementations.get(abstract_type.name, None)
 
     def is_possible_type(self, abstract_type, possible_type):
+        possible_types = self.get_possible_types(abstract_type)
+        assert isinstance(possible_types, Sequence), (
+            'Could not find possible implementing types for ${} in ' +
+            'schema. Check that schema.types is defined and is an array of' +
+            'all possible types in the schema.'
+            ).format(abstract_type)
+
         if not self._possible_type_map[abstract_type.name]:
-            possible_types = self.get_possible_types(abstract_type)
             self._possible_type_map[abstract_type.name].update([p.name for p in possible_types])
 
         return possible_type.name in self._possible_type_map[abstract_type.name]

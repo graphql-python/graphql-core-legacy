@@ -112,41 +112,53 @@ class PrintingVisitor(Visitor):
     # Type Definitions:
 
     def leave_SchemaDefinition(self, node, *args):
-        return 'schema ' + block(node.operation_types)
+        return join([
+            'schema',
+            join(node.directives, ' '),
+            block(node.operation_types),
+            ], ' ')
 
     def leave_OperationTypeDefinition(self, node, *args):
         return '{}: {}'.format(node.operation, node.type)
 
     def leave_ScalarTypeDefinition(self, node, *args):
-        return 'scalar ' + node.name
+        return 'scalar ' + node.name + wrap(' ', join(node.directives, ' '))
 
     def leave_ObjectTypeDefinition(self, node, *args):
-        return (
-            'type ' + node.name + ' ' +
-            wrap('implements ', join(node.interfaces, ', '), ' ') +
+        return join([
+            'type',
+            node.name,
+            wrap('implements ', join(node.interfaces, ', ')),
+            join(node.directives, ' '),
             block(node.fields)
-        )
+        ], ' ')
 
     def leave_FieldDefinition(self, node, *args):
-        return node.name + wrap('(', join(node.arguments, ', '), ')') + ': ' + node.type
+        return (
+            node.name +
+            wrap('(', join(node.arguments, ', '), ')') +
+            ': ' +
+            node.type +
+            wrap(' ', join(node.directives, ' '))
+        )
 
     def leave_InputValueDefinition(self, node, *args):
-        return node.name + ': ' + node.type + wrap(' = ', node.default_value)
+        return node.name + ': ' + node.type + wrap(' = ', node.default_value) + wrap(' ', join(node.directives, ' '))
 
     def leave_InterfaceTypeDefinition(self, node, *args):
-        return 'interface ' + node.name + ' ' + block(node.fields)
+        return 'interface ' + node.name + wrap(' ', join(node.directives, ' ')) + ' ' + block(node.fields)
 
     def leave_UnionTypeDefinition(self, node, *args):
-        return 'union ' + node.name + ' = ' + join(node.types, ' | ')
+        return 'union ' + node.name + wrap(' ', join(node.directives, ' ')) + ' = ' + join(node.types, ' | ')
 
     def leave_EnumTypeDefinition(self, node, *args):
-        return 'enum ' + node.name + ' ' + block(node.values)
+        return 'enum ' + node.name + wrap(' ', join(node.directives, ' ')) + ' ' + block(node.values)
 
     def leave_EnumValueDefinition(self, node, *args):
-        return node.name
+        return node.name + wrap(' ', join(node.directives, ' '))
 
     def leave_InputObjectTypeDefinition(self, node, *args):
-        return 'input ' + node.name + ' ' + block(node.fields)
+        return 'input ' + node.name + wrap(' ', join(node.directives, ' ')) + ' ' + block(node.fields)
 
     def leave_TypeExtensionDefinition(self, node, *args):
         return 'extend ' + node.definition
@@ -162,10 +174,11 @@ def join(maybe_list, separator=''):
     return ''
 
 
-def block(maybe_list):
-    if maybe_list:
-        return indent('{\n' + join(maybe_list, '\n')) + '\n}'
-    return ''
+def block(_list):
+    '''Given a list, print each item on its own line, wrapped in an indented "{ }" block.'''
+    if _list:
+        return indent('{\n' + join(_list, '\n')) + '\n}'
+    return '{}'
 
 
 def wrap(start, maybe_str, end=''):

@@ -29,7 +29,7 @@ def get_variable_values(schema, definition_asts, inputs):
     return values
 
 
-def get_argument_values(arg_defs, arg_asts, variables):
+def get_argument_values(arg_defs, arg_asts, variables=None):
     """Prepares an object map of argument values given a list of argument
     definitions and list of argument AST nodes."""
     if not arg_defs:

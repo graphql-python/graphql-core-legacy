@@ -845,30 +845,34 @@ class TypeSystemDefinition(TypeDefinition):
 
 
 class SchemaDefinition(TypeSystemDefinition):
-    __slots__ = ('loc', 'operation_types',)
+    __slots__ = ('loc', 'directives', 'operation_types',)
     _fields = ('operation_types',)
 
-    def __init__(self, operation_types, loc=None):
+    def __init__(self, operation_types, loc=None, directives=None):
         self.operation_types = operation_types
         self.loc = loc
+        self.directives = directives
 
     def __eq__(self, other):
         return (
             self is other or (
                 isinstance(other, SchemaDefinition) and
-                self.operation_types == other.operation_types
+                self.operation_types == other.operation_types and
+                self.directives == other.directives
             )
         )
 
     def __repr__(self):
         return ('SchemaDefinition('
                 'operation_types={self.operation_types!r}'
+                ', directives={self.directives!r}'
                 ')').format(self=self)
 
     def __copy__(self):
         return type(self)(
             self.operation_types,
-            self.loc
+            self.loc,
+            self.directives,
         )
 
     def __hash__(self):
@@ -911,14 +915,15 @@ class OperationTypeDefinition(Node):
 
 
 class ObjectTypeDefinition(TypeDefinition):
-    __slots__ = ('loc', 'name', 'interfaces', 'fields',)
+    __slots__ = ('loc', 'name', 'interfaces', 'directives', 'fields',)
     _fields = ('name', 'interfaces', 'fields',)
 
-    def __init__(self, name, fields, interfaces=None, loc=None):
+    def __init__(self, name, fields, interfaces=None, loc=None, directives=None):
         self.loc = loc
         self.name = name
         self.interfaces = interfaces
         self.fields = fields
+        self.directives = directives
 
     def __eq__(self, other):
         return (
@@ -927,7 +932,8 @@ class ObjectTypeDefinition(TypeDefinition):
                 # self.loc == other.loc and
                 self.name == other.name and
                 self.interfaces == other.interfaces and
-                self.fields == other.fields
+                self.fields == other.fields and
+                self.directives == other.directives
             )
         )
 
@@ -936,6 +942,7 @@ class ObjectTypeDefinition(TypeDefinition):
                 'name={self.name!r}'
                 ', interfaces={self.interfaces!r}'
                 ', fields={self.fields!r}'
+                ', directives={self.directives!r}'
                 ')').format(self=self)
 
     def __copy__(self):
@@ -943,7 +950,8 @@ class ObjectTypeDefinition(TypeDefinition):
             self.name,
             self.fields,
             self.interfaces,
-            self.loc
+            self.loc,
+            self.directives,
         )
 
     def __hash__(self):
@@ -951,14 +959,15 @@ class ObjectTypeDefinition(TypeDefinition):
 
 
 class FieldDefinition(Node):
-    __slots__ = ('loc', 'name', 'arguments', 'type',)
+    __slots__ = ('loc', 'name', 'arguments', 'type', 'directives',)
     _fields = ('name', 'arguments', 'type',)
 
-    def __init__(self, name, arguments, type, loc=None):
+    def __init__(self, name, arguments, type, loc=None, directives=None):
         self.loc = loc
         self.name = name
         self.arguments = arguments
         self.type = type
+        self.directives = directives
 
     def __eq__(self, other):
         return (
@@ -967,7 +976,8 @@ class FieldDefinition(Node):
                 # self.loc == other.loc and
                 self.name == other.name and
                 self.arguments == other.arguments and
-                self.type == other.type
+                self.type == other.type and
+                self.directives == other.directives
             )
         )
 
@@ -983,7 +993,8 @@ class FieldDefinition(Node):
             self.name,
             self.arguments,
             self.type,
-            self.loc
+            self.loc,
+            self.directives,
         )
 
     def __hash__(self):
@@ -991,14 +1002,16 @@ class FieldDefinition(Node):
 
 
 class InputValueDefinition(Node):
-    __slots__ = ('loc', 'name', 'type', 'default_value',)
+    __slots__ = ('loc', 'name', 'type', 'default_value', 'directives')
     _fields = ('name', 'type', 'default_value',)
 
-    def __init__(self, name, type, default_value=None, loc=None):
+    def __init__(self, name, type, default_value=None, loc=None,
+                 directives=None):
         self.loc = loc
         self.name = name
         self.type = type
         self.default_value = default_value
+        self.directives = directives
 
     def __eq__(self, other):
         return (
@@ -1007,7 +1020,8 @@ class InputValueDefinition(Node):
                 # self.loc == other.loc and
                 self.name == other.name and
                 self.type == other.type and
-                self.default_value == other.default_value
+                self.default_value == other.default_value and
+                self.directives == other.directives
             )
         )
 
@@ -1016,6 +1030,7 @@ class InputValueDefinition(Node):
                 'name={self.name!r}'
                 ', type={self.type!r}'
                 ', default_value={self.default_value!r}'
+                ', directives={self.directives!r}'
                 ')').format(self=self)
 
     def __copy__(self):
@@ -1023,7 +1038,8 @@ class InputValueDefinition(Node):
             self.name,
             self.type,
             self.default_value,
-            self.loc
+            self.loc,
+            self.directives,
         )
 
     def __hash__(self):
@@ -1031,13 +1047,14 @@ class InputValueDefinition(Node):
 
 
 class InterfaceTypeDefinition(TypeDefinition):
-    __slots__ = ('loc', 'name', 'fields',)
+    __slots__ = ('loc', 'name', 'fields', 'directives',)
     _fields = ('name', 'fields',)
 
-    def __init__(self, name, fields, loc=None):
+    def __init__(self, name, fields, loc=None, directives=None):
         self.loc = loc
         self.name = name
         self.fields = fields
+        self.directives = directives
 
     def __eq__(self, other):
         return (
@@ -1045,7 +1062,8 @@ class InterfaceTypeDefinition(TypeDefinition):
                 isinstance(other, InterfaceTypeDefinition) and
                 # self.loc == other.loc and
                 self.name == other.name and
-                self.fields == other.fields
+                self.fields == other.fields and
+                self.directives == other.directives
             )
         )
 
@@ -1053,13 +1071,15 @@ class InterfaceTypeDefinition(TypeDefinition):
         return ('InterfaceTypeDefinition('
                 'name={self.name!r}'
                 ', fields={self.fields!r}'
+                ', directives={self.directives!r}'
                 ')').format(self=self)
 
     def __copy__(self):
         return type(self)(
             self.name,
             self.fields,
-            self.loc
+            self.loc,
+            self.directives,
         )
 
     def __hash__(self):
@@ -1067,13 +1087,14 @@ class InterfaceTypeDefinition(TypeDefinition):
 
 
 class UnionTypeDefinition(TypeDefinition):
-    __slots__ = ('loc', 'name', 'types',)
+    __slots__ = ('loc', 'name', 'types', 'directives',)
     _fields = ('name', 'types',)
 
-    def __init__(self, name, types, loc=None):
+    def __init__(self, name, types, loc=None, directives=None):
         self.loc = loc
         self.name = name
         self.types = types
+        self.directives = directives
 
     def __eq__(self, other):
         return (
@@ -1081,7 +1102,8 @@ class UnionTypeDefinition(TypeDefinition):
                 isinstance(other, UnionTypeDefinition) and
                 # self.loc == other.loc and
                 self.name == other.name and
-                self.types == other.types
+                self.types == other.types and
+                self.directives == other.directives
             )
         )
 
@@ -1089,13 +1111,15 @@ class UnionTypeDefinition(TypeDefinition):
         return ('UnionTypeDefinition('
                 'name={self.name!r}'
                 ', types={self.types!r}'
+                ', directives={self.directives!r}'
                 ')').format(self=self)
 
     def __copy__(self):
         return type(self)(
             self.name,
             self.types,
-            self.loc
+            self.loc,
+            self.directives,
         )
 
     def __hash__(self):
@@ -1103,31 +1127,35 @@ class UnionTypeDefinition(TypeDefinition):
 
 
 class ScalarTypeDefinition(TypeDefinition):
-    __slots__ = ('loc', 'name',)
+    __slots__ = ('loc', 'name', 'directives',)
     _fields = ('name',)
 
-    def __init__(self, name, loc=None):
+    def __init__(self, name, loc=None, directives=None):
         self.loc = loc
         self.name = name
+        self.directives = directives
 
     def __eq__(self, other):
         return (
             self is other or (
                 isinstance(other, ScalarTypeDefinition) and
                 # self.loc == other.loc and
-                self.name == other.name
+                self.name == other.name and
+                self.directives == other.directives
             )
         )
 
     def __repr__(self):
         return ('ScalarTypeDefinition('
                 'name={self.name!r}'
+                'directives={self.directives!r}'
                 ')').format(self=self)
 
     def __copy__(self):
         return type(self)(
             self.name,
-            self.loc
+            self.loc,
+            self.directives
         )
 
     def __hash__(self):
@@ -1135,13 +1163,14 @@ class ScalarTypeDefinition(TypeDefinition):
 
 
 class EnumTypeDefinition(TypeDefinition):
-    __slots__ = ('loc', 'name', 'values',)
+    __slots__ = ('loc', 'name', 'values', 'directives',)
     _fields = ('name', 'values',)
 
-    def __init__(self, name, values, loc=None):
+    def __init__(self, name, values, loc=None, directives=None):
         self.loc = loc
         self.name = name
         self.values = values
+        self.directives = directives
 
     def __eq__(self, other):
         return (
@@ -1149,7 +1178,8 @@ class EnumTypeDefinition(TypeDefinition):
                 isinstance(other, EnumTypeDefinition) and
                 # self.loc == other.loc and
                 self.name == other.name and
-                self.values == other.values
+                self.values == other.values and
+                self.directives == other.directives
             )
         )
 
@@ -1157,13 +1187,15 @@ class EnumTypeDefinition(TypeDefinition):
         return ('EnumTypeDefinition('
                 'name={self.name!r}'
                 ', values={self.values!r}'
+                ', directives={self.directives!r}'
                 ')').format(self=self)
 
     def __copy__(self):
         return type(self)(
             self.name,
             self.values,
-            self.loc
+            self.loc,
+            self.directives,
         )
 
     def __hash__(self):
@@ -1171,31 +1203,35 @@ class EnumTypeDefinition(TypeDefinition):
 
 
 class EnumValueDefinition(Node):
-    __slots__ = ('loc', 'name',)
+    __slots__ = ('loc', 'name', 'directives',)
     _fields = ('name',)
 
-    def __init__(self, name, loc=None):
+    def __init__(self, name, loc=None, directives=None):
         self.loc = loc
         self.name = name
+        self.directives = directives
 
     def __eq__(self, other):
         return (
             self is other or (
                 isinstance(other, EnumValueDefinition) and
                 # self.loc == other.loc and
-                self.name == other.name
+                self.name == other.name and
+                self.directives == other.directives
             )
         )
 
     def __repr__(self):
         return ('EnumValueDefinition('
                 'name={self.name!r}'
+                ', directives={self.directives!r}'
                 ')').format(self=self)
 
     def __copy__(self):
         return type(self)(
             self.name,
-            self.loc
+            self.loc,
+            self.directives,
         )
 
     def __hash__(self):
@@ -1203,13 +1239,14 @@ class EnumValueDefinition(Node):
 
 
 class InputObjectTypeDefinition(TypeDefinition):
-    __slots__ = ('loc', 'name', 'fields',)
+    __slots__ = ('loc', 'name', 'fields', 'directives',)
     _fields = ('name', 'fields',)
 
-    def __init__(self, name, fields, loc=None):
+    def __init__(self, name, fields, loc=None, directives=None):
         self.loc = loc
         self.name = name
         self.fields = fields
+        self.directives = directives
 
     def __eq__(self, other):
         return (
@@ -1217,7 +1254,8 @@ class InputObjectTypeDefinition(TypeDefinition):
                 isinstance(other, InputObjectTypeDefinition) and
                 # self.loc == other.loc and
                 self.name == other.name and
-                self.fields == other.fields
+                self.fields == other.fields and
+                self.directives == other.directives
             )
         )
 
@@ -1225,13 +1263,15 @@ class InputObjectTypeDefinition(TypeDefinition):
         return ('InputObjectTypeDefinition('
                 'name={self.name!r}'
                 ', fields={self.fields!r}'
+                ', directives={self.directives!r}'
                 ')').format(self=self)
 
     def __copy__(self):
         return type(self)(
             self.name,
             self.fields,
-            self.loc
+            self.loc,
+            self.directives,
         )
 
     def __hash__(self):

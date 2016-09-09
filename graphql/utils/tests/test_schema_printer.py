@@ -521,7 +521,7 @@ type Root {
 '''
 
 
-def test_prints_introspection_schema():
+def test_print_introspection_schema():
     Root = GraphQLObjectType(
         name='Root',
         fields={
@@ -541,14 +541,16 @@ directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
+directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ENUM_VALUE
+
 type __Directive {
   name: String!
   description: String
   locations: [__DirectiveLocation!]!
   args: [__InputValue!]!
-  onOperation: Boolean!
-  onFragment: Boolean!
-  onField: Boolean!
+  onOperation: Boolean! @deprecated(reason: "Use `locations`.")
+  onFragment: Boolean! @deprecated(reason: "Use `locations`.")
+  onField: Boolean! @deprecated(reason: "Use `locations`.")
 }
 
 enum __DirectiveLocation {
@@ -559,6 +561,17 @@ enum __DirectiveLocation {
   FRAGMENT_DEFINITION
   FRAGMENT_SPREAD
   INLINE_FRAGMENT
+  SCHEMA
+  SCALAR
+  OBJECT
+  FIELD_DEFINITION
+  ARGUMENT_DEFINITION
+  INTERFACE
+  UNION
+  ENUM
+  ENUM_VALUE
+  INPUT_OBJECT
+  INPUT_FIELD_DEFINITION
 }
 
 type __EnumValue {

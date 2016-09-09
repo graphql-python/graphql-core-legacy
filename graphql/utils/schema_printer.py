@@ -2,6 +2,7 @@ from ..language.printer import print_ast
 from ..type.definition import (GraphQLEnumType, GraphQLInputObjectType,
                                GraphQLInterfaceType, GraphQLObjectType,
                                GraphQLScalarType, GraphQLUnionType)
+from ..type.directives import DEFAULT_DEPRECATION_REASON
 from .ast_from_value import ast_from_value
 
 
@@ -14,7 +15,7 @@ def print_introspection_schema(schema):
 
 
 def is_spec_directive(directive_name):
-    return directive_name in ('skip', 'include')
+    return directive_name in ('skip', 'include', 'deprecated')
 
 
 def _is_defined_type(typename):
@@ -117,7 +118,7 @@ def _print_enum(type):
         'enum {} {{\n'
         '{}\n'
         '}}'
-    ).format(type.name, '\n'.join('  ' + v.name for v in type.values))
+    ).format(type.name, '\n'.join('  ' + v.name + _print_deprecated(v) for v in type.values))
 
 
 def _print_input_object(type):
@@ -129,7 +130,19 @@ def _print_input_object(type):
 
 
 def _print_fields(type):
-    return '\n'.join('  {}{}: {}'.format(f_name, _print_args(f), f.type) for f_name, f in type.fields.items())
+    return '\n'.join('  {}{}: {}{}'.format(f_name, _print_args(f), f.type, _print_deprecated(f))
+                     for f_name, f in type.fields.items())
+
+
+def _print_deprecated(field_or_enum_value):
+    reason = field_or_enum_value.deprecation_reason
+
+    if reason is None:
+        return ''
+    elif reason in ('', DEFAULT_DEPRECATION_REASON):
+        return ' @deprecated'
+    else:
+        return ' @deprecated(reason: {})'.format(print_ast(ast_from_value(reason)))
 
 
 def _print_args(field_or_directives):

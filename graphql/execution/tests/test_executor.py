@@ -285,21 +285,6 @@ def test_uses_the_named_operation_if_operation_name_is_provided():
     assert result.data == {'second': 'b'}
 
 
-def test_uses_the_named_operation_if_operation_name_is_provided():
-    doc = 'query Example { first: a } query OtherExample { second: a }'
-
-    class Data(object):
-        a = 'b'
-
-    ast = parse(doc)
-    Type = GraphQLObjectType('Type', {
-        'a': GraphQLField(GraphQLString)
-    })
-    result = execute(GraphQLSchema(Type), ast, Data(), operation_name='OtherExample')
-    assert not result.errors
-    assert result.data == {'second': 'b'}
-
-
 def test_raises_if_no_operation_is_provided():
     doc = 'fragment Example on Type { a }'
 
