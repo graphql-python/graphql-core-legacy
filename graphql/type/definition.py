@@ -527,8 +527,7 @@ class GraphQLInputObjectType(GraphQLType):
             '{} fields must be a mapping (dict / OrderedDict) with field names as keys or a '
             'function which returns such a mapping.'
         ).format(self)
-
-        if not isinstance(fields, OrderedDict):
+        if not isinstance(fields, (collections.OrderedDict, OrderedDict)):
             fields = OrderedDict(sorted(list(fields.items())))
 
         for field_name, field in fields.items():
