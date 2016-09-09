@@ -662,14 +662,13 @@ def parse_argument_defs(parser):
 def parse_input_value_def(parser):
     start = parser.token.start
 
-    bla = ast.InputValueDefinition(
+    return ast.InputValueDefinition(
         name=parse_name(parser),
         type=expect(parser, TokenKind.COLON) and parse_type(parser),
         default_value=parse_const_value(parser) if skip(parser, TokenKind.EQUALS) else None,
         directives=parse_directives(parser),
         loc=loc(parser, start),
     )
-    return bla
 
 
 def parse_interface_type_definition(parser):
