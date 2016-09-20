@@ -38,7 +38,7 @@ def execute(schema, document_ast, root_value=None, context_value=None,
 
         assert isinstance(middleware, MiddlewareManager), (
             'middlewares have to be an instance'
-            ' of MiddlewareManager. Received "{}".'.format(middlewares)
+            ' of MiddlewareManager. Received "{}".'.format(middleware)
         )
 
     if executor is None:
