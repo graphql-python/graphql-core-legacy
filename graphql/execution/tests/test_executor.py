@@ -574,7 +574,7 @@ def test_middleware():
         return p.then(lambda x: x[::-1])
 
     middlewares = MiddlewareManager(reversed_middleware)
-    result = execute(GraphQLSchema(Type), doc_ast, Data(), middlewares=middlewares)
+    result = execute(GraphQLSchema(Type), doc_ast, Data(), middleware=middlewares)
     assert result.data == {'ok': 'ko', 'not_ok': 'ko_ton'}
 
 
@@ -605,27 +605,5 @@ def test_middleware_class():
             return p.then(lambda x: x[::-1])
 
     middlewares = MiddlewareManager(MyMiddleware())
-    result = execute(GraphQLSchema(Type), doc_ast, Data(), middlewares=middlewares)
+    result = execute(GraphQLSchema(Type), doc_ast, Data(), middleware=middlewares)
     assert result.data == {'ok': 'ko', 'not_ok': 'ko_ton'}
-
-
-def test_middleware_wrong():
-    doc = '''{
-        ok
-    }'''
-
-    class Data(object):
-
-        def ok(self):
-            return 'ok'
-
-    doc_ast = parse(doc)
-
-    Type = GraphQLObjectType('Type', {
-        'ok': GraphQLField(GraphQLString),
-    })
-    middlewares = [None]
-    with raises(AssertionError) as excinfo:
-        execute(GraphQLSchema(Type), doc_ast, Data(), middlewares=middlewares)
-
-    assert 'middlewares have to be an instance of MiddlewareManager. Received "[None]".' == str(excinfo.value)

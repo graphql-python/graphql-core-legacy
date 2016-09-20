@@ -19,9 +19,9 @@ class ExecutionContext(object):
     and the fragments defined in the query document"""
 
     __slots__ = 'schema', 'fragments', 'root_value', 'operation', 'variable_values', 'errors', 'context_value', \
-                'argument_values_cache', 'executor', 'middleware_manager', '_subfields_cache'
+                'argument_values_cache', 'executor', 'middleware', '_subfields_cache'
 
-    def __init__(self, schema, document_ast, root_value, context_value, variable_values, operation_name, executor, middleware_manager):
+    def __init__(self, schema, document_ast, root_value, context_value, variable_values, operation_name, executor, middleware):
         """Constructs a ExecutionContext object from the arguments passed
         to execute, which we will pass throughout the other execution
         methods."""
@@ -64,13 +64,13 @@ class ExecutionContext(object):
         self.context_value = context_value
         self.argument_values_cache = {}
         self.executor = executor
-        self.middleware_manager = middleware_manager
+        self.middleware = middleware
         self._subfields_cache = {}
 
     def get_field_resolver(self, field_resolver):
-        if not self.middleware_manager:
+        if not self.middleware:
             return field_resolver
-        return self.middleware_manager.get_field_resolver(field_resolver)
+        return self.middleware.get_field_resolver(field_resolver)
 
     def get_argument_values(self, field_def, field_ast):
         k = field_def, field_ast
