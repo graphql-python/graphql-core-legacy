@@ -51,7 +51,8 @@ setup(
         'pytest>=2.7.3',
         'gevent==1.1rc1',
         'six>=1.10.0',
-        'pytest-mock'
+        'pytest-mock',
+        'promise>=0.4.2'
     ],
     extras_require={
         'gevent': [
