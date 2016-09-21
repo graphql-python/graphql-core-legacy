@@ -47,16 +47,16 @@ setup(
         'six>=1.10.0',
         'promise>=0.4.2'
     ],
-    tests_require=[
-        'pytest>=2.7.3',
-        'gevent==1.1rc1',
-        'six>=1.10.0',
-        'pytest-mock',
-        'promise>=0.4.2'
-    ],
     extras_require={
         'gevent': [
             'gevent==1.1rc1'
+        ],
+        'test': [
+            'pytest>=2.7.3',
+            'gevent==1.1rc1',
+            'six>=1.10.0',
+            'pytest-mock',
+            'promise>=0.4.2'
         ]
     }
 )
