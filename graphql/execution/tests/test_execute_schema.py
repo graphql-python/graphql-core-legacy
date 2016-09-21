@@ -1,4 +1,4 @@
-from graphql.execution import execute
+from graphql.execution import execute, ExecutionResult
 from graphql.language.parser import parse
 from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLField,
                           GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull,
@@ -185,3 +185,31 @@ def test_executes_using_a_schema():
                 }
             }
         }
+
+
+def test_execution_result():
+
+    # Success
+    assert ExecutionResult(data={'foo': 'bar'}).response == \
+        {'data': {'foo': 'bar'}}
+
+    # Error
+    assert ExecutionResult(errors=['foo', 'bar']).response == \
+        {'errors': [{'message': 'foo'}, {'message': 'bar'}]}
+
+    # Partial success
+    assert ExecutionResult(data={'foo': 'bar'}, errors=['foo', 'bar']).response == \
+        {'data': {'foo': 'bar'}, 'errors': [{'message': 'foo'}, {'message': 'bar'}]}
+
+    # No arguments
+    assert ExecutionResult().response == {}
+
+    # Invalid
+    assert ExecutionResult(invalid=True).response == {}
+
+    # __repr__ and __str__
+    result = ExecutionResult(data={'foo': 'bar'}, errors=['foo', 'bar'])
+    assert "'data': {'foo': 'bar'}" in repr(result)
+    assert "'errors': [{'message': 'foo'}, {'message': 'bar'}]" in repr(result)
+    assert '"data": {"foo": "bar"}' in str(result)
+    assert '"errors": [{"message": "foo"}, {"message": "bar"}]' in str(result)

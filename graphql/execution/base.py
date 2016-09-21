@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-from ..error import GraphQLError
+import json
+import six
+
+from ..error import GraphQLError, format_error
 from ..language import ast
 from ..type.definition import GraphQLInterfaceType, GraphQLUnionType
 from ..type.directives import GraphQLIncludeDirective, GraphQLSkipDirective
@@ -100,6 +103,29 @@ class ExecutionResult(object):
                 self.invalid == other.invalid
             )
         )
+
+    def __repr__(self):
+        return str(self.response)
+
+    def __str__(self):
+        return json.dumps(self.response)
+
+    @staticmethod
+    def _format_error(error):
+        if isinstance(error, GraphQLError):
+            return format_error(error)
+        return {'message': six.text_type(error)}
+
+    @property
+    def response(self):
+        """Returns the object as a GraphQL response.
+        https://facebook.github.io/graphql/#sec-Response"""
+        response = {}
+        if self.data and not self.invalid:
+            response['data'] = dict(self.data)
+        if self.errors:
+            response['errors'] = [self._format_error(e) for e in self.errors]
+        return response
 
 
 def get_operation_root_type(schema, operation):
