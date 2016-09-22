@@ -9,7 +9,7 @@ from ..type import (GraphQLEnumType, GraphQLInputObjectType, GraphQLList,
                     GraphQLNonNull, GraphQLScalarType, is_input_type)
 from ..utils.is_valid_value import is_valid_value
 from ..utils.type_from_ast import type_from_ast
-from ..utils.value_from_ast import value_from_ast
+from ..utils.value_from_ast import value_from_ast, Undefined
 
 __all__ = ['get_variable_values', 'get_argument_values']
 
@@ -27,6 +27,7 @@ def get_variable_values(schema, definition_asts, inputs):
         values[var_name] = value
 
     return values
+
 
 
 def get_argument_values(arg_defs, arg_asts, variables):
@@ -53,10 +54,10 @@ def get_argument_values(arg_defs, arg_asts, variables):
             variables
         )
 
-        if value is None:
+        if value == Undefined and arg_def.default_value is not None:
             value = arg_def.default_value
 
-        if value is not None:
+        if value != Undefined:
             result[name] = value
 
     return result
