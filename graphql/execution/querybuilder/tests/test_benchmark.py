@@ -24,7 +24,7 @@ def test_querybuilder_big_list_of_nested_ints(benchmark):
     big_int_list = [x for x in range(SIZE)]
 
     Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, args: obj)})
-    field_asts = [
+    selection_set = ast.SelectionSet(selections=[
         ast.Field(
             alias=None,
             name=ast.Name(value='id'),
@@ -32,8 +32,8 @@ def test_querybuilder_big_list_of_nested_ints(benchmark):
             directives=[],
             selection_set=None
         )
-    ]
-    fragment = Fragment(type=Node, field_asts=field_asts)
+    ])
+    fragment = Fragment(type=Node, selection_set=selection_set)
     type = GraphQLList(Node)
     resolver = type_resolver(type, lambda: big_int_list, fragment=fragment)
     resolved = benchmark(resolver)
@@ -51,7 +51,7 @@ def test_querybuilder_big_list_of_objecttypes_with_two_int_fields(benchmark):
         'id': GraphQLField(GraphQLInt, resolver=lambda obj, args: obj),
         'ida': GraphQLField(GraphQLInt, resolver=lambda obj, args: obj*2)
     })
-    field_asts = [
+    selection_set = ast.SelectionSet(selections=[
         ast.Field(
             alias=None,
             name=ast.Name(value='id'),
@@ -66,8 +66,8 @@ def test_querybuilder_big_list_of_objecttypes_with_two_int_fields(benchmark):
             directives=[],
             selection_set=None
         )
-    ]
-    fragment = Fragment(type=Node, field_asts=field_asts)
+    ])
+    fragment = Fragment(type=Node, selection_set=selection_set)
     type = GraphQLList(Node)
     resolver = type_resolver(type, lambda: big_int_list, fragment=fragment)
     resolved = benchmark(resolver)
@@ -83,19 +83,18 @@ def test_querybuilder_big_list_of_objecttypes_with_one_int_field(benchmark):
     big_int_list = [x for x in range(SIZE)]
     Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, **__: obj)})
     Query = GraphQLObjectType('Query', fields={'nodes': GraphQLField(GraphQLList(Node), resolver=lambda *_, **__: big_int_list)})
-    node_field_asts = [
+    node_selection_set = ast.SelectionSet(selections=[
         ast.Field(
             name=ast.Name(value='id'),
         )
-    ]
-    field_asts = [
+    ])
+    selection_set = ast.SelectionSet(selections=[
         ast.Field(
             name=ast.Name(value='nodes'),
-            selection_set=node_field_asts
+            selection_set=node_selection_set
         )
-    ]
-    node_fragment = Fragment(type=Node, field_asts=node_field_asts)
-    query_fragment = Fragment(type=Query, field_asts=field_asts, field_fragments={'nodes': node_fragment})
+    ])
+    query_fragment = Fragment(type=Query, selection_set=selection_set)
     resolver = type_resolver(Query, lambda: None, fragment=query_fragment)
     resolved = benchmark(resolver)
     assert resolved == {
