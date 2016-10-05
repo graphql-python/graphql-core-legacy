@@ -77,6 +77,4 @@ def execute_operation(exe_context, operation, root_value):
     execute_serially = operation.operation == 'mutation'
 
     fragment = Fragment(type=type, selection_set=operation.selection_set, context=exe_context, execute_serially=execute_serially)
-    resolver = type_resolver(type, lambda: root_value, fragment=fragment)
-    resolved = resolver()
-    return resolved
+    return fragment.resolve(root_value)

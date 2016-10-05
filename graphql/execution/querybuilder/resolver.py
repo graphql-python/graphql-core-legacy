@@ -60,11 +60,13 @@ def type_resolver(return_type, resolver, fragment=None):
 
     if isinstance(return_type, (GraphQLObjectType)):
         assert fragment and fragment.type == return_type
-        return partial(fragment.resolver, resolver)
+        return partial(on_complete_resolver, fragment.resolve, resolver)
+        # return partial(fragment.resolver, resolver)
 
     if isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
         assert fragment
-        return partial(fragment.resolver, resolver)
+        return partial(on_complete_resolver, fragment.resolve, resolver)
+        # return partial(fragment.resolver, resolver)
         # return partial(fragment.abstract_resolver, resolver, return_type)
 
     raise Exception("The resolver have to be created for a fragment")

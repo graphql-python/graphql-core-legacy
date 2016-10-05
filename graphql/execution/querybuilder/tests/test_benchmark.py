@@ -23,7 +23,7 @@ def test_querybuilder_big_list_of_ints(benchmark):
 def test_querybuilder_big_list_of_nested_ints(benchmark):
     big_int_list = [x for x in range(SIZE)]
 
-    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, args: obj)})
+    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, args, context, info: obj)})
     selection_set = ast.SelectionSet(selections=[
         ast.Field(
             alias=None,
@@ -48,8 +48,8 @@ def test_querybuilder_big_list_of_objecttypes_with_two_int_fields(benchmark):
     big_int_list = [x for x in range(SIZE)]
 
     Node = GraphQLObjectType('Node', fields={
-        'id': GraphQLField(GraphQLInt, resolver=lambda obj, args: obj),
-        'ida': GraphQLField(GraphQLInt, resolver=lambda obj, args: obj*2)
+        'id': GraphQLField(GraphQLInt, resolver=lambda obj, args, context, info: obj),
+        'ida': GraphQLField(GraphQLInt, resolver=lambda obj, args, context, info: obj*2)
     })
     selection_set = ast.SelectionSet(selections=[
         ast.Field(
@@ -81,7 +81,7 @@ def test_querybuilder_big_list_of_objecttypes_with_two_int_fields(benchmark):
 
 def test_querybuilder_big_list_of_objecttypes_with_one_int_field(benchmark):
     big_int_list = [x for x in range(SIZE)]
-    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, **__: obj)})
+    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, *_, **__: obj)})
     Query = GraphQLObjectType('Query', fields={'nodes': GraphQLField(GraphQLList(Node), resolver=lambda *_, **__: big_int_list)})
     node_selection_set = ast.SelectionSet(selections=[
         ast.Field(
