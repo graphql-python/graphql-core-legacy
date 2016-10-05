@@ -1,6 +1,24 @@
 from ...error import GraphQLError
 from ...language import ast
+from ...utils.quoted_or_list import quoted_or_list
+from ...utils.suggestion_list import suggestion_list
 from .base import ValidationRule
+
+
+def _unknown_arg_message(arg_name, field_name, type, suggested_args):
+    message = 'Unknown argument "{}" on field "{}" of type "{}".'.format(arg_name, field_name, type)
+    if suggested_args:
+        message += ' Did you mean {}?'.format(quoted_or_list(suggested_args))
+
+    return message
+
+
+def _unknown_directive_arg_message(arg_name, directive_name, suggested_args):
+    message = 'Unknown argument "{}" on directive "@{}".'.format(arg_name, directive_name)
+    if suggested_args:
+        message += ' Did you mean {}?'.format(quoted_or_list(suggested_args))
+
+    return message
 
 
 class KnownArgumentNames(ValidationRule):
@@ -13,13 +31,23 @@ class KnownArgumentNames(ValidationRule):
             if not field_def:
                 return
 
-            field_arg_def = next((arg for arg in field_def.args if arg.name == node.name.value), None)
+            field_arg_def = field_def.args.get(node.name.value)
+
+            print(field_def.args.items())
 
             if not field_arg_def:
                 parent_type = self.context.get_parent_type()
                 assert parent_type
                 self.context.report_error(GraphQLError(
-                    self.unknown_arg_message(node.name.value, field_def.name, parent_type.name),
+                    _unknown_arg_message(
+                        node.name.value,
+                        argument_of.name.value,
+                        parent_type.name,
+                        suggestion_list(
+                            node.name.value,
+                            (arg_name for arg_name in field_def.args.keys())
+                        )
+                    ),
                     [node]
                 ))
 
@@ -28,18 +56,17 @@ class KnownArgumentNames(ValidationRule):
             if not directive:
                 return
 
-            directive_arg_def = next((arg for arg in directive.args if arg.name == node.name.value), None)
+            directive_arg_def = directive.args.get(node.name.value)
 
             if not directive_arg_def:
                 self.context.report_error(GraphQLError(
-                    self.unknown_directive_arg_message(node.name.value, directive.name),
+                    _unknown_directive_arg_message(
+                        node.name.value,
+                        directive.name,
+                        suggestion_list(
+                            node.name.value,
+                            (arg_name for arg_name in directive.args.keys())
+                        )
+                    ),
                     [node]
                 ))
-
-    @staticmethod
-    def unknown_arg_message(arg_name, field_name, type):
-        return 'Unknown argument "{}" on field "{}" of type "{}".'.format(arg_name, field_name, type)
-
-    @staticmethod
-    def unknown_directive_arg_message(arg_name, directive_name):
-        return 'Unknown argument "{}" on directive "@{}".'.format(arg_name, directive_name)

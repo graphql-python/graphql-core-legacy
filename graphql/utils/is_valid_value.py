@@ -43,7 +43,7 @@ def is_valid_value(value, type):
         if not isinstance(value, collections.Mapping):
             return [u'Expected "{}", found not an object.'.format(type)]
 
-        fields = type.get_fields()
+        fields = type.fields
         errors = []
 
         for provided_field in sorted(value.keys()):

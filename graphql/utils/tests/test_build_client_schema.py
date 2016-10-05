@@ -320,7 +320,7 @@ def test_builds_a_schema_with_an_enum():
     clientFoodEnum = client_schema.get_type('Food')
     assert isinstance(clientFoodEnum, GraphQLEnumType)
 
-    assert clientFoodEnum.get_values() == [
+    assert clientFoodEnum.values == [
         GraphQLEnumValue(name='VEGETABLES', value='VEGETABLES', description='Foods that are vegetables.',
                          deprecation_reason=None),
         GraphQLEnumValue(name='FRUITS', value='FRUITS', description='Foods that are fruits.', deprecation_reason=None),
@@ -607,6 +607,26 @@ def test_throws_when_missing_kind():
 
     assert str(excinfo.value) == 'Invalid or incomplete schema, unknown kind: None. Ensure that a full ' \
                                  'introspection query is used in order to build a client schema.'
+
+
+def test_succeds_on_smaller_equals_than_7_deep_lists():
+    schema = GraphQLSchema(
+        query=GraphQLObjectType(
+            name='Query',
+            fields={
+                'foo': GraphQLField(
+                    GraphQLNonNull(GraphQLList(
+                        GraphQLNonNull(GraphQLList(GraphQLNonNull(
+                            GraphQLList(GraphQLNonNull(GraphQLString))
+                        ))
+                    )))
+                )
+            }
+        )
+    )
+
+    introspection = graphql(schema, introspection_query)
+    build_client_schema(introspection.data)
 
 
 def test_fails_on_very_deep_lists():

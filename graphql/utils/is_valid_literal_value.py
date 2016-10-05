@@ -38,7 +38,7 @@ def is_valid_literal_value(type, value_ast):
         if not isinstance(value_ast, ast.ObjectValue):
             return [u'Expected "{}", found not an object.'.format(type)]
 
-        fields = type.get_fields()
+        fields = type.fields
         field_asts = value_ast.fields
 
         errors = []

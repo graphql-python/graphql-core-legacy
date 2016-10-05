@@ -13,11 +13,11 @@ class ProvidedNonNullArguments(ValidationRule):
         arg_asts = node.arguments or []
         arg_ast_map = {arg.name.value: arg for arg in arg_asts}
 
-        for arg_def in field_def.args:
-            arg_ast = arg_ast_map.get(arg_def.name, None)
+        for arg_name, arg_def in field_def.args.items():
+            arg_ast = arg_ast_map.get(arg_name, None)
             if not arg_ast and isinstance(arg_def.type, GraphQLNonNull):
                 self.context.report_error(GraphQLError(
-                    self.missing_field_arg_message(node.name.value, arg_def.name, arg_def.type),
+                    self.missing_field_arg_message(node.name.value, arg_name, arg_def.type),
                     [node]
                 ))
 
@@ -29,11 +29,11 @@ class ProvidedNonNullArguments(ValidationRule):
         arg_asts = node.arguments or []
         arg_ast_map = {arg.name.value: arg for arg in arg_asts}
 
-        for arg_def in directive_def.args:
-            arg_ast = arg_ast_map.get(arg_def.name, None)
+        for arg_name, arg_def in directive_def.args.items():
+            arg_ast = arg_ast_map.get(arg_name, None)
             if not arg_ast and isinstance(arg_def.type, GraphQLNonNull):
                 self.context.report_error(GraphQLError(
-                    self.missing_directive_arg_message(node.name.value, arg_def.name, arg_def.type),
+                    self.missing_directive_arg_message(node.name.value, arg_name, arg_def.type),
                     [node]
                 ))
 

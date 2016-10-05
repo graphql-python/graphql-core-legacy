@@ -2,6 +2,7 @@ from ..language.printer import print_ast
 from ..type.definition import (GraphQLEnumType, GraphQLInputObjectType,
                                GraphQLInterfaceType, GraphQLObjectType,
                                GraphQLScalarType, GraphQLUnionType)
+from ..type.directives import DEFAULT_DEPRECATION_REASON
 from .ast_from_value import ast_from_value
 
 
@@ -14,7 +15,7 @@ def print_introspection_schema(schema):
 
 
 def is_spec_directive(directive_name):
-    return directive_name in ('skip', 'include')
+    return directive_name in ('skip', 'include', 'deprecated')
 
 
 def _is_defined_type(typename):
@@ -89,7 +90,7 @@ def _print_scalar(type):
 
 
 def _print_object(type):
-    interfaces = type.get_interfaces()
+    interfaces = type.interfaces
     implemented_interfaces = \
         ' implements {}'.format(', '.join(i.name for i in interfaces)) if interfaces else ''
 
@@ -109,7 +110,7 @@ def _print_interface(type):
 
 
 def _print_union(type):
-    return 'union {} = {}'.format(type.name, ' | '.join(str(t) for t in type.get_types()))
+    return 'union {} = {}'.format(type.name, ' | '.join(str(t) for t in type.types))
 
 
 def _print_enum(type):
@@ -117,7 +118,7 @@ def _print_enum(type):
         'enum {} {{\n'
         '{}\n'
         '}}'
-    ).format(type.name, '\n'.join('  ' + v.name for v in type.get_values()))
+    ).format(type.name, '\n'.join('  ' + v.name + _print_deprecated(v) for v in type.values))
 
 
 def _print_input_object(type):
@@ -125,27 +126,39 @@ def _print_input_object(type):
         'input {} {{\n'
         '{}\n'
         '}}'
-    ).format(type.name, '\n'.join('  ' + _print_input_value(field) for field in type.get_fields().values()))
+    ).format(type.name, '\n'.join('  ' + _print_input_value(name, field) for name, field in type.fields.items()))
 
 
 def _print_fields(type):
-    return '\n'.join('  {}{}: {}'.format(f.name, _print_args(f), f.type) for f in type.get_fields().values())
+    return '\n'.join('  {}{}: {}{}'.format(f_name, _print_args(f), f.type, _print_deprecated(f))
+                     for f_name, f in type.fields.items())
+
+
+def _print_deprecated(field_or_enum_value):
+    reason = field_or_enum_value.deprecation_reason
+
+    if reason is None:
+        return ''
+    elif reason in ('', DEFAULT_DEPRECATION_REASON):
+        return ' @deprecated'
+    else:
+        return ' @deprecated(reason: {})'.format(print_ast(ast_from_value(reason)))
 
 
 def _print_args(field_or_directives):
     if not field_or_directives.args:
         return ''
 
-    return '({})'.format(', '.join(_print_input_value(arg) for arg in field_or_directives.args))
+    return '({})'.format(', '.join(_print_input_value(arg_name, arg) for arg_name, arg in field_or_directives.args.items()))
 
 
-def _print_input_value(arg):
+def _print_input_value(name, arg):
     if arg.default_value is not None:
         default_value = ' = ' + print_ast(ast_from_value(arg.default_value, arg.type))
     else:
         default_value = ''
 
-    return '{}: {}{}'.format(arg.name, arg.type, default_value)
+    return '{}: {}{}'.format(name, arg.type, default_value)
 
 
 def _print_directive(directive):

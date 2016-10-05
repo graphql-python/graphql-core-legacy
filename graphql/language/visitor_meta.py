@@ -30,18 +30,18 @@ QUERY_DOCUMENT_KEYS = {
     ast.ListType: ('type',),
     ast.NonNullType: ('type',),
 
-    ast.SchemaDefinition: ('operation_types',),
+    ast.SchemaDefinition: ('directives', 'operation_types',),
     ast.OperationTypeDefinition: ('type',),
 
-    ast.ScalarTypeDefinition: ('name',),
-    ast.ObjectTypeDefinition: ('name', 'interfaces', 'fields'),
-    ast.FieldDefinition: ('name', 'arguments', 'type'),
-    ast.InputValueDefinition: ('name', 'type', 'default_value'),
-    ast.InterfaceTypeDefinition: ('name', 'fields'),
-    ast.UnionTypeDefinition: ('name', 'types'),
-    ast.EnumTypeDefinition: ('name', 'values'),
-    ast.EnumValueDefinition: ('name',),
-    ast.InputObjectTypeDefinition: ('name', 'fields'),
+    ast.ScalarTypeDefinition: ('name', 'directives',),
+    ast.ObjectTypeDefinition: ('name', 'interfaces', 'directives', 'fields'),
+    ast.FieldDefinition: ('name', 'arguments', 'directives', 'type'),
+    ast.InputValueDefinition: ('name', 'type', 'directives', 'default_value'),
+    ast.InterfaceTypeDefinition: ('name', 'directives', 'fields'),
+    ast.UnionTypeDefinition: ('name', 'directives', 'types'),
+    ast.EnumTypeDefinition: ('name', 'directives', 'values'),
+    ast.EnumValueDefinition: ('name', 'directives',),
+    ast.InputObjectTypeDefinition: ('name', 'directives', 'fields'),
 
     ast.TypeExtensionDefinition: ('definition',),
 

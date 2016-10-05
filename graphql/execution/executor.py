@@ -3,10 +3,11 @@ import functools
 import logging
 import sys
 
-from promise import Promise, is_thenable, promise_for_dict, promisify
+from promise import Promise, promise_for_dict, promisify
 
 from ..error import GraphQLError, GraphQLLocatedError
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
+from ..pyutils.ordereddict import OrderedDict
 from ..type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
                     GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
                     GraphQLSchema, GraphQLUnionType)
@@ -14,18 +15,31 @@ from .base import (ExecutionContext, ExecutionResult, ResolveInfo, Undefined,
                    collect_fields, default_resolve_fn, get_field_def,
                    get_operation_root_type)
 from .executors.sync import SyncExecutor
+from .middleware import MiddlewareManager
 
 logger = logging.getLogger(__name__)
 
 
+def is_promise(obj):
+    return type(obj) == Promise
+
+
 def execute(schema, document_ast, root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
-            return_promise=False):
+            return_promise=False, middleware=None):
     assert schema, 'Must provide schema'
     assert isinstance(schema, GraphQLSchema), (
         'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
         'not multiple versions of GraphQL installed in your node_modules directory.'
     )
+    if middleware:
+        if not isinstance(middleware, MiddlewareManager):
+            middleware = MiddlewareManager(*middleware)
+
+        assert isinstance(middleware, MiddlewareManager), (
+            'middlewares have to be an instance'
+            ' of MiddlewareManager. Received "{}".'.format(middleware)
+        )
 
     if executor is None:
         executor = SyncExecutor()
@@ -37,7 +51,8 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         context_value,
         variable_values,
         operation_name,
-        executor
+        executor,
+        middleware
     )
 
     def executor(resolve, reject):
@@ -85,7 +100,7 @@ def execute_fields_serially(exe_context, parent_type, source_value, fields):
         if result is Undefined:
             return results
 
-        if is_thenable(result):
+        if is_promise(result):
             def collect_result(resolved_result):
                 results[response_name] = resolved_result
                 return results
@@ -104,7 +119,7 @@ def execute_fields_serially(exe_context, parent_type, source_value, fields):
 def execute_fields(exe_context, parent_type, source_value, fields):
     contains_promise = False
 
-    final_results = collections.OrderedDict()
+    final_results = OrderedDict()
 
     for response_name, field_asts in fields.items():
         result = resolve_field(exe_context, parent_type, source_value, field_asts)
@@ -112,7 +127,7 @@ def execute_fields(exe_context, parent_type, source_value, fields):
             continue
 
         final_results[response_name] = result
-        if is_thenable(result):
+        if is_promise(result):
             contains_promise = True
 
     if not contains_promise:
@@ -131,6 +146,9 @@ def resolve_field(exe_context, parent_type, source, field_asts):
 
     return_type = field_def.type
     resolve_fn = field_def.resolver or default_resolve_fn
+
+    # We wrap the resolve_fn from the middleware
+    resolve_fn_middleware = exe_context.get_field_resolver(resolve_fn)
 
     # Build a dict of arguments from the field.arguments AST, using the variables scope to
     # fulfill any variable references.
@@ -156,7 +174,7 @@ def resolve_field(exe_context, parent_type, source, field_asts):
     )
 
     executor = exe_context.executor
-    result = resolve_or_error(resolve_fn, source, args, context, info, executor)
+    result = resolve_or_error(resolve_fn_middleware, source, args, context, info, executor)
 
     return complete_value_catching_error(
         exe_context,
@@ -188,7 +206,7 @@ def complete_value_catching_error(exe_context, return_type, field_asts, info, re
     # resolving a null value for this field if one is encountered.
     try:
         completed = complete_value(exe_context, return_type, field_asts, info, result)
-        if is_thenable(completed):
+        if is_promise(completed):
             def handle_error(error):
                 exe_context.errors.append(error)
                 return Promise.fulfilled(None)
@@ -222,7 +240,7 @@ def complete_value(exe_context, return_type, field_asts, info, result):
     """
     # If field type is NonNull, complete for inner type, and throw field error if result is null.
 
-    if is_thenable(result):
+    if is_promise(result):
         return promisify(result).then(
             lambda resolved: complete_value(
                 exe_context,
@@ -234,20 +252,12 @@ def complete_value(exe_context, return_type, field_asts, info, result):
             lambda error: Promise.rejected(GraphQLLocatedError(field_asts, original_error=error))
         )
 
+    # print return_type, type(result)
     if isinstance(result, Exception):
         raise GraphQLLocatedError(field_asts, original_error=result)
 
     if isinstance(return_type, GraphQLNonNull):
-        completed = complete_value(
-            exe_context, return_type.of_type, field_asts, info, result
-        )
-        if completed is None:
-            raise GraphQLError(
-                'Cannot return null for non-nullable field {}.{}.'.format(info.parent_type, info.field_name),
-                field_asts
-            )
-
-        return completed
+        return complete_nonnull_value(exe_context, return_type, field_asts, info, result)
 
     # If result is null-like, return null.
     if result is None:
@@ -283,7 +293,7 @@ def complete_list_value(exe_context, return_type, field_asts, info, result):
     contains_promise = False
     for item in result:
         completed_item = complete_value_catching_error(exe_context, item_type, field_asts, info, item)
-        if not contains_promise and is_thenable(completed_item):
+        if not contains_promise and is_promise(completed_item):
             contains_promise = True
 
         completed_results.append(completed_item)
@@ -295,15 +305,10 @@ def complete_leaf_value(return_type, result):
     """
     Complete a Scalar or Enum by serializing to a valid value, returning null if serialization is not possible.
     """
-    serialize = getattr(return_type, 'serialize', None)
-    assert serialize, 'Missing serialize method on type'
+    # serialize = getattr(return_type, 'serialize', None)
+    # assert serialize, 'Missing serialize method on type'
 
-    serialized_result = serialize(result)
-
-    if serialized_result is None:
-        return None
-
-    return serialized_result
+    return return_type.serialize(result)
 
 
 def complete_abstract_value(exe_context, return_type, field_asts, info, result):
@@ -320,16 +325,18 @@ def complete_abstract_value(exe_context, return_type, field_asts, info, result):
         else:
             runtime_type = get_default_resolve_type_fn(result, exe_context.context_value, info, return_type)
 
-    assert isinstance(runtime_type, GraphQLObjectType), (
-        'Abstract type {} must resolve to an Object type at runtime ' +
-        'for field {}.{} with value "{}", received "{}".'
-    ).format(
-        return_type,
-        info.parent_type,
-        info.field_name,
-        result,
-        runtime_type,
-    )
+    if not isinstance(runtime_type, GraphQLObjectType):
+        raise GraphQLError(
+            ('Abstract type {} must resolve to an Object type at runtime ' +
+             'for field {}.{} with value "{}", received "{}".').format(
+                 return_type,
+                 info.parent_type,
+                 info.field_name,
+                 result,
+                 runtime_type,
+                 ),
+            field_asts
+        )
 
     if not exe_context.schema.is_possible_type(return_type, runtime_type):
         raise GraphQLError(
@@ -358,14 +365,21 @@ def complete_object_value(exe_context, return_type, field_asts, info, result):
         )
 
     # Collect sub-fields to execute to complete this value.
-    subfield_asts = DefaultOrderedDict(list)
-    visited_fragment_names = set()
-    for field_ast in field_asts:
-        selection_set = field_ast.selection_set
-        if selection_set:
-            subfield_asts = collect_fields(
-                exe_context, return_type, selection_set,
-                subfield_asts, visited_fragment_names
-            )
-
+    subfield_asts = exe_context.get_sub_fields(return_type, field_asts)
     return execute_fields(exe_context, return_type, result, subfield_asts)
+
+
+def complete_nonnull_value(exe_context, return_type, field_asts, info, result):
+    """
+    Complete a NonNull value by completing the inner type
+    """
+    completed = complete_value(
+        exe_context, return_type.of_type, field_asts, info, result
+    )
+    if completed is None:
+        raise GraphQLError(
+            'Cannot return null for non-nullable field {}.{}.'.format(info.parent_type, info.field_name),
+            field_asts
+        )
+
+    return completed
