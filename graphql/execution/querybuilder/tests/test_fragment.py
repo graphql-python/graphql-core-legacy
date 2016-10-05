@@ -80,7 +80,7 @@ def test_fragment_resolver_nested():
     ])
     # node_fragment = Fragment(type=Node, field_asts=node_field_asts)
     query_fragment = Fragment(type=Query, selection_set=selection_set)
-    resolver = type_resolver(Query, lambda: None, fragment=query_fragment)
+    resolver = type_resolver(Query, lambda: object(), fragment=query_fragment)
     resolved = resolver()
     assert resolved == {
         'node': {
@@ -130,7 +130,7 @@ def test_fragment_resolver_abstract():
     )
 
     query_fragment = Fragment(type=Query, selection_set=selection_set, context=context)
-    resolver = type_resolver(Query, lambda: None, fragment=query_fragment)
+    resolver = type_resolver(Query, lambda: object(), fragment=query_fragment)
     resolved = resolver()
     assert resolved == {
         'node': {
@@ -155,7 +155,7 @@ def test_fragment_resolver_nested_list():
     ])
     # node_fragment = Fragment(type=Node, field_asts=node_field_asts)
     query_fragment = Fragment(type=Query, selection_set=selection_set)
-    resolver = type_resolver(Query, lambda: None, fragment=query_fragment)
+    resolver = type_resolver(Query, lambda: object(), fragment=query_fragment)
     resolved = resolver()
     assert resolved == {
         'nodes': [{

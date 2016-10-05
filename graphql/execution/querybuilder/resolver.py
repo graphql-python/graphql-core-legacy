@@ -27,6 +27,9 @@ def on_complete_resolver(__func, exe_context, info, __resolver, *args, **kwargs)
 
 
 def complete_list_value(inner_resolver, exe_context, info, result):
+    if result is None:
+        return None
+
     assert isinstance(result, collections.Iterable), \
         ('User Error: expected iterable, but did not find one ' +
          'for field {}.{}.').format(info.parent_type, info.field_name)
@@ -43,14 +46,20 @@ def complete_list_value(inner_resolver, exe_context, info, result):
     return completed_results
 
 
-def complete_nonnull_value(result):
+def complete_nonnull_value(exe_context, info, result):
     if result is None:
         field_asts = 'TODO'
         raise GraphQLError(
             'Cannot return null for non-nullable field {}.{}.'.format(info.parent_type, info.field_name),
-            field_asts
+            info.field_asts
         )
     return result
+
+
+def complete_object_value(fragment_resolve, result):
+    if result is None:
+        return None
+    return fragment_resolve(result)
 
 
 def field_resolver(field, fragment=None, exe_context=None, info=None):
@@ -68,12 +77,13 @@ def type_resolver(return_type, resolver, fragment=None, exe_context=None, info=N
         return type_resolver_list(return_type, resolver, fragment, exe_context, info)
 
     if isinstance(return_type, (GraphQLObjectType)):
-        assert fragment and fragment.type == return_type
-        return partial(on_complete_resolver, fragment.resolve, exe_context, info, resolver)
+        assert fragment and fragment.type == return_type, 'Fragment and return_type dont match'
+        complete_object_value_resolve = partial(complete_object_value, fragment.resolve)
+        return partial(on_complete_resolver, complete_object_value_resolve, exe_context, info, resolver)
         # return partial(fragment.resolver, resolver)
 
     if isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
-        assert fragment
+        assert fragment, 'You need to pass a fragment to resolve a Interface or Union'
         return partial(on_complete_resolver, fragment.resolve, exe_context, info, resolver)
         # return partial(fragment.resolver, resolver)
         # return partial(fragment.abstract_resolver, resolver, return_type)
@@ -82,8 +92,9 @@ def type_resolver(return_type, resolver, fragment=None, exe_context=None, info=N
 
 
 def type_resolver_non_null(return_type, resolver, fragment, exe_context, info):
-    resolver = type_resolver(return_type.of_type, resolver)
-    return partial(on_complete_resolver, complete_nonnull_value, exe_context, info, resolver)
+    resolver = type_resolver(return_type.of_type, resolver, fragment, exe_context, info)
+    nonnull_complete = partial(complete_nonnull_value, exe_context, info)
+    return partial(on_complete_resolver, nonnull_complete, exe_context, info, resolver)
 
 
 def type_resolver_leaf(return_type, resolver, exe_context, info):
@@ -91,6 +102,6 @@ def type_resolver_leaf(return_type, resolver, exe_context, info):
 
 
 def type_resolver_list(return_type, resolver, fragment, exe_context, info):
-    inner_resolver = type_resolver(return_type.of_type, lambda item: item, fragment)
+    inner_resolver = type_resolver(return_type.of_type, lambda item: item, fragment, exe_context, info)
     list_complete = partial(complete_list_value, inner_resolver, exe_context, info)
     return partial(on_complete_resolver, list_complete, exe_context, info, resolver)
