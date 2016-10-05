@@ -3,7 +3,7 @@ from functools import partial
 
 from ....language import ast
 from ....type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
-                      GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
+                      GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, GraphQLBoolean,
                       GraphQLSchema, GraphQLUnionType, GraphQLString, GraphQLInt, GraphQLField)
 from ..resolver import type_resolver
 from ..fragment import Fragment
@@ -44,4 +44,73 @@ def test_fragment_resolver_abstract(benchmark):
             'id': x,
             'name': 'name:'+str(x)
         } for x in all_slots]
+    }
+
+
+def test_fragment_resolver_context():
+    Query = GraphQLObjectType('Query', fields={
+        'context': GraphQLField(GraphQLString, resolver=lambda root, args, context, info: context),
+        'same_schema': GraphQLField(GraphQLBoolean, resolver=lambda root, args, context, info: info.schema == schema)
+    })
+
+    document_ast = parse('''query {
+        context
+        same_schema
+    }''')
+    # node_fragment = Fragment(type=Node, field_asts=node_field_asts)
+    schema = GraphQLSchema(query=Query)
+    # partial_execute = partial(execute, schema, document_ast, context_value="1")
+    # resolved = benchmark(partial_execute)
+    resolved = execute(schema, document_ast, context_value="1")
+    assert not resolved.errors
+    assert resolved.data == {
+        'context': '1',
+        'same_schema': True,
+    }
+
+
+def test_fragment_resolver_fails():
+    def raise_resolver(*args, **kwargs):
+        raise Exception("My exception")
+
+    def succeeds_resolver(*args, **kwargs):
+        return True
+
+    Query = GraphQLObjectType('Query', fields={
+        'fails': GraphQLField(GraphQLString, resolver=raise_resolver),
+        'succeeds': GraphQLField(GraphQLBoolean, resolver=succeeds_resolver)
+    })
+
+    document_ast = parse('''query {
+        fails
+        succeeds
+    }''')
+    # node_fragment = Fragment(type=Node, field_asts=node_field_asts)
+    schema = GraphQLSchema(query=Query)
+    # partial_execute = partial(execute, schema, document_ast, context_value="1")
+    # resolved = benchmark(partial_execute)
+    resolved = execute(schema, document_ast, context_value="1")
+    assert len(resolved.errors) == 1
+    assert resolved.data == {
+        'fails': None,
+        'succeeds': True,
+    }
+
+
+def test_fragment_resolver_resolves_all_list():
+    Query = GraphQLObjectType('Query', fields={
+        'ints': GraphQLField(GraphQLList(GraphQLNonNull(GraphQLInt)), resolver=lambda *args: [1, "2", "NaN"]),
+    })
+
+    document_ast = parse('''query {
+        ints
+    }''')
+    # node_fragment = Fragment(type=Node, field_asts=node_field_asts)
+    schema = GraphQLSchema(query=Query)
+    # partial_execute = partial(execute, schema, document_ast, context_value="1")
+    # resolved = benchmark(partial_execute)
+    resolved = execute(schema, document_ast, context_value="1")
+    assert len(resolved.errors) == 1
+    assert resolved.data == {
+        'ints': [1, 2, None]
     }
