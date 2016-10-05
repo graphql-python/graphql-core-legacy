@@ -95,7 +95,7 @@ def test_querybuilder_big_list_of_objecttypes_with_one_int_field(benchmark):
         )
     ])
     query_fragment = Fragment(type=Query, selection_set=selection_set)
-    resolver = type_resolver(Query, lambda: None, fragment=query_fragment)
+    resolver = type_resolver(Query, lambda: object(), fragment=query_fragment)
     resolved = benchmark(resolver)
     assert resolved == {
         'nodes': [{

@@ -139,9 +139,31 @@ def test_fragment_resolver_resolves_all_list():
     assert str(resolved.errors[0]) == 'Cannot return null for non-nullable field Query.persons.'
     # assert str(resolved.errors[0]) == 'could not convert string to float: non'
     assert resolved.data == {
-        'persons': [{
-            'id': 1
-        }, {
-            'id': 1
-        }, None]
+        'persons': None
+    }
+
+
+def test_fragment_resolver_resolves_all_list_null():
+    Person = GraphQLObjectType('Person', fields={
+        'id': GraphQLField(GraphQLInt, resolver=lambda obj, *_, **__: 1),
+    })
+    Query = GraphQLObjectType('Query', fields={
+        'persons': GraphQLField(GraphQLNonNull(GraphQLList(GraphQLNonNull(Person))), resolver=lambda *args: [1, 2, None]),
+    })
+
+    document_ast = parse('''query {
+        persons {
+            id
+        }
+    }''')
+    # node_fragment = Fragment(type=Node, field_asts=node_field_asts)
+    schema = GraphQLSchema(query=Query, types=[Person])
+    # partial_execute = partial(execute, schema, document_ast, context_value="1")
+    # resolved = benchmark(partial_execute)
+    resolved = execute(schema, document_ast)
+    assert len(resolved.errors) == 1
+    assert str(resolved.errors[0]) == 'Cannot return null for non-nullable field Query.persons.'
+    # assert str(resolved.errors[0]) == 'could not convert string to float: non'
+    assert resolved.data == {
+        'persons': None
     }

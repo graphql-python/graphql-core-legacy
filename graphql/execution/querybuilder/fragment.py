@@ -1,7 +1,12 @@
+from promise import promise_for_dict
+
 from functools import partial
 from ...pyutils.cached_property import cached_property
 from ..values import get_argument_values, get_variable_values
-from ..base import collect_fields, ResolveInfo
+from ..base import collect_fields, ResolveInfo, Undefined
+from ..executor import is_promise
+
+from ...pyutils.ordereddict import OrderedDict
 from ...pyutils.default_ordered_dict import DefaultOrderedDict
 
 
@@ -81,10 +86,28 @@ class Fragment(object):
         )
 
     def resolve(self, root):
-        return {
-            field_name: field_resolver(root, field_args, context, info)
-            for field_name, field_resolver, field_args, context, info in self.partial_resolvers
-        }
+        contains_promise = False
+
+        final_results = OrderedDict()
+
+        for response_name, field_resolver, field_args, context, info in self.partial_resolvers:
+            result = field_resolver(root, field_args, context, info)
+            if result is Undefined:
+                continue
+
+            if is_promise(result):
+                contains_promise = True
+
+            final_results[response_name] = result
+
+        if not contains_promise:
+            return final_results
+
+        return promise_for_dict(final_results)
+        # return {
+        #     field_name: field_resolver(root, field_args, context, info)
+        #     for field_name, field_resolver, field_args, context, info in self.partial_resolvers
+        # }
 
     def __eq__(self, other):
         return isinstance(other, Fragment) and (
