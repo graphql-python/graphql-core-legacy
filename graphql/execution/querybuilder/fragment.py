@@ -55,7 +55,7 @@ def get_resolvers(context, type, selection_set):
                 info=info,
                 context=context
             )
-        resolver = field_resolver(field_def, fragment=field_fragment)
+        resolver = field_resolver(field_def, exe_context=context, info=info, fragment=field_fragment)
         args = get_argument_values(
             field_def.args,
             field_ast.arguments,

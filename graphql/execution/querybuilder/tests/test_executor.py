@@ -111,6 +111,7 @@ def test_fragment_resolver_resolves_all_list():
     # resolved = benchmark(partial_execute)
     resolved = execute(schema, document_ast, context_value="1")
     assert len(resolved.errors) == 1
+    # assert str(resolved.errors[0]) == 'Cant convert NaN to int'
     assert resolved.data == {
         'ints': [1, 2, None]
     }
