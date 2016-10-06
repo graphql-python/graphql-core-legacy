@@ -1,10 +1,13 @@
 import pytest
+import mock
+
+from ....error import GraphQLError, GraphQLLocatedError
 
 from ....language import ast
 from ....type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
                       GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
                       GraphQLSchema, GraphQLUnionType, GraphQLString, GraphQLInt, GraphQLField)
-from ..resolver import type_resolver
+from ..resolver import type_resolver, field_resolver
 
 from promise import Promise
 
@@ -44,3 +47,36 @@ def test_type_resolver_promise(type, value, expected):
     assert resolved_promise.is_fulfilled
     resolved = resolved_promise.get()
     assert resolved == expected
+
+
+def raises():
+    raise Exception("raises")
+
+
+def test_resolver_exception():
+    info = mock.MagicMock()
+    with pytest.raises(GraphQLLocatedError):
+        resolver = type_resolver(GraphQLString, raises, info=info)
+        resolver()
+
+
+def test_field_resolver_mask_exception():
+    info = mock.MagicMock()
+    exe_context = mock.MagicMock()
+    exe_context.errors = []
+    field = GraphQLField(GraphQLString, resolver=raises)
+    resolver = field_resolver(field, info=info, exe_context=exe_context)
+    resolved = resolver()
+    assert resolved == None
+    assert len(exe_context.errors) == 1
+    assert str(exe_context.errors[0]) == 'raises'
+
+
+# def test_nonnull_field_resolver_mask_exception():
+#     info = mock.MagicMock()
+#     exe_context = mock.MagicMock()
+#     exe_context.errors = []
+#     field = GraphQLField(GraphQLNonNull(GraphQLString), resolver=raises)
+#     resolver = field_resolver(field, info=info, exe_context=exe_context)
+#     with pytest.raises(GraphQLLocatedError):
+#         resolver()

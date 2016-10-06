@@ -189,57 +189,57 @@ def test_nulls_a_sync_returned_object_that_contains_a_non_nullable_field_that_th
 #     })
 
 
-# def test_nulls_a_complex_tree_of_nullable_fields_that_throw():
-#     doc = '''
-#       query Q {
-#         nest {
-#           sync
-#           promise
-#           nest {
-#             sync
-#             promise
-#           }
-#           promiseNest {
-#             sync
-#             promise
-#           }
-#         }
-#         promiseNest {
-#           sync
-#           promise
-#           nest {
-#             sync
-#             promise
-#           }
-#           promiseNest {
-#             sync
-#             promise
-#           }
-#         }
-#       }
-#     '''
-#     check(doc, ThrowingData(), {
-#         'data': {'nest': {'nest': {'promise': None, 'sync': None},
-#                           'promise': None,
-#                           'promiseNest': {'promise': None, 'sync': None},
-#                           'sync': None},
-#                  'promiseNest': {'nest': {'promise': None, 'sync': None},
-#                                  'promise': None,
-#                                  'promiseNest': {'promise': None, 'sync': None},
-#                                  'sync': None}},
-#         'errors': [{'locations': [{'column': 11, 'line': 4}], 'message': str(sync_error)},
-#                    {'locations': [{'column': 11, 'line': 5}], 'message': str(promise_error)},
-#                    {'locations': [{'column': 13, 'line': 7}], 'message': str(sync_error)},
-#                    {'locations': [{'column': 13, 'line': 8}], 'message': str(promise_error)},
-#                    {'locations': [{'column': 13, 'line': 11}], 'message': str(sync_error)},
-#                    {'locations': [{'column': 13, 'line': 12}], 'message': str(promise_error)},
-#                    {'locations': [{'column': 11, 'line': 16}], 'message': str(sync_error)},
-#                    {'locations': [{'column': 11, 'line': 17}], 'message': str(promise_error)},
-#                    {'locations': [{'column': 13, 'line': 19}], 'message': str(sync_error)},
-#                    {'locations': [{'column': 13, 'line': 20}], 'message': str(promise_error)},
-#                    {'locations': [{'column': 13, 'line': 23}], 'message': str(sync_error)},
-#                    {'locations': [{'column': 13, 'line': 24}], 'message': str(promise_error)}]
-#     })
+def test_nulls_a_complex_tree_of_nullable_fields_that_throw():
+    doc = '''
+      query Q {
+        nest {
+          sync
+          promise
+          nest {
+            sync
+            promise
+          }
+          promiseNest {
+            sync
+            promise
+          }
+        }
+        promiseNest {
+          sync
+          promise
+          nest {
+            sync
+            promise
+          }
+          promiseNest {
+            sync
+            promise
+          }
+        }
+      }
+    '''
+    check(doc, ThrowingData(), {
+        'data': {'nest': {'nest': {'promise': None, 'sync': None},
+                          'promise': None,
+                          'promiseNest': {'promise': None, 'sync': None},
+                          'sync': None},
+                 'promiseNest': {'nest': {'promise': None, 'sync': None},
+                                 'promise': None,
+                                 'promiseNest': {'promise': None, 'sync': None},
+                                 'sync': None}},
+        'errors': [{'locations': [{'column': 11, 'line': 4}], 'message': str(sync_error)},
+                   {'locations': [{'column': 11, 'line': 5}], 'message': str(promise_error)},
+                   {'locations': [{'column': 13, 'line': 7}], 'message': str(sync_error)},
+                   {'locations': [{'column': 13, 'line': 8}], 'message': str(promise_error)},
+                   {'locations': [{'column': 13, 'line': 11}], 'message': str(sync_error)},
+                   {'locations': [{'column': 13, 'line': 12}], 'message': str(promise_error)},
+                   {'locations': [{'column': 11, 'line': 16}], 'message': str(sync_error)},
+                   {'locations': [{'column': 11, 'line': 17}], 'message': str(promise_error)},
+                   {'locations': [{'column': 13, 'line': 19}], 'message': str(sync_error)},
+                   {'locations': [{'column': 13, 'line': 20}], 'message': str(promise_error)},
+                   {'locations': [{'column': 13, 'line': 23}], 'message': str(sync_error)},
+                   {'locations': [{'column': 13, 'line': 24}], 'message': str(promise_error)}]
+    })
 
 
 # def test_nulls_the_first_nullable_object_after_a_field_throws_in_a_long_chain_of_fields_that_are_non_null():
