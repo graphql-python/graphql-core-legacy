@@ -15,9 +15,7 @@ class PairSet(object):
 
     def has(self, a, b, are_mutually_exclusive):
         first = self._data.get(a)
-        print(first)
         result = first and first.get(b)
-        print(result)
         if result is None:
             return False
 
