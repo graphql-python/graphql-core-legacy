@@ -1,12 +1,4 @@
 import collections
-try:
-    from itertools import imap
-    normal_map = map
-except:
-    def normal_map(func, iter):
-        return list(map(func, iter))
-    imap = map
-
 from functools import partial
 
 from promise import Promise
@@ -16,6 +8,17 @@ from ...type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
                      GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
                      GraphQLUnionType)
 from ..base import default_resolve_fn
+
+try:
+    from itertools import imap
+    normal_map = map
+except:
+    def normal_map(func, iter):
+        return list(map(func, iter))
+    imap = map
+
+
+
 
 
 def is_promise(value):
