@@ -30,7 +30,7 @@ def on_complete_resolver(on_error, __func, exe_context, info, __resolver, *args,
     return __func(result)
 
 
-def complete_list_value(inner_resolver, exe_context, info, result):
+def complete_list_value(inner_resolver, exe_context, info, on_error, result):
     if result is None:
         return None
 
@@ -40,21 +40,21 @@ def complete_list_value(inner_resolver, exe_context, info, result):
 
     completed_results = []
     contains_promise = False
-    for item in result:
-        completed_item = inner_resolver(item)
-        if not contains_promise and is_promise(completed_item):
-            contains_promise = True
+    try:
+        for item in result:
+            completed_item = inner_resolver(item)
+            if not contains_promise and is_promise(completed_item):
+                contains_promise = True
 
-        completed_results.append(completed_item)
+            completed_results.append(completed_item)
 
-    return Promise.all(completed_results) if contains_promise else completed_results
-
+        return Promise.all(completed_results).catch(on_error) if contains_promise else completed_results
+    except Exception, e:
+        on_error(e)
 
 
 def complete_nonnull_value(exe_context, info, result):
-    print 'complete_nonnull_value', result, result is None
     if result is None:
-        print 'b'
         raise GraphQLError(
             'Cannot return null for non-nullable field {}.{}.'.format(info.parent_type, info.field_name),
             info.field_asts
@@ -151,6 +151,6 @@ def type_resolver_leaf(return_type, resolver, exe_context, info, catch_error):
 def type_resolver_list(return_type, resolver, fragment, exe_context, info, catch_error):
     item_type = return_type.of_type
     inner_resolver = type_resolver(item_type, lambda item: item, fragment, exe_context, info, catch_error=True)
-    list_complete = partial(complete_list_value, inner_resolver, exe_context, info)
     on_resolve_error = partial(on_error, exe_context, info, catch_error)
+    list_complete = partial(complete_list_value, inner_resolver, exe_context, info, on_resolve_error)
     return partial(on_complete_resolver, on_resolve_error, list_complete, exe_context, info, resolver)

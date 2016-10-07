@@ -113,99 +113,99 @@ class Test_NotNullListOfT_Array_Promise_T:  # [T]! Promise<Array<T>>>
     })
 
 
-# class TestListOfNotNullT_Array_T:  # [T!] Array<T>
-#     type = GraphQLList(GraphQLNonNull(GraphQLInt))
+class TestListOfNotNullT_Array_T:  # [T!] Array<T>
+    type = GraphQLList(GraphQLNonNull(GraphQLInt))
 
-#     test_contains_values = check([1, 2], {'data': {'nest': {'test': [1, 2]}}})
-#     test_contains_null = check([1, None, 2], {
-#         'data': {'nest': {'test': None}},
-#         'errors': [{'locations': [{'column': 10, 'line': 1}],
-#                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
-#     })
-#     test_returns_null = check(None, {'data': {'nest': {'test': None}}})
-
-
-# class TestListOfNotNullT_Promise_Array_T:  # [T!] Promise<Array<T>>
-#     type = GraphQLList(GraphQLNonNull(GraphQLInt))
-
-#     test_contains_value = check(resolved([1, 2]), {'data': {'nest': {'test': [1, 2]}}})
-#     test_contains_null = check(resolved([1, None, 2]), {
-#         'data': {'nest': {'test': None}},
-#         'errors': [{'locations': [{'column': 10, 'line': 1}],
-#                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
-#     })
-
-#     test_returns_null = check(resolved(None), {'data': {'nest': {'test': None}}})
-
-#     test_rejected = check(lambda: rejected(Exception('bad')), {
-#         'data': {'nest': {'test': None}},
-#         'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
-#     })
+    test_contains_values = check([1, 2], {'data': {'nest': {'test': [1, 2]}}})
+    test_contains_null = check([1, None, 2], {
+        'data': {'nest': {'test': None}},
+        'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'message': 'Cannot return null for non-nullable field DataType.test.'}]
+    })
+    test_returns_null = check(None, {'data': {'nest': {'test': None}}})
 
 
-# class TestListOfNotNullT_Array_Promise_T:  # [T!] Array<Promise<T>>
-#     type = GraphQLList(GraphQLNonNull(GraphQLInt))
+class TestListOfNotNullT_Promise_Array_T:  # [T!] Promise<Array<T>>
+    type = GraphQLList(GraphQLNonNull(GraphQLInt))
 
-#     test_contains_values = check([resolved(1), resolved(2)], {'data': {'nest': {'test': [1, 2]}}})
-#     test_contains_null = check([resolved(1), resolved(None), resolved(2)], {
-#         'data': {'nest': {'test': None}},
-#         'errors': [{'locations': [{'column': 10, 'line': 1}],
-#                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
-#     })
-#     test_contains_reject = check(lambda: [resolved(1), rejected(Exception('bad')), resolved(2)], {
-#         'data': {'nest': {'test': None}},
-#         'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
-#     })
+    test_contains_value = check(resolved([1, 2]), {'data': {'nest': {'test': [1, 2]}}})
+    test_contains_null = check(resolved([1, None, 2]), {
+        'data': {'nest': {'test': None}},
+        'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'message': 'Cannot return null for non-nullable field DataType.test.'}]
+    })
 
+    test_returns_null = check(resolved(None), {'data': {'nest': {'test': None}}})
 
-# class TestNotNullListOfNotNullT_Array_T:  # [T!]! Array<T>
-#     type = GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLInt)))
-
-#     test_contains_values = check([1, 2], {'data': {'nest': {'test': [1, 2]}}})
-#     test_contains_null = check([1, None, 2], {
-#         'data': {'nest': None},
-#         'errors': [{'locations': [{'column': 10, 'line': 1}],
-#                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
-#     })
-#     test_returns_null = check(None, {
-#         'data': {'nest': None},
-#         'errors': [{'locations': [{'column': 10, 'line': 1}],
-#                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
-#     })
+    test_rejected = check(lambda: rejected(Exception('bad')), {
+        'data': {'nest': {'test': None}},
+        'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
+    })
 
 
-# class TestNotNullListOfNotNullT_Promise_Array_T:  # [T!]! Promise<Array<T>>
-#     type = GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLInt)))
+class TestListOfNotNullT_Array_Promise_T:  # [T!] Array<Promise<T>>
+    type = GraphQLList(GraphQLNonNull(GraphQLInt))
 
-#     test_contains_value = check(resolved([1, 2]), {'data': {'nest': {'test': [1, 2]}}})
-#     test_contains_null = check(resolved([1, None, 2]), {
-#         'data': {'nest': None},
-#         'errors': [{'locations': [{'column': 10, 'line': 1}],
-#                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
-#     })
-
-#     test_returns_null = check(resolved(None), {
-#         'data': {'nest': None},
-#         'errors': [{'locations': [{'column': 10, 'line': 1}],
-#                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
-#     })
-
-#     test_rejected = check(lambda: rejected(Exception('bad')), {
-#         'data': {'nest': None},
-#         'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
-#     })
+    test_contains_values = check([resolved(1), resolved(2)], {'data': {'nest': {'test': [1, 2]}}})
+    test_contains_null = check([resolved(1), resolved(None), resolved(2)], {
+        'data': {'nest': {'test': None}},
+        'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'message': 'Cannot return null for non-nullable field DataType.test.'}]
+    })
+    test_contains_reject = check(lambda: [resolved(1), rejected(Exception('bad')), resolved(2)], {
+        'data': {'nest': {'test': None}},
+        'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
+    })
 
 
-# class TestNotNullListOfNotNullT_Array_Promise_T:  # [T!]! Array<Promise<T>>
-#     type = GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLInt)))
+class TestNotNullListOfNotNullT_Array_T:  # [T!]! Array<T>
+    type = GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLInt)))
 
-#     test_contains_values = check([resolved(1), resolved(2)], {'data': {'nest': {'test': [1, 2]}}})
-#     test_contains_null = check([resolved(1), resolved(None), resolved(2)], {
-#         'data': {'nest': None},
-#         'errors': [{'locations': [{'column': 10, 'line': 1}],
-#                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
-#     })
-#     test_contains_reject = check(lambda: [resolved(1), rejected(Exception('bad')), resolved(2)], {
-#         'data': {'nest': None},
-#         'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
-#     })
+    test_contains_values = check([1, 2], {'data': {'nest': {'test': [1, 2]}}})
+    test_contains_null = check([1, None, 2], {
+        'data': {'nest': None},
+        'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'message': 'Cannot return null for non-nullable field DataType.test.'}]
+    })
+    test_returns_null = check(None, {
+        'data': {'nest': None},
+        'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'message': 'Cannot return null for non-nullable field DataType.test.'}]
+    })
+
+
+class TestNotNullListOfNotNullT_Promise_Array_T:  # [T!]! Promise<Array<T>>
+    type = GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLInt)))
+
+    test_contains_value = check(resolved([1, 2]), {'data': {'nest': {'test': [1, 2]}}})
+    test_contains_null = check(resolved([1, None, 2]), {
+        'data': {'nest': None},
+        'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'message': 'Cannot return null for non-nullable field DataType.test.'}]
+    })
+
+    test_returns_null = check(resolved(None), {
+        'data': {'nest': None},
+        'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'message': 'Cannot return null for non-nullable field DataType.test.'}]
+    })
+
+    test_rejected = check(lambda: rejected(Exception('bad')), {
+        'data': {'nest': None},
+        'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
+    })
+
+
+class TestNotNullListOfNotNullT_Array_Promise_T:  # [T!]! Array<Promise<T>>
+    type = GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLInt)))
+
+    test_contains_values = check([resolved(1), resolved(2)], {'data': {'nest': {'test': [1, 2]}}})
+    test_contains_null = check([resolved(1), resolved(None), resolved(2)], {
+        'data': {'nest': None},
+        'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'message': 'Cannot return null for non-nullable field DataType.test.'}]
+    })
+    test_contains_reject = check(lambda: [resolved(1), rejected(Exception('bad')), resolved(2)], {
+        'data': {'nest': None},
+        'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
+    })
