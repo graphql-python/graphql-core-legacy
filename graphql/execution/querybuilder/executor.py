@@ -76,5 +76,7 @@ def execute_operation(exe_context, operation, root_value):
     type = get_operation_root_type(exe_context.schema, operation)
     execute_serially = operation.operation == 'mutation'
 
-    fragment = Fragment(type=type, selection_set=operation.selection_set, context=exe_context, execute_serially=execute_serially)
+    fragment = Fragment(type=type, selection_set=operation.selection_set, context=exe_context)
+    if execute_serially:
+        return fragment.resolve_serially(root_value)
     return fragment.resolve(root_value)

@@ -1,5 +1,6 @@
-from promise import promise_for_dict
+from promise import promise_for_dict, Promise
 
+import functools
 from functools import partial
 from ...pyutils.cached_property import cached_property
 from ..values import get_argument_values, get_variable_values
@@ -73,10 +74,9 @@ def get_resolvers(context, type, selection_set):
 
 
 class Fragment(object):
-    def __init__(self, type, selection_set, context=None, execute_serially=False):
+    def __init__(self, type, selection_set, context=None):
         self.type = type
         self.selection_set = selection_set
-        self.execute_serially = execute_serially
         self.context = context
 
     @cached_property
@@ -114,17 +114,40 @@ class Fragment(object):
         #     for field_name, field_resolver, field_args, context, info in self.partial_resolvers
         # }
 
+    def resolve_serially(self, root):
+        def execute_field_callback(results, resolver):
+            response_name, field_resolver, field_args, context, info = resolver
+
+            result = field_resolver(root, field_args, context, info)
+
+            if result is Undefined:
+                return results
+
+            if is_promise(result):
+                def collect_result(resolved_result):
+                    results[response_name] = resolved_result
+                    return results
+
+                return result.then(collect_result, None)
+
+            results[response_name] = result
+            return results
+
+        def execute_field(prev_promise, resolver):
+            return prev_promise.then(lambda results: execute_field_callback(results, resolver))
+
+        return functools.reduce(execute_field, self.partial_resolvers, Promise.resolve(OrderedDict()))
+
     def __eq__(self, other):
         return isinstance(other, Fragment) and (
             other.type == self.type and
             other.selection_set == self.selection_set and
-            other.context == self.context and
-            other.execute_serially == self.execute_serially
+            other.context == self.context
         )
 
 
 class AbstractFragment(object):
-    def __init__(self, abstract_type, selection_set, context=None, info=None): # execute_serially=False
+    def __init__(self, abstract_type, selection_set, context=None, info=None):
         self.abstract_type = abstract_type
         self.selection_set = selection_set
         self.context = context
