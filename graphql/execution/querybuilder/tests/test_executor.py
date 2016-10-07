@@ -148,7 +148,7 @@ def test_fragment_resolver_resolves_all_list_null():
         'id': GraphQLField(GraphQLInt, resolver=lambda obj, *_, **__: 1),
     })
     Query = GraphQLObjectType('Query', fields={
-        'persons': GraphQLField(GraphQLNonNull(GraphQLList(GraphQLNonNull(Person))), resolver=lambda *args: [1, 2, None]),
+        'persons': GraphQLField(GraphQLList(GraphQLNonNull(Person)), resolver=lambda *args: [1, 2, None]),
     })
 
     document_ast = parse('''query {
