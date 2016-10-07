@@ -141,52 +141,52 @@ def test_nulls_a_sync_returned_object_that_contains_a_non_nullable_field_that_th
     })
 
 
-# def test_nulls_a_synchronously_returned_object_that_contains_a_non_nullable_field_that_throws_in_a_promise():
-#     doc = '''
-#         query Q {
-#             nest {
-#                 nonNullPromise,
-#             }
-#         }
-#     '''
+def test_nulls_a_synchronously_returned_object_that_contains_a_non_nullable_field_that_throws_in_a_promise():
+    doc = '''
+        query Q {
+            nest {
+                nonNullPromise,
+            }
+        }
+    '''
 
-#     check(doc, ThrowingData(), {
-#         'data': {'nest': None},
-#         'errors': [{'locations': [{'column': 17, 'line': 4}],
-#                     'message': str(non_null_promise_error)}]
-#     })
-
-
-# def test_nulls_an_object_returned_in_a_promise_that_contains_a_non_nullable_field_that_throws_synchronously():
-#     doc = '''
-#         query Q {
-#             promiseNest {
-#                 nonNullSync,
-#             }
-#         }
-#     '''
-
-#     check(doc, ThrowingData(), {
-#         'data': {'promiseNest': None},
-#         'errors': [{'locations': [{'column': 17, 'line': 4}],
-#                     'message': str(non_null_sync_error)}]
-#     })
+    check(doc, ThrowingData(), {
+        'data': {'nest': None},
+        'errors': [{'locations': [{'column': 17, 'line': 4}],
+                    'message': str(non_null_promise_error)}]
+    })
 
 
-# def test_nulls_an_object_returned_in_a_promise_that_contains_a_non_nullable_field_that_throws_in_a_promise():
-#     doc = '''
-#         query Q {
-#             promiseNest {
-#                 nonNullPromise,
-#             }
-#         }
-#     '''
+def test_nulls_an_object_returned_in_a_promise_that_contains_a_non_nullable_field_that_throws_synchronously():
+    doc = '''
+        query Q {
+            promiseNest {
+                nonNullSync,
+            }
+        }
+    '''
 
-#     check(doc, ThrowingData(), {
-#         'data': {'promiseNest': None},
-#         'errors': [{'locations': [{'column': 17, 'line': 4}],
-#                     'message': str(non_null_promise_error)}]
-#     })
+    check(doc, ThrowingData(), {
+        'data': {'promiseNest': None},
+        'errors': [{'locations': [{'column': 17, 'line': 4}],
+                    'message': str(non_null_sync_error)}]
+    })
+
+
+def test_nulls_an_object_returned_in_a_promise_that_contains_a_non_nullable_field_that_throws_in_a_promise():
+    doc = '''
+        query Q {
+            promiseNest {
+                nonNullPromise,
+            }
+        }
+    '''
+
+    check(doc, ThrowingData(), {
+        'data': {'promiseNest': None},
+        'errors': [{'locations': [{'column': 17, 'line': 4}],
+                    'message': str(non_null_promise_error)}]
+    })
 
 
 def test_nulls_a_complex_tree_of_nullable_fields_that_throw():
@@ -242,332 +242,332 @@ def test_nulls_a_complex_tree_of_nullable_fields_that_throw():
     })
 
 
-# def test_nulls_the_first_nullable_object_after_a_field_throws_in_a_long_chain_of_fields_that_are_non_null():
-#     doc = '''
-#     query Q {
-#         nest {
-#           nonNullNest {
-#             nonNullPromiseNest {
-#               nonNullNest {
-#                 nonNullPromiseNest {
-#                   nonNullSync
-#                 }
-#               }
-#             }
-#           }
-#         }
-#         promiseNest {
-#           nonNullNest {
-#             nonNullPromiseNest {
-#               nonNullNest {
-#                 nonNullPromiseNest {
-#                   nonNullSync
-#                 }
-#               }
-#             }
-#           }
-#         }
-#         anotherNest: nest {
-#           nonNullNest {
-#             nonNullPromiseNest {
-#               nonNullNest {
-#                 nonNullPromiseNest {
-#                   nonNullPromise
-#                 }
-#               }
-#             }
-#           }
-#         }
-#         anotherPromiseNest: promiseNest {
-#           nonNullNest {
-#             nonNullPromiseNest {
-#               nonNullNest {
-#                 nonNullPromiseNest {
-#                   nonNullPromise
-#                 }
-#               }
-#             }
-#           }
-#         }
-#       }
-#     '''
-#     check(doc, ThrowingData(), {
-#         'data': {'nest': None, 'promiseNest': None, 'anotherNest': None, 'anotherPromiseNest': None},
-#         'errors': [{'locations': [{'column': 19, 'line': 8}],
-#                     'message': str(non_null_sync_error)},
-#                    {'locations': [{'column': 19, 'line': 19}],
-#                     'message': str(non_null_sync_error)},
-#                    {'locations': [{'column': 19, 'line': 30}],
-#                     'message': str(non_null_promise_error)},
-#                    {'locations': [{'column': 19, 'line': 41}],
-#                     'message': str(non_null_promise_error)}]
-#     })
+def test_nulls_the_first_nullable_object_after_a_field_throws_in_a_long_chain_of_fields_that_are_non_null():
+    doc = '''
+    query Q {
+        nest {
+          nonNullNest {
+            nonNullPromiseNest {
+              nonNullNest {
+                nonNullPromiseNest {
+                  nonNullSync
+                }
+              }
+            }
+          }
+        }
+        promiseNest {
+          nonNullNest {
+            nonNullPromiseNest {
+              nonNullNest {
+                nonNullPromiseNest {
+                  nonNullSync
+                }
+              }
+            }
+          }
+        }
+        anotherNest: nest {
+          nonNullNest {
+            nonNullPromiseNest {
+              nonNullNest {
+                nonNullPromiseNest {
+                  nonNullPromise
+                }
+              }
+            }
+          }
+        }
+        anotherPromiseNest: promiseNest {
+          nonNullNest {
+            nonNullPromiseNest {
+              nonNullNest {
+                nonNullPromiseNest {
+                  nonNullPromise
+                }
+              }
+            }
+          }
+        }
+      }
+    '''
+    check(doc, ThrowingData(), {
+        'data': {'nest': None, 'promiseNest': None, 'anotherNest': None, 'anotherPromiseNest': None},
+        'errors': [{'locations': [{'column': 19, 'line': 8}],
+                    'message': str(non_null_sync_error)},
+                   {'locations': [{'column': 19, 'line': 19}],
+                    'message': str(non_null_sync_error)},
+                   {'locations': [{'column': 19, 'line': 30}],
+                    'message': str(non_null_promise_error)},
+                   {'locations': [{'column': 19, 'line': 41}],
+                    'message': str(non_null_promise_error)}]
+    })
 
 
-# def test_nulls_a_nullable_field_that_returns_null():
-#     doc = '''
-#         query Q {
-#             sync
-#         }
-#     '''
+def test_nulls_a_nullable_field_that_returns_null():
+    doc = '''
+        query Q {
+            sync
+        }
+    '''
 
-#     check(doc, NullingData(), {
-#         'data': {'sync': None}
-#     })
-
-
-# def test_nulls_a_nullable_field_that_returns_null_in_a_promise():
-#     doc = '''
-#         query Q {
-#             promise
-#         }
-#     '''
-
-#     check(doc, NullingData(), {
-#         'data': {'promise': None}
-#     })
+    check(doc, NullingData(), {
+        'data': {'sync': None}
+    })
 
 
-# def test_nulls_a_sync_returned_object_that_contains_a_non_nullable_field_that_returns_null_synchronously():
-#     doc = '''
-#         query Q {
-#             nest {
-#                 nonNullSync,
-#             }
-#         }
-#     '''
-#     check(doc, NullingData(), {
-#         'data': {'nest': None},
-#         'errors': [{'locations': [{'column': 17, 'line': 4}],
-#                     'message': 'Cannot return null for non-nullable field DataType.nonNullSync.'}]
-#     })
+def test_nulls_a_nullable_field_that_returns_null_in_a_promise():
+    doc = '''
+        query Q {
+            promise
+        }
+    '''
+
+    check(doc, NullingData(), {
+        'data': {'promise': None}
+    })
 
 
-# def test_nulls_a_synchronously_returned_object_that_contains_a_non_nullable_field_that_returns_null_in_a_promise():
-#     doc = '''
-#         query Q {
-#             nest {
-#                 nonNullPromise,
-#             }
-#         }
-#     '''
-#     check(doc, NullingData(), {
-#         'data': {'nest': None},
-#         'errors': [{'locations': [{'column': 17, 'line': 4}],
-#                     'message': 'Cannot return null for non-nullable field DataType.nonNullPromise.'}]
-#     })
+def test_nulls_a_sync_returned_object_that_contains_a_non_nullable_field_that_returns_null_synchronously():
+    doc = '''
+        query Q {
+            nest {
+                nonNullSync,
+            }
+        }
+    '''
+    check(doc, NullingData(), {
+        'data': {'nest': None},
+        'errors': [{'locations': [{'column': 17, 'line': 4}],
+                    'message': 'Cannot return null for non-nullable field DataType.nonNullSync.'}]
+    })
 
 
-# def test_nulls_an_object_returned_in_a_promise_that_contains_a_non_nullable_field_that_returns_null_synchronously():
-#     doc = '''
-#         query Q {
-#             promiseNest {
-#                 nonNullSync,
-#             }
-#         }
-#     '''
-#     check(doc, NullingData(), {
-#         'data': {'promiseNest': None},
-#         'errors': [{'locations': [{'column': 17, 'line': 4}],
-#                     'message': 'Cannot return null for non-nullable field DataType.nonNullSync.'}]
-#     })
+def test_nulls_a_synchronously_returned_object_that_contains_a_non_nullable_field_that_returns_null_in_a_promise():
+    doc = '''
+        query Q {
+            nest {
+                nonNullPromise,
+            }
+        }
+    '''
+    check(doc, NullingData(), {
+        'data': {'nest': None},
+        'errors': [{'locations': [{'column': 17, 'line': 4}],
+                    'message': 'Cannot return null for non-nullable field DataType.nonNullPromise.'}]
+    })
 
 
-# def test_nulls_an_object_returned_in_a_promise_that_contains_a_non_nullable_field_that_returns_null_ina_a_promise():
-#     doc = '''
-#         query Q {
-#             promiseNest {
-#                 nonNullPromise
-#             }
-#         }
-#     '''
-
-#     check(doc, NullingData(), {
-#         'data': {'promiseNest': None},
-#         'errors': [
-#             {'locations': [{'column': 17, 'line': 4}],
-#              'message': 'Cannot return null for non-nullable field DataType.nonNullPromise.'}
-#         ]
-#     })
+def test_nulls_an_object_returned_in_a_promise_that_contains_a_non_nullable_field_that_returns_null_synchronously():
+    doc = '''
+        query Q {
+            promiseNest {
+                nonNullSync,
+            }
+        }
+    '''
+    check(doc, NullingData(), {
+        'data': {'promiseNest': None},
+        'errors': [{'locations': [{'column': 17, 'line': 4}],
+                    'message': 'Cannot return null for non-nullable field DataType.nonNullSync.'}]
+    })
 
 
-# def test_nulls_a_complex_tree_of_nullable_fields_that_returns_null():
-#     doc = '''
-#       query Q {
-#         nest {
-#           sync
-#           promise
-#           nest {
-#             sync
-#             promise
-#           }
-#           promiseNest {
-#             sync
-#             promise
-#           }
-#         }
-#         promiseNest {
-#           sync
-#           promise
-#           nest {
-#             sync
-#             promise
-#           }
-#           promiseNest {
-#             sync
-#             promise
-#           }
-#         }
-#       }
-#     '''
-#     check(doc, NullingData(), {
-#         'data': {
-#             'nest': {
-#                 'sync': None,
-#                 'promise': None,
-#                 'nest': {
-#                     'sync': None,
-#                     'promise': None,
-#                 },
-#                 'promiseNest': {
-#                     'sync': None,
-#                     'promise': None,
-#                 }
-#             },
-#             'promiseNest': {
-#                 'sync': None,
-#                 'promise': None,
-#                 'nest': {
-#                     'sync': None,
-#                     'promise': None,
-#                 },
-#                 'promiseNest': {
-#                     'sync': None,
-#                     'promise': None,
-#                 }
-#             }
-#         }
-#     })
+def test_nulls_an_object_returned_in_a_promise_that_contains_a_non_nullable_field_that_returns_null_ina_a_promise():
+    doc = '''
+        query Q {
+            promiseNest {
+                nonNullPromise
+            }
+        }
+    '''
+
+    check(doc, NullingData(), {
+        'data': {'promiseNest': None},
+        'errors': [
+            {'locations': [{'column': 17, 'line': 4}],
+             'message': 'Cannot return null for non-nullable field DataType.nonNullPromise.'}
+        ]
+    })
 
 
-# def test_nulls_the_first_nullable_object_after_a_field_returns_null_in_a_long_chain_of_fields_that_are_non_null():
-#     doc = '''
-#       query Q {
-#         nest {
-#           nonNullNest {
-#             nonNullPromiseNest {
-#               nonNullNest {
-#                 nonNullPromiseNest {
-#                   nonNullSync
-#                 }
-#               }
-#             }
-#           }
-#         }
-#         promiseNest {
-#           nonNullNest {
-#             nonNullPromiseNest {
-#               nonNullNest {
-#                 nonNullPromiseNest {
-#                   nonNullSync
-#                 }
-#               }
-#             }
-#           }
-#         }
-#         anotherNest: nest {
-#           nonNullNest {
-#             nonNullPromiseNest {
-#               nonNullNest {
-#                 nonNullPromiseNest {
-#                   nonNullPromise
-#                 }
-#               }
-#             }
-#           }
-#         }
-#         anotherPromiseNest: promiseNest {
-#           nonNullNest {
-#             nonNullPromiseNest {
-#               nonNullNest {
-#                 nonNullPromiseNest {
-#                   nonNullPromise
-#                 }
-#               }
-#             }
-#           }
-#         }
-#       }
-#     '''
-
-#     check(doc, NullingData(), {
-#         'data': {
-#             'nest': None,
-#             'promiseNest': None,
-#             'anotherNest': None,
-#             'anotherPromiseNest': None
-#         },
-#         'errors': [
-#             {'locations': [{'column': 19, 'line': 8}],
-#              'message': 'Cannot return null for non-nullable field DataType.nonNullSync.'},
-#             {'locations': [{'column': 19, 'line': 19}],
-#              'message': 'Cannot return null for non-nullable field DataType.nonNullSync.'},
-#             {'locations': [{'column': 19, 'line': 30}],
-#              'message': 'Cannot return null for non-nullable field DataType.nonNullPromise.'},
-#             {'locations': [{'column': 19, 'line': 41}],
-#              'message': 'Cannot return null for non-nullable field DataType.nonNullPromise.'}
-#         ]
-#     })
+def test_nulls_a_complex_tree_of_nullable_fields_that_returns_null():
+    doc = '''
+      query Q {
+        nest {
+          sync
+          promise
+          nest {
+            sync
+            promise
+          }
+          promiseNest {
+            sync
+            promise
+          }
+        }
+        promiseNest {
+          sync
+          promise
+          nest {
+            sync
+            promise
+          }
+          promiseNest {
+            sync
+            promise
+          }
+        }
+      }
+    '''
+    check(doc, NullingData(), {
+        'data': {
+            'nest': {
+                'sync': None,
+                'promise': None,
+                'nest': {
+                    'sync': None,
+                    'promise': None,
+                },
+                'promiseNest': {
+                    'sync': None,
+                    'promise': None,
+                }
+            },
+            'promiseNest': {
+                'sync': None,
+                'promise': None,
+                'nest': {
+                    'sync': None,
+                    'promise': None,
+                },
+                'promiseNest': {
+                    'sync': None,
+                    'promise': None,
+                }
+            }
+        }
+    })
 
 
-# def test_nulls_the_top_level_if_sync_non_nullable_field_throws():
-#     doc = '''
-#         query Q { nonNullSync }
-#     '''
-#     check(doc, ThrowingData(), {
-#         'data': None,
-#         'errors': [
-#             {'locations': [{'column': 19, 'line': 2}],
-#              'message': str(non_null_sync_error)}
-#         ]
-#     })
+def test_nulls_the_first_nullable_object_after_a_field_returns_null_in_a_long_chain_of_fields_that_are_non_null():
+    doc = '''
+      query Q {
+        nest {
+          nonNullNest {
+            nonNullPromiseNest {
+              nonNullNest {
+                nonNullPromiseNest {
+                  nonNullSync
+                }
+              }
+            }
+          }
+        }
+        promiseNest {
+          nonNullNest {
+            nonNullPromiseNest {
+              nonNullNest {
+                nonNullPromiseNest {
+                  nonNullSync
+                }
+              }
+            }
+          }
+        }
+        anotherNest: nest {
+          nonNullNest {
+            nonNullPromiseNest {
+              nonNullNest {
+                nonNullPromiseNest {
+                  nonNullPromise
+                }
+              }
+            }
+          }
+        }
+        anotherPromiseNest: promiseNest {
+          nonNullNest {
+            nonNullPromiseNest {
+              nonNullNest {
+                nonNullPromiseNest {
+                  nonNullPromise
+                }
+              }
+            }
+          }
+        }
+      }
+    '''
+
+    check(doc, NullingData(), {
+        'data': {
+            'nest': None,
+            'promiseNest': None,
+            'anotherNest': None,
+            'anotherPromiseNest': None
+        },
+        'errors': [
+            {'locations': [{'column': 19, 'line': 8}],
+             'message': 'Cannot return null for non-nullable field DataType.nonNullSync.'},
+            {'locations': [{'column': 19, 'line': 19}],
+             'message': 'Cannot return null for non-nullable field DataType.nonNullSync.'},
+            {'locations': [{'column': 19, 'line': 30}],
+             'message': 'Cannot return null for non-nullable field DataType.nonNullPromise.'},
+            {'locations': [{'column': 19, 'line': 41}],
+             'message': 'Cannot return null for non-nullable field DataType.nonNullPromise.'}
+        ]
+    })
 
 
-# def test_nulls_the_top_level_if_async_non_nullable_field_errors():
-#     doc = '''
-#         query Q { nonNullPromise }
-#     '''
-
-#     check(doc, ThrowingData(), {
-#         'data': None,
-#         'errors': [
-#             {'locations': [{'column': 19, 'line': 2}],
-#              'message': str(non_null_promise_error)}
-#         ]
-#     })
-
-
-# def test_nulls_the_top_level_if_sync_non_nullable_field_returns_null():
-#     doc = '''
-#         query Q { nonNullSync }
-#     '''
-#     check(doc, NullingData(), {
-#         'data': None,
-#         'errors': [
-#             {'locations': [{'column': 19, 'line': 2}],
-#              'message': 'Cannot return null for non-nullable field DataType.nonNullSync.'}
-#         ]
-#     })
+def test_nulls_the_top_level_if_sync_non_nullable_field_throws():
+    doc = '''
+        query Q { nonNullSync }
+    '''
+    check(doc, ThrowingData(), {
+        'data': None,
+        'errors': [
+            {'locations': [{'column': 19, 'line': 2}],
+             'message': str(non_null_sync_error)}
+        ]
+    })
 
 
-# def test_nulls_the_top_level_if_async_non_nullable_field_resolves_null():
-#     doc = '''
-#         query Q { nonNullPromise }
-#     '''
-#     check(doc, NullingData(), {
-#         'data': None,
-#         'errors': [
-#             {'locations': [{'column': 19, 'line': 2}],
-#              'message': 'Cannot return null for non-nullable field DataType.nonNullPromise.'}
-#         ]
-#     })
+def test_nulls_the_top_level_if_async_non_nullable_field_errors():
+    doc = '''
+        query Q { nonNullPromise }
+    '''
+
+    check(doc, ThrowingData(), {
+        'data': None,
+        'errors': [
+            {'locations': [{'column': 19, 'line': 2}],
+             'message': str(non_null_promise_error)}
+        ]
+    })
+
+
+def test_nulls_the_top_level_if_sync_non_nullable_field_returns_null():
+    doc = '''
+        query Q { nonNullSync }
+    '''
+    check(doc, NullingData(), {
+        'data': None,
+        'errors': [
+            {'locations': [{'column': 19, 'line': 2}],
+             'message': 'Cannot return null for non-nullable field DataType.nonNullSync.'}
+        ]
+    })
+
+
+def test_nulls_the_top_level_if_async_non_nullable_field_resolves_null():
+    doc = '''
+        query Q { nonNullPromise }
+    '''
+    check(doc, NullingData(), {
+        'data': None,
+        'errors': [
+            {'locations': [{'column': 19, 'line': 2}],
+             'message': 'Cannot return null for non-nullable field DataType.nonNullPromise.'}
+        ]
+    })
