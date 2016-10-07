@@ -1,8 +1,9 @@
+from promise import Promise
+
 from graphql.execution import ExecutionResult
 from graphql.language.parser import parse
 from graphql.language.source import Source
 from graphql.validation import validate
-from promise import Promise
 
 from ..executor import execute
 

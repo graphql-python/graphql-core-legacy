@@ -18,9 +18,6 @@ except:
     imap = map
 
 
-
-
-
 def is_promise(value):
     return isinstance(value, Promise)
 
