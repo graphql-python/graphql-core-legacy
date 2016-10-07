@@ -1,29 +1,38 @@
 import pytest
 
-from ....language import ast
-from ....type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
-                      GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
-                      GraphQLSchema, GraphQLUnionType, GraphQLString, GraphQLInt, GraphQLField)
-from ..resolver import type_resolver, Fragment
-
 from promise import Promise
 
+from ....language import ast
+from ....type import (GraphQLEnumType, GraphQLField, GraphQLInt,
+                      GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
+                      GraphQLObjectType, GraphQLScalarType, GraphQLSchema,
+                      GraphQLString, GraphQLUnionType)
+from ..resolver import Fragment, type_resolver
 
 SIZE = 10000
+
 
 def test_querybuilder_big_list_of_ints(benchmark):
     big_int_list = [x for x in range(SIZE)]
 
     resolver = type_resolver(GraphQLList(GraphQLInt), lambda: big_int_list)
     result = benchmark(resolver)
-    
+
     assert result == big_int_list
 
 
 def test_querybuilder_big_list_of_nested_ints(benchmark):
     big_int_list = [x for x in range(SIZE)]
 
-    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, args, context, info: obj)})
+    Node = GraphQLObjectType(
+        'Node',
+        fields={
+            'id': GraphQLField(
+                GraphQLInt,
+                resolver=lambda obj,
+                args,
+                context,
+                info: obj)})
     selection_set = ast.SelectionSet(selections=[
         ast.Field(
             alias=None,
@@ -43,13 +52,12 @@ def test_querybuilder_big_list_of_nested_ints(benchmark):
     } for n in big_int_list]
 
 
-
 def test_querybuilder_big_list_of_objecttypes_with_two_int_fields(benchmark):
     big_int_list = [x for x in range(SIZE)]
 
     Node = GraphQLObjectType('Node', fields={
         'id': GraphQLField(GraphQLInt, resolver=lambda obj, args, context, info: obj),
-        'ida': GraphQLField(GraphQLInt, resolver=lambda obj, args, context, info: obj*2)
+        'ida': GraphQLField(GraphQLInt, resolver=lambda obj, args, context, info: obj * 2)
     })
     selection_set = ast.SelectionSet(selections=[
         ast.Field(
@@ -74,15 +82,20 @@ def test_querybuilder_big_list_of_objecttypes_with_two_int_fields(benchmark):
 
     assert resolved == [{
         'id': n,
-        'ida': n*2
+        'ida': n * 2
     } for n in big_int_list]
-
 
 
 def test_querybuilder_big_list_of_objecttypes_with_one_int_field(benchmark):
     big_int_list = [x for x in range(SIZE)]
     Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, *_, **__: obj)})
-    Query = GraphQLObjectType('Query', fields={'nodes': GraphQLField(GraphQLList(Node), resolver=lambda *_, **__: big_int_list)})
+    Query = GraphQLObjectType(
+        'Query',
+        fields={
+            'nodes': GraphQLField(
+                GraphQLList(Node),
+                resolver=lambda *_,
+                **__: big_int_list)})
     node_selection_set = ast.SelectionSet(selections=[
         ast.Field(
             name=ast.Name(value='id'),

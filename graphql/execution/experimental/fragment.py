@@ -1,17 +1,15 @@
-from promise import promise_for_dict, Promise
-
 import functools
-from functools import partial
+
+from promise import Promise, promise_for_dict
+
 from ...pyutils.cached_property import cached_property
-from ..values import get_argument_values, get_variable_values
-from ..base import collect_fields, ResolveInfo, Undefined, get_field_def
-from ..executor import is_promise
-
-from ...pyutils.ordereddict import OrderedDict
 from ...pyutils.default_ordered_dict import DefaultOrderedDict
-
-
-from ...type import GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLInterfaceType, GraphQLUnionType
+from ...pyutils.ordereddict import OrderedDict
+from ...type import (GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
+                     GraphQLObjectType, GraphQLUnionType)
+from ..base import ResolveInfo, Undefined, collect_fields, get_field_def
+from ..executor import is_promise
+from ..values import get_argument_values, get_variable_values
 
 
 def get_base_type(type):
@@ -74,6 +72,7 @@ def get_resolvers(context, type, selection_set):
 
 
 class Fragment(object):
+
     def __init__(self, type, selection_set, context=None):
         self.type = type
         self.selection_set = selection_set
@@ -147,6 +146,7 @@ class Fragment(object):
 
 
 class AbstractFragment(object):
+
     def __init__(self, abstract_type, selection_set, context=None, info=None):
         self.abstract_type = abstract_type
         self.selection_set = selection_set

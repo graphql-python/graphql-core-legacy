@@ -1,21 +1,19 @@
-import itertools
-import sys
-import traceback
 import collections
+import itertools
 from functools import partial
 
-from ..base import default_resolve_fn
+from promise import Promise
+
 from ...error import GraphQLError, GraphQLLocatedError
 from ...type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
                      GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
                      GraphQLSchema, GraphQLUnionType)
+from ..base import default_resolve_fn
 from .fragment import Fragment
-
-from promise import Promise
 
 
 def is_promise(value):
-    return type(value) == Promise
+    return isinstance(value, Promise)
 
 
 def on_complete_resolver(on_error, __func, exe_context, info, __resolver, *args, **kwargs):
@@ -24,9 +22,8 @@ def on_complete_resolver(on_error, __func, exe_context, info, __resolver, *args,
         if is_promise(result):
             return result.then(__func).catch(on_error)
         return __func(result)
-    except Exception, e:
+    except Exception as e:
         return on_error(e)
-
 
 
 def complete_list_value(inner_resolver, exe_context, info, on_error, result):
@@ -71,7 +68,8 @@ def complete_object_value(fragment_resolve, exe_context, on_error, result):
 
 
 def field_resolver(field, fragment=None, exe_context=None, info=None):
-    return type_resolver(field.type, field.resolver or default_resolve_fn, fragment, exe_context, info, catch_error=True)
+    return type_resolver(field.type, field.resolver or default_resolve_fn,
+                         fragment, exe_context, info, catch_error=True)
 
 
 def type_resolver(return_type, resolver, fragment=None, exe_context=None, info=None, catch_error=False):
@@ -107,12 +105,16 @@ def on_error(exe_context, info, catch_error, e):
 
 def type_resolver_fragment(return_type, resolver, fragment, exe_context, info, catch_error):
     on_complete_type_error = partial(on_error, exe_context, info, catch_error)
-    complete_object_value_resolve = partial(complete_object_value, fragment.resolve, exe_context, on_complete_type_error)
+    complete_object_value_resolve = partial(
+        complete_object_value,
+        fragment.resolve,
+        exe_context,
+        on_complete_type_error)
     on_resolve_error = partial(on_error, exe_context, info, catch_error)
     return partial(on_complete_resolver, on_resolve_error, complete_object_value_resolve, exe_context, info, resolver)
 
 
-def type_resolver_non_null(return_type, resolver, fragment, exe_context, info): # no catch_error
+def type_resolver_non_null(return_type, resolver, fragment, exe_context, info):  # no catch_error
     resolver = type_resolver(return_type.of_type, resolver, fragment, exe_context, info)
     nonnull_complete = partial(complete_nonnull_value, exe_context, info)
     on_resolve_error = partial(on_error, exe_context, info, False)

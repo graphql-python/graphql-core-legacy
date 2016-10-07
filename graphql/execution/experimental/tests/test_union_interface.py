@@ -1,8 +1,9 @@
-from ..executor import execute
 from graphql.language.parser import parse
 from graphql.type import (GraphQLBoolean, GraphQLField, GraphQLInterfaceType,
                           GraphQLList, GraphQLObjectType, GraphQLSchema,
                           GraphQLString, GraphQLUnionType)
+
+from ..executor import execute
 
 
 class Dog(object):

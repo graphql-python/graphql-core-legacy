@@ -1,16 +1,16 @@
 import pytest
 
-from ....language import ast
-from ....type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
-                      GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
-                      GraphQLSchema, GraphQLUnionType, GraphQLString, GraphQLInt, GraphQLField)
-from ..resolver import type_resolver
-from ..fragment import Fragment
-from ...base import ExecutionContext
-from ....language.parser import parse
-
-
 from promise import Promise
+
+from ....language import ast
+from ....language.parser import parse
+from ....type import (GraphQLEnumType, GraphQLField, GraphQLInt,
+                      GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
+                      GraphQLObjectType, GraphQLScalarType, GraphQLSchema,
+                      GraphQLString, GraphQLUnionType)
+from ...base import ExecutionContext
+from ..fragment import Fragment
+from ..resolver import type_resolver
 
 
 def test_fragment_equal():
@@ -36,7 +36,7 @@ def test_fragment_equal():
 
 
 def test_fragment_resolver():
-    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, *_, **__: obj*2)})
+    Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, *_, **__: obj * 2)})
     selection_set = ast.SelectionSet(selections=[
         ast.Field(
             name=ast.Name(value='id'),
@@ -91,7 +91,18 @@ def test_fragment_resolver_nested():
 
 def test_fragment_resolver_abstract():
     Node = GraphQLInterfaceType('Node', fields={'id': GraphQLField(GraphQLInt)})
-    Person = GraphQLObjectType('Person', interfaces=(Node, ), is_type_of=lambda *_: True, fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, *_, **__: obj)})
+    Person = GraphQLObjectType(
+        'Person',
+        interfaces=(
+            Node,
+        ),
+        is_type_of=lambda *_: True,
+        fields={
+            'id': GraphQLField(
+                GraphQLInt,
+                resolver=lambda obj,
+                *_,
+                **__: obj)})
     Query = GraphQLObjectType('Query', fields={'node': GraphQLField(Node, resolver=lambda *_, **__: 1)})
     node_selection_set = ast.SelectionSet(selections=[
         ast.Field(
@@ -141,7 +152,13 @@ def test_fragment_resolver_abstract():
 
 def test_fragment_resolver_nested_list():
     Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, *_, **__: obj)})
-    Query = GraphQLObjectType('Query', fields={'nodes': GraphQLField(GraphQLList(Node), resolver=lambda *_, **__: range(3))})
+    Query = GraphQLObjectType(
+        'Query',
+        fields={
+            'nodes': GraphQLField(
+                GraphQLList(Node),
+                resolver=lambda *_,
+                **__: range(3))})
     node_selection_set = ast.SelectionSet(selections=[
         ast.Field(
             name=ast.Name(value='id'),

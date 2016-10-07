@@ -1,11 +1,12 @@
 import json
 from collections import OrderedDict
 
-from ..executor import execute
 from graphql.type import (GraphQLArgument, GraphQLField,
                           GraphQLInputObjectField, GraphQLInputObjectType,
                           GraphQLInt, GraphQLList, GraphQLNonNull,
                           GraphQLObjectType, GraphQLSchema, GraphQLString)
+
+from ..executor import execute
 from .utils import graphql
 
 
@@ -106,7 +107,6 @@ def test_maps_argument_out_names_well():
 def test_maps_argument_out_names_well_with_input():
     def resolver(source, args, *_):
         return json.dumps([source, args], separators=(',', ':'))
-
 
     TestInputObject = GraphQLInputObjectType('TestInputObject', lambda: OrderedDict([
         ('inputOne', GraphQLInputObjectField(GraphQLString, out_name="input_one")),

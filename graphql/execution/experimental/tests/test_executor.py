@@ -1,19 +1,23 @@
-import pytest
 from functools import partial
 
-from ....language import ast
-from ....type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
-                      GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, GraphQLBoolean,
-                      GraphQLSchema, GraphQLUnionType, GraphQLString, GraphQLInt, GraphQLField)
-from ..resolver import type_resolver
-from ..fragment import Fragment
-from ...base import ExecutionContext
-from ....language.parser import parse
-
-from ..executor import execute
-# from ...executor import execute
+import pytest
 
 from promise import Promise
+
+from ....language import ast
+from ....language.parser import parse
+from ....type import (GraphQLBoolean, GraphQLEnumType, GraphQLField,
+                      GraphQLInt, GraphQLInterfaceType, GraphQLList,
+                      GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
+                      GraphQLSchema, GraphQLString, GraphQLUnionType)
+from ...base import ExecutionContext
+from ..executor import execute
+from ..fragment import Fragment
+from ..resolver import type_resolver
+
+
+# from ...executor import execute
+
 
 
 def test_fragment_resolver_abstract(benchmark):
@@ -22,9 +26,15 @@ def test_fragment_resolver_abstract(benchmark):
     Node = GraphQLInterfaceType('Node', fields={'id': GraphQLField(GraphQLInt)})
     Person = GraphQLObjectType('Person', interfaces=(Node, ), is_type_of=lambda *_, **__: True, fields={
         'id': GraphQLField(GraphQLInt, resolver=lambda obj, *_, **__: obj),
-        'name': GraphQLField(GraphQLString, resolver=lambda obj, *_, **__: "name:"+str(obj))
+        'name': GraphQLField(GraphQLString, resolver=lambda obj, *_, **__: "name:" + str(obj))
     })
-    Query = GraphQLObjectType('Query', fields={'nodes': GraphQLField(GraphQLList(Node), resolver=lambda *_, **__: all_slots)})
+    Query = GraphQLObjectType(
+        'Query',
+        fields={
+            'nodes': GraphQLField(
+                GraphQLList(Node),
+                resolver=lambda *_,
+                **__: all_slots)})
 
     document_ast = parse('''query {
         nodes {
@@ -43,7 +53,7 @@ def test_fragment_resolver_abstract(benchmark):
     assert resolved.data == {
         'nodes': [{
             'id': x,
-            'name': 'name:'+str(x)
+            'name': 'name:' + str(x)
         } for x in all_slots]
     }
 

@@ -1,7 +1,4 @@
-import collections
-import functools
 import logging
-import sys
 
 from promise import Promise, promise_for_dict, promisify
 
@@ -9,22 +6,21 @@ from ...error import GraphQLError, GraphQLLocatedError
 from ...pyutils.default_ordered_dict import DefaultOrderedDict
 from ...pyutils.ordereddict import OrderedDict
 from ...type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
-                    GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
-                    GraphQLSchema, GraphQLUnionType)
+                     GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
+                     GraphQLSchema, GraphQLUnionType)
 from ..base import (ExecutionContext, ExecutionResult, ResolveInfo, Undefined,
-                   collect_fields, default_resolve_fn, get_field_def,
-                   get_operation_root_type)
+                    collect_fields, default_resolve_fn, get_field_def,
+                    get_operation_root_type)
 from ..executors.sync import SyncExecutor
 from ..middleware import MiddlewareManager
-
-from .resolver import type_resolver
 from .fragment import Fragment
+from .resolver import type_resolver
 
 logger = logging.getLogger(__name__)
 
 
 def is_promise(obj):
-    return type(obj) == Promise
+    return isinstance(obj, Promise)
 
 
 def execute(schema, document_ast, root_value=None, context_value=None,
