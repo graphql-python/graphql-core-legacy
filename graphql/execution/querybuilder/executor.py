@@ -29,16 +29,16 @@ def is_promise(obj):
 
 def execute(schema, document_ast, root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
-            return_promise=False, middlewares=None):
+            return_promise=False, middleware=None):
     assert schema, 'Must provide schema'
     assert isinstance(schema, GraphQLSchema), (
         'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
         'not multiple versions of GraphQL installed in your node_modules directory.'
     )
-    if middlewares:
-        assert isinstance(middlewares, MiddlewareManager), (
+    if middleware:
+        assert isinstance(middleware, MiddlewareManager), (
             'middlewares have to be an instance'
-            ' of MiddlewareManager. Received "{}".'.format(middlewares)
+            ' of MiddlewareManager. Received "{}".'.format(middleware)
         )
 
     if executor is None:
@@ -52,7 +52,7 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         variable_values,
         operation_name,
         executor,
-        middlewares
+        middleware
     )
 
     def executor(resolve, reject):

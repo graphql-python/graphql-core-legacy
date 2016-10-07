@@ -3,7 +3,7 @@ from promise import promise_for_dict
 from functools import partial
 from ...pyutils.cached_property import cached_property
 from ..values import get_argument_values, get_variable_values
-from ..base import collect_fields, ResolveInfo, Undefined
+from ..base import collect_fields, ResolveInfo, Undefined, get_field_def
 from ..executor import is_promise
 
 from ...pyutils.ordereddict import OrderedDict
@@ -33,7 +33,9 @@ def get_resolvers(context, type, selection_set):
     for response_name, field_asts in subfield_asts.items():
         field_ast = field_asts[0]
         field_name = field_ast.name.value
-        field_def = type.fields[field_name]
+        field_def = get_field_def(context and context.schema, type, field_name)
+        if not field_def:
+            continue
         field_base_type = get_base_type(field_def.type)
         field_fragment = None
         info = ResolveInfo(
@@ -89,7 +91,10 @@ class Fragment(object):
         contains_promise = False
 
         final_results = OrderedDict()
-
+        # return OrderedDict(
+        #     ((field_name, field_resolver(root, field_args, context, info))
+        #         for field_name, field_resolver, field_args, context, info in self.partial_resolvers)
+        # )
         for response_name, field_resolver, field_args, context, info in self.partial_resolvers:
             result = field_resolver(root, field_args, context, info)
             if result is Undefined:
@@ -141,7 +146,7 @@ class AbstractFragment(object):
         context = self.context.context_value
 
         if return_type.resolve_type:
-            runtime_type = return_type.resolve_type(result, context, self.info)
+            return return_type.resolve_type(result, context, self.info)
         else:
             for type in self.possible_types:
                 if callable(type.is_type_of) and type.is_type_of(result, context, self.info):
