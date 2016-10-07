@@ -21,7 +21,7 @@ before_install:
         source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
       fi
 install:
-- pip install pytest-cov pytest-mock coveralls flake8 isort==3.9.6 gevent==1.1b5 six>=1.10.0 promise>=0.4.2 pytest-benchmark cyordereddict
+- pip install pytest-cov pytest-mock coveralls flake8 isort==3.9.6 gevent==1.1b5 six>=1.10.0 promise>=0.4.2 pytest-benchmark
 - pip install pytest==2.9.2
 - pip install -e .
 script:
@@ -31,6 +31,9 @@ after_success:
 - coveralls
 matrix:
   include:
+    - python: "2.7"
+      after_install:
+        - pip install cyordereddict
     - python: "3.5"
       after_install:
         - pip install pytest-asyncio
