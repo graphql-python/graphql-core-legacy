@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 from graphql.error import format_error
-from graphql.execution.querybuilder.executor import execute
+from graphql.execution.experimental.executor import execute
 from graphql.language.parser import parse
 from graphql.type import (GraphQLField, GraphQLInt, GraphQLList,
                           GraphQLNonNull, GraphQLObjectType, GraphQLSchema)

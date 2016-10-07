@@ -7,12 +7,13 @@ from ....type import (GraphQLEnumType, GraphQLField, GraphQLInt,
                       GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                       GraphQLObjectType, GraphQLScalarType, GraphQLSchema,
                       GraphQLString, GraphQLUnionType)
-from ..resolver import Fragment, type_resolver
+from ..fragment import Fragment
+from ..resolver import type_resolver
 
 SIZE = 10000
 
 
-def test_querybuilder_big_list_of_ints(benchmark):
+def test_experimental_big_list_of_ints(benchmark):
     big_int_list = [x for x in range(SIZE)]
 
     resolver = type_resolver(GraphQLList(GraphQLInt), lambda: big_int_list)
@@ -21,7 +22,7 @@ def test_querybuilder_big_list_of_ints(benchmark):
     assert result == big_int_list
 
 
-def test_querybuilder_big_list_of_nested_ints(benchmark):
+def test_experimental_big_list_of_nested_ints(benchmark):
     big_int_list = [x for x in range(SIZE)]
 
     Node = GraphQLObjectType(
@@ -52,7 +53,7 @@ def test_querybuilder_big_list_of_nested_ints(benchmark):
     } for n in big_int_list]
 
 
-def test_querybuilder_big_list_of_objecttypes_with_two_int_fields(benchmark):
+def test_experimental_big_list_of_objecttypes_with_two_int_fields(benchmark):
     big_int_list = [x for x in range(SIZE)]
 
     Node = GraphQLObjectType('Node', fields={
@@ -86,7 +87,7 @@ def test_querybuilder_big_list_of_objecttypes_with_two_int_fields(benchmark):
     } for n in big_int_list]
 
 
-def test_querybuilder_big_list_of_objecttypes_with_one_int_field(benchmark):
+def test_experimental_big_list_of_objecttypes_with_one_int_field(benchmark):
     big_int_list = [x for x in range(SIZE)]
     Node = GraphQLObjectType('Node', fields={'id': GraphQLField(GraphQLInt, resolver=lambda obj, *_, **__: obj)})
     Query = GraphQLObjectType(

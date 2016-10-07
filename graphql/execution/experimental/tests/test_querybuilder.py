@@ -1,4 +1,4 @@
-# from ..querybuilder import generate_fragment, fragment_operation, QueryBuilder
+# from ..experimental import generate_fragment, fragment_operation, experimental
 # from ..fragment import Fragment
 
 # from ....language.parser import parse
@@ -117,7 +117,7 @@
 #             id
 #         }
 #     }''')
-#     query_builder = QueryBuilder(schema, document_ast)
+#     query_builder = experimental(schema, document_ast)
 #     QueryFragment = query_builder.get_operation_fragment('MyQuery')
 #     node_field_asts = ast.SelectionSet(selections=[
 #         ast.Field(
@@ -157,7 +157,7 @@
 #             id
 #         }
 #     }''')
-#     query_builder = QueryBuilder(schema, document_ast)
+#     query_builder = experimental(schema, document_ast)
 #     QueryFragment = query_builder.get_operation_fragment('MyQuery')
 #     root = None
 #     expected = {
