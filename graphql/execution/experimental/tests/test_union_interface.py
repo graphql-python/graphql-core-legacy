@@ -146,7 +146,7 @@ def test_executes_using_union_types():
         }
     ''')
     result = execute(schema, ast, john)
-    # print type(result.errors[0].original_error)
+
     assert not result.errors
     assert result.data == {
         '__typename': 'Person',

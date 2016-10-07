@@ -86,7 +86,7 @@ def check(doc, data, expected):
     response = execute(schema, ast, data)
 
     if response.errors:
-        print response.errors
+
         result = {
             'data': response.data,
             'errors': [format_error(e) for e in response.errors]

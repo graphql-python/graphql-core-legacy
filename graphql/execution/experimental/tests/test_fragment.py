@@ -122,7 +122,7 @@ def test_fragment_resolver_abstract():
             id
         }
     }''')
-    print document_ast
+
     root_value = None
     context_value = None
     operation_name = None

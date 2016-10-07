@@ -1,5 +1,12 @@
 import collections
-import itertools
+try:
+    from itertools import imap
+    normal_map = map
+except:
+    def normal_map(func, iter):
+        return list(map(func, iter))
+    imap = map
+
 from functools import partial
 
 from promise import Promise
@@ -33,9 +40,9 @@ def complete_list_value(inner_resolver, exe_context, info, on_error, result):
         ('User Error: expected iterable, but did not find one ' +
          'for field {}.{}.').format(info.parent_type, info.field_name)
 
-    completed_results = map(inner_resolver, result)
+    completed_results = normal_map(inner_resolver, result)
 
-    if not any(itertools.imap(is_promise, completed_results)):
+    if not any(imap(is_promise, completed_results)):
         return completed_results
 
     return Promise.all(completed_results).catch(on_error)
