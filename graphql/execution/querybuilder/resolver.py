@@ -86,11 +86,11 @@ def type_resolver(return_type, resolver, fragment=None, exe_context=None, info=N
 
     if isinstance(return_type, (GraphQLObjectType)):
         assert fragment and fragment.type == return_type, 'Fragment and return_type dont match'
-        return type_resolver_type(return_type, resolver, fragment, exe_context, info, catch_error)
+        return type_resolver_fragment(return_type, resolver, fragment, exe_context, info, catch_error)
 
     if isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
         assert fragment, 'You need to pass a fragment to resolve a Interface or Union'
-        return type_resolver_type(return_type, resolver, fragment, exe_context, info, catch_error)
+        return type_resolver_fragment(return_type, resolver, fragment, exe_context, info, catch_error)
 
     raise Exception("The resolver have to be created for a fragment")
 
@@ -105,7 +105,7 @@ def on_error(exe_context, info, catch_error, e):
     raise error
 
 
-def type_resolver_type(return_type, resolver, fragment, exe_context, info, catch_error):
+def type_resolver_fragment(return_type, resolver, fragment, exe_context, info, catch_error):
     on_complete_type_error = partial(on_error, exe_context, info, catch_error)
     complete_object_value_resolve = partial(complete_object_value, fragment.resolve, exe_context, on_complete_type_error)
     on_resolve_error = partial(on_error, exe_context, info, catch_error)
