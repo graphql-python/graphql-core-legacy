@@ -1,20 +1,12 @@
 import logging
 
-from promise import Promise, promise_for_dict, promisify
+from promise import Promise
 
-from ...error import GraphQLError, GraphQLLocatedError
-from ...pyutils.default_ordered_dict import DefaultOrderedDict
-from ...pyutils.ordereddict import OrderedDict
-from ...type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
-                     GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
-                     GraphQLSchema, GraphQLUnionType)
-from ..base import (ExecutionContext, ExecutionResult, ResolveInfo, Undefined,
-                    collect_fields, default_resolve_fn, get_field_def,
-                    get_operation_root_type)
+from ...type import GraphQLSchema
+from ..base import ExecutionContext, ExecutionResult, get_operation_root_type
 from ..executors.sync import SyncExecutor
 from ..middleware import MiddlewareManager
 from .fragment import Fragment
-from .resolver import type_resolver
 
 logger = logging.getLogger(__name__)
 

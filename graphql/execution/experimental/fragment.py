@@ -9,7 +9,7 @@ from ...type import (GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                      GraphQLObjectType, GraphQLUnionType)
 from ..base import ResolveInfo, Undefined, collect_fields, get_field_def
 from ..executor import is_promise
-from ..values import get_argument_values, get_variable_values
+from ..values import get_argument_values
 
 
 def get_base_type(type):

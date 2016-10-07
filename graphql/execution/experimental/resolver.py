@@ -7,9 +7,8 @@ from promise import Promise
 from ...error import GraphQLError, GraphQLLocatedError
 from ...type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
                      GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
-                     GraphQLSchema, GraphQLUnionType)
+                     GraphQLUnionType)
 from ..base import default_resolve_fn
-from .fragment import Fragment
 
 
 def is_promise(value):
