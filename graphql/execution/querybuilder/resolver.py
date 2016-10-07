@@ -1,3 +1,4 @@
+import itertools
 import sys
 import traceback
 import collections
@@ -19,15 +20,13 @@ def is_promise(value):
 
 def on_complete_resolver(on_error, __func, exe_context, info, __resolver, *args, **kwargs):
     try:
-        # print 'on_complete_resolver'
         result = __resolver(*args, **kwargs)
-        # print 'result', result
+        if is_promise(result):
+            return result.then(__func).catch(on_error)
+        return __func(result)
     except Exception, e:
         return on_error(e)
 
-    if is_promise(result):
-        return result.then(__func, on_error)
-    return __func(result)
 
 
 def complete_list_value(inner_resolver, exe_context, info, on_error, result):
@@ -38,19 +37,12 @@ def complete_list_value(inner_resolver, exe_context, info, on_error, result):
         ('User Error: expected iterable, but did not find one ' +
          'for field {}.{}.').format(info.parent_type, info.field_name)
 
-    completed_results = []
-    contains_promise = False
-    try:
-        for item in result:
-            completed_item = inner_resolver(item)
-            if not contains_promise and is_promise(completed_item):
-                contains_promise = True
+    completed_results = map(inner_resolver, result)
 
-            completed_results.append(completed_item)
+    if not any(itertools.imap(is_promise, completed_results)):
+        return completed_results
 
-        return Promise.all(completed_results).catch(on_error) if contains_promise else completed_results
-    except Exception, e:
-        on_error(e)
+    return Promise.all(completed_results).catch(on_error)
 
 
 def complete_nonnull_value(exe_context, info, result):
@@ -71,24 +63,15 @@ def complete_leaf_value(serialize, result):
 def complete_object_value(fragment_resolve, exe_context, on_error, result):
     if result is None:
         return None
-    try:
-        result = fragment_resolve(result)
-        if is_promise(result):
-            return result.catch(on_error)
-        return result
-    except Exception, e:
-        on_error(e)
+
+    result = fragment_resolve(result)
+    if is_promise(result):
+        return result.catch(on_error)
+    return result
 
 
 def field_resolver(field, fragment=None, exe_context=None, info=None):
     return type_resolver(field.type, field.resolver or default_resolve_fn, fragment, exe_context, info, catch_error=True)
-    # def new_resolver(*args, **kwargs):
-    #     try:
-    #         result = resolver(*args, **kwargs)
-    #     except Exception, e:
-    #         exe_context.errors.append(e)
-
-    # return new_resolver
 
 
 def type_resolver(return_type, resolver, fragment=None, exe_context=None, info=None, catch_error=False):

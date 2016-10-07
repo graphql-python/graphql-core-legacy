@@ -95,7 +95,7 @@ class Fragment(object):
             if result is Undefined:
                 continue
 
-            if is_promise(result):
+            if not contains_promise and is_promise(result):
                 contains_promise = True
 
             final_results[response_name] = result

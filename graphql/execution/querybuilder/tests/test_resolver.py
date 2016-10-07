@@ -100,7 +100,7 @@ def test_nonnull_field_resolver_fails_on_null_value():
     assert str(exc_info.value) == 'Cannot return null for non-nullable field parent_type.field_name.'
 
 
-def test_nonnull_list_field_resolver_fails_on_null_value():
+def test_nonnull_list_field_resolver_fails_silently_on_null_value():
     info = mock.MagicMock()
     info.parent_type = 'parent_type'
     info.field_name = 'field_name'
@@ -108,10 +108,10 @@ def test_nonnull_list_field_resolver_fails_on_null_value():
     exe_context.errors = []
     field = GraphQLField(GraphQLList(GraphQLNonNull(GraphQLString)), resolver=lambda *_: ['1', None])
     resolver = field_resolver(field, info=info, exe_context=exe_context)
-    with pytest.raises(GraphQLError) as exc_info:
-        resolver()
+    assert resolver() == None
 
-    assert str(exc_info.value) == 'Cannot return null for non-nullable field parent_type.field_name.'
+    assert len(exe_context.errors) == 1
+    assert str(exe_context.errors[0]) == 'Cannot return null for non-nullable field parent_type.field_name.'
 
 
 def test_nonnull_list_field_resolver_fails_on_null_value_top():
