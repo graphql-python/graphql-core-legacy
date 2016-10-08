@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+from setuptools.command.test import test as TestCommand
 import sys
 
 if sys.version_info[0] < 3:
@@ -12,9 +13,38 @@ else:
 # the numpy distutils extensions that are used by scikit-learn to recursively
 # build the compiled extensions in sub-packages is based on the Python import
 # machinery.
-builtins.__GRAPHQL_SETUP__ = True
+if 'test' not in sys.argv:
+    builtins.__GRAPHQL_SETUP__ = True
 
 version = __import__('graphql').get_version()
+
+install_requires = [
+    'six>=1.10.0',
+    'promise>=0.4.2'
+]
+
+tests_requires = [
+    'pytest==3.0.2',
+    'pytest-django==2.9.1',
+    'pytest-cov==2.3.1',
+    'gevent==1.1rc1',
+    'six>=1.10.0',
+    'pytest-benchmark==3.0.0',
+    'pytest-mock==1.2',
+]
+
+class PyTest(TestCommand):
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = ['graphql', '-vrsx']
+        self.test_suite = True
+
+    def run_tests(self):
+        #import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(self.test_args)
+        sys.exit(errno)
+
 
 setup(
     name='graphql-core',
@@ -43,18 +73,9 @@ setup(
 
     keywords='api graphql protocol rest',
     packages=find_packages(exclude=['tests', 'tests_py35']),
-    install_requires=[
-        'six>=1.10.0',
-        'promise>=0.4.2'
-    ],
-    tests_require=[
-        'pytest==2.9.2',
-        'pytest-benchmark',
-        'pytest-cov',
-        'gevent==1.1rc1',
-        'six>=1.10.0',
-        'pytest-mock'
-    ],
+    install_requires=install_requires,
+    tests_require=tests_requires,
+    cmdclass = {'test': PyTest},
     extras_require={
         'gevent': [
             'gevent==1.1rc1'
