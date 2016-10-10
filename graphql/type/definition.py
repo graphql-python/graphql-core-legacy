@@ -398,15 +398,20 @@ class GraphQLEnumType(GraphQLType):
     Note: If a value is not provided in a definition, the name of the enum value will be used as it's internal value.
     """
 
-    def __init__(self, name, values, description=None):
+    def __init__(self, name, values, description=None, serialize=None, parse_value=None, parse_literal=None):
         assert name, 'Type must provide name.'
         assert_valid_name(name)
         self.name = name
         self.description = description
 
         self.values = define_enum_values(self, values)
+        self._serialize = serialize
+        self._parse_value = parse_value
+        self._parse_literal = parse_literal
 
     def serialize(self, value):
+        if callable(self._serialize):
+            return self._serialize(self, value)
         if isinstance(value, collections.Hashable):
             enum_value = self._value_lookup.get(value)
 
@@ -416,6 +421,8 @@ class GraphQLEnumType(GraphQLType):
         return None
 
     def parse_value(self, value):
+        if callable(self._parse_value):
+            return self._parse_value(self, value)
         if isinstance(value, collections.Hashable):
             enum_value = self._name_lookup.get(value)
 
@@ -425,6 +432,8 @@ class GraphQLEnumType(GraphQLType):
         return None
 
     def parse_literal(self, value_ast):
+        if callable(self._parse_literal):
+            return self._parse_literal(self, value_ast)
         if isinstance(value_ast, ast.EnumValue):
             enum_value = self._name_lookup.get(value_ast.value)
 
