@@ -9,7 +9,12 @@ class GraphQLLocatedError(GraphQLError):
 
     def __init__(self, nodes, original_error=None):
         if original_error:
-            message = str(original_error)
+            message = (
+                original_error.message.encode('utf-8')
+                if isinstance(original_error.message, unicode)
+                else str(original_error)
+            )
+
         else:
             message = 'An unknown error occurred.'
 
