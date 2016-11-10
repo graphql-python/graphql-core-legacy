@@ -3,7 +3,7 @@ import functools
 import logging
 import sys
 
-from promise import Promise, promise_for_dict, promisify
+from promise import Promise, promise_for_dict, promisify, is_thenable
 
 from ..error import GraphQLError, GraphQLLocatedError
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
@@ -100,7 +100,7 @@ def execute_fields_serially(exe_context, parent_type, source_value, fields):
         if result is Undefined:
             return results
 
-        if is_promise(result):
+        if is_thenable(result):
             def collect_result(resolved_result):
                 results[response_name] = resolved_result
                 return results
@@ -206,7 +206,7 @@ def complete_value_catching_error(exe_context, return_type, field_asts, info, re
     # resolving a null value for this field if one is encountered.
     try:
         completed = complete_value(exe_context, return_type, field_asts, info, result)
-        if is_promise(completed):
+        if is_thenable(completed):
             def handle_error(error):
                 exe_context.errors.append(error)
                 return Promise.fulfilled(None)
@@ -240,7 +240,7 @@ def complete_value(exe_context, return_type, field_asts, info, result):
     """
     # If field type is NonNull, complete for inner type, and throw field error if result is null.
 
-    if is_promise(result):
+    if is_thenable(result):
         return promisify(result).then(
             lambda resolved: complete_value(
                 exe_context,
