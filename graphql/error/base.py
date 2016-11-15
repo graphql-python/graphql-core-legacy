@@ -1,3 +1,4 @@
+import six
 from ..language.location import get_location
 
 
@@ -28,6 +29,12 @@ class GraphQLError(Exception):
             node_positions = [node.loc and node.loc.start for node in self.nodes]
             if any(node_positions):
                 return node_positions
+
+    def reraise(self):
+        if self.stack:
+            six.reraise(type(self), self, self.stack)
+        else:
+            raise self
 
     @property
     def locations(self):

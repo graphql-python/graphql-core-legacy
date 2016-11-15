@@ -26,7 +26,6 @@ install:
 - pip install pytest==2.9.2
 - pip install -e .
 script:
-- flake8
 - py.test --cov=graphql graphql tests
 after_success:
 - coveralls
@@ -36,8 +35,10 @@ matrix:
     after_install:
     - pip install pytest-asyncio
     script:
-    - flake8
     - py.test --cov=graphql graphql tests tests_py35
+  - python: '2.7'
+    script:
+    - flake8
 deploy:
   provider: pypi
   user: syrusakbary
