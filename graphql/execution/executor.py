@@ -3,6 +3,7 @@ import functools
 import logging
 import sys
 
+from six import string_types
 from promise import Promise, promise_for_dict, promisify, is_thenable
 
 from ..error import GraphQLError, GraphQLLocatedError
@@ -324,6 +325,9 @@ def complete_abstract_value(exe_context, return_type, field_asts, info, result):
             runtime_type = return_type.resolve_type(result, exe_context.context_value, info)
         else:
             runtime_type = get_default_resolve_type_fn(result, exe_context.context_value, info, return_type)
+
+    if isinstance(runtime_type, string_types):
+        runtime_type = info.schema.get_type(runtime_type)
 
     if not isinstance(runtime_type, GraphQLObjectType):
         raise GraphQLError(
