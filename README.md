@@ -2,7 +2,7 @@
 
 GraphQL for Python.
 
-*This library is a port of [graphql-js](https://github.com/graphql/graphql-js) to Python.*
+*This library is a port of [graphql-js](https://github.com/graphql/graphql-js) to Python and currently is up-to-date with release [0.6.0](https://github.com/graphql/graphql-js/releases/tag/v0.6.0).*
 
 
 [![PyPI version](https://badge.fury.io/py/graphql-core.svg)](https://badge.fury.io/py/graphql-core)
