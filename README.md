@@ -20,7 +20,7 @@ For questions, ask [Stack Overflow](http://stackoverflow.com/questions/tagged/gr
 An overview of the GraphQL language is available in the 
 [README](https://github.com/facebook/graphql/blob/master/README.md) for the
 [Specification for GraphQL](https://github.com/facebook/graphql). 
-The overview describes a simple set of GraphQL examples that exist as [tests](tests/core_starwars)
+The overview describes a simple set of GraphQL examples that exist as [tests](https://github.com/graphql-python/graphql-core/tree/master/tests/)
 in this repository. A good way to get started is to walk through that README and the corresponding tests
 in parallel. 
 
@@ -62,7 +62,7 @@ schema = GraphQLSchema(
 This defines a simple schema with one type and one field, that resolves
 to a fixed value. The `resolve` function can return a value, a promise,
 or an array of promises. A more complex example is included in the top
-level [tests](graphql/tests) directory.
+level [tests](https://github.com/graphql-python/graphql-core/tree/master/tests/) directory.
 
 Then, serve the result of a query against that type schema.
 
