@@ -3,7 +3,7 @@ from ..error import GraphQLError
 from ..language import ast
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
 from ..type.definition import GraphQLInterfaceType, GraphQLUnionType
-from ..type.directives import GraphQLIncludeDirective, GraphQLSkipDirective
+from ..type.directives import GraphQLIncludeDirective, GraphQLSkipDirective, GraphQLExportDirective
 from ..type.introspection import (SchemaMetaFieldDef, TypeMetaFieldDef,
                                   TypeNameMetaFieldDef)
 from ..utils.type_from_ast import type_from_ast
@@ -103,11 +103,12 @@ class ExecutionResult(object):
     query, `errors` is null if no errors occurred, and is a
     non-empty array if an error occurred."""
 
-    __slots__ = 'data', 'errors', 'invalid'
+    __slots__ = 'data', 'errors', 'invalid', 'variable_values'
 
-    def __init__(self, data=None, errors=None, invalid=False):
+    def __init__(self, data=None, errors=None, invalid=False, variable_values=None):
         self.data = data
         self.errors = errors
+        self.variable_values = variable_values
 
         if invalid:
             assert data is None
@@ -171,6 +172,12 @@ def collect_fields(ctx, runtime_type, selection_set, fields, prev_fragment_names
         directives = selection.directives
 
         if isinstance(selection, ast.Field):
+            if directives:
+                for directive in directives:
+                    if directive.name.value == GraphQLExportDirective.name:
+                        variable = get_argument_values(GraphQLExportDirective.args, directive.arguments)['as']
+                        ctx.variable_values.setdefault(variable, []).append(selection.name.value)
+
             if not should_include_node(ctx, directives):
                 continue
 

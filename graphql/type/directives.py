@@ -103,6 +103,21 @@ GraphQLSkipDirective = GraphQLDirective(
     ]
 )
 
+"""Used to export variable values as the result of a query (for batching)."""
+GraphQLExportDirective = GraphQLDirective(
+    name='export',
+    description='Exports variable values from the results of the query.',
+    args={
+        'as': GraphQLArgument(
+            type=GraphQLNonNull(GraphQLString),
+            description='Variable name used for export.',
+        ),
+    },
+    locations=[
+        DirectiveLocation.FIELD
+    ]
+)
+
 """Constant string used for default reason for a deprecation."""
 DEFAULT_DEPRECATION_REASON = 'No longer supported'
 
