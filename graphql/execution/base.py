@@ -176,7 +176,6 @@ def collect_fields(ctx, runtime_type, selection_set, fields, prev_fragment_names
                 for directive in directives:
                     if directive.name.value == GraphQLExportDirective.name:
                         variable = get_argument_values(GraphQLExportDirective.args, directive.arguments)['as']
-                        import pdb; pdb.set_trace()
                         ctx.variable_values.setdefault(variable, []).append(selection.name.value)
 
             if not should_include_node(ctx, directives):
