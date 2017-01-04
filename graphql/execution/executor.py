@@ -130,7 +130,6 @@ def execute_fields(exe_context, parent_type, source_value, fields):
         if directives:
             for directive in directives:
                 if directive.name.value == GraphQLExportDirective.name:
-                    import pdb; pdb.set_trace()
                     variable_name = directive.arguments[0].value.value
                     exe_context.variable_values.setdefault(variable_name, []).append(result)
 
