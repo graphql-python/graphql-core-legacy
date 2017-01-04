@@ -6,6 +6,7 @@ import sys
 from six import string_types
 from promise import Promise, promise_for_dict, promisify, is_thenable
 
+from ..type.directives import GraphQLExportDirective
 from ..error import GraphQLError, GraphQLLocatedError
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
 from ..pyutils.ordereddict import OrderedDict
@@ -125,10 +126,19 @@ def execute_fields(exe_context, parent_type, source_value, fields):
 
     for response_name, field_asts in fields.items():
         result = resolve_field(exe_context, parent_type, source_value, field_asts)
+        directives = field_asts[0].directives
+        if directives:
+            for directive in directives:
+                if directive.name.value == GraphQLExportDirective.name:
+                    import pdb; pdb.set_trace()
+                    variable_name = directive.arguments[0].value.value
+                    exe_context.variable_values.setdefault(variable_name, []).append(result)
+
         if result is Undefined:
             continue
 
         final_results[response_name] = result
+
         if is_promise(result):
             contains_promise = True
 
