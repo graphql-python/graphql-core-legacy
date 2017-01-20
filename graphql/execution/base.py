@@ -285,10 +285,14 @@ class ResolveInfo(object):
 
 
 def default_resolve_fn(source, args, context, info):
-    """If a resolve function is not given, then a default resolve behavior is used which takes the property of the source object
+    """If a resolve function is not given, then a default resolve behavior is used which takes the property of the source object or dict
     of the same name as the field and returns it as the result, or if it's a function, returns the result of calling that function."""
     name = info.field_name
-    property = getattr(source, name, None)
+    property = None
+    if hasattr(source, name):
+        property = getattr(source, name)
+    elif type(source) is dict:
+        property = source.get(name)
     if callable(property):
         return property()
     return property
