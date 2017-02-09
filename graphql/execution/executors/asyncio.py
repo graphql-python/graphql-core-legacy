@@ -38,9 +38,11 @@ class AsyncioExecutor(object):
 
     def wait_until_finished(self):
         # if there are futures to wait for
-        if self.futures:
+        while self.futures:
             # wait for the futures to finish
-            self.loop.run_until_complete(wait(self.futures))
+            futures = self.futures
+            self.futures = []
+            self.loop.run_until_complete(wait(futures))
 
     def execute(self, fn, *args, **kwargs):
         result = fn(*args, **kwargs)
