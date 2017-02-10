@@ -33,7 +33,7 @@ except NameError:
     __GRAPHQL_SETUP__ = False
 
 
-VERSION = (0, 5, 3, 'final', 0)
+VERSION = (1, 0, 1, 'final', 0)
 
 __version__ = get_version(VERSION)
 
@@ -58,7 +58,14 @@ if not __GRAPHQL_SETUP__:
         GraphQLList,
         GraphQLNonNull,
         GraphQLField,
+        GraphQLInputObjectField,
         GraphQLArgument,
+
+        # "Enum" of Type Kinds
+        TypeKind,
+
+        # "Enum" of Directive locations
+        DirectiveLocation,
 
         # Scalars
         GraphQLInt,
@@ -66,6 +73,33 @@ if not __GRAPHQL_SETUP__:
         GraphQLString,
         GraphQLBoolean,
         GraphQLID,
+
+        # Directive definition
+        GraphQLDirective,
+
+        # Built-in directives defined by the Spec
+        specified_directives,
+        GraphQLSkipDirective,
+        GraphQLIncludeDirective,
+        GraphQLDeprecatedDirective,
+
+        # Constant Deprecation Reason
+        DEFAULT_DEPRECATION_REASON,
+
+        # GraphQL Types for introspection.
+        __Schema,
+        __Directive,
+        __DirectiveLocation,
+        __Type,
+        __Field,
+        __InputValue,
+        __EnumValue,
+        __TypeKind,
+
+        # Meta-field definitions.
+        SchemaMetaFieldDef,
+        TypeMetaFieldDef,
+        TypeNameMetaFieldDef,
 
         # Predicates
         is_type,
@@ -102,6 +136,8 @@ if not __GRAPHQL_SETUP__:
     # Execute GraphQL queries.
     from .execution import (  # no import order
         execute,
+        MiddlewareManager,
+        middlewares
     )
 
     # Validate GraphQL queries.
@@ -180,12 +216,32 @@ if not __GRAPHQL_SETUP__:
         'GraphQLList',
         'GraphQLNonNull',
         'GraphQLField',
+        'GraphQLInputObjectField',
         'GraphQLArgument',
         'GraphQLObjectType',
         'GraphQLScalarType',
         'GraphQLSchema',
         'GraphQLString',
         'GraphQLUnionType',
+        'GraphQLDirective',
+        'specified_directives',
+        'GraphQLSkipDirective',
+        'GraphQLIncludeDirective',
+        'GraphQLDeprecatedDirective',
+        'DEFAULT_DEPRECATION_REASON',
+        'TypeKind',
+        'DirectiveLocation',
+        '__Schema',
+        '__Directive',
+        '__DirectiveLocation',
+        '__Type',
+        '__Field',
+        '__InputValue',
+        '__EnumValue',
+        '__TypeKind',
+        'SchemaMetaFieldDef',
+        'TypeMetaFieldDef',
+        'TypeNameMetaFieldDef',
         'get_named_type',
         'get_nullable_type',
         'is_abstract_type',
@@ -204,6 +260,8 @@ if not __GRAPHQL_SETUP__:
         'print_ast',
         'visit',
         'execute',
+        'MiddlewareManager',
+        'middlewares',
         'specified_rules',
         'validate',
         'GraphQLError',

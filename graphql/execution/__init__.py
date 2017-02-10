@@ -20,6 +20,7 @@ single level of the query. These include:
 """
 from .executor import execute
 from .base import ExecutionResult
+from .middleware import middlewares, MiddlewareManager
 
 
-__all__ = ['execute', 'ExecutionResult']
+__all__ = ['execute', 'ExecutionResult', 'MiddlewareManager', 'middlewares']

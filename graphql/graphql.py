@@ -29,7 +29,7 @@ from .validation import validate
 #    one operation.
 def graphql(schema, request_string='', root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
-            return_promise=False):
+            return_promise=False, middleware=None):
     try:
         if isinstance(request_string, Document):
             ast = request_string
@@ -50,7 +50,8 @@ def graphql(schema, request_string='', root_value=None, context_value=None,
             operation_name=operation_name,
             variable_values=variable_values or {},
             executor=executor,
-            return_promise=return_promise
+            return_promise=return_promise,
+            middleware=middleware,
         )
     except Exception as e:
         return ExecutionResult(

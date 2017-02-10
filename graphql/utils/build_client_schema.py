@@ -1,6 +1,5 @@
-from collections import OrderedDict
-
 from ..language.parser import parse_value
+from ..pyutils.ordereddict import OrderedDict
 from ..type import (GraphQLArgument, GraphQLBoolean, GraphQLEnumType,
                     GraphQLEnumValue, GraphQLField, GraphQLFloat, GraphQLID,
                     GraphQLInputObjectField, GraphQLInputObjectType,
@@ -225,7 +224,7 @@ def build_client_schema(introspection):
             name=directive_introspection['name'],
             description=directive_introspection.get('description'),
             # TODO: {} ?
-            args=build_input_value_def_map(directive_introspection.get('args', []), GraphQLArgument),
+            args=build_input_value_def_map(directive_introspection.get('args', {}), GraphQLArgument),
             locations=locations
         )
 

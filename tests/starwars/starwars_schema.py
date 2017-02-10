@@ -142,5 +142,4 @@ queryType = GraphQLObjectType(
         ),
     }
 )
-
 StarWarsSchema = GraphQLSchema(query=queryType, types=[humanType, droidType])

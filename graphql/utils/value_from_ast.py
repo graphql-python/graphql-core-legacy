@@ -33,7 +33,7 @@ def value_from_ast(value_ast, type, variables=None):
             return [value_from_ast(value_ast, item_type, variables)]
 
     if isinstance(type, GraphQLInputObjectType):
-        fields = type.get_fields()
+        fields = type.fields
         if not isinstance(value_ast, ast.ObjectValue):
             return None
 
@@ -57,7 +57,9 @@ def value_from_ast(value_ast, type, variables=None):
                 field_value = field.default_value
 
             if field_value is not None:
-                obj[field_name] = field_value
+                # We use out_name as the output name for the
+                # dict if exists
+                obj[field.out_name or field_name] = field_value
 
         return obj
 

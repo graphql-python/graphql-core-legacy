@@ -1,4 +1,5 @@
 import json
+from collections import OrderedDict
 
 from pytest import raises
 
@@ -17,12 +18,12 @@ TestComplexScalar = GraphQLScalarType(
     parse_literal=lambda v: 'DeserializedValue' if v.value == 'SerializedValue' else None
 )
 
-TestInputObject = GraphQLInputObjectType('TestInputObject', {
-    'a': GraphQLInputObjectField(GraphQLString),
-    'b': GraphQLInputObjectField(GraphQLList(GraphQLString)),
-    'c': GraphQLInputObjectField(GraphQLNonNull(GraphQLString)),
-    'd': GraphQLInputObjectField(TestComplexScalar)
-})
+TestInputObject = GraphQLInputObjectType('TestInputObject', OrderedDict([
+    ('a', GraphQLInputObjectField(GraphQLString)),
+    ('b', GraphQLInputObjectField(GraphQLList(GraphQLString))),
+    ('c', GraphQLInputObjectField(GraphQLNonNull(GraphQLString))),
+    ('d', GraphQLInputObjectField(TestComplexScalar))
+]))
 
 stringify = lambda obj: json.dumps(obj, sort_keys=True)
 

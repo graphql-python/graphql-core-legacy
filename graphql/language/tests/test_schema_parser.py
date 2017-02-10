@@ -28,6 +28,7 @@ type Hello {
                     loc=loc(6, 11)
                 ),
                 interfaces=[],
+                directives=[],
                 fields=[
                     ast.FieldDefinition(
                         name=ast.Name(
@@ -42,6 +43,7 @@ type Hello {
                             ),
                             loc=loc(23, 29)
                         ),
+                        directives=[],
                         loc=loc(16, 29)
                     )
                 ],
@@ -50,7 +52,6 @@ type Hello {
         ],
         loc=loc(1, 31)
     )
-
     assert doc == expected
 
 
@@ -71,6 +72,7 @@ extend type Hello {
                         loc=loc(13, 18)
                     ),
                     interfaces=[],
+                    directives=[],
                     fields=[
                         ast.FieldDefinition(
                             name=ast.Name(
@@ -85,6 +87,7 @@ extend type Hello {
                                 ),
                                 loc=loc(30, 36)
                             ),
+                            directives=[],
                             loc=loc(23, 36)
                         )
                     ],
@@ -115,6 +118,7 @@ type Hello {
                     loc=loc(6, 11)
                 ),
                 interfaces=[],
+                directives=[],
                 fields=[
                     ast.FieldDefinition(
                         name=ast.Name(
@@ -132,6 +136,7 @@ type Hello {
                             ),
                             loc=loc(23, 30)
                         ),
+                        directives=[],
                         loc=loc(16, 30)
                     )
                 ],
@@ -163,6 +168,7 @@ def test_parses_simple_type_inheriting_interface():
                         loc=loc(22, 27)
                     )
                 ],
+                directives=[],
                 fields=[],
                 loc=loc(0, 31)
             )
@@ -200,6 +206,7 @@ def test_parses_simple_type_inheriting_multiple_interfaces():
                         loc=loc(26, 29)
                     )
                 ],
+                directives=[],
                 fields=[],
                 loc=loc(0, 33)
             )
@@ -220,12 +227,14 @@ def test_parses_single_value_enum():
                     value='Hello',
                     loc=loc(5, 10)
                 ),
+                directives=[],
                 values=[
                     ast.EnumValueDefinition(
                         name=ast.Name(
                             value='WORLD',
                             loc=loc(13, 18)
                         ),
+                        directives=[],
                         loc=loc(13, 18)
                     )
                 ],
@@ -249,12 +258,14 @@ def test_parses_double_value_enum():
                     value='Hello',
                     loc=loc(5, 10)
                 ),
+                directives=[],
                 values=[
                     ast.EnumValueDefinition(
                         name=ast.Name(
                             value='WO',
                             loc=loc(13, 15)
                         ),
+                        directives=[],
                         loc=loc(13, 15)
                     ),
                     ast.EnumValueDefinition(
@@ -262,6 +273,7 @@ def test_parses_double_value_enum():
                             value='RLD',
                             loc=loc(17, 20)
                         ),
+                        directives=[],
                         loc=loc(17, 20)
                     )
                 ],
@@ -289,6 +301,7 @@ interface Hello {
                     value='Hello',
                     loc=loc(11, 16)
                 ),
+                directives=[],
                 fields=[
                     ast.FieldDefinition(
                         name=ast.Name(
@@ -303,6 +316,7 @@ interface Hello {
                             ),
                             loc=loc(28, 34)
                         ),
+                        directives=[],
                         loc=loc(21, 34)
                     )
                 ],
@@ -330,6 +344,7 @@ type Hello {
                     loc=loc(6, 11)
                 ),
                 interfaces=[],
+                directives=[],
                 fields=[
                     ast.FieldDefinition(
                         name=ast.Name(
@@ -350,6 +365,7 @@ type Hello {
                                     loc=loc(28, 35)
                                 ),
                                 default_value=None,
+                                directives=[],
                                 loc=loc(22, 35)
                             )
                         ],
@@ -360,6 +376,7 @@ type Hello {
                             ),
                             loc=loc(38, 44)
                         ),
+                        directives=[],
                         loc=loc(16, 44)
                     )
                 ],
@@ -387,6 +404,7 @@ type Hello {
                     loc=loc(6, 11)
                 ),
                 interfaces=[],
+                directives=[],
                 fields=[
                     ast.FieldDefinition(
                         name=ast.Name(
@@ -410,6 +428,7 @@ type Hello {
                                     value=True,
                                     loc=loc(38, 42)
                                 ),
+                                directives=[],
                                 loc=loc(22, 42)
                             )
                         ],
@@ -420,6 +439,7 @@ type Hello {
                             ),
                             loc=loc(45, 51)
                         ),
+                        directives=[],
                         loc=loc(16, 51)
                     )
                 ],
@@ -447,6 +467,7 @@ type Hello {
                     loc=loc(6, 11)
                 ),
                 interfaces=[],
+                directives=[],
                 fields=[
                     ast.FieldDefinition(
                         name=ast.Name(
@@ -470,6 +491,7 @@ type Hello {
                                     loc=loc(30, 38)
                                 ),
                                 default_value=None,
+                                directives=[],
                                 loc=loc(22, 38)
                             )
                         ],
@@ -480,6 +502,7 @@ type Hello {
                             ),
                             loc=loc(41, 47)
                         ),
+                        directives=[],
                         loc=loc(16, 47)
                     )
                 ],
@@ -506,6 +529,7 @@ type Hello {
                     loc=loc(6, 11)
                 ),
                 interfaces=[],
+                directives=[],
                 fields=[
                     ast.FieldDefinition(
                         name=ast.Name(
@@ -526,6 +550,7 @@ type Hello {
                                     loc=loc(30, 37)
                                 ),
                                 default_value=None,
+                                directives=[],
                                 loc=loc(22, 37)
                             ),
                             ast.InputValueDefinition(
@@ -541,6 +566,7 @@ type Hello {
                                     loc=loc(47, 50)
                                 ),
                                 default_value=None,
+                                directives=[],
                                 loc=loc(39, 50)
                             )
                         ],
@@ -551,6 +577,7 @@ type Hello {
                             ),
                             loc=loc(53, 59)
                         ),
+                        directives=[],
                         loc=loc(16, 59)
                     )
                 ],
@@ -573,6 +600,7 @@ def test_parses_simple_union():
                     value='Hello',
                     loc=loc(6, 11)
                 ),
+                directives=[],
                 types=[
                     ast.NamedType(
                         name=ast.Name(
@@ -601,6 +629,7 @@ def test_parses_union_with_two_types():
                     value='Hello',
                     loc=loc(6, 11)
                 ),
+                directives=[],
                 types=[
                     ast.NamedType(
                         name=ast.Name(
@@ -636,6 +665,7 @@ def test_parses_scalar():
                     value='Hello',
                     loc=loc(7, 12)
                 ),
+                directives=[],
                 loc=loc(0, 12)
             )
         ],
@@ -658,6 +688,7 @@ input Hello {
                     value='Hello',
                     loc=loc(7, 12)
                 ),
+                directives=[],
                 fields=[
                     ast.InputValueDefinition(
                         name=ast.Name(
@@ -672,6 +703,7 @@ input Hello {
                             loc=loc(24, 30)
                         ),
                         default_value=None,
+                        directives=[],
                         loc=loc(17, 30)
                     )
                 ],

@@ -188,7 +188,7 @@ def test_sorts_values_if_not_using_ordered_dict():
         'd': GraphQLEnumValue()
     })
 
-    assert [v.name for v in enum.get_values()] == ['a', 'b', 'c', 'd']
+    assert [v.name for v in enum.values] == ['a', 'b', 'c', 'd']
 
 
 def test_does_not_sort_values_when_using_ordered_dict():
@@ -199,4 +199,4 @@ def test_does_not_sort_values_when_using_ordered_dict():
         ('d', GraphQLEnumValue()),
     ]))
 
-    assert [v.name for v in enum.get_values()] == ['c', 'b', 'a', 'd']
+    assert [v.name for v in enum.values] == ['c', 'b', 'a', 'd']
