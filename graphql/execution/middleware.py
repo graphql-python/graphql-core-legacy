@@ -9,9 +9,9 @@ MIDDLEWARE_RESOLVER_FUNCTION = 'resolve'
 
 class MiddlewareManager(object):
 
-    def __init__(self, *middlewares, wrap_in_promise=True):
+    def __init__(self, *middlewares, **kwargs):
         self.middlewares = middlewares
-        self.wrap_in_promise = wrap_in_promise
+        self.wrap_in_promise = kwargs.get('wrap_in_promise', True)
         self._middleware_resolvers = list(get_middleware_resolvers(middlewares))
         self._cached_resolvers = {}
 
