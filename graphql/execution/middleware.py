@@ -9,9 +9,9 @@ MIDDLEWARE_RESOLVER_FUNCTION = 'resolve'
 
 class MiddlewareManager(object):
 
-    def __init__(self, *middlewares, **kwargs):
+    def __init__(self, *middlewares, wrap_in_promise=True):
         self.middlewares = middlewares
-        self.wrap_in_promise = kwargs.get('wrap_in_promise', True)
+        self.wrap_in_promise = wrap_in_promise
         self._middleware_resolvers = list(get_middleware_resolvers(middlewares))
         self._cached_resolvers = {}
 
@@ -39,7 +39,7 @@ def get_middleware_resolvers(middlewares):
         yield getattr(middleware, MIDDLEWARE_RESOLVER_FUNCTION)
 
 
-def middleware_chain(func, middlewares, wrap_in_promise):
+def middleware_chain(func, middlewares, wrap_in_promise=True):
     if not middlewares:
         return func
     if wrap_in_promise:
