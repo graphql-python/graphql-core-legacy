@@ -9,6 +9,7 @@ from ...type import (GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                      GraphQLObjectType, GraphQLUnionType)
 from ..base import ResolveInfo, Undefined, collect_fields, get_field_def
 from ..values import get_argument_values
+from ...error import GraphQLError
 
 
 def is_promise(obj):
@@ -55,6 +56,7 @@ def get_resolvers(context, type, selection_set):
             field_fragment = Fragment(
                 type=field_base_type,
                 selection_set=field_ast.selection_set,
+                info=info,
                 context=context
             )
         elif isinstance(field_base_type, (GraphQLInterfaceType, GraphQLUnionType)):
@@ -76,10 +78,11 @@ def get_resolvers(context, type, selection_set):
 
 class Fragment(object):
 
-    def __init__(self, type, selection_set, context=None):
+    def __init__(self, type, selection_set, context=None, info=None):
         self.type = type
         self.selection_set = selection_set
         self.context = context
+        self.info = info
 
     @cached_property
     def partial_resolvers(self):
@@ -89,7 +92,16 @@ class Fragment(object):
             self.selection_set
         )
 
+    def have_type(self, root):
+        return not self.type.is_type_of or self.type.is_type_of(root, self.context.context_value, self.info)
+
     def resolve(self, root):
+        if root and not self.have_type(root):
+            raise GraphQLError(
+                u'Expected value of type "{}" but got: {}.'.format(self.type, type(root).__name__),
+                self.info.field_asts
+            )
+
         contains_promise = False
 
         final_results = OrderedDict()
@@ -98,6 +110,7 @@ class Fragment(object):
         #         for field_name, field_resolver, field_args, context, info in self.partial_resolvers)
         # )
         for response_name, field_resolver, field_args, context, info in self.partial_resolvers:
+
             result = field_resolver(root, field_args, context, info)
             if result is Undefined:
                 continue
@@ -144,7 +157,8 @@ class Fragment(object):
         return isinstance(other, Fragment) and (
             other.type == self.type and
             other.selection_set == self.selection_set and
-            other.context == self.context
+            other.context == self.context and
+            other.info == self.info
         )
 
 
@@ -169,7 +183,7 @@ class AbstractFragment(object):
             assert type in self.possible_types, (
                 'Runtime Object type "{}" is not a possible type for "{}".'
             ).format(type, self.abstract_type)
-            self._fragments[type] = Fragment(type, self.selection_set, self.context)
+            self._fragments[type] = Fragment(type, self.selection_set, self.context, self.info)
         return self._fragments[type]
 
     def resolve_type(self, result):
