@@ -130,7 +130,7 @@ class Fragment(object):
                     results[response_name] = resolved_result
                     return results
 
-                return result.then(collect_result, None)
+                return result.then(collect_result)
 
             results[response_name] = result
             return results
@@ -163,7 +163,9 @@ class AbstractFragment(object):
 
     def get_fragment(self, type):
         if type not in self._fragments:
-            assert type in self.possible_types
+            assert type in self.possible_types, (
+                'Runtime Object type "{}" is not a possible type for "{}".'
+            ).format(type, self.abstract_type)
             self._fragments[type] = Fragment(type, self.selection_set, self.context)
         return self._fragments[type]
 

@@ -74,7 +74,9 @@ def complete_object_value(fragment_resolve, exe_context, on_error, result):
 
 
 def field_resolver(field, fragment=None, exe_context=None, info=None):
-    return type_resolver(field.type, field.resolver or default_resolve_fn,
+    # resolver = exe_context.get_field_resolver(field.resolver or default_resolve_fn)
+    resolver = field.resolver or default_resolve_fn
+    return type_resolver(field.type, resolver,
                          fragment, exe_context, info, catch_error=True)
 
 
