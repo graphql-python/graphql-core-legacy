@@ -11,10 +11,6 @@ from .fragment import Fragment
 logger = logging.getLogger(__name__)
 
 
-def is_promise(obj):
-    return isinstance(obj, Promise)
-
-
 def execute(schema, document_ast, root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
             return_promise=False, middleware=None):

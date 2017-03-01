@@ -8,8 +8,11 @@ from ...pyutils.ordereddict import OrderedDict
 from ...type import (GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                      GraphQLObjectType, GraphQLUnionType)
 from ..base import ResolveInfo, Undefined, collect_fields, get_field_def
-from ..executor import is_promise
 from ..values import get_argument_values
+
+
+def is_promise(obj):
+    return isinstance(obj, Promise)
 
 
 def get_base_type(type):

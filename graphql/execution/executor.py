@@ -16,6 +16,7 @@ from .base import (ExecutionContext, ExecutionResult, ResolveInfo, Undefined,
                    collect_fields, default_resolve_fn, get_field_def,
                    get_operation_root_type)
 from .executors.sync import SyncExecutor
+from .experimental.executor import execute as experimental_execute
 from .middleware import MiddlewareManager
 
 logger = logging.getLogger(__name__)
@@ -25,9 +26,19 @@ def is_promise(obj):
     return type(obj) == Promise
 
 
+use_experimental_executor = False
+
+
 def execute(schema, document_ast, root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
             return_promise=False, middleware=None):
+    if use_experimental_executor:
+        return experimental_execute(
+            schema, document_ast, root_value, context_value,
+            variable_values, operation_name, executor,
+            return_promise, middleware
+        )
+
     assert schema, 'Must provide schema'
     assert isinstance(schema, GraphQLSchema), (
         'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
