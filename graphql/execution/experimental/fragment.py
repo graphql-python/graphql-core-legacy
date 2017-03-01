@@ -162,6 +162,9 @@ class AbstractFragment(object):
         return self.context.schema.get_possible_types(self.abstract_type)
 
     def get_fragment(self, type):
+        if isinstance(type, str):
+            type = self.context.schema.get_type(type)
+
         if type not in self._fragments:
             assert type in self.possible_types, (
                 'Runtime Object type "{}" is not a possible type for "{}".'
