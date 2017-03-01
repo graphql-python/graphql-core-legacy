@@ -41,8 +41,7 @@ def is_output_type(type):
 
 
 def is_leaf_type(type):
-    named_type = get_named_type(type)
-    return isinstance(named_type, (
+    return isinstance(type, (
         GraphQLScalarType,
         GraphQLEnumType,
     ))
@@ -527,8 +526,7 @@ class GraphQLInputObjectType(GraphQLType):
             '{} fields must be a mapping (dict / OrderedDict) with field names as keys or a '
             'function which returns such a mapping.'
         ).format(self)
-
-        if not isinstance(fields, OrderedDict):
+        if not isinstance(fields, (collections.OrderedDict, OrderedDict)):
             fields = OrderedDict(sorted(list(fields.items())))
 
         for field_name, field in fields.items():

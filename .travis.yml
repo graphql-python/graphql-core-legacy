@@ -7,37 +7,42 @@ python:
 - 3.5
 - pypy
 before_install:
-  - |
-      if [ "$TRAVIS_PYTHON_VERSION" = "pypy" ]; then
-        export PYENV_ROOT="$HOME/.pyenv"
-        if [ -f "$PYENV_ROOT/bin/pyenv" ]; then
-          cd "$PYENV_ROOT" && git pull
-        else
-          rm -rf "$PYENV_ROOT" && git clone --depth 1 https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
-        fi
-        export PYPY_VERSION="4.0.1"
-        "$PYENV_ROOT/bin/pyenv" install "pypy-$PYPY_VERSION"
-        virtualenv --python="$PYENV_ROOT/versions/pypy-$PYPY_VERSION/bin/python" "$HOME/virtualenvs/pypy-$PYPY_VERSION"
-        source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
-      fi
+- |
+  if [ "$TRAVIS_PYTHON_VERSION" = "pypy" ]; then
+    export PYENV_ROOT="$HOME/.pyenv"
+    if [ -f "$PYENV_ROOT/bin/pyenv" ]; then
+      cd "$PYENV_ROOT" && git pull
+    else
+      rm -rf "$PYENV_ROOT" && git clone --depth 1 https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
+    fi
+    export PYPY_VERSION="4.0.1"
+    "$PYENV_ROOT/bin/pyenv" install "pypy-$PYPY_VERSION"
+    virtualenv --python="$PYENV_ROOT/versions/pypy-$PYPY_VERSION/bin/python" "$HOME/virtualenvs/pypy-$PYPY_VERSION"
+    source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
+  fi
 install:
-- pip install pytest-cov pytest-mock coveralls flake8 isort gevent==1.1b5 six>=1.10.0 promise>=0.4.2 pytest-benchmark
+- pip install pytest-cov pytest-mock coveralls flake8 gevent==1.1b5 six>=1.10.0 promise>=0.4.2
+  pytest-benchmark
 - pip install pytest==2.9.2
 - pip install -e .
 script:
-- flake8
 - py.test --cov=graphql graphql tests
 after_success:
 - coveralls
 matrix:
   include:
-    - python: "2.7"
-      after_install:
-        - pip install cyordereddict
-    - python: "3.5"
-      after_install:
-        - pip install pytest-asyncio
-      script:
-        - flake8
-        - isort --check-only graphql/ -rc
-        - py.test --cov=graphql graphql tests tests_py35
+  - python: '3.5'
+    after_install:
+    - pip install pytest-asyncio
+    script:
+    - py.test --cov=graphql graphql tests tests_py35
+  - python: '2.7'
+    script:
+    - flake8
+deploy:
+  provider: pypi
+  user: syrusakbary
+  on:
+    tags: true
+  password:
+    secure: q7kMxnJQ5LWr8fxVbQPm3pAXKRfYa1d2defM1UXKTQ+Gi6ZQ+QEOAOSbX1SKzYH62+hNRY2JGTeLkTQBeEYn05GJRh+WOkFzIFV1EnsgFbimSb6B83EmM57099GjJnO2nRUU4jyuNGU1joTeaD/g08ede072Es1I7DTuholNbYIq+brL/LQMJycuqZMoWUW4+pP8dE9SmjThMNYHlqNhzdXSE3BlZU0xcw7F2Ea384DNcekIIcapZuPjL167VouuSH/oMQMxBJo+ExEHdbqn5zsA9xcoF931XCgz4ag8U3jHhE48ZXM/xwdQt+S8JnOZcuv3MoAAioMbh+bYXUt2lmENWXCKK1kMDz2bJymwEUeZLA6lFxJQwvlVShowdi7xeyDYLIbeF7yG90Hd+5BqCZn5imzlcQxpjanaQq6xLwAzo6AHssWtd5bBOjDydknPxd1t3QGDoDvtfRdqrfOhlVX5813Hmd/vAopBAba7msKPMLxhsqDZKkwsVrLJLJDjGdpHNl/bbVaMsYcPrsFxa2W8PuddQFviHbL4HDNqHn5SpRwJcQ18YL1X5StQnUz1J+4E0W4mLrU3YW1k8RGlKTes/GeTH4sU+Sh3I9vrDv7849A8U9sSFyB2PT4Jyy8O2R5UyjoqnZDrkYYbLdn/caVo3ThrubTpwdPBmNwcDLA=

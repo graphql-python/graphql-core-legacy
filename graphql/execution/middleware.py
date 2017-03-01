@@ -9,14 +9,19 @@ MIDDLEWARE_RESOLVER_FUNCTION = 'resolve'
 
 class MiddlewareManager(object):
 
-    def __init__(self, *middlewares):
+    def __init__(self, *middlewares, wrap_in_promise=True):
         self.middlewares = middlewares
+        self.wrap_in_promise = wrap_in_promise
         self._middleware_resolvers = list(get_middleware_resolvers(middlewares))
         self._cached_resolvers = {}
 
     def get_field_resolver(self, field_resolver):
         if field_resolver not in self._cached_resolvers:
-            self._cached_resolvers[field_resolver] = middleware_chain(field_resolver, self._middleware_resolvers)
+            self._cached_resolvers[field_resolver] = middleware_chain(
+                field_resolver,
+                self._middleware_resolvers,
+                wrap_in_promise=self.wrap_in_promise,
+            )
 
         return self._cached_resolvers[field_resolver]
 
@@ -34,10 +39,13 @@ def get_middleware_resolvers(middlewares):
         yield getattr(middleware, MIDDLEWARE_RESOLVER_FUNCTION)
 
 
-def middleware_chain(func, middlewares):
+def middleware_chain(func, middlewares, wrap_in_promise=True):
     if not middlewares:
         return func
-    middlewares = chain((func, make_it_promise), middlewares)
+    if wrap_in_promise:
+        middlewares = chain((func, make_it_promise), middlewares)
+    else:
+        middlewares = chain((func,), middlewares)
     last_func = None
     for middleware in middlewares:
         last_func = partial(middleware, last_func) if last_func else middleware

@@ -8,6 +8,7 @@ from graphql.language.parser import parse
 from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLField,
                           GraphQLInt, GraphQLList, GraphQLObjectType,
                           GraphQLSchema, GraphQLString)
+from promise import Promise
 
 
 def test_executes_arbitary_code():
@@ -268,21 +269,6 @@ def test_uses_the_only_operation_if_no_operation_name_is_provided():
     result = execute(GraphQLSchema(Type), ast, Data())
     assert not result.errors
     assert result.data == {'a': 'b'}
-
-
-def test_uses_the_named_operation_if_operation_name_is_provided():
-    doc = 'query Example { first: a } query OtherExample { second: a }'
-
-    class Data(object):
-        a = 'b'
-
-    ast = parse(doc)
-    Type = GraphQLObjectType('Type', {
-        'a': GraphQLField(GraphQLString)
-    })
-    result = execute(GraphQLSchema(Type), ast, Data(), operation_name='OtherExample')
-    assert not result.errors
-    assert result.data == {'second': 'b'}
 
 
 def test_uses_the_named_operation_if_operation_name_is_provided():
@@ -589,7 +575,7 @@ def test_middleware():
         return p.then(lambda x: x[::-1])
 
     middlewares = MiddlewareManager(reversed_middleware)
-    result = execute(GraphQLSchema(Type), doc_ast, Data(), middlewares=middlewares)
+    result = execute(GraphQLSchema(Type), doc_ast, Data(), middleware=middlewares)
     assert result.data == {'ok': 'ko', 'not_ok': 'ko_ton'}
 
 
@@ -620,13 +606,14 @@ def test_middleware_class():
             return p.then(lambda x: x[::-1])
 
     middlewares = MiddlewareManager(MyMiddleware())
-    result = execute(GraphQLSchema(Type), doc_ast, Data(), middlewares=middlewares)
+    result = execute(GraphQLSchema(Type), doc_ast, Data(), middleware=middlewares)
     assert result.data == {'ok': 'ko', 'not_ok': 'ko_ton'}
 
 
-def test_middleware_wrong():
+def test_middleware_skip_promise_wrap():
     doc = '''{
         ok
+        not_ok
     }'''
 
     class Data(object):
@@ -634,13 +621,27 @@ def test_middleware_wrong():
         def ok(self):
             return 'ok'
 
+        def not_ok(self):
+            return 'not_ok'
+
     doc_ast = parse(doc)
 
     Type = GraphQLObjectType('Type', {
         'ok': GraphQLField(GraphQLString),
+        'not_ok': GraphQLField(GraphQLString),
     })
-    middlewares = [None]
-    with raises(AssertionError) as excinfo:
-        execute(GraphQLSchema(Type), doc_ast, Data(), middlewares=middlewares)
 
-    assert 'middlewares have to be an instance of MiddlewareManager. Received "[None]".' == str(excinfo.value)
+    class MyPromiseMiddleware(object):
+        def resolve(self, next, *args, **kwargs):
+            return Promise.resolve(next(*args, **kwargs))
+
+    class MyEmptyMiddleware(object):
+        def resolve(self, next, *args, **kwargs):
+            return next(*args, **kwargs)
+
+    middlewares_with_promise = MiddlewareManager(MyPromiseMiddleware(), wrap_in_promise=False)
+    middlewares_without_promise = MiddlewareManager(MyEmptyMiddleware(), wrap_in_promise=False)
+
+    result1 = execute(GraphQLSchema(Type), doc_ast, Data(), middleware=middlewares_with_promise)
+    result2 = execute(GraphQLSchema(Type), doc_ast, Data(), middleware=middlewares_without_promise)
+    assert result1.data == result2.data and result1.data == {'ok': 'ok', 'not_ok': 'not_ok'}

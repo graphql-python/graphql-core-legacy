@@ -134,6 +134,50 @@ __DirectiveLocation = GraphQLEnumType(
             DirectiveLocation.INLINE_FRAGMENT,
             description='Location adjacent to an inline fragment.'
         )),
+        ('SCHEMA', GraphQLEnumValue(
+            DirectiveLocation.SCHEMA,
+            description='Location adjacent to a schema definition.'
+        )),
+        ('SCALAR', GraphQLEnumValue(
+            DirectiveLocation.SCALAR,
+            description='Location adjacent to a scalar definition.'
+        )),
+        ('OBJECT', GraphQLEnumValue(
+            DirectiveLocation.OBJECT,
+            description='Location adjacent to an object definition.'
+        )),
+        ('FIELD_DEFINITION', GraphQLEnumValue(
+            DirectiveLocation.FIELD_DEFINITION,
+            description='Location adjacent to a field definition.'
+        )),
+        ('ARGUMENT_DEFINITION', GraphQLEnumValue(
+            DirectiveLocation.ARGUMENT_DEFINITION,
+            description='Location adjacent to an argument definition.'
+        )),
+        ('INTERFACE', GraphQLEnumValue(
+            DirectiveLocation.INTERFACE,
+            description='Location adjacent to an interface definition.'
+        )),
+        ('UNION', GraphQLEnumValue(
+            DirectiveLocation.UNION,
+            description='Location adjacent to a union definition.'
+        )),
+        ('ENUM', GraphQLEnumValue(
+            DirectiveLocation.ENUM,
+            description='Location adjacent to an enum definition.'
+        )),
+        ('ENUM_VALUE', GraphQLEnumValue(
+            DirectiveLocation.ENUM_VALUE,
+            description='Location adjacent to an enum value definition.'
+        )),
+        ('INPUT_OBJECT', GraphQLEnumValue(
+            DirectiveLocation.INPUT_OBJECT,
+            description='Location adjacent to an input object definition.'
+        )),
+        ('INPUT_FIELD_DEFINITION', GraphQLEnumValue(
+            DirectiveLocation.INPUT_FIELD_DEFINITION,
+            description='Location adjacent to an input object field definition.'
+        )),
     ]))
 
 

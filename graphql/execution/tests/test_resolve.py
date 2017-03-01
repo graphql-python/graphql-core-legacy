@@ -6,6 +6,35 @@ from graphql.type import (GraphQLArgument, GraphQLField,
                           GraphQLInputObjectField, GraphQLInputObjectType,
                           GraphQLInt, GraphQLList, GraphQLNonNull,
                           GraphQLObjectType, GraphQLSchema, GraphQLString)
+from promise import Promise
+
+class CustomPromise(object):
+    def __init__(self, fn=None, promise=None):
+        self._promise = promise or Promise(fn)
+
+    def get(self, _=None):
+        raise NotImplementedError("Blocking for results not allowed. Use 'then' if you want to "
+                                  "work with the result.")
+
+    def then(self, success=None, failure=None):
+        return self.__class__(promise=self._promise.then(success, failure))
+
+    def __getattr__(self, item):
+        return getattr(self._promise, item)
+
+    @classmethod
+    def fulfilled(cls, x):
+        p = cls()
+        p.fulfill(x)
+        return p
+
+    resolve = fulfilled
+
+    @classmethod
+    def rejected(cls, reason):
+        p = cls()
+        p.reject(reason)
+        return p
 
 
 def _test_schema(test_field):
@@ -71,6 +100,34 @@ def test_uses_provided_resolve_function():
         {'test': '["Source!",{"aStr":"String!","aInt":-123}]'},
         {'test': '["Source!",{"aInt":-123,"aStr":"String!"}]'}
     ]
+
+
+def test_handles_resolved_promises():
+    def resolver(source, args, *_):
+        return Promise.resolve('foo')
+
+    schema = _test_schema(GraphQLField(
+        GraphQLString,
+        resolver=resolver
+    ))
+
+    result = graphql(schema, '{ test }', None)
+    assert not result.errors
+    assert result.data == {'test': 'foo'}
+
+
+def test_handles_resolved_custom_promises():
+    def resolver(source, args, *_):
+        return CustomPromise.resolve('custom_foo')
+
+    schema = _test_schema(GraphQLField(
+        GraphQLString,
+        resolver=resolver
+    ))
+
+    result = graphql(schema, '{ test }', None)
+    assert not result.errors
+    assert result.data == {'test': 'custom_foo'}
 
 
 def test_maps_argument_out_names_well():

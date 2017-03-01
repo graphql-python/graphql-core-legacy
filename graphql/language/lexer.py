@@ -183,6 +183,7 @@ def read_token(source, from_position):
         source, position,
         u'Unexpected character {}.'.format(print_char_code(code)))
 
+
 ignored_whitespace_characters = frozenset([
     # BOM
     0xFEFF,

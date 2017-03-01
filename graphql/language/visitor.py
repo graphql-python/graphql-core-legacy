@@ -64,7 +64,6 @@ def visit(root, visitor, key_map=None):
 
                 else:
                     node = copy(node)
-
                 edit_offset = 0
                 for edit_key, edit_value in edits:
                     if in_array:

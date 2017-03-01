@@ -3,7 +3,8 @@ import functools
 import logging
 import sys
 
-from promise import Promise, promise_for_dict
+from six import string_types
+from promise import Promise, promise_for_dict, promisify, is_thenable
 
 from ..error import GraphQLError, GraphQLLocatedError
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
@@ -26,16 +27,19 @@ def is_promise(obj):
 
 def execute(schema, document_ast, root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
-            return_promise=False, middlewares=None):
+            return_promise=False, middleware=None):
     assert schema, 'Must provide schema'
     assert isinstance(schema, GraphQLSchema), (
         'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
         'not multiple versions of GraphQL installed in your node_modules directory.'
     )
-    if middlewares:
-        assert isinstance(middlewares, MiddlewareManager), (
+    if middleware:
+        if not isinstance(middleware, MiddlewareManager):
+            middleware = MiddlewareManager(*middleware)
+
+        assert isinstance(middleware, MiddlewareManager), (
             'middlewares have to be an instance'
-            ' of MiddlewareManager. Received "{}".'.format(middlewares)
+            ' of MiddlewareManager. Received "{}".'.format(middleware)
         )
 
     if executor is None:
@@ -49,7 +53,7 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         variable_values,
         operation_name,
         executor,
-        middlewares
+        middleware
     )
 
     def executor(resolve, reject):
@@ -97,7 +101,7 @@ def execute_fields_serially(exe_context, parent_type, source_value, fields):
         if result is Undefined:
             return results
 
-        if is_promise(result):
+        if is_thenable(result):
             def collect_result(resolved_result):
                 results[response_name] = resolved_result
                 return results
@@ -203,7 +207,7 @@ def complete_value_catching_error(exe_context, return_type, field_asts, info, re
     # resolving a null value for this field if one is encountered.
     try:
         completed = complete_value(exe_context, return_type, field_asts, info, result)
-        if is_promise(completed):
+        if is_thenable(completed):
             def handle_error(error):
                 exe_context.errors.append(error)
                 return None
@@ -237,8 +241,8 @@ def complete_value(exe_context, return_type, field_asts, info, result):
     """
     # If field type is NonNull, complete for inner type, and throw field error if result is null.
 
-    if is_promise(result):
-        return result.then(
+    if is_thenable(result):
+        return promisify(result).then(
             lambda resolved: complete_value(
                 exe_context,
                 return_type,
@@ -249,6 +253,7 @@ def complete_value(exe_context, return_type, field_asts, info, result):
             lambda error: Promise.rejected(GraphQLLocatedError(field_asts, original_error=error))
         )
 
+    # print return_type, type(result)
     if isinstance(result, Exception):
         raise GraphQLLocatedError(field_asts, original_error=result)
 
@@ -321,16 +326,21 @@ def complete_abstract_value(exe_context, return_type, field_asts, info, result):
         else:
             runtime_type = get_default_resolve_type_fn(result, exe_context.context_value, info, return_type)
 
-    assert isinstance(runtime_type, GraphQLObjectType), (
-        'Abstract type {} must resolve to an Object type at runtime ' +
-        'for field {}.{} with value "{}", received "{}".'
-    ).format(
-        return_type,
-        info.parent_type,
-        info.field_name,
-        result,
-        runtime_type,
-    )
+    if isinstance(runtime_type, string_types):
+        runtime_type = info.schema.get_type(runtime_type)
+
+    if not isinstance(runtime_type, GraphQLObjectType):
+        raise GraphQLError(
+            ('Abstract type {} must resolve to an Object type at runtime ' +
+             'for field {}.{} with value "{}", received "{}".').format(
+                 return_type,
+                 info.parent_type,
+                 info.field_name,
+                 result,
+                 runtime_type,
+                 ),
+            field_asts
+        )
 
     if not exe_context.schema.is_possible_type(return_type, runtime_type):
         raise GraphQLError(

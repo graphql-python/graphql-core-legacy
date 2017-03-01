@@ -1,5 +1,5 @@
 from ...error import GraphQLError
-from ...type.definition import is_leaf_type
+from ...type.definition import get_named_type, is_leaf_type
 from .base import ValidationRule
 
 
@@ -11,7 +11,7 @@ class ScalarLeafs(ValidationRule):
         if not type:
             return
 
-        if is_leaf_type(type):
+        if is_leaf_type(get_named_type(type)):
             if node.selection_set:
                 self.context.report_error(GraphQLError(
                     self.no_subselection_allowed_message(node.name.value, type),
