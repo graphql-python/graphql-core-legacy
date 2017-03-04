@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def is_promise(obj):
-    return type(obj) == Promise
+    return isinstance(obj, Promise)
 
 
 def execute(schema, document_ast, root_value=None, context_value=None,
