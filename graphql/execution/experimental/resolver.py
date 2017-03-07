@@ -1,7 +1,7 @@
 import collections
 from functools import partial
 
-from promise import Promise
+from promise import Promise, is_thenable
 
 from ...error import GraphQLError, GraphQLLocatedError
 from ...type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
@@ -25,8 +25,18 @@ def is_promise(value):
 def on_complete_resolver(on_error, __func, exe_context, info, __resolver, *args, **kwargs):
     try:
         result = __resolver(*args, **kwargs)
+        if isinstance(result, Exception):
+            return on_error(result)
+        # return Promise.resolve(result).then(__func).catch(on_error)
         if is_promise(result):
-            return result.then(__func).catch(on_error)
+            # TODO: Remove this, if a promise is resolved with an Exception,
+            # it should raise by default. This is fixing an old behavior
+            # in the Promise package
+            def on_resolve(value):
+                if isinstance(value, Exception):
+                    return on_error(value)
+                return value
+            return result.then(on_resolve).then(__func).catch(on_error)
         return __func(result)
     except Exception as e:
         return on_error(e)
@@ -76,6 +86,9 @@ def complete_object_value(fragment_resolve, exe_context, on_error, result):
 def field_resolver(field, fragment=None, exe_context=None, info=None):
     # resolver = exe_context.get_field_resolver(field.resolver or default_resolve_fn)
     resolver = field.resolver or default_resolve_fn
+    if exe_context:
+        # We decorate the resolver with the middleware
+        resolver = exe_context.get_field_resolver(resolver)
     return type_resolver(field.type, resolver,
                          fragment, exe_context, info, catch_error=True)
 

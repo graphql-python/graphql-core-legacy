@@ -22,18 +22,24 @@ def get_base_type(type):
     return type
 
 
-def get_resolvers(context, type, selection_set):
-    from .resolver import field_resolver
+def get_subfield_asts(context, return_type, field_asts):
     subfield_asts = DefaultOrderedDict(list)
     visited_fragment_names = set()
-    if selection_set:
-        subfield_asts = collect_fields(
-            context, type, selection_set,
-            subfield_asts, visited_fragment_names
-        )
+    for field_ast in field_asts:
+        selection_set = field_ast.selection_set
+        if selection_set:
+            subfield_asts = collect_fields(
+                context, return_type, selection_set,
+                subfield_asts, visited_fragment_names
+            )
+    return subfield_asts
+
+
+def get_resolvers(context, type, field_asts):
+    from .resolver import field_resolver
 
     resolvers = []
-    for response_name, field_asts in subfield_asts.items():
+    for response_name, field_asts in field_asts.items():
         field_ast = field_asts[0]
         field_name = field_ast.name.value
         field_def = get_field_def(context and context.schema, type, field_name)
@@ -55,14 +61,14 @@ def get_resolvers(context, type, selection_set):
         if isinstance(field_base_type, GraphQLObjectType):
             field_fragment = Fragment(
                 type=field_base_type,
-                selection_set=field_ast.selection_set,
+                field_asts=get_subfield_asts(context, field_base_type, field_asts),
                 info=info,
                 context=context
             )
         elif isinstance(field_base_type, (GraphQLInterfaceType, GraphQLUnionType)):
             field_fragment = AbstractFragment(
                 abstract_type=field_base_type,
-                selection_set=field_ast.selection_set,
+                field_asts=field_asts,
                 info=info,
                 context=context
             )
@@ -78,9 +84,9 @@ def get_resolvers(context, type, selection_set):
 
 class Fragment(object):
 
-    def __init__(self, type, selection_set, context=None, info=None):
+    def __init__(self, type, field_asts, context=None, info=None):
         self.type = type
-        self.selection_set = selection_set
+        self.field_asts = field_asts
         self.context = context
         self.info = info
 
@@ -89,7 +95,7 @@ class Fragment(object):
         return get_resolvers(
             self.context,
             self.type,
-            self.selection_set
+            self.field_asts
         )
 
     def have_type(self, root):
@@ -156,7 +162,7 @@ class Fragment(object):
     def __eq__(self, other):
         return isinstance(other, Fragment) and (
             other.type == self.type and
-            other.selection_set == self.selection_set and
+            other.field_asts == self.field_asts and
             other.context == self.context and
             other.info == self.info
         )
@@ -164,9 +170,9 @@ class Fragment(object):
 
 class AbstractFragment(object):
 
-    def __init__(self, abstract_type, selection_set, context=None, info=None):
+    def __init__(self, abstract_type, field_asts, context=None, info=None):
         self.abstract_type = abstract_type
-        self.selection_set = selection_set
+        self.field_asts = field_asts
         self.context = context
         self.info = info
         self._fragments = {}
@@ -183,7 +189,12 @@ class AbstractFragment(object):
             assert type in self.possible_types, (
                 'Runtime Object type "{}" is not a possible type for "{}".'
             ).format(type, self.abstract_type)
-            self._fragments[type] = Fragment(type, self.selection_set, self.context, self.info)
+            self._fragments[type] = Fragment(
+                type,
+                get_subfield_asts(self.context, type, self.field_asts),
+                self.context,
+                self.info
+            )
         return self._fragments[type]
 
     def resolve_type(self, result):
