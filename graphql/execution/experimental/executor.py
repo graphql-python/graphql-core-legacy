@@ -1,8 +1,7 @@
 from promise import Promise
 
 from ...type import GraphQLSchema
-from ...pyutils.default_ordered_dict import DefaultOrderedDict
-from ..base import ExecutionContext, ExecutionResult, get_operation_root_type, collect_fields
+from ..base import ExecutionContext, ExecutionResult, get_operation_root_type
 from ..executors.sync import SyncExecutor
 from ..middleware import MiddlewareManager
 from .fragment import Fragment
@@ -57,15 +56,7 @@ def execute_operation(exe_context, operation, root_value):
     type = get_operation_root_type(exe_context.schema, operation)
     execute_serially = operation.operation == 'mutation'
 
-    fields = collect_fields(
-        exe_context,
-        type,
-        operation.selection_set,
-        DefaultOrderedDict(list),
-        set()
-    )
-
-    fragment = Fragment(type=type, field_asts=fields, context=exe_context)
+    fragment = Fragment(type=type, field_asts=[operation], context=exe_context)
     if execute_serially:
         return fragment.resolve_serially(root_value)
     return fragment.resolve(root_value)

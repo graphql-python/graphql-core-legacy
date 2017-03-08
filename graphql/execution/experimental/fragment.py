@@ -37,9 +37,9 @@ def get_subfield_asts(context, return_type, field_asts):
 
 def get_resolvers(context, type, field_asts):
     from .resolver import field_resolver
+    subfield_asts = get_subfield_asts(context, type, field_asts)
 
-    resolvers = []
-    for response_name, field_asts in field_asts.items():
+    for response_name, field_asts in subfield_asts.items():
         field_ast = field_asts[0]
         field_name = field_ast.name.value
         field_def = get_field_def(context and context.schema, type, field_name)
@@ -61,7 +61,7 @@ def get_resolvers(context, type, field_asts):
         if isinstance(field_base_type, GraphQLObjectType):
             field_fragment = Fragment(
                 type=field_base_type,
-                field_asts=get_subfield_asts(context, field_base_type, field_asts),
+                field_asts=field_asts,
                 info=info,
                 context=context
             )
@@ -78,8 +78,7 @@ def get_resolvers(context, type, field_asts):
             field_ast.arguments,
             context and context.variable_values
         )
-        resolvers.append((response_name, resolver, args, context and context.context_value, info))
-    return resolvers
+        yield (response_name, resolver, args, context and context.context_value, info)
 
 
 class Fragment(object):
@@ -92,11 +91,11 @@ class Fragment(object):
 
     @cached_property
     def partial_resolvers(self):
-        return get_resolvers(
+        return list(get_resolvers(
             self.context,
             self.type,
             self.field_asts
-        )
+        ))
 
     def have_type(self, root):
         return not self.type.is_type_of or self.type.is_type_of(root, self.context.context_value, self.info)
@@ -191,7 +190,7 @@ class AbstractFragment(object):
             ).format(type, self.abstract_type)
             self._fragments[type] = Fragment(
                 type,
-                get_subfield_asts(self.context, type, self.field_asts),
+                self.field_asts,
                 self.context,
                 self.info
             )
