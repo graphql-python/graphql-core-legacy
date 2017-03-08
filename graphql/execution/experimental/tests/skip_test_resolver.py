@@ -115,6 +115,10 @@ def test_nonnull_list_field_resolver_fails_silently_on_null_value():
 
 
 def test_nonnull_list_field_resolver_fails_on_null_value_top():
+    from ....pyutils.default_ordered_dict import DefaultOrderedDict
+    from ...base import collect_fields
+
+
     DataType = GraphQLObjectType('DataType', {
         'nonNullString': GraphQLField(GraphQLNonNull(GraphQLString), resolver=lambda *_: None),
     })
@@ -129,8 +133,16 @@ def test_nonnull_list_field_resolver_fails_on_null_value_top():
             name=ast.Name(value='nonNullString'),
         )
     ])
+    field_asts = collect_fields(
+        exe_context,
+        DataType,
+        selection_set,
+        DefaultOrderedDict(list),
+        set()
+    )
+
     # node_fragment = Fragment(type=Node, field_asts=node_field_asts)
-    datetype_fragment = Fragment(type=DataType, selection_set=selection_set, context=exe_context)
+    datetype_fragment = Fragment(type=DataType, field_asts=field_asts, context=exe_context)
     resolver = field_resolver(field, info=info, exe_context=exe_context, fragment=datetype_fragment)
     with pytest.raises(GraphQLError) as exc_info:
         resolver()
@@ -140,6 +152,10 @@ def test_nonnull_list_field_resolver_fails_on_null_value_top():
 
 
 def test_nonnull_list_field_resolver_fails_on_null_value_top():
+    from ....pyutils.default_ordered_dict import DefaultOrderedDict
+    from ...base import collect_fields
+
+
     DataType = GraphQLObjectType('DataType', {
         'nonNullString': GraphQLField(GraphQLString, resolver=lambda *_: None),
     })
@@ -154,8 +170,15 @@ def test_nonnull_list_field_resolver_fails_on_null_value_top():
             name=ast.Name(value='nonNullString'),
         )
     ])
+    field_asts = collect_fields(
+        exe_context,
+        DataType,
+        selection_set,
+        DefaultOrderedDict(list),
+        set()
+    )
     # node_fragment = Fragment(type=Node, field_asts=node_field_asts)
-    datetype_fragment = Fragment(type=DataType, selection_set=selection_set, context=exe_context)
+    datetype_fragment = Fragment(type=DataType, field_asts=field_asts, context=exe_context)
     resolver = field_resolver(field, info=info, exe_context=exe_context, fragment=datetype_fragment)
     data = resolver()
     assert data == {

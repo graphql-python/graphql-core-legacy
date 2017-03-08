@@ -1,3 +1,4 @@
+import sys
 import collections
 from functools import partial
 
@@ -8,6 +9,7 @@ from ...type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
                      GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
                      GraphQLUnionType)
 from ..base import default_resolve_fn
+from ...execution import executor
 
 try:
     from itertools import imap
@@ -28,7 +30,7 @@ def on_complete_resolver(on_error, __func, exe_context, info, __resolver, *args,
         if isinstance(result, Exception):
             return on_error(result)
         # return Promise.resolve(result).then(__func).catch(on_error)
-        if is_promise(result):
+        if is_thenable(result):
             # TODO: Remove this, if a promise is resolved with an Exception,
             # it should raise by default. This is fixing an old behavior
             # in the Promise package
@@ -120,6 +122,10 @@ def on_error(exe_context, info, catch_error, e):
         error = GraphQLLocatedError(info.field_asts, original_error=e)
     if catch_error:
         exe_context.errors.append(error)
+        executor.logger.exception("An error occurred while resolving field {}.{}".format(
+            info.parent_type.name, info.field_name
+        ))
+        error.stack = sys.exc_info()[2]
         return None
     raise error
 

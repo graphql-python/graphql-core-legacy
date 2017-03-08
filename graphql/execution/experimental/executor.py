@@ -1,5 +1,3 @@
-import logging
-
 from promise import Promise
 
 from ...type import GraphQLSchema
@@ -8,8 +6,6 @@ from ..base import ExecutionContext, ExecutionResult, get_operation_root_type, c
 from ..executors.sync import SyncExecutor
 from ..middleware import MiddlewareManager
 from .fragment import Fragment
-
-logger = logging.getLogger(__name__)
 
 
 def execute(schema, document_ast, root_value=None, context_value=None,
