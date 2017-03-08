@@ -10,15 +10,7 @@ from ...type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
                      GraphQLUnionType)
 from ..base import default_resolve_fn
 from ...execution import executor
-
-try:
-    from itertools import imap
-    normal_map = map
-except:
-    def normal_map(func, iter):
-        return list(map(func, iter))
-    imap = map
-
+from .utils import imap, normal_map
 
 def is_promise(value):
     return isinstance(value, Promise)
