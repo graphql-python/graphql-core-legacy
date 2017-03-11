@@ -81,22 +81,34 @@ DataType = GraphQLObjectType('DataType', lambda: {
 schema = GraphQLSchema(DataType)
 
 
+def order_errors(error):
+    locations = error['locations']
+    return (locations[0]['column'], locations[0]['line'])
+
+
 def check(doc, data, expected):
     ast = parse(doc)
     response = execute(schema, ast, data)
 
     if response.errors:
-
         result = {
             'data': response.data,
             'errors': [format_error(e) for e in response.errors]
         }
+        if result['errors'] != expected['errors']:
+            assert result['data'] == expected['data']
+            # Sometimes the fields resolves asynchronously, so
+            # we need to check that the errors are the same, but might be
+            # raised in a different order.
+            assert sorted(result['errors'], key=order_errors) == sorted(expected['errors'], key=order_errors)
+        else:
+            assert result == expected
     else:
         result = {
             'data': response.data
         }
 
-    assert result == expected
+        assert result == expected
 
 
 def test_nulls_a_nullable_field_that_throws_sync():
