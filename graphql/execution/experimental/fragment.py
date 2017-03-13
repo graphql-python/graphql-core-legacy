@@ -11,7 +11,10 @@ from ..base import ResolveInfo, Undefined, collect_fields, get_field_def
 from ..values import get_argument_values
 from ...error import GraphQLError
 from .utils import imap, normal_map
-
+try:
+    from itertools import izip as zip
+except:
+    pass
 
 def get_base_type(type):
     if isinstance(type, (GraphQLList, GraphQLNonNull)):
@@ -109,7 +112,11 @@ class Fragment(object):
 
     @cached_property
     def fragment_container(self):
-        fields = zip(*self.partial_resolvers)[0]
+        try:
+            fields = next(zip(*self.partial_resolvers))
+        except StopIteration:
+            fields = tuple()
+
         class FragmentInstance(dict):
             # def __init__(self):
                 # self.fields = fields
