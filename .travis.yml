@@ -21,10 +21,7 @@ before_install:
     source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
   fi
 install:
-- pip install pytest-cov pytest-mock coveralls flake8 gevent==1.1b5 six>=1.10.0 promise>=0.4.2
-  pytest-benchmark
-- pip install pytest==2.9.2
-- pip install -e .
+- pip install -e .[test]
 script:
 - py.test --cov=graphql graphql tests
 after_success:
