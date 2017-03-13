@@ -4,17 +4,16 @@ from promise import Promise, is_thenable, promise_for_dict
 
 from ...pyutils.cached_property import cached_property
 from ...pyutils.default_ordered_dict import DefaultOrderedDict
-from ...pyutils.ordereddict import OrderedDict
 from ...type import (GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                      GraphQLObjectType, GraphQLUnionType)
 from ..base import ResolveInfo, Undefined, collect_fields, get_field_def
 from ..values import get_argument_values
 from ...error import GraphQLError
-from .utils import imap, normal_map
 try:
     from itertools import izip as zip
 except:
     pass
+
 
 def get_base_type(type):
     if isinstance(type, (GraphQLList, GraphQLNonNull)):
