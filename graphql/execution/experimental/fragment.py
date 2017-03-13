@@ -1,6 +1,6 @@
 import functools
 
-from promise import Promise, promise_for_dict
+from promise import Promise, is_thenable, promise_for_dict
 
 from ...pyutils.cached_property import cached_property
 from ...pyutils.default_ordered_dict import DefaultOrderedDict
@@ -10,10 +10,7 @@ from ...type import (GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
 from ..base import ResolveInfo, Undefined, collect_fields, get_field_def
 from ..values import get_argument_values
 from ...error import GraphQLError
-
-
-def is_promise(obj):
-    return isinstance(obj, Promise)
+from .utils import imap, normal_map
 
 
 def get_base_type(type):
@@ -78,7 +75,20 @@ def get_resolvers(context, type, field_asts):
             field_ast.arguments,
             context and context.variable_values
         )
-        yield (response_name, resolver, args, context and context.context_value, info)
+        yield (response_name, Field(resolver, args, context and context.context_value, info))
+
+
+class Field(object):
+    __slots__ = ('fn', 'args', 'context', 'info')
+
+    def __init__(self, fn, args, context, info):
+        self.fn = fn
+        self.args = args
+        self.context = context
+        self.info = info
+
+    def execute(self, root):
+        return self.fn(root, self.args, self.context, self.info)
 
 
 class Fragment(object):
@@ -97,6 +107,22 @@ class Fragment(object):
             self.field_asts
         ))
 
+    @cached_property
+    def fragment_container(self):
+        fields = zip(*self.partial_resolvers)[0]
+        class FragmentInstance(dict):
+            # def __init__(self):
+                # self.fields = fields
+            # _fields = ('c','b','a')
+            set = dict.__setitem__
+            # def set(self, name, value):
+            #     self[name] = value
+
+            def __iter__(self):
+                return iter(fields)
+
+        return FragmentInstance
+
     def have_type(self, root):
         return not self.type.is_type_of or self.type.is_type_of(root, self.context.context_value, self.info)
 
@@ -109,18 +135,18 @@ class Fragment(object):
 
         contains_promise = False
 
-        final_results = OrderedDict()
+        final_results = self.fragment_container()
         # return OrderedDict(
         #     ((field_name, field_resolver(root, field_args, context, info))
         #         for field_name, field_resolver, field_args, context, info in self.partial_resolvers)
         # )
-        for response_name, field_resolver, field_args, context, info in self.partial_resolvers:
+        for response_name, field_resolver in self.partial_resolvers:
 
-            result = field_resolver(root, field_args, context, info)
+            result = field_resolver.execute(root)
             if result is Undefined:
                 continue
 
-            if not contains_promise and is_promise(result):
+            if not contains_promise and is_thenable(result):
                 contains_promise = True
 
             final_results[response_name] = result
@@ -136,14 +162,14 @@ class Fragment(object):
 
     def resolve_serially(self, root):
         def execute_field_callback(results, resolver):
-            response_name, field_resolver, field_args, context, info = resolver
+            response_name, field_resolver = resolver
 
-            result = field_resolver(root, field_args, context, info)
+            result = field_resolver.execute(root)
 
             if result is Undefined:
                 return results
 
-            if is_promise(result):
+            if is_thenable(result):
                 def collect_result(resolved_result):
                     results[response_name] = resolved_result
                     return results
@@ -156,7 +182,7 @@ class Fragment(object):
         def execute_field(prev_promise, resolver):
             return prev_promise.then(lambda results: execute_field_callback(results, resolver))
 
-        return functools.reduce(execute_field, self.partial_resolvers, Promise.resolve(OrderedDict()))
+        return functools.reduce(execute_field, self.partial_resolvers, Promise.resolve(self.fragment_container()))
 
     def __eq__(self, other):
         return isinstance(other, Fragment) and (
@@ -180,6 +206,12 @@ class AbstractFragment(object):
     def possible_types(self):
         return self.context.schema.get_possible_types(self.abstract_type)
 
+    @cached_property
+    def possible_types_with_is_type_of(self):
+        return [
+            (type, type.is_type_of) for type in self.possible_types if callable(type.is_type_of)
+        ]
+
     def get_fragment(self, type):
         if isinstance(type, str):
             type = self.context.schema.get_type(type)
@@ -194,6 +226,7 @@ class AbstractFragment(object):
                 self.context,
                 self.info
             )
+
         return self._fragments[type]
 
     def resolve_type(self, result):
@@ -202,10 +235,10 @@ class AbstractFragment(object):
 
         if return_type.resolve_type:
             return return_type.resolve_type(result, context, self.info)
-        else:
-            for type in self.possible_types:
-                if callable(type.is_type_of) and type.is_type_of(result, context, self.info):
-                    return type
+
+        for type, is_type_of in self.possible_types_with_is_type_of:
+            if is_type_of(result, context, self.info):
+                return type
 
     def resolve(self, root):
         _type = self.resolve_type(root)

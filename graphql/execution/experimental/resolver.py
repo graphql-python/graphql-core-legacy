@@ -12,9 +12,6 @@ from ..base import default_resolve_fn
 from ...execution import executor
 from .utils import imap, normal_map
 
-def is_promise(value):
-    return isinstance(value, Promise)
-
 
 def on_complete_resolver(on_error, __func, exe_context, info, __resolver, *args, **kwargs):
     try:
@@ -46,7 +43,7 @@ def complete_list_value(inner_resolver, exe_context, info, on_error, result):
 
     completed_results = normal_map(inner_resolver, result)
 
-    if not any(imap(is_promise, completed_results)):
+    if not any(imap(is_thenable, completed_results)):
         return completed_results
 
     return Promise.all(completed_results).catch(on_error)
@@ -72,7 +69,7 @@ def complete_object_value(fragment_resolve, exe_context, on_error, result):
         return None
 
     result = fragment_resolve(result)
-    if is_promise(result):
+    if is_thenable(result):
         return result.catch(on_error)
     return result
 
