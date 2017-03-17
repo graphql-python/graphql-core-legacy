@@ -16,6 +16,8 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         'not multiple versions of GraphQL installed in your node_modules directory.'
     )
     if middleware:
+        if not isinstance(middleware, MiddlewareManager):
+            middleware = MiddlewareManager(*middleware)
         assert isinstance(middleware, MiddlewareManager), (
             'middlewares have to be an instance'
             ' of MiddlewareManager. Received "{}".'.format(middleware)
