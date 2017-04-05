@@ -4,7 +4,7 @@ import logging
 import sys
 
 from six import string_types
-from promise import Promise, promise_for_dict, promisify, is_thenable
+from promise import Promise, promise_for_dict, is_thenable
 
 from ..error import GraphQLError, GraphQLLocatedError
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
@@ -253,7 +253,7 @@ def complete_value(exe_context, return_type, field_asts, info, result):
     # If field type is NonNull, complete for inner type, and throw field error if result is null.
 
     if is_thenable(result):
-        return promisify(result).then(
+        return Promise.resolve(result).then(
             lambda resolved: complete_value(
                 exe_context,
                 return_type,
