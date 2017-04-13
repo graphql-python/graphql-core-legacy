@@ -1,6 +1,6 @@
 
 from graphql.error import format_error
-from graphql.execution import execute
+from graphql.execution.experimental.executor import execute
 from graphql.language.parser import parse
 from graphql.type import (GraphQLField, GraphQLNonNull, GraphQLObjectType,
                           GraphQLSchema, GraphQLString)

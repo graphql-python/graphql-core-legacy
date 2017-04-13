@@ -47,4 +47,14 @@ def test_reraise():
         ('resolve_or_error', 'return executor.execute(resolve_fn, source, args, context, info)'),
         ('execute', 'return fn(*args, **kwargs)'), ('resolver', "raise Exception('Failed')")
     ]
+    # assert formatted_tb == [
+    #     ('test_reraise', 'result.errors[0].reraise()'),
+    #     ('reraise', 'six.reraise(type(self), self, self.stack)'),
+    #     ('on_complete_resolver', 'result = __resolver(*args, **kwargs)'),
+    #     # ('reraise', 'raise value.with_traceback(tb)'),
+    #     # ('resolve_or_error', 'return executor.execute(resolve_fn, source, args, context, info)'),
+    #     # ('execute', 'return fn(*args, **kwargs)'),
+    #     ('resolver', "raise Exception('Failed')")
+    # ]
+
     assert str(exc_info.value) == 'Failed'
