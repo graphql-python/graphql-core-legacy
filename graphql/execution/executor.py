@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def is_promise(obj):
-    return type(obj) == Promise
+    return isinstance(obj, Promise)
 
 
 use_experimental_executor = False
