@@ -1,10 +1,17 @@
+import pytest
 from promise import Promise
 from promise.dataloader import DataLoader
 
 from graphql import GraphQLObjectType, GraphQLField, GraphQLID, GraphQLArgument, GraphQLNonNull, GraphQLSchema, parse, execute
+from graphql.execution.executors.sync import SyncExecutor
+from graphql.execution.executors.thread import ThreadExecutor
 
 
-def test_batches_correctly():
+@pytest.mark.parametrize("executor", [
+    SyncExecutor(),
+    ThreadExecutor(),
+])
+def test_batches_correctly(executor):
 
     Business = GraphQLObjectType('Business', lambda: {
         'id': GraphQLField(GraphQLID, resolver=lambda root, args, context, info: root),
@@ -46,7 +53,7 @@ def test_batches_correctly():
         business_data_loader = BusinessDataLoader()
 
 
-    result = execute(schema, doc_ast, None, context_value=Context())
+    result = execute(schema, doc_ast, None, context_value=Context(), executor=executor)
     assert not result.errors
     assert result.data == {
         'business1': {
@@ -59,7 +66,11 @@ def test_batches_correctly():
     assert load_calls == [['1','2']]
 
 
-def test_batches_multiple_together():
+@pytest.mark.parametrize("executor", [
+    SyncExecutor(),
+    ThreadExecutor(),
+])
+def test_batches_multiple_together(executor):
 
     Location = GraphQLObjectType('Location', lambda: {
         'id': GraphQLField(GraphQLID, resolver=lambda root, args, context, info: root),
@@ -122,7 +133,7 @@ def test_batches_multiple_together():
         location_data_loader = LocationDataLoader()
 
 
-    result = execute(schema, doc_ast, None, context_value=Context())
+    result = execute(schema, doc_ast, None, context_value=Context(), executor=executor)
     assert not result.errors
     assert result.data == {
         'business1': {
