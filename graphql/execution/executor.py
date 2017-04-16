@@ -75,7 +75,8 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         return None
 
     def on_resolve(data):
-        return ExecutionResult(data=data, errors=context.errors)
+        return ExecutionResult(data=data, errors=context.errors, 
+                               variable_values=context.variable_values)
 
     promise = Promise(executor).catch(on_rejected).then(on_resolve)
     if return_promise:
