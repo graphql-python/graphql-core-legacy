@@ -22,10 +22,6 @@ from .middleware import MiddlewareManager
 logger = logging.getLogger(__name__)
 
 
-def is_promise(obj):
-    return type(obj) == Promise
-
-
 use_experimental_executor = False
 
 
@@ -141,7 +137,7 @@ def execute_fields(exe_context, parent_type, source_value, fields):
             continue
 
         final_results[response_name] = result
-        if is_promise(result):
+        if is_thenable(result):
             contains_promise = True
 
     if not contains_promise:
@@ -307,7 +303,7 @@ def complete_list_value(exe_context, return_type, field_asts, info, result):
     contains_promise = False
     for item in result:
         completed_item = complete_value_catching_error(exe_context, item_type, field_asts, info, item)
-        if not contains_promise and is_promise(completed_item):
+        if not contains_promise and is_thenable(completed_item):
             contains_promise = True
 
         completed_results.append(completed_item)
