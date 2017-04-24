@@ -68,7 +68,6 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         return resolve(execute_operation(context, context.operation, root_value))
 
     def on_rejected(error):
-        print "ERROR! [{}]".format(error)
         context.errors.append(error)
         return None
 
