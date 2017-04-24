@@ -1,6 +1,6 @@
 
 from graphql.error import format_error
-from graphql.execution import execute
+from graphql.execution.experimental.executor import execute
 from graphql.language.parser import parse
 from graphql.type import (GraphQLField, GraphQLNonNull, GraphQLObjectType,
                           GraphQLSchema, GraphQLString)
@@ -117,6 +117,7 @@ def test_nulls_a_nullable_field_that_throws_sync():
             sync
         }
     '''
+
     check(doc, ThrowingData(), {
         'data': {'sync': None},
         'errors': [{'locations': [{'column': 13, 'line': 3}], 'message': str(sync_error)}]

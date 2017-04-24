@@ -4,7 +4,7 @@ import logging
 import sys
 
 from six import string_types
-from promise import Promise, promise_for_dict, promisify, is_thenable
+from promise import Promise, promise_for_dict, is_thenable
 
 from ..type.directives import GraphQLExportDirective
 from ..error import GraphQLError, GraphQLLocatedError
@@ -17,18 +17,25 @@ from .base import (ExecutionContext, ExecutionResult, ResolveInfo, Undefined,
                    collect_fields, default_resolve_fn, get_field_def,
                    get_operation_root_type)
 from .executors.sync import SyncExecutor
+from .experimental.executor import execute as experimental_execute
 from .middleware import MiddlewareManager
 
 logger = logging.getLogger(__name__)
 
 
-def is_promise(obj):
-    return type(obj) == Promise
+use_experimental_executor = False
 
 
 def execute(schema, document_ast, root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
             return_promise=False, middleware=None):
+    if use_experimental_executor:
+        return experimental_execute(
+            schema, document_ast, root_value, context_value,
+            variable_values, operation_name, executor,
+            return_promise, middleware
+        )
+
     assert schema, 'Must provide schema'
     assert isinstance(schema, GraphQLSchema), (
         'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
@@ -61,12 +68,14 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         return resolve(execute_operation(context, context.operation, root_value))
 
     def on_rejected(error):
+        print "ERROR! [{}]".format(error)
         context.errors.append(error)
         return None
 
     def on_resolve(data):
-        return ExecutionResult(data=data, errors=context.errors, 
-                               variable_values=context.variable_values)
+        if not context.errors:
+            return ExecutionResult(data=data, variable_values=context.variable_values)
+        return ExecutionResult(data=data, errors=context.errors)
 
     promise = Promise(executor).catch(on_rejected).then(on_resolve)
     if return_promise:
@@ -108,7 +117,7 @@ def execute_fields_serially(exe_context, parent_type, source_value, fields):
                 results[response_name] = resolved_result
                 return results
 
-            return promisify(result).then(collect_result, None)
+            return result.then(collect_result, None)
 
         results[response_name] = result
         return results
@@ -137,8 +146,7 @@ def execute_fields(exe_context, parent_type, source_value, fields):
             continue
 
         final_results[response_name] = result
-
-        if is_promise(result):
+        if is_thenable(result):
             contains_promise = True
 
     if not contains_promise:
@@ -220,9 +228,9 @@ def complete_value_catching_error(exe_context, return_type, field_asts, info, re
         if is_thenable(completed):
             def handle_error(error):
                 exe_context.errors.append(error)
-                return Promise.fulfilled(None)
+                return None
 
-            return promisify(completed).then(None, handle_error)
+            return completed.catch(handle_error)
 
         return completed
     except Exception as e:
@@ -252,7 +260,7 @@ def complete_value(exe_context, return_type, field_asts, info, result):
     # If field type is NonNull, complete for inner type, and throw field error if result is null.
 
     if is_thenable(result):
-        return promisify(result).then(
+        return Promise.resolve(result).then(
             lambda resolved: complete_value(
                 exe_context,
                 return_type,
@@ -304,7 +312,7 @@ def complete_list_value(exe_context, return_type, field_asts, info, result):
     contains_promise = False
     for item in result:
         completed_item = complete_value_catching_error(exe_context, item_type, field_asts, info, item)
-        if not contains_promise and is_promise(completed_item):
+        if not contains_promise and is_thenable(completed_item):
             contains_promise = True
 
         completed_results.append(completed_item)

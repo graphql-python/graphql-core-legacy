@@ -1,6 +1,6 @@
 def process(p, f, args, kwargs):
     try:
         val = f(*args, **kwargs)
-        p.fulfill(val)
+        p.do_resolve(val)
     except Exception as e:
-        p.reject(e)
+        p.do_reject(e)

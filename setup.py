@@ -20,13 +20,14 @@ version = __import__('graphql').get_version()
 
 install_requires = [
     'six>=1.10.0',
-    'promise>=0.4.2'
+    'promise>=2.0'
 ]
 
 tests_requires = [
     'pytest==3.0.2',
     'pytest-django==2.9.1',
     'pytest-cov==2.3.1',
+    'coveralls',
     'gevent==1.1rc1',
     'six>=1.10.0',
     'pytest-benchmark==3.0.0',
@@ -79,6 +80,7 @@ setup(
     extras_require={
         'gevent': [
             'gevent==1.1rc1'
-        ]
+        ],
+        'test': tests_requires
     }
 )

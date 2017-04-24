@@ -41,8 +41,7 @@ def is_output_type(type):
 
 
 def is_leaf_type(type):
-    named_type = get_named_type(type)
-    return isinstance(named_type, (
+    return isinstance(type, (
         GraphQLScalarType,
         GraphQLEnumType,
     ))
