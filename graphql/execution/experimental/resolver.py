@@ -16,18 +16,10 @@ from .utils import imap, normal_map
 def on_complete_resolver(on_error, __func, exe_context, info, __resolver, *args, **kwargs):
     try:
         result = __resolver(*args, **kwargs)
-        if isinstance(result, Exception):
-            return on_error(result)
-        # return Promise.resolve(result).then(__func).catch(on_error)
         if is_thenable(result):
-            # TODO: Remove this, if a promise is resolved with an Exception,
-            # it should raise by default. This is fixing an old behavior
-            # in the Promise package
-            def on_resolve(value):
-                if isinstance(value, Exception):
-                    return on_error(value)
-                return value
-            return result.then(on_resolve).then(__func).catch(on_error)
+            return Promise.resolve(result).then(__func).catch(on_error)
+        elif isinstance(result, Exception):
+            return on_error(result)
         return __func(result)
     except Exception as e:
         return on_error(e)
@@ -52,7 +44,8 @@ def complete_list_value(inner_resolver, exe_context, info, on_error, result):
 def complete_nonnull_value(exe_context, info, result):
     if result is None:
         raise GraphQLError(
-            'Cannot return null for non-nullable field {}.{}.'.format(info.parent_type, info.field_name),
+            'Cannot return null for non-nullable field {}.{}.'.format(
+                info.parent_type, info.field_name),
             info.field_asts
         )
     return result
@@ -130,8 +123,10 @@ def type_resolver_fragment(return_type, resolver, fragment, exe_context, info, c
     return partial(on_complete_resolver, on_resolve_error, complete_object_value_resolve, exe_context, info, resolver)
 
 
-def type_resolver_non_null(return_type, resolver, fragment, exe_context, info):  # no catch_error
-    resolver = type_resolver(return_type.of_type, resolver, fragment, exe_context, info)
+# no catch_error
+def type_resolver_non_null(return_type, resolver, fragment, exe_context, info):
+    resolver = type_resolver(
+        return_type.of_type, resolver, fragment, exe_context, info)
     nonnull_complete = partial(complete_nonnull_value, exe_context, info)
     on_resolve_error = partial(on_error, exe_context, info, False)
     return partial(on_complete_resolver, on_resolve_error, nonnull_complete, exe_context, info, resolver)
@@ -145,7 +140,9 @@ def type_resolver_leaf(return_type, resolver, exe_context, info, catch_error):
 
 def type_resolver_list(return_type, resolver, fragment, exe_context, info, catch_error):
     item_type = return_type.of_type
-    inner_resolver = type_resolver(item_type, lambda item: item, fragment, exe_context, info, catch_error=True)
+    inner_resolver = type_resolver(
+        item_type, lambda item: item, fragment, exe_context, info, catch_error=True)
     on_resolve_error = partial(on_error, exe_context, info, catch_error)
-    list_complete = partial(complete_list_value, inner_resolver, exe_context, info, on_resolve_error)
+    list_complete = partial(
+        complete_list_value, inner_resolver, exe_context, info, on_resolve_error)
     return partial(on_complete_resolver, on_resolve_error, list_complete, exe_context, info, resolver)
