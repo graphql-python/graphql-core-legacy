@@ -14,6 +14,7 @@ class GeventExecutor(object):
     def wait_until_finished(self):
         [j.join() for j in self.jobs]
         # gevent.joinall(self.jobs)
+        self.jobs = []
 
     def execute(self, fn, *args, **kwargs):
         promise = Promise()
