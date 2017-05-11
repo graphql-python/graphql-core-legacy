@@ -77,13 +77,6 @@ def test_does_not_accept_fragments_spread_of_on():
     assert 'Syntax Error GraphQL (1:9) Expected Name, found }' in excinfo.value.message
 
 
-def test_does_not_allow_null_value():
-    with raises(GraphQLSyntaxError) as excinfo:
-        parse('{ fieldWithNullableStringInput(input: null) }')
-
-    assert 'Syntax Error GraphQL (1:39) Unexpected Name "null"' in excinfo.value.message
-
-
 def test_parses_multi_byte_characters():
     result = parse(u'''
         # This comment has a \u0A0A multi-byte character.
