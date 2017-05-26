@@ -47,7 +47,7 @@ class PrintingVisitor(Visitor):
         ], ' ')
 
     def leave_Argument(self, node, *args):
-        return node.name + ': ' + node.value
+        return '{0.name}: {0.value}'.format(node)
 
     # Fragments
 
