@@ -29,6 +29,31 @@ def test_parse_provides_useful_errors():
     assert excinfo.value.locations == [SourceLocation(line=1, column=2)]
 
     with raises(GraphQLSyntaxError) as excinfo:
+        parse('')
+    assert (
+        u'Syntax Error GraphQL (1:1) Unexpected EOF\n'
+        u'\n'
+        u'1: \n'
+        u'   ^\n'
+        u''
+    ) == excinfo.value.message
+
+    assert excinfo.value.positions == [0]
+
+    with raises(GraphQLSyntaxError) as excinfo:
+        parse('\n\n')
+    assert (
+        u'Syntax Error GraphQL (2:1) Unexpected EOF\n'
+        u'\n'
+        u'1: \n'
+        u'2: \n'
+        u'   ^\n'
+        u''
+    ) == excinfo.value.message
+
+    assert excinfo.value.positions == [2]
+
+    with raises(GraphQLSyntaxError) as excinfo:
         parse("""{ ...MissingOn }
 fragment MissingOn Type
 """)

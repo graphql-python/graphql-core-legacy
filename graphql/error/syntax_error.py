@@ -23,7 +23,7 @@ class GraphQLSyntaxError(GraphQLError):
 
 def highlight_source_at_location(source, location):
     line = location.line
-    lines = source.body.splitlines()
+    lines = (source.body if source.body.endswith('\n') else source.body + '\n').splitlines()
     pad_len = len(str(line + 1))
     result = u''
     format = (u'{:>' + str(pad_len) + '}: {}\n').format
