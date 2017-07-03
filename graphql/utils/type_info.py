@@ -85,6 +85,8 @@ class TypeInfo(object):
             definition_type = self._schema.get_query_type()
         elif node.operation == 'mutation':
             definition_type = self._schema.get_mutation_type()
+        elif node.operation == 'subscription':
+            definition_type = self._schema.get_subscription_type()
 
         self._type_stack.append(definition_type)
 
