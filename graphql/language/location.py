@@ -9,7 +9,7 @@ class SourceLocation(object):
         self.column = column
 
     def __repr__(self):
-        return '<SourceLocation line={} column={}>'.format(self.line, self.column)
+        return 'SourceLocation(line={}, column={})'.format(self.line, self.column)
 
     def __eq__(self, other):
         return (
