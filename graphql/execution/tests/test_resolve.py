@@ -8,20 +8,7 @@ from graphql.type import (GraphQLArgument, GraphQLField,
                           GraphQLObjectType, GraphQLSchema, GraphQLString)
 from promise import Promise
 
-class CustomPromise(object):
-    def __init__(self, fn=None, promise=None):
-        self._promise = promise or Promise(fn)
-
-    def get(self, _=None):
-        raise NotImplementedError("Blocking for results not allowed. Use 'then' if you want to "
-                                  "work with the result.")
-
-    def then(self, success=None, failure=None):
-        return self.__class__(promise=self._promise.then(success, failure))
-
-    def __getattr__(self, item):
-        return getattr(self._promise, item)
-
+class CustomPromise(Promise):
     @classmethod
     def fulfilled(cls, x):
         p = cls()
