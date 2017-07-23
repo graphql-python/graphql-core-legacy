@@ -7,16 +7,6 @@ from ..pyutils.ordereddict import OrderedDict
 from ..utils.assert_valid_name import assert_valid_name
 
 
-class _Undefined(object):
-    def __bool__(self):
-        return False
-
-    __nonzero__ = __bool__
-
-
-Undefined = _Undefined()
-
-
 def is_type(type):
     return isinstance(type, (
         GraphQLScalarType,
@@ -516,12 +506,18 @@ class GraphQLInputObjectType(GraphQLType):
                     default_value=0)
             }
     """
-    def __init__(self, name, fields, description=None):
+    def __init__(self, name, fields, description=None, container_type=None):
         assert name, 'Type must be named.'
         self.name = name
         self.description = description
-
+        if container_type is None:
+            container_type = dict
+        assert callable(container_type), "container_type must be callable"
+        self.container_type = container_type
         self._fields = fields
+
+    def create_container(self, data):
+        return self.container_type(data)
 
     @cached_property
     def fields(self):

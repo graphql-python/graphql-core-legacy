@@ -6,7 +6,7 @@ from pytest import raises
 from graphql.error import GraphQLError, format_error
 from graphql.execution import execute
 from graphql.language.parser import parse
-from graphql.type import (GraphQLArgument, GraphQLField,
+from graphql.type import (GraphQLArgument, GraphQLField, GraphQLBoolean,
                           GraphQLInputObjectField, GraphQLInputObjectType,
                           GraphQLList, GraphQLNonNull, GraphQLObjectType,
                           GraphQLScalarType, GraphQLSchema, GraphQLString)
@@ -18,12 +18,22 @@ TestComplexScalar = GraphQLScalarType(
     parse_literal=lambda v: 'DeserializedValue' if v.value == 'SerializedValue' else None
 )
 
+
+class my_special_dict(dict):
+    pass
+
+
 TestInputObject = GraphQLInputObjectType('TestInputObject', OrderedDict([
     ('a', GraphQLInputObjectField(GraphQLString)),
     ('b', GraphQLInputObjectField(GraphQLList(GraphQLString))),
     ('c', GraphQLInputObjectField(GraphQLNonNull(GraphQLString))),
     ('d', GraphQLInputObjectField(TestComplexScalar))
 ]))
+
+
+TestCustomInputObject = GraphQLInputObjectType('TestCustomInputObject', OrderedDict([
+    ('a', GraphQLInputObjectField(GraphQLString)),
+]), container_type=my_special_dict)
 
 stringify = lambda obj: json.dumps(obj, sort_keys=True)
 
@@ -47,6 +57,10 @@ TestType = GraphQLObjectType('TestType', {
         GraphQLString,
         args={'input': GraphQLArgument(TestInputObject)},
         resolver=input_to_json),
+    'fieldWithCustomObjectInput': GraphQLField(
+        GraphQLBoolean,
+        args={'input': GraphQLArgument(TestCustomInputObject)},
+        resolver=lambda root, args, context, info: isinstance(args.get('input'), my_special_dict)),
     'fieldWithNullableStringInput': GraphQLField(
         GraphQLString,
         args={'input': GraphQLArgument(GraphQLString)},
@@ -413,8 +427,23 @@ def test_passes_along_null_for_non_nullable_inputs_if_explcitly_set_in_the_query
     '''
 
     check(doc, {
+        'errors': [{
+            'message': 'Argument "input" of required type String!" was not provided.'
+        }],
+        'data': None
+    })
+
+
+def test_uses_objectinput_container():
+    doc = '''
+    {
+        fieldWithCustomObjectInput(input: {a: "b"})
+    }
+    '''
+
+    check(doc, {
         'data': {
-            'fieldWithNonNullableStringInput': None
+            'fieldWithCustomObjectInput': True
         }
     })
 

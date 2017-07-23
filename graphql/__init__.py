@@ -202,6 +202,9 @@ if not __GRAPHQL_SETUP__:
 
         # Asserts a string is a valid GraphQL name.
         assert_valid_name,
+
+        # Undefined const
+        Undefined,
     )
 
     __all__ = (
@@ -284,4 +287,5 @@ if not __GRAPHQL_SETUP__:
         'type_from_ast',
         'value_from_ast',
         'get_version',
+        'Undefined',
     )

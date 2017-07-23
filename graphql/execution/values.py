@@ -4,6 +4,7 @@ import json
 from six import string_types
 
 from ..error import GraphQLError
+from ..language import ast
 from ..language.printer import print_ast
 from ..type import (GraphQLEnumType, GraphQLInputObjectType, GraphQLList,
                     GraphQLNonNull, GraphQLScalarType, is_input_type)
@@ -23,8 +24,43 @@ def get_variable_values(schema, definition_asts, inputs):
     values = {}
     for def_ast in definition_asts:
         var_name = def_ast.variable.name.value
-        value = get_variable_value(schema, def_ast, inputs.get(var_name))
-        values[var_name] = value
+        var_type = type_from_ast(schema, def_ast.type)
+        value = inputs.get(var_name)
+
+        if not is_input_type(var_type):
+            raise GraphQLError(
+                'Variable "${var_name}" expected value of type "{var_type}" which cannot be used as an input type.'.format(
+                    var_name=var_name,
+                    var_type=print_ast(def_ast.type),
+                ),
+                [def_ast]
+            )
+        elif value is None:
+            if def_ast.default_value is not None:
+                values[var_name] = value_from_ast(def_ast.default_value, var_type)
+            if isinstance(var_type, GraphQLNonNull):
+                raise GraphQLError(
+                    'Variable "${var_name}" of required type "{var_type}" was not provided.'.format(
+                        var_name=var_name, var_type=var_type
+                    ), [def_ast]
+                )
+        else:
+            errors = is_valid_value(value, var_type)
+            if errors:
+                message = u'\n' + u'\n'.join(errors)
+                raise GraphQLError(
+                    'Variable "${}" got invalid value {}.{}'.format(
+                        var_name,
+                        json.dumps(value, sort_keys=True),
+                        message
+                    ),
+                    [def_ast]
+                )
+            coerced_value = coerce_value(var_type, value)
+            if coerced_value is None:
+                raise Exception('Should have reported error.')
+
+            values[var_name] = coerced_value
 
     return values
 
@@ -42,70 +78,50 @@ def get_argument_values(arg_defs, arg_asts, variables=None):
 
     result = {}
     for name, arg_def in arg_defs.items():
+        arg_type = arg_def.type
         value_ast = arg_ast_map.get(name)
-        if value_ast:
+        if name not in arg_ast_map:
+            if arg_def.default_value is not None:
+                result[arg_def.out_name or name] = arg_def.default_value
+                continue
+            elif isinstance(arg_type, GraphQLNonNull):
+                raise GraphQLError('Argument "{name}" of required type {arg_type}" was not provided.'.format(
+                    name=name,
+                    arg_type=arg_type
+                ), arg_asts)
+        elif isinstance(value_ast.value, ast.Variable):
+            variable_name = value_ast.value.name.value
+            variable_value = variables.get(variable_name)
+            if variables and variable_name in variables:
+                result[arg_def.out_name or name] = variable_value
+            elif arg_def.default_value is not None:
+                result[arg_def.out_name or name] = arg_def.default_value
+            elif isinstance(arg_type, GraphQLNonNull):
+                raise GraphQLError('Argument "{name}" of required type {arg_type}" provided the variable "${variable_name}" which was not provided'.format(
+                    name=name,
+                    arg_type=arg_type,
+                    variable_name=variable_name
+                ), arg_asts)
+            continue
+
+        else:
             value_ast = value_ast.value
 
-        value = value_from_ast(
-            value_ast,
-            arg_def.type,
-            variables
-        )
-
-        if value is None:
-            value = arg_def.default_value
-
-        if value is not None:
-            # We use out_name as the output name for the
-            # dict if exists
-            result[arg_def.out_name or name] = value
+            value = value_from_ast(
+                value_ast,
+                arg_type,
+                variables
+            )
+            if value is None:
+                if arg_def.default_value is not None:
+                    value = arg_def.default_value
+                    result[arg_def.out_name or name] = value
+            else:
+                # We use out_name as the output name for the
+                # dict if exists
+                result[arg_def.out_name or name] = value
 
     return result
-
-
-def get_variable_value(schema, definition_ast, input):
-    """Given a variable definition, and any value of input, return a value which adheres to the variable definition,
-    or throw an error."""
-    type = type_from_ast(schema, definition_ast.type)
-    variable = definition_ast.variable
-
-    if not type or not is_input_type(type):
-        raise GraphQLError(
-            'Variable "${}" expected value of type "{}" which cannot be used as an input type.'.format(
-                variable.name.value,
-                print_ast(definition_ast.type),
-            ),
-            [definition_ast]
-        )
-
-    input_type = type
-    errors = is_valid_value(input, input_type)
-    if not errors:
-        if input is None:
-            default_value = definition_ast.default_value
-            if default_value:
-                return value_from_ast(default_value, input_type)
-
-        return coerce_value(input_type, input)
-
-    if input is None:
-        raise GraphQLError(
-            'Variable "${}" of required type "{}" was not provided.'.format(
-                variable.name.value,
-                print_ast(definition_ast.type)
-            ),
-            [definition_ast]
-        )
-
-    message = (u'\n' + u'\n'.join(errors)) if errors else u''
-    raise GraphQLError(
-        'Variable "${}" got invalid value {}.{}'.format(
-            variable.name.value,
-            json.dumps(input, sort_keys=True),
-            message
-        ),
-        [definition_ast]
-    )
 
 
 def coerce_value(type, value):
@@ -130,16 +146,15 @@ def coerce_value(type, value):
         fields = type.fields
         obj = {}
         for field_name, field in fields.items():
-            field_value = coerce_value(field.type, value.get(field_name))
-            if field_value is None:
-                field_value = field.default_value
-
-            if field_value is not None:
-                # We use out_name as the output name for the
-                # dict if exists
+            if field_name not in value:
+                if field.default_value is not None:
+                    field_value = field.default_value
+                    obj[field.out_name or field_name] = field_value
+            else:
+                field_value = coerce_value(field.type, value.get(field_name))
                 obj[field.out_name or field_name] = field_value
 
-        return obj
+        return type.create_container(obj)
 
     assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
         'Must be input type'

@@ -11,7 +11,7 @@ def value_from_ast(value_ast, type, variables=None):
         # We're assuming that this query has been validated and the value used here is of the correct type.
         return value_from_ast(value_ast, type.of_type, variables)
 
-    if not value_ast:
+    if value_ast is None:
         return None
 
     if isinstance(value_ast, ast.Variable):
@@ -21,7 +21,7 @@ def value_from_ast(value_ast, type, variables=None):
 
         # Note: we're not doing any checking that this variable is correct. We're assuming that this query
         # has been validated and the variable usage here is of the correct type.
-        return variables[variable_name]
+        return variables.get(variable_name)
 
     if isinstance(type, GraphQLList):
         item_type = type.of_type
@@ -44,24 +44,25 @@ def value_from_ast(value_ast, type, variables=None):
 
         obj = {}
         for field_name, field in fields.items():
+            if field_name not in field_asts:
+                if field.default_value is not None:
+                    # We use out_name as the output name for the
+                    # dict if exists
+                    obj[field.out_name or field_name] = field.default_value
+
+                continue
+
             field_ast = field_asts.get(field_name)
-            field_value_ast = None
-
-            if field_ast:
-                field_value_ast = field_ast.value
-
+            field_value_ast = field_ast.value
             field_value = value_from_ast(
                 field_value_ast, field.type, variables
             )
-            if field_value is None:
-                field_value = field.default_value
 
-            if field_value is not None:
-                # We use out_name as the output name for the
-                # dict if exists
-                obj[field.out_name or field_name] = field_value
+            # We use out_name as the output name for the
+            # dict if exists
+            obj[field.out_name or field_name] = field_value
 
-        return obj
+        return type.create_container(obj)
 
     assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
         'Must be input type'
