@@ -25,7 +25,7 @@ def get_variable_values(schema, definition_asts, inputs):
     for def_ast in definition_asts:
         var_name = def_ast.variable.name.value
         var_type = type_from_ast(schema, def_ast.type)
-        value = inputs.get(var_name, Undefined)
+        value = inputs.get(var_name)
 
         if not is_input_type(var_type):
             raise GraphQLError(
@@ -35,7 +35,7 @@ def get_variable_values(schema, definition_asts, inputs):
                 ),
                 [def_ast]
             )
-        elif value is Undefined or value is None:
+        elif value is None:
             if def_ast.default_value is not None:
                 values[var_name] = value_from_ast(def_ast.default_value, var_type)
             if isinstance(var_type, GraphQLNonNull):
@@ -57,7 +57,7 @@ def get_variable_values(schema, definition_asts, inputs):
                     [def_ast]
                 )
             coerced_value = coerce_value(var_type, value)
-            if coerced_value is Undefined:
+            if coerced_value is None:
                 raise Exception('Should have reported error.')
 
             values[var_name] = coerced_value
@@ -79,8 +79,8 @@ def get_argument_values(arg_defs, arg_asts, variables=None):
     result = {}
     for name, arg_def in arg_defs.items():
         arg_type = arg_def.type
-        value_ast = arg_ast_map.get(name, Undefined)
-        if not value_ast:
+        value_ast = arg_ast_map.get(name)
+        if name not in arg_ast_map:
             if arg_def.default_value is not Undefined:
                 result[arg_def.out_name or name] = arg_def.default_value
                 continue
@@ -92,7 +92,7 @@ def get_argument_values(arg_defs, arg_asts, variables=None):
         elif isinstance(value_ast.value, ast.Variable):
             variable_name = value_ast.value.name.value
             variable_value = variables.get(variable_name, Undefined)
-            if variables and variable_value is not Undefined:
+            if variables and variable_name in variables:
                 result[arg_def.out_name or name] = variable_value
             elif arg_def.default_value is not Undefined:
                 result[arg_def.out_name or name] = arg_def.default_value
@@ -104,21 +104,22 @@ def get_argument_values(arg_defs, arg_asts, variables=None):
                 ), arg_asts)
             continue
 
-        if value_ast:
+        else:
             value_ast = value_ast.value
 
-        value = value_from_ast(
-            value_ast,
-            arg_type,
-            variables
-        )
-        if value is Undefined:
-            value = arg_def.default_value
-
-        if value is not Undefined:
-            # We use out_name as the output name for the
-            # dict if exists
-            result[arg_def.out_name or name] = value
+            value = value_from_ast(
+                value_ast,
+                arg_type,
+                variables
+            )
+            if value is Undefined:
+                if arg_def.default_value is not Undefined:
+                    value = arg_def.default_value
+                    result[arg_def.out_name or name] = value
+            else:
+                # We use out_name as the output name for the
+                # dict if exists
+                result[arg_def.out_name or name] = value
 
     return result
 
@@ -148,13 +149,12 @@ def coerce_value(type, value):
         fields = type.fields
         obj = {}
         for field_name, field in fields.items():
-            field_value = coerce_value(field.type, value.get(field_name, Undefined))
-            if field_value is Undefined:
-                field_value = field.default_value
-
-            if field_value is not Undefined:
-                # We use out_name as the output name for the
-                # dict if exists
+            if field_name not in value:
+                if field.default_value is not Undefined:
+                    field_value = field.default_value
+                    obj[field.out_name or field_name] = field_value
+            else:
+                field_value = coerce_value(field.type, value.get(field_name))
                 obj[field.out_name or field_name] = field_value
 
         return type.create_container(obj)
