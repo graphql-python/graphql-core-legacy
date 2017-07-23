@@ -112,9 +112,6 @@ if not __GRAPHQL_SETUP__:
         # Un-modifiers
         get_nullable_type,
         get_named_type,
-
-        # Undefined const
-        Undefined
     )
 
     # Parse and operate on GraphQL language source files.
@@ -205,6 +202,9 @@ if not __GRAPHQL_SETUP__:
 
         # Asserts a string is a valid GraphQL name.
         assert_valid_name,
+
+        # Undefined const
+        Undefined,
     )
 
     __all__ = (

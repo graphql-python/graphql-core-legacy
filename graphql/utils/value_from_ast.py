@@ -1,6 +1,7 @@
 from ..language import ast
-from ..type import (Undefined, GraphQLEnumType, GraphQLInputObjectType, GraphQLList,
+from ..type import (GraphQLEnumType, GraphQLInputObjectType, GraphQLList,
                     GraphQLNonNull, GraphQLScalarType)
+from .undefined import Undefined
 
 
 def value_from_ast(value_ast, type, variables=None):

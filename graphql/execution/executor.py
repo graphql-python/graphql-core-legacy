@@ -9,7 +9,8 @@ from promise import Promise, promise_for_dict, is_thenable
 from ..error import GraphQLError, GraphQLLocatedError
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
 from ..pyutils.ordereddict import OrderedDict
-from ..type import (Undefined, GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
+from ..utils.undefined import Undefined
+from ..type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
                     GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
                     GraphQLSchema, GraphQLUnionType)
 from .base import (ExecutionContext, ExecutionResult, ResolveInfo,

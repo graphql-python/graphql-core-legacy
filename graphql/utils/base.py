@@ -53,6 +53,10 @@ from .type_comparators import (
 # Asserts that a string is a valid GraphQL name
 from .assert_valid_name import assert_valid_name
 
+# Undefined const
+from .undefined import Undefined
+
+
 __all__ = [
     'introspection_query',
     'get_operation_ast',
@@ -72,4 +76,5 @@ __all__ = [
     'is_equal_type',
     'is_type_sub_type_of',
     'assert_valid_name',
+    'Undefined',
 ]

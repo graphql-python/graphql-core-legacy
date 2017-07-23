@@ -5,7 +5,6 @@ from ..language import ast
 from ..pyutils.cached_property import cached_property
 from ..pyutils.ordereddict import OrderedDict
 from ..utils.assert_valid_name import assert_valid_name
-from ..utils.undefined import Undefined
 
 
 def is_type(type):

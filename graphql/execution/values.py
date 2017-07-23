@@ -6,11 +6,12 @@ from six import string_types
 from ..error import GraphQLError
 from ..language import ast
 from ..language.printer import print_ast
-from ..type import (Undefined, GraphQLEnumType, GraphQLInputObjectType, GraphQLList,
+from ..type import (GraphQLEnumType, GraphQLInputObjectType, GraphQLList,
                     GraphQLNonNull, GraphQLScalarType, is_input_type)
 from ..utils.is_valid_value import is_valid_value
 from ..utils.type_from_ast import type_from_ast
 from ..utils.value_from_ast import value_from_ast
+from ..utils.undefined import Undefined
 
 __all__ = ['get_variable_values', 'get_argument_values']
 

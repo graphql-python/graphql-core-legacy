@@ -4,7 +4,8 @@ from promise import Promise, is_thenable, promise_for_dict
 
 from ...pyutils.cached_property import cached_property
 from ...pyutils.default_ordered_dict import DefaultOrderedDict
-from ...type import (Undefined, GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
+from ...utils.undefined import Undefined
+from ...type import (GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                      GraphQLObjectType, GraphQLUnionType)
 from ..base import ResolveInfo, collect_fields, get_field_def
 from ..values import get_argument_values

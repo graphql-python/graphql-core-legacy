@@ -1,5 +1,5 @@
 from ..language.printer import print_ast
-from ..type.definition import (Undefined, GraphQLEnumType, GraphQLInputObjectType,
+from ..type.definition import (GraphQLEnumType, GraphQLInputObjectType,
                                GraphQLInterfaceType, GraphQLObjectType,
                                GraphQLScalarType, GraphQLUnionType)
 from ..type.directives import DEFAULT_DEPRECATION_REASON
@@ -153,7 +153,7 @@ def _print_args(field_or_directives):
 
 
 def _print_input_value(name, arg):
-    if arg.default_value not in (Undefined, None):
+    if arg.default_value is not None:
         default_value = ' = ' + print_ast(ast_from_value(arg.default_value, arg.type))
     else:
         default_value = ''
