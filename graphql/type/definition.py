@@ -7,6 +7,16 @@ from ..pyutils.ordereddict import OrderedDict
 from ..utils.assert_valid_name import assert_valid_name
 
 
+class _Undefined(object):
+    def __bool__(self):
+        return False
+
+    __nonzero__ = __bool__
+
+
+Undefined = _Undefined()
+
+
 def is_type(type):
     return isinstance(type, (
         GraphQLScalarType,

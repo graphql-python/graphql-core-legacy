@@ -119,7 +119,7 @@ def test_executes_arbitary_code():
 
 def test_merges_parallel_fragments():
     ast = parse('''
-        { a, ...FragOne, ...FragTwo }
+        { a, deep {...FragOne, ...FragTwo} }
 
         fragment FragOne on Type {
             b
@@ -148,14 +148,15 @@ def test_merges_parallel_fragments():
     assert result.data == \
         {
             'a': 'Apple',
-            'b': 'Banana',
-            'c': 'Cherry',
             'deep': {
                 'b': 'Banana',
                 'c': 'Cherry',
-                'deeper': {
+                'deep': {
                     'b': 'Banana',
-                    'c': 'Cherry'}}
+                    'c': 'Cherry',
+                    'deeper': {
+                        'b': 'Banana',
+                        'c': 'Cherry'}}}
         }
 
 
