@@ -19,7 +19,8 @@ from .definition import (  # no import order
     is_leaf_type,
     is_type,
     get_nullable_type,
-    is_output_type
+    is_output_type,
+    Undefined
 )
 from .directives import (
     # "Enum" of Directive locations

@@ -4,22 +4,12 @@ import sys
 from ..error import GraphQLError
 from ..language import ast
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
-from ..type.definition import GraphQLInterfaceType, GraphQLUnionType
+from ..type.definition import Undefined, GraphQLInterfaceType, GraphQLUnionType
 from ..type.directives import GraphQLIncludeDirective, GraphQLSkipDirective
 from ..type.introspection import (SchemaMetaFieldDef, TypeMetaFieldDef,
                                   TypeNameMetaFieldDef)
 from ..utils.type_from_ast import type_from_ast
 from .values import get_argument_values, get_variable_values
-
-
-class _Undefined(object):
-    def __bool__(self):
-        return False
-
-    __nonzero__ = __bool__
-
-
-Undefined = _Undefined()
 
 
 class ExecutionContext(object):
@@ -93,7 +83,7 @@ class ExecutionContext(object):
         return result
 
     def report_error(self, error, traceback=None):
-        sys.excepthook(type(error), str(error), getattr(error, 'stack', None) or traceback)
+        sys.excepthook(type(error), error, getattr(error, 'stack', None) or traceback)
         self.errors.append(error)
 
     def get_sub_fields(self, return_type, field_asts):
