@@ -2,7 +2,7 @@ from collections import OrderedDict, namedtuple
 
 from ..language.printer import print_ast
 from ..utils.ast_from_value import ast_from_value
-from .definition import (Undefined, GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
+from .definition import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
                          GraphQLField, GraphQLInputObjectType,
                          GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                          GraphQLObjectType, GraphQLScalarType,
@@ -345,7 +345,7 @@ __InputValue = GraphQLObjectType(
         ('defaultValue', GraphQLField(
             type=GraphQLString,
             resolver=lambda input_val, *_:
-            None if input_val.default_value is Undefined
+            None if input_val.default_value is None
             else print_ast(ast_from_value(input_val.default_value, input_val))
         ))
     ]))

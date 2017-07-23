@@ -81,7 +81,7 @@ def get_argument_values(arg_defs, arg_asts, variables=None):
         arg_type = arg_def.type
         value_ast = arg_ast_map.get(name)
         if name not in arg_ast_map:
-            if arg_def.default_value is not Undefined:
+            if arg_def.default_value is not None:
                 result[arg_def.out_name or name] = arg_def.default_value
                 continue
             elif isinstance(arg_type, GraphQLNonNull):
@@ -94,7 +94,7 @@ def get_argument_values(arg_defs, arg_asts, variables=None):
             variable_value = variables.get(variable_name, Undefined)
             if variables and variable_name in variables:
                 result[arg_def.out_name or name] = variable_value
-            elif arg_def.default_value is not Undefined:
+            elif arg_def.default_value is not None:
                 result[arg_def.out_name or name] = arg_def.default_value
             elif isinstance(arg_type, GraphQLNonNull):
                 raise GraphQLError('Argument "{name}" of required type {arg_type}" provided the variable "${variable_name}" which was not provided'.format(
@@ -113,7 +113,7 @@ def get_argument_values(arg_defs, arg_asts, variables=None):
                 variables
             )
             if value is Undefined:
-                if arg_def.default_value is not Undefined:
+                if arg_def.default_value is not None:
                     value = arg_def.default_value
                     result[arg_def.out_name or name] = value
             else:
@@ -150,7 +150,7 @@ def coerce_value(type, value):
         obj = {}
         for field_name, field in fields.items():
             if field_name not in value:
-                if field.default_value is not Undefined:
+                if field.default_value is not None:
                     field_value = field.default_value
                     obj[field.out_name or field_name] = field_value
             else:

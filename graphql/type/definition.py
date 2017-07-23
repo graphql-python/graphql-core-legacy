@@ -266,7 +266,7 @@ class GraphQLField(object):
 class GraphQLArgument(object):
     __slots__ = 'type', 'default_value', 'description', 'out_name'
 
-    def __init__(self, type, default_value=Undefined, description=None, out_name=None):
+    def __init__(self, type, default_value=None, description=None, out_name=None):
         self.type = type
         self.default_value = default_value
         self.description = description
@@ -545,7 +545,7 @@ class GraphQLInputObjectType(GraphQLType):
 class GraphQLInputObjectField(object):
     __slots__ = 'type', 'default_value', 'description', 'out_name'
 
-    def __init__(self, type, default_value=Undefined, description=None, out_name=None):
+    def __init__(self, type, default_value=None, description=None, out_name=None):
         self.type = type
         self.default_value = default_value
         self.description = description

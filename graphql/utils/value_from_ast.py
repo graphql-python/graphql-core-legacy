@@ -56,7 +56,7 @@ def value_from_ast(value_ast, type, variables=None):
             field_value = value_from_ast(
                 field_value_ast, field.type, variables
             )
-            if field_value is Undefined:
+            if field_value is Undefined and field.default_value is not None:
                 field_value = field.default_value
 
             if field_value is not Undefined:
