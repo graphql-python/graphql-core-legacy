@@ -63,8 +63,8 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         middleware
     )
 
-    def executor(resolve, reject):
-        return resolve(execute_operation(context, context.operation, root_value))
+    def executor(v):
+        return execute_operation(context, context.operation, root_value)
 
     def on_rejected(error):
         context.errors.append(error)
@@ -75,7 +75,7 @@ def execute(schema, document_ast, root_value=None, context_value=None,
             return ExecutionResult(data=data)
         return ExecutionResult(data=data, errors=context.errors)
 
-    promise = Promise(executor).catch(on_rejected).then(on_resolve)
+    promise = Promise.resolve(None).then(executor).catch(on_rejected).then(on_resolve)
     if return_promise:
         return promise
     context.executor.wait_until_finished()
@@ -218,14 +218,16 @@ def complete_value_catching_error(exe_context, return_type, field_asts, info, re
         completed = complete_value(exe_context, return_type, field_asts, info, result)
         if is_thenable(completed):
             def handle_error(error):
-                exe_context.errors.append(error)
+                traceback = completed._traceback
+                exe_context.report_error(error, traceback)
                 return None
 
             return completed.catch(handle_error)
 
         return completed
     except Exception as e:
-        exe_context.errors.append(e)
+        traceback = sys.exc_info()[2]
+        exe_context.report_error(e, traceback)
         return None
 
 

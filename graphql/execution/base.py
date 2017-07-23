@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import sys
+
 from ..error import GraphQLError
 from ..language import ast
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
@@ -13,8 +15,9 @@ from .values import get_argument_values, get_variable_values
 class _Undefined(object):
     def __bool__(self):
         return False
-    
+
     __nonzero__ = __bool__
+
 
 Undefined = _Undefined()
 
@@ -88,6 +91,10 @@ class ExecutionContext(object):
                                                                          self.variable_values)
 
         return result
+
+    def report_error(self, error, traceback=None):
+        sys.excepthook(type(error), str(error), getattr(error, 'stack', None) or traceback)
+        self.errors.append(error)
 
     def get_sub_fields(self, return_type, field_asts):
         k = return_type, tuple(field_asts)
