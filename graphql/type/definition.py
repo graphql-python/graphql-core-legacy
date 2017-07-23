@@ -514,6 +514,9 @@ class GraphQLInputObjectType(GraphQLType):
 
         self._fields = fields
 
+    def create_container(self, data):
+        return dict(data)
+
     @cached_property
     def fields(self):
         return self._define_field_map()

@@ -157,7 +157,7 @@ def coerce_value(type, value):
                 # dict if exists
                 obj[field.out_name or field_name] = field_value
 
-        return obj
+        return type.create_container(obj)
 
     assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
         'Must be input type'
