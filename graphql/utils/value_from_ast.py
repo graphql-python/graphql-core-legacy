@@ -1,7 +1,6 @@
 from ..language import ast
 from ..type import (GraphQLEnumType, GraphQLInputObjectType, GraphQLList,
                     GraphQLNonNull, GraphQLScalarType)
-from .undefined import Undefined
 
 
 def value_from_ast(value_ast, type, variables=None):
@@ -12,20 +11,17 @@ def value_from_ast(value_ast, type, variables=None):
         # We're assuming that this query has been validated and the value used here is of the correct type.
         return value_from_ast(value_ast, type.of_type, variables)
 
-    if value_ast is Undefined:
-        return Undefined
-
     if value_ast is None:
         return None
 
     if isinstance(value_ast, ast.Variable):
         variable_name = value_ast.name.value
-        if not variables:
-            return Undefined
+        if not variables or variable_name not in variables:
+            return None
 
         # Note: we're not doing any checking that this variable is correct. We're assuming that this query
         # has been validated and the variable usage here is of the correct type.
-        return variables.get(variable_name, Undefined)
+        return variables.get(variable_name)
 
     if isinstance(type, GraphQLList):
         item_type = type.of_type
@@ -39,7 +35,7 @@ def value_from_ast(value_ast, type, variables=None):
     if isinstance(type, GraphQLInputObjectType):
         fields = type.fields
         if not isinstance(value_ast, ast.ObjectValue):
-            return Undefined
+            return None
 
         field_asts = {}
 
@@ -48,30 +44,27 @@ def value_from_ast(value_ast, type, variables=None):
 
         obj = {}
         for field_name, field in fields.items():
-            field_ast = field_asts.get(field_name, Undefined)
-            field_value_ast = Undefined
+            if field_name not in field_asts:
+                if field.default_value is not None:
+                    # We use out_name as the output name for the
+                    # dict if exists
+                    obj[field.out_name or field_name] = field.default_value
 
-            if field_ast:
-                field_value_ast = field_ast.value
+                continue
 
+            field_ast = field_asts.get(field_name)
+            field_value_ast = field_ast.value
             field_value = value_from_ast(
                 field_value_ast, field.type, variables
             )
-            if field_value is Undefined and field.default_value is not None:
-                field_value = field.default_value
 
-            if field_value is not Undefined:
-                # We use out_name as the output name for the
-                # dict if exists
-                obj[field.out_name or field_name] = field_value
+            # We use out_name as the output name for the
+            # dict if exists
+            obj[field.out_name or field_name] = field_value
 
         return type.create_container(obj)
 
     assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
         'Must be input type'
 
-    value = type.parse_literal(value_ast)
-    if value is None:
-        return Undefined
-
-    return value
+    return type.parse_literal(value_ast)

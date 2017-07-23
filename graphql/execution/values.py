@@ -11,7 +11,6 @@ from ..type import (GraphQLEnumType, GraphQLInputObjectType, GraphQLList,
 from ..utils.is_valid_value import is_valid_value
 from ..utils.type_from_ast import type_from_ast
 from ..utils.value_from_ast import value_from_ast
-from ..utils.undefined import Undefined
 
 __all__ = ['get_variable_values', 'get_argument_values']
 
@@ -92,7 +91,7 @@ def get_argument_values(arg_defs, arg_asts, variables=None):
                 ), arg_asts)
         elif isinstance(value_ast.value, ast.Variable):
             variable_name = value_ast.value.name.value
-            variable_value = variables.get(variable_name, Undefined)
+            variable_value = variables.get(variable_name)
             if variables and variable_name in variables:
                 result[arg_def.out_name or name] = variable_value
             elif arg_def.default_value is not None:
@@ -113,7 +112,7 @@ def get_argument_values(arg_defs, arg_asts, variables=None):
                 arg_type,
                 variables
             )
-            if value is Undefined:
+            if value is None:
                 if arg_def.default_value is not None:
                     value = arg_def.default_value
                     result[arg_def.out_name or name] = value
@@ -132,9 +131,6 @@ def coerce_value(type, value):
         # non-null.
         # We only call this function after calling isValidValue.
         return coerce_value(type.of_type, value)
-
-    if value is Undefined:
-        return Undefined
 
     if value is None:
         return None
@@ -163,8 +159,4 @@ def coerce_value(type, value):
     assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
         'Must be input type'
 
-    parsed = type.parse_value(value)
-    if parsed is None:
-        return Undefined
-
-    return parsed
+    return type.parse_value(value)
