@@ -9,7 +9,14 @@ from ..type.introspection import (SchemaMetaFieldDef, TypeMetaFieldDef,
 from ..utils.type_from_ast import type_from_ast
 from .values import get_argument_values, get_variable_values
 
-Undefined = object()
+
+class _Undefined(object):
+    def __bool__(self):
+        return False
+    
+    __nonzero__ = __bool__
+
+Undefined = _Undefined()
 
 
 class ExecutionContext(object):
