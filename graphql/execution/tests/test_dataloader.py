@@ -9,7 +9,7 @@ from graphql.execution.executors.thread import ThreadExecutor
 
 @pytest.mark.parametrize("executor", [
     SyncExecutor(),
-    ThreadExecutor(),
+    # ThreadExecutor(),
 ])
 def test_batches_correctly(executor):
 
