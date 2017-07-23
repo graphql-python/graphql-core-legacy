@@ -413,9 +413,10 @@ def test_passes_along_null_for_non_nullable_inputs_if_explcitly_set_in_the_query
     '''
 
     check(doc, {
-        'data': {
-            'fieldWithNonNullableStringInput': None
-        }
+        'errors': [{
+            'message': 'Argument "input" of required type String!" was not provided.'
+        }],
+        'data': None
     })
 
 

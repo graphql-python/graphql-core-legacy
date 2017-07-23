@@ -112,6 +112,9 @@ if not __GRAPHQL_SETUP__:
         # Un-modifiers
         get_nullable_type,
         get_named_type,
+
+        # Undefined const
+        Undefined
     )
 
     # Parse and operate on GraphQL language source files.
@@ -284,4 +287,5 @@ if not __GRAPHQL_SETUP__:
         'type_from_ast',
         'value_from_ast',
         'get_version',
+        'Undefined',
     )
