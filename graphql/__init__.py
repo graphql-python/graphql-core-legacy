@@ -136,6 +136,7 @@ if not __GRAPHQL_SETUP__:
     # Execute GraphQL queries.
     from .execution import (  # no import order
         execute,
+        ResolveInfo,
         MiddlewareManager,
         middlewares
     )
@@ -263,6 +264,7 @@ if not __GRAPHQL_SETUP__:
         'print_ast',
         'visit',
         'execute',
+        'ResolveInfo',
         'MiddlewareManager',
         'middlewares',
         'specified_rules',

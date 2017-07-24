@@ -19,8 +19,14 @@ single level of the query. These include:
 3) inline fragment "spreads" e.g. "...on Type { a }"
 """
 from .executor import execute
-from .base import ExecutionResult
+from .base import ExecutionResult, ResolveInfo
 from .middleware import middlewares, MiddlewareManager
 
 
-__all__ = ['execute', 'ExecutionResult', 'MiddlewareManager', 'middlewares']
+__all__ = [
+    'execute',
+    'ExecutionResult',
+    'ResolveInfo',
+    'MiddlewareManager',
+    'middlewares'
+]
