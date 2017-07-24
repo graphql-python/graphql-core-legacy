@@ -54,7 +54,7 @@ setup(
     url='https://github.com/graphql-python/graphql-core',
     download_url='https://github.com/graphql-python/graphql-core/releases',
     author='Syrus Akbary, Jake Heinz, Taeho Kim',
-    author_email='Syrus Akbary <me@syrusakbary.com>, Jake Heinz <me@jh.gg>, Taeho Kim <dittos@gmail.com>',
+    author_email='me@syrusakbary.com',
     license='MIT',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
