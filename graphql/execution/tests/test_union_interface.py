@@ -52,7 +52,7 @@ CatType = GraphQLObjectType(
 )
 
 
-def resolve_pet_type(value, context, info):
+def resolve_pet_type(value, info):
     if isinstance(value, Dog):
         return DogType
     if isinstance(value, Cat):
@@ -317,7 +317,7 @@ def test_gets_execution_info_in_resolver():
         root_value = None
         context = None
 
-    def resolve_type(obj, context, info):
+    def resolve_type(obj, info):
         encountered.schema = info.schema
         encountered.root_value = info.root_value
         encountered.context = context

@@ -29,7 +29,7 @@ is_type_of = lambda type: lambda obj, info: isinstance(obj, type)
 
 
 def make_type_resolver(types):
-    def resolve_type(obj, context, info):
+    def resolve_type(obj, info):
         if callable(types):
             t = types()
         else:

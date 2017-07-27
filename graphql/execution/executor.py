@@ -324,9 +324,9 @@ def complete_abstract_value(exe_context, return_type, field_asts, info, result):
     # Field type must be Object, Interface or Union and expect sub-selections.
     if isinstance(return_type, (GraphQLInterfaceType, GraphQLUnionType)):
         if return_type.resolve_type:
-            runtime_type = return_type.resolve_type(result, exe_context.context_value, info)
+            runtime_type = return_type.resolve_type(result, info)
         else:
-            runtime_type = get_default_resolve_type_fn(result, exe_context.context_value, info, return_type)
+            runtime_type = get_default_resolve_type_fn(result, info, return_type)
 
     if isinstance(runtime_type, string_types):
         runtime_type = info.schema.get_type(runtime_type)
@@ -353,7 +353,7 @@ def complete_abstract_value(exe_context, return_type, field_asts, info, result):
     return complete_object_value(exe_context, runtime_type, field_asts, info, result)
 
 
-def get_default_resolve_type_fn(value, context, info, abstract_type):
+def get_default_resolve_type_fn(value, info, abstract_type):
     possible_types = info.schema.get_possible_types(abstract_type)
     for type in possible_types:
         if callable(type.is_type_of) and type.is_type_of(value, info):
