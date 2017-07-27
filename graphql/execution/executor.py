@@ -356,7 +356,7 @@ def complete_abstract_value(exe_context, return_type, field_asts, info, result):
 def get_default_resolve_type_fn(value, context, info, abstract_type):
     possible_types = info.schema.get_possible_types(abstract_type)
     for type in possible_types:
-        if callable(type.is_type_of) and type.is_type_of(value, context, info):
+        if callable(type.is_type_of) and type.is_type_of(value, info):
             return type
 
 
@@ -364,7 +364,7 @@ def complete_object_value(exe_context, return_type, field_asts, info, result):
     """
     Complete an Object value by evaluating all sub-selections.
     """
-    if return_type.is_type_of and not return_type.is_type_of(result, exe_context.context_value, info):
+    if return_type.is_type_of and not return_type.is_type_of(result, info):
         raise GraphQLError(
             u'Expected value of type "{}" but got: {}.'.format(return_type, type(result).__name__),
             field_asts
