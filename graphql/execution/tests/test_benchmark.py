@@ -22,11 +22,11 @@ ContainerType = GraphQLObjectType('Container',
     })
 
 
-def resolve_all_containers(root, args, context, info):
+def resolve_all_containers(root, info, **args):
     return big_container_list
 
 
-def resolve_all_ints(root, args, context, info):
+def resolve_all_ints(root, info, **args):
     return big_int_list
 
 

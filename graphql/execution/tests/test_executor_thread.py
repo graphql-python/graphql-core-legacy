@@ -98,7 +98,7 @@ def test_executes_arbitary_code():
         'pic': GraphQLField(
             args={'size': GraphQLArgument(GraphQLInt)},
             type=GraphQLString,
-            resolver=lambda obj, args, *_: obj.pic(args['size']),
+            resolver=lambda obj, info, **args: obj.pic(args['size']),
         ),
         'deep': GraphQLField(DeepDataType),
         'promise': GraphQLField(DataType),

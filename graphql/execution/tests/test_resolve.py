@@ -61,7 +61,7 @@ def test_default_function_calls_methods():
 
 
 def test_uses_provided_resolve_function():
-    def resolver(source, args, *_):
+    def resolver(source, info, **args):
         return json.dumps([source, args], separators=(',', ':'))
 
     schema = _test_schema(GraphQLField(
@@ -90,7 +90,7 @@ def test_uses_provided_resolve_function():
 
 
 def test_handles_resolved_promises():
-    def resolver(source, args, *_):
+    def resolver(source, info, **args):
         return Promise.resolve('foo')
 
     schema = _test_schema(GraphQLField(
@@ -104,7 +104,7 @@ def test_handles_resolved_promises():
 
 
 def test_handles_resolved_custom_promises():
-    def resolver(source, args, *_):
+    def resolver(source, info, **args):
         return CustomPromise.resolve('custom_foo')
 
     schema = _test_schema(GraphQLField(
@@ -118,7 +118,7 @@ def test_handles_resolved_custom_promises():
 
 
 def test_maps_argument_out_names_well():
-    def resolver(source, args, *_):
+    def resolver(source, info, **args):
         return json.dumps([source, args], separators=(',', ':'))
 
     schema = _test_schema(GraphQLField(
@@ -147,7 +147,7 @@ def test_maps_argument_out_names_well():
 
 
 def test_maps_argument_out_names_well_with_input():
-    def resolver(source, args, *_):
+    def resolver(source, info, **args):
         return json.dumps([source, args], separators=(',', ':'))
 
 

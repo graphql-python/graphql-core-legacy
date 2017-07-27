@@ -35,7 +35,7 @@ QueryType = GraphQLObjectType(
                 'fromInt': GraphQLArgument(GraphQLInt),
                 'fromString': GraphQLArgument(GraphQLString)
             },
-            resolver=lambda value, args, context, info: get_first(args, 'fromInt', 'fromString', 'fromEnum')
+            resolver=lambda value, info, **args: get_first(args, 'fromInt', 'fromString', 'fromEnum')
         ),
         'colorInt': GraphQLField(
             type=GraphQLInt,
@@ -43,7 +43,7 @@ QueryType = GraphQLObjectType(
                 'fromEnum': GraphQLArgument(ColorType),
                 'fromInt': GraphQLArgument(GraphQLInt),
             },
-            resolver=lambda value, args, context, info: get_first(args, 'fromInt', 'fromEnum')
+            resolver=lambda value, info, **args: get_first(args, 'fromInt', 'fromEnum')
         )
     }
 )
@@ -56,7 +56,7 @@ MutationType = GraphQLObjectType(
             args={
                 'color': GraphQLArgument(ColorType)
             },
-            resolver=lambda value, args, context, info: args.get('color')
+            resolver=lambda value, info, **args: args.get('color')
         )
     }
 )
@@ -69,7 +69,7 @@ SubscriptionType = GraphQLObjectType(
             args={
                 'color': GraphQLArgument(ColorType)
             },
-            resolver=lambda value, args, context, info: args.get('color')
+            resolver=lambda value, info, **args: args.get('color')
         )
     }
 )

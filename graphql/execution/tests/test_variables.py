@@ -38,7 +38,7 @@ TestCustomInputObject = GraphQLInputObjectType('TestCustomInputObject', OrderedD
 stringify = lambda obj: json.dumps(obj, sort_keys=True)
 
 
-def input_to_json(obj, args, context, info):
+def input_to_json(obj, info, **args):
     input = args.get('input')
     if input:
         return stringify(input)
@@ -60,7 +60,7 @@ TestType = GraphQLObjectType('TestType', {
     'fieldWithCustomObjectInput': GraphQLField(
         GraphQLBoolean,
         args={'input': GraphQLArgument(TestCustomInputObject)},
-        resolver=lambda root, args, context, info: isinstance(args.get('input'), my_special_dict)),
+        resolver=lambda root, info, **args: isinstance(args.get('input'), my_special_dict)),
     'fieldWithNullableStringInput': GraphQLField(
         GraphQLString,
         args={'input': GraphQLArgument(GraphQLString)},

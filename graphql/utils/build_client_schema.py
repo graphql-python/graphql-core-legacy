@@ -22,7 +22,7 @@ def _none(*_):
     return None
 
 
-def no_execution(*args):
+def no_execution(root, info, **args):
     raise Exception('Client Schema cannot be used for execution.')
 
 

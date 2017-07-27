@@ -14,7 +14,7 @@ from graphql.execution.executors.thread import ThreadExecutor
 def test_batches_correctly(executor):
 
     Business = GraphQLObjectType('Business', lambda: {
-        'id': GraphQLField(GraphQLID, resolver=lambda root, args, context, info: root),
+        'id': GraphQLField(GraphQLID, resolver=lambda root, info, **args: root),
     })
 
     Query = GraphQLObjectType('Query', lambda: {
@@ -22,7 +22,7 @@ def test_batches_correctly(executor):
             args={
                 'id': GraphQLArgument(GraphQLNonNull(GraphQLID)),
             },
-            resolver=lambda root, args, context, info: context.business_data_loader.load(args.get('id'))
+            resolver=lambda root, info, **args: info.context.business_data_loader.load(args.get('id'))
         ),
     })
 
@@ -73,13 +73,13 @@ def test_batches_correctly(executor):
 def test_batches_multiple_together(executor):
 
     Location = GraphQLObjectType('Location', lambda: {
-        'id': GraphQLField(GraphQLID, resolver=lambda root, args, context, info: root),
+        'id': GraphQLField(GraphQLID, resolver=lambda root, info, **args: root),
     })
 
     Business = GraphQLObjectType('Business', lambda: {
-        'id': GraphQLField(GraphQLID, resolver=lambda root, args, context, info: root),
+        'id': GraphQLField(GraphQLID, resolver=lambda root, info, **args: root),
         'location': GraphQLField(Location,
-            resolver=lambda root, args, context, info: context.location_data_loader.load('location-{}'.format(root))
+            resolver=lambda root, info, **args: info.context.location_data_loader.load('location-{}'.format(root))
         ),
     })
 
@@ -88,7 +88,7 @@ def test_batches_multiple_together(executor):
             args={
                 'id': GraphQLArgument(GraphQLNonNull(GraphQLID)),
             },
-            resolver=lambda root, args, context, info: context.business_data_loader.load(args.get('id'))
+            resolver=lambda root, info, **args: info.context.business_data_loader.load(args.get('id'))
         ),
     })
 
