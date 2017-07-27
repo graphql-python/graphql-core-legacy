@@ -182,6 +182,7 @@ def resolve_field(exe_context, parent_type, source, field_asts):
         root_value=exe_context.root_value,
         operation=exe_context.operation,
         variable_values=exe_context.variable_values,
+        context=context
     )
 
     executor = exe_context.executor

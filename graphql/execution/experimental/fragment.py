@@ -57,6 +57,7 @@ def get_resolvers(context, type, field_asts):
             root_value=context and context.root_value,
             operation=context and context.operation,
             variable_values=context and context.variable_values,
+            context=context
         )
         if isinstance(field_base_type, GraphQLObjectType):
             field_fragment = Fragment(
