@@ -23,11 +23,6 @@ following two import statements are equivalent:
 '''
 from .pyutils.version import get_version
 
-
-VERSION = (2, 0, 0, 'alpha', 0)
-__version__ = get_version(VERSION)
-
-
 # The primary entry point into fulfilling a GraphQL request.
 from .graphql import (
     graphql
@@ -197,7 +192,13 @@ from .utils.base import (
     Undefined,
 )
 
+
+VERSION = (2, 0, 0, 'alpha', 0)
+__version__ = get_version(VERSION)
+
+
 __all__ = (
+    '__version__',
     'graphql',
     'GraphQLBoolean',
     'GraphQLEnumType',
