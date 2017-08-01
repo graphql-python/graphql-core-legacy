@@ -4,6 +4,7 @@ from .language.parser import parse
 from .language.source import Source
 from .validation import validate
 
+from promise import promisify
 
 # This is the primary entry point function for fulfilling GraphQL operations
 # by parsing, validating, and executing a GraphQL document along side a
@@ -27,9 +28,12 @@ from .validation import validate
 #    The name of the operation to use if requestString contains multiple
 #    possible operations. Can be omitted if requestString contains only
 #    one operation.
+
+
+@promisify
 def graphql(schema, request_string='', root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
-            return_promise=False, middleware=None):
+            middleware=None):
     try:
         if isinstance(request_string, Document):
             ast = request_string
@@ -50,7 +54,6 @@ def graphql(schema, request_string='', root_value=None, context_value=None,
             operation_name=operation_name,
             variable_values=variable_values or {},
             executor=executor,
-            return_promise=return_promise,
             middleware=middleware,
         )
     except Exception as e:
