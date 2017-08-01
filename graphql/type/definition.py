@@ -147,7 +147,7 @@ class GraphQLObjectType(GraphQLType):
             'street': GraphQLField(GraphQLString),
             'number': GraphQLField(GraphQLInt),
             'formatted': GraphQLField(GraphQLString,
-                resolver=lambda obj, args, context, info: obj.number + ' ' + obj.street),
+                resolver=lambda obj, info, **args: obj.number + ' ' + obj.street),
         })
 
     When two types need to refer to each other, or a type needs to refer to

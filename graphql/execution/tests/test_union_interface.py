@@ -38,7 +38,7 @@ DogType = GraphQLObjectType(
         'name': GraphQLField(GraphQLString),
         'barks': GraphQLField(GraphQLBoolean),
     },
-    is_type_of=lambda value, context, info: isinstance(value, Dog)
+    is_type_of=lambda value, info: isinstance(value, Dog)
 )
 
 CatType = GraphQLObjectType(
@@ -48,11 +48,11 @@ CatType = GraphQLObjectType(
         'name': GraphQLField(GraphQLString),
         'meows': GraphQLField(GraphQLBoolean),
     },
-    is_type_of=lambda value, context, info: isinstance(value, Cat)
+    is_type_of=lambda value, info: isinstance(value, Cat)
 )
 
 
-def resolve_pet_type(value, context, info):
+def resolve_pet_type(value, info):
     if isinstance(value, Dog):
         return DogType
     if isinstance(value, Cat):
@@ -70,7 +70,7 @@ PersonType = GraphQLObjectType(
         'pets': GraphQLField(GraphQLList(PetType)),
         'friends': GraphQLField(GraphQLList(NamedType)),
     },
-    is_type_of=lambda value, context, info: isinstance(value, Person)
+    is_type_of=lambda value, info: isinstance(value, Person)
 )
 
 schema = GraphQLSchema(query=PersonType, types=[PetType])
@@ -317,7 +317,7 @@ def test_gets_execution_info_in_resolver():
         root_value = None
         context = None
 
-    def resolve_type(obj, context, info):
+    def resolve_type(obj, info):
         encountered.schema = info.schema
         encountered.root_value = info.root_value
         encountered.context = context

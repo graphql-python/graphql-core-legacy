@@ -20,7 +20,7 @@ def test_executes_using_a_schema():
                                 'width': GraphQLArgument(GraphQLInt),
                                 'height': GraphQLArgument(GraphQLInt),
                             },
-                            resolver=lambda obj, args, *_:
+                            resolver=lambda obj, info, **args:
                             obj.pic(args['width'], args['height'])
                             ),
         'recentArticle': GraphQLField(BlogArticle),
@@ -39,7 +39,7 @@ def test_executes_using_a_schema():
         'article': GraphQLField(
             BlogArticle,
             args={'id': GraphQLArgument(GraphQLID)},
-            resolver=lambda obj, args, *_: Article(args['id'])),
+            resolver=lambda obj, info, **args: Article(args['id'])),
         'feed': GraphQLField(
             GraphQLList(BlogArticle),
             resolver=lambda *_: map(Article, range(1, 10 + 1))),

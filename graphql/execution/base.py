@@ -272,10 +272,10 @@ def get_field_entry_key(node):
 
 class ResolveInfo(object):
     __slots__ = ('field_name', 'field_asts', 'return_type', 'parent_type',
-                 'schema', 'fragments', 'root_value', 'operation', 'variable_values')
+                 'schema', 'fragments', 'root_value', 'operation', 'variable_values', 'context')
 
     def __init__(self, field_name, field_asts, return_type, parent_type,
-                 schema, fragments, root_value, operation, variable_values):
+                 schema, fragments, root_value, operation, variable_values, context):
         self.field_name = field_name
         self.field_asts = field_asts
         self.return_type = return_type
@@ -285,9 +285,10 @@ class ResolveInfo(object):
         self.root_value = root_value
         self.operation = operation
         self.variable_values = variable_values
+        self.context = context
 
 
-def default_resolve_fn(source, args, context, info):
+def default_resolve_fn(source, info, **args):
     """If a resolve function is not given, then a default resolve behavior is used which takes the property of the source object
     of the same name as the field and returns it as the result, or if it's a function, returns the result of calling that function."""
     name = info.field_name

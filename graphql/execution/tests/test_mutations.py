@@ -44,22 +44,22 @@ MutationType = GraphQLObjectType('Mutation', {
     'immediatelyChangeTheNumber': GraphQLField(
         NumberHolderType,
         args={'newNumber': GraphQLArgument(GraphQLInt)},
-        resolver=lambda obj, args, *_:
+        resolver=lambda obj, info, **args:
             obj.immediately_change_the_number(args['newNumber'])),
     'promiseToChangeTheNumber': GraphQLField(
         NumberHolderType,
         args={'newNumber': GraphQLArgument(GraphQLInt)},
-        resolver=lambda obj, args, *_:
+        resolver=lambda obj, info, **args:
             obj.promise_to_change_the_number(args['newNumber'])),
     'failToChangeTheNumber': GraphQLField(
         NumberHolderType,
         args={'newNumber': GraphQLArgument(GraphQLInt)},
-        resolver=lambda obj, args, *_:
+        resolver=lambda obj, info, **args:
             obj.fail_to_change_the_number(args['newNumber'])),
     'promiseAndFailToChangeTheNumber': GraphQLField(
         NumberHolderType,
         args={'newNumber': GraphQLArgument(GraphQLInt)},
-        resolver=lambda obj, args, *_:
+        resolver=lambda obj, info, **args:
             obj.promise_and_fail_to_change_the_number(args['newNumber'])),
 })
 
