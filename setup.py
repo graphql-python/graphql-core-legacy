@@ -1,22 +1,25 @@
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 import sys
+import ast
+import re
 
-if sys.version_info[0] < 3:
-    import __builtin__ as builtins
-else:
-    import builtins
+_version_re = re.compile(r'VERSION\s+=\s+(.*)')
 
-# This is a bit (!) hackish: we are setting a global variable so that the main
-# graphql __init__ can detect if it is being loaded by the setup routine, to
-# avoid attempting to load components that aren't built yet:
-# the numpy distutils extensions that are used by scikit-learn to recursively
-# build the compiled extensions in sub-packages is based on the Python import
-# machinery.
-if 'test' not in sys.argv:
-    builtins.__GRAPHQL_SETUP__ = True
+with open('graphql/__init__.py', 'rb') as f:
+    version = ast.literal_eval(_version_re.search(
+        f.read().decode('utf-8')).group(1))
 
-version = __import__('graphql').get_version()
+path_copy = sys.path[:]
+
+sys.path.append('graphql')
+try:
+    from pyutils.version import get_version
+    version = get_version(version)
+except Exception:
+    version = ".".join([str(v) for v in version])
+
+sys.path[:] = path_copy
 
 install_requires = [
     'six>=1.10.0',
@@ -71,9 +74,8 @@ setup(
         'Topic :: Database :: Front-Ends',
         'Topic :: Internet :: WWW/HTTP',
     ],
-
     keywords='api graphql protocol rest',
-    packages=find_packages(exclude=['tests', 'tests_py35']),
+    packages=find_packages(exclude=['tests', 'tests_py35', 'tests.*', 'tests_py35.*']),
     install_requires=install_requires,
     tests_require=tests_requires,
     cmdclass = {'test': PyTest},
