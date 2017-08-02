@@ -23,7 +23,8 @@ logger = logging.getLogger(__name__)
 
 
 def execute(schema, document_ast, root_value=None, context_value=None,
-            variable_values=None, operation_name=None, executor=None, middleware=None):
+            variable_values=None, operation_name=None, executor=None,
+            return_promise=False, middleware=None):
     assert schema, 'Must provide schema'
     assert isinstance(schema, GraphQLSchema), (
         'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
@@ -64,7 +65,14 @@ def execute(schema, document_ast, root_value=None, context_value=None,
             return ExecutionResult(data=data)
         return ExecutionResult(data=data, errors=context.errors)
 
-    return Promise.resolve(None).then(executor).catch(on_rejected).then(on_resolve)
+    promise = Promise.resolve(None).then(
+        executor).catch(on_rejected).then(on_resolve)
+
+    if not return_promise:
+        context.executor.wait_until_finished()
+        return promise.get()
+
+    return promise
 
 
 def execute_operation(exe_context, operation, root_value):
