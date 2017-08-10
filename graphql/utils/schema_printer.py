@@ -92,7 +92,7 @@ def _print_scalar(type):
 def _print_object(type):
     interfaces = type.interfaces
     implemented_interfaces = \
-        ' implements {}'.format(', '.join(i.name for i in interfaces)) if interfaces else ''
+        ' implements {}'.format(', '.join(sorted(i.name for i in interfaces))) if interfaces else ''
 
     return (
         'type {}{} {{\n'
@@ -110,7 +110,7 @@ def _print_interface(type):
 
 
 def _print_union(type):
-    return 'union {} = {}'.format(type.name, ' | '.join(str(t) for t in type.types))
+    return 'union {} = {}'.format(type.name, ' | '.join(sorted(str(t) for t in type.types)))
 
 
 def _print_enum(type):
@@ -118,7 +118,7 @@ def _print_enum(type):
         'enum {} {{\n'
         '{}\n'
         '}}'
-    ).format(type.name, '\n'.join('  ' + v.name + _print_deprecated(v) for v in type.values))
+    ).format(type.name, '\n'.join('  ' + v.name + _print_deprecated(v) for v in sorted(type.values, key=lambda v:v.name)))
 
 
 def _print_input_object(type):
@@ -126,12 +126,12 @@ def _print_input_object(type):
         'input {} {{\n'
         '{}\n'
         '}}'
-    ).format(type.name, '\n'.join('  ' + _print_input_value(name, field) for name, field in type.fields.items()))
+    ).format(type.name, '\n'.join('  ' + _print_input_value(name, field) for name, field in sorted(type.fields.items())))
 
 
 def _print_fields(type):
     return '\n'.join('  {}{}: {}{}'.format(f_name, _print_args(f), f.type, _print_deprecated(f))
-                     for f_name, f in type.fields.items())
+                     for f_name, f in sorted(type.fields.items()))
 
 
 def _print_deprecated(field_or_enum_value):
@@ -149,7 +149,7 @@ def _print_args(field_or_directives):
     if not field_or_directives.args:
         return ''
 
-    return '({})'.format(', '.join(_print_input_value(arg_name, arg) for arg_name, arg in field_or_directives.args.items()))
+    return '({})'.format(', '.join(_print_input_value(arg_name, arg) for arg_name, arg in sorted(field_or_directives.args.items())))
 
 
 def _print_input_value(name, arg):
