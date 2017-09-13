@@ -411,6 +411,25 @@ def test_input_types_are_read():
     assert input_type.fields["id"].type == GraphQLInt
 
 
+def test_input_types_can_be_recursive():
+    schema = build_ast_schema(parse("""
+        schema {
+            query: Query
+        }
+
+        type Query {
+            field(input: Input): Int
+        }
+
+        input Input {
+            id: Input
+        }
+    """))
+
+    input_type = schema.get_type("Input")
+    assert input_type.fields["id"].type == input_type
+
+
 def test_simple_argument_field_with_default():
     body = '''
 schema {
