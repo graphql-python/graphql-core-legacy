@@ -9,7 +9,7 @@ from ..utils.assert_valid_name import assert_valid_name
 try:
     from enum import Enum as PyEnum
 except ImportError:
-    from ..pyutils.enum import Enum as PyEnum
+    PyEnum = None
 
 
 def is_type(type):
@@ -412,7 +412,7 @@ class GraphQLEnumType(GraphQLType):
         self.values = define_enum_values(self, values)
 
     def serialize(self, value):
-        input_value = value.value if isinstance(value, PyEnum) else value
+        input_value = value.value if PyEnum is not None and isinstance(value, PyEnum) else value
         if isinstance(input_value, collections.Hashable):
             enum_value = self._value_lookup.get(input_value)
 
