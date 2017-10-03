@@ -6,6 +6,7 @@ import sys
 from six import string_types
 from promise import Promise, promise_for_dict, is_thenable
 
+from ..type.directives import GraphQLExportDirective
 from ..error import GraphQLError, GraphQLLocatedError
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
 from ..pyutils.ordereddict import OrderedDict
@@ -62,7 +63,7 @@ def execute(schema, document_ast, root_value=None, context_value=None,
 
     def on_resolve(data):
         if not context.errors:
-            return ExecutionResult(data=data)
+            return ExecutionResult(data=data, variable_values=context.variable_values)
         return ExecutionResult(data=data, errors=context.errors)
 
     promise = Promise.resolve(None).then(executor).catch(on_rejected).then(on_resolve)
@@ -123,6 +124,13 @@ def execute_fields(exe_context, parent_type, source_value, fields):
 
     for response_name, field_asts in fields.items():
         result = resolve_field(exe_context, parent_type, source_value, field_asts)
+        directives = field_asts[0].directives
+        if directives:
+            for directive in directives:
+                if directive.name.value == GraphQLExportDirective.name:
+                    variable_name = directive.arguments[0].value.value
+                    exe_context.variable_values.setdefault(variable_name, []).append(result)
+
         if result is Undefined:
             continue
 

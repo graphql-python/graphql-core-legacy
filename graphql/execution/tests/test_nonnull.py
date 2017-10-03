@@ -117,7 +117,6 @@ def test_nulls_a_nullable_field_that_throws_sync():
             sync
         }
     '''
-
     check(doc, ThrowingData(), {
         'data': {'sync': None},
         'errors': [{'locations': [{'column': 13, 'line': 3}], 'message': str(sync_error)}]

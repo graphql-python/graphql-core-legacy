@@ -35,6 +35,13 @@ def test_if_true_includes_scalar():
     assert result.data == {'a': 'a', 'b': 'b'}
 
 
+def test_export():
+    result = execute_test_query('{ a, b @export(as: "ids") }')
+    assert not result.errors
+    assert result.data == {'a': 'a', 'b': 'b'}
+    assert result.variable_values == {'ids': ['b']}
+
+
 def test_if_false_omits_on_scalar():
     result = execute_test_query('{ a, b @include(if: false) }')
     assert not result.errors

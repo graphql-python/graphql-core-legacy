@@ -106,11 +106,12 @@ class ExecutionResult(object):
     query, `errors` is null if no errors occurred, and is a
     non-empty array if an error occurred."""
 
-    __slots__ = 'data', 'errors', 'invalid'
+    __slots__ = 'data', 'errors', 'invalid', 'variable_values'
 
-    def __init__(self, data=None, errors=None, invalid=False):
+    def __init__(self, data=None, errors=None, invalid=False, variable_values=None):
         self.data = data
         self.errors = errors
+        self.variable_values = variable_values
 
         if invalid:
             assert data is None
