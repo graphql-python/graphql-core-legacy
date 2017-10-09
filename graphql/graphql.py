@@ -32,17 +32,15 @@ from promise import promisify
 
 def graphql(*args, **kwargs):
     return_promise = kwargs.get('return_promise', False)
-    promise_result = graphql_impl(*args, **kwargs)
-    if not return_promise:
-        return promise_result.get()
+    if return_promise:
+        return execute_graphql_as_promise(*args, **kwargs)
+    else:
+        return execute_graphql(*args, **kwargs)
 
-    return promise_result
 
-
-@promisify
-def graphql_impl(schema, request_string='', root_value=None, context_value=None,
-                 variable_values=None, operation_name=None, executor=None,
-                 return_promise=False, middleware=None):
+def execute_graphql(schema, request_string='', root_value=None, context_value=None,
+                    variable_values=None, operation_name=None, executor=None,
+                    return_promise=False, middleware=None):
     try:
         if isinstance(request_string, Document):
             ast = request_string
@@ -71,3 +69,8 @@ def graphql_impl(schema, request_string='', root_value=None, context_value=None,
             errors=[e],
             invalid=True,
         )
+
+
+@promisify
+def execute_graphql_as_promise(*args, **kwargs):
+    return execute_graphql(*args, **kwargs)
