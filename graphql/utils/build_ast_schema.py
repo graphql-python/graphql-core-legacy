@@ -234,7 +234,7 @@ def build_ast_schema(document):
     def make_input_object_def(definition):
         return GraphQLInputObjectType(
             name=definition.name.value,
-            fields=make_input_values(definition.fields, GraphQLInputObjectField)
+            fields=lambda: make_input_values(definition.fields, GraphQLInputObjectField)
         )
 
     _schema_def_handlers = {
