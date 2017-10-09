@@ -29,8 +29,9 @@ def highlight_source_at_location(source, location):
     format = (u'{:>' + str(pad_len) + '}: {}\n').format
     if line >= 2:
         result += format(line - 1, lines[line - 2])
-    result += format(line, lines[line - 1])
-    result += ' ' * (1 + pad_len + location.column) + '^\n'
+    if line <= len(lines):
+        result += format(line, lines[line - 1])
+        result += ' ' * (1 + pad_len + location.column) + '^\n'
     if line < len(lines):
         result += format(line + 1, lines[line])
     return result

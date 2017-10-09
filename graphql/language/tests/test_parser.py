@@ -14,6 +14,15 @@ def test_repr_loc():
     assert repr(loc) == '<Loc start=10 end=25 source=foo>'
 
 
+def test_empty_parse():
+    with raises(GraphQLSyntaxError) as excinfo:
+        parse("")
+    assert (
+        u'Syntax Error GraphQL (1:1) Unexpected EOF\n'
+        u'\n'
+    ) == excinfo.value.message
+
+
 def test_parse_provides_useful_errors():
     with raises(GraphQLSyntaxError) as excinfo:
         parse("""{""")
@@ -32,15 +41,18 @@ def test_parse_provides_useful_errors():
         parse("""{ ...MissingOn }
 fragment MissingOn Type
 """)
-    assert 'Syntax Error GraphQL (2:20) Expected "on", found Name "Type"' in str(excinfo.value)
+    assert 'Syntax Error GraphQL (2:20) Expected "on", found Name "Type"' in str(
+        excinfo.value)
 
     with raises(GraphQLSyntaxError) as excinfo:
         parse('{ field: {} }')
-    assert 'Syntax Error GraphQL (1:10) Expected Name, found {' in str(excinfo.value)
+    assert 'Syntax Error GraphQL (1:10) Expected Name, found {' in str(
+        excinfo.value)
 
     with raises(GraphQLSyntaxError) as excinfo:
         parse('notanoperation Foo { field }')
-    assert 'Syntax Error GraphQL (1:1) Unexpected Name "notanoperation"' in str(excinfo.value)
+    assert 'Syntax Error GraphQL (1:1) Unexpected Name "notanoperation"' in str(
+        excinfo.value)
 
     with raises(GraphQLSyntaxError) as excinfo:
         parse('...')
@@ -50,7 +62,8 @@ fragment MissingOn Type
 def test_parse_provides_useful_error_when_using_source():
     with raises(GraphQLSyntaxError) as excinfo:
         parse(Source('query', 'MyQuery.graphql'))
-    assert 'Syntax Error MyQuery.graphql (1:6) Expected {, found EOF' in str(excinfo.value)
+    assert 'Syntax Error MyQuery.graphql (1:6) Expected {, found EOF' in str(
+        excinfo.value)
 
 
 def test_parses_variable_inline_values():
