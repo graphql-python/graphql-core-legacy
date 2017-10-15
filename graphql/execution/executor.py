@@ -2,6 +2,7 @@ import collections
 import functools
 import logging
 import sys
+from rx import Observable
 
 from six import string_types
 from promise import Promise, promise_for_dict, is_thenable
@@ -15,7 +16,7 @@ from ..type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
                     GraphQLSchema, GraphQLUnionType)
 from .base import (ExecutionContext, ExecutionResult, ResolveInfo,
                    collect_fields, default_resolve_fn, get_field_def,
-                   get_operation_root_type)
+                   get_operation_root_type, SubscriberExecutionContext)
 from .executors.sync import SyncExecutor
 from .middleware import MiddlewareManager
 
@@ -61,6 +62,9 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         return None
 
     def on_resolve(data):
+        if isinstance(data, Observable):
+            return data
+
         if not context.errors:
             return ExecutionResult(data=data)
         return ExecutionResult(data=data, errors=context.errors)
@@ -87,6 +91,9 @@ def execute_operation(exe_context, operation, root_value):
 
     if operation.operation == 'mutation':
         return execute_fields_serially(exe_context, type, root_value, fields)
+
+    if operation.operation == 'subscription':
+        return subscribe_fields(exe_context, type, root_value, fields)
 
     return execute_fields(exe_context, type, root_value, fields)
 
@@ -140,6 +147,39 @@ def execute_fields(exe_context, parent_type, source_value, fields):
     return promise_for_dict(final_results)
 
 
+def subscribe_fields(exe_context, parent_type, source_value, fields):
+    exe_context = SubscriberExecutionContext(exe_context)
+
+    def on_error(error):
+        exe_context.report_error(error)
+
+    def map_result(data):
+        if exe_context.errors:
+            result = ExecutionResult(data=data, errors=exe_context.errors)
+        else:
+            result = ExecutionResult(data=data)
+        exe_context.reset()
+        return result
+
+    observables = []
+
+    # assert len(fields) == 1, "Can only subscribe one element at a time."
+
+    for response_name, field_asts in fields.items():
+
+        result = subscribe_field(exe_context, parent_type,
+                                 source_value, field_asts)
+        if result is Undefined:
+            continue
+
+        # Map observable results
+        observable = result.map(lambda data: map_result({response_name: data}))
+        return observable
+        observables.append(observable)
+
+    return Observable.merge(observables)
+
+
 def resolve_field(exe_context, parent_type, source, field_asts):
     field_ast = field_asts[0]
     field_name = field_ast.name.value
@@ -189,6 +229,64 @@ def resolve_field(exe_context, parent_type, source, field_asts):
         info,
         result
     )
+
+
+def subscribe_field(exe_context, parent_type, source, field_asts):
+    field_ast = field_asts[0]
+    field_name = field_ast.name.value
+
+    field_def = get_field_def(exe_context.schema, parent_type, field_name)
+    if not field_def:
+        return Undefined
+
+    return_type = field_def.type
+    resolve_fn = field_def.resolver or default_resolve_fn
+
+    # We wrap the resolve_fn from the middleware
+    resolve_fn_middleware = exe_context.get_field_resolver(resolve_fn)
+
+    # Build a dict of arguments from the field.arguments AST, using the variables scope to
+    # fulfill any variable references.
+    args = exe_context.get_argument_values(field_def, field_ast)
+
+    # The resolve function's optional third argument is a context value that
+    # is provided to every resolve function within an execution. It is commonly
+    # used to represent an authenticated user, or request-specific caches.
+    context = exe_context.context_value
+
+    # The resolve function's optional third argument is a collection of
+    # information about the current execution state.
+    info = ResolveInfo(
+        field_name,
+        field_asts,
+        return_type,
+        parent_type,
+        schema=exe_context.schema,
+        fragments=exe_context.fragments,
+        root_value=exe_context.root_value,
+        operation=exe_context.operation,
+        variable_values=exe_context.variable_values,
+        context=context
+    )
+
+    executor = exe_context.executor
+    result = resolve_or_error(resolve_fn_middleware,
+                              source, info, args, executor)
+
+    if isinstance(result, Exception):
+        raise result
+
+    if not isinstance(result, Observable):
+        raise GraphQLError(
+            'Subscription must return Async Iterable or Observable. Received: {}'.format(repr(result)))
+
+    return result.map(functools.partial(
+        complete_value_catching_error,
+        exe_context,
+        return_type,
+        field_asts,
+        info,
+    ))
 
 
 def resolve_or_error(resolve_fn, source, info, args, executor):
