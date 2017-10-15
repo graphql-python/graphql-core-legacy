@@ -25,7 +25,15 @@ except ImportError:
                 del task._source_traceback[-1]
             return task
         else:
-            raise TypeError('A Future, a coroutine or an awaitable is required')
+            raise TypeError(
+                'A Future, a coroutine or an awaitable is required')
+
+try:
+    from .asyncio_utils import asyncgen_to_observable, isasyncgen
+except:
+    def isasyncgen(obj): False
+
+    def asyncgen_to_observable(asyncgen): pass
 
 
 class AsyncioExecutor(object):
@@ -50,4 +58,6 @@ class AsyncioExecutor(object):
             future = ensure_future(result, loop=self.loop)
             self.futures.append(future)
             return Promise.resolve(future)
+        elif isasyncgen(result):
+            return asyncgen_to_observable(result)
         return result
