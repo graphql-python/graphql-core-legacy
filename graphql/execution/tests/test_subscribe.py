@@ -264,3 +264,119 @@ def test_produces_a_payload_for_multiple_subscribe_in_same_subscription():
 
     assert payload1[0].data == expected_payload
     assert payload2[0].data == expected_payload
+
+
+# Subscription Publish Phase
+def test_produces_a_payload_per_subscription_event():
+    stream = Subject()
+    send_important_email, subscription = create_subscription(stream)
+
+    payload = []
+
+    subscription.subscribe(payload.append)
+    send_important_email(Email(
+        from_='yuzhi@graphql.org',
+        subject='Alright',
+        message='Tests are good',
+        unread=True,
+    ))
+    expected_payload = {
+        'importantEmail': {
+            'email': {
+                'from': 'yuzhi@graphql.org',
+                'subject': 'Alright',
+            },
+            'inbox': {
+                'unread': 1,
+                'total': 2,
+            },
+        }
+    }
+
+    assert len(payload) == 1
+    assert payload[0].data == expected_payload
+
+    send_important_email(Email(
+        from_='hyo@graphql.org',
+        subject='Tools',
+        message='I <3 making things',
+        unread=True,
+    ))
+    expected_payload = {
+        'importantEmail': {
+            'email': {
+                'from': 'hyo@graphql.org',
+                'subject': 'Tools',
+            },
+            'inbox': {
+                'unread': 2,
+                'total': 3,
+            },
+        }
+    }
+
+    assert len(payload) == 2
+    assert payload[-1].data == expected_payload
+
+    # The client decides to disconnect
+    stream.on_completed()
+
+    send_important_email(Email(
+        from_='adam@graphql.org',
+        subject='Important',
+        message='Read me please',
+        unread=True,
+    ))
+
+    assert len(payload) == 2
+
+
+def test_event_order_is_correct_for_multiple_publishes():
+    stream = Subject()
+    send_important_email, subscription = create_subscription(stream)
+
+    payload = []
+
+    subscription.subscribe(payload.append)
+    send_important_email(Email(
+        from_='yuzhi@graphql.org',
+        subject='Message',
+        message='Tests are good',
+        unread=True,
+    ))
+    send_important_email(Email(
+        from_='yuzhi@graphql.org',
+        subject='Message 2',
+        message='Tests are good 2',
+        unread=True,
+    ))
+
+    expected_payload1 = {
+        'importantEmail': {
+            'email': {
+                'from': 'yuzhi@graphql.org',
+                'subject': 'Message',
+            },
+            'inbox': {
+                'unread': 1,
+                'total': 2,
+            },
+        }
+    }
+
+    expected_payload2 = {
+        'importantEmail': {
+            'email': {
+                'from': 'yuzhi@graphql.org',
+                'subject': 'Message 2',
+            },
+            'inbox': {
+                'unread': 2,
+                'total': 3,
+            },
+        }
+    }
+
+    assert len(payload) == 2
+    assert payload[0].data == expected_payload1
+    assert payload[1].data == expected_payload2
