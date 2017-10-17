@@ -172,8 +172,13 @@ def subscribe_fields(exe_context, parent_type, source_value, fields):
         if result is Undefined:
             continue
 
+        def catch_error(error):
+            exe_context.errors.append(error)
+            return Observable.just(None)
+
         # Map observable results
-        observable = result.map(lambda data: map_result({response_name: data}))
+        observable = result.catch_exception(catch_error).map(
+            lambda data: map_result({response_name: data}))
         return observable
         observables.append(observable)
 
