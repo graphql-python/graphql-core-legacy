@@ -1,6 +1,6 @@
 # Mini-language for AST definition.
 # All AST nodes extend AstNode.
-# All AST nodes are visitible.
+# All AST nodes are visible.
 # All AST fields have a getter and a setter and are a constructor argument.
 # We have concrete types (code T) and unions (code U).
 # S for singular field, P for plural, ? for nullable.
