@@ -407,8 +407,8 @@ class GraphQLEnumType(GraphQLType):
         self.values = define_enum_values(self, values)
 
     def serialize(self, value):
-        if isinstance(value, collections.Hashable):
-            enum_value = self._value_lookup.get(value)
+        if isinstance(value.value, collections.Hashable):
+            enum_value = self._value_lookup.get(value.value)
 
             if enum_value:
                 return enum_value.name
