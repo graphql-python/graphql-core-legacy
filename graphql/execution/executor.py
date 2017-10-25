@@ -23,9 +23,14 @@ from .middleware import MiddlewareManager
 logger = logging.getLogger(__name__)
 
 
+def subscribe(*args, **kwargs):
+    allow_subscriptions = kwargs.pop('allow_subscriptions', True)
+    return execute(*args, allow_subscriptions=allow_subscriptions, **kwargs)
+
+
 def execute(schema, document_ast, root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
-            return_promise=False, middleware=None):
+            return_promise=False, middleware=None, allow_subscriptions=False):
     assert schema, 'Must provide schema'
     assert isinstance(schema, GraphQLSchema), (
         'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
@@ -51,7 +56,8 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         variable_values,
         operation_name,
         executor,
-        middleware
+        middleware,
+        allow_subscriptions
     )
 
     def executor(v):
@@ -93,6 +99,12 @@ def execute_operation(exe_context, operation, root_value):
         return execute_fields_serially(exe_context, type, root_value, fields)
 
     if operation.operation == 'subscription':
+        if not exe_context.allow_subscriptions:
+            raise Exception(
+                "Subscriptions are not allowed. "
+                "You will need to either use the subscribe function "
+                "or pass allow_subscriptions=True"
+            )
         return subscribe_fields(exe_context, type, root_value, fields)
 
     return execute_fields(exe_context, type, root_value, fields)

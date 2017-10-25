@@ -1,7 +1,7 @@
 from collections import OrderedDict, namedtuple
 from rx import Observable, Observer
 from rx.subjects import Subject
-from graphql import parse, GraphQLObjectType, GraphQLString, GraphQLBoolean, GraphQLInt, GraphQLField, GraphQLList, GraphQLSchema, graphql, execute
+from graphql import parse, GraphQLObjectType, GraphQLString, GraphQLBoolean, GraphQLInt, GraphQLField, GraphQLList, GraphQLSchema, graphql, subscribe
 
 Email = namedtuple('Email', 'from_,subject,message,unread')
 
@@ -126,7 +126,8 @@ def create_subscription(stream, schema=email_schema, ast=None, vars=None):
         ast or default_ast,
         Root,
         None,
-        vars
+        vars,
+        allow_subscriptions=True,
     )
 
 
@@ -136,7 +137,7 @@ def test_accepts_an_object_with_named_properties_as_arguments():
         importantEmail
       }
   ''')
-    result = execute(
+    result = subscribe(
         email_schema,
         document,
         root_value=None
@@ -231,7 +232,7 @@ def test_returns_an_error_if_subscribe_function_returns_error():
         raise exc
 
     erroring_email_schema = email_schema_with_resolvers(thrower)
-    result = execute(erroring_email_schema, parse('''
+    result = subscribe(erroring_email_schema, parse('''
         subscription {
           importantEmail
         }
@@ -389,5 +390,6 @@ def test_event_order_is_correct_for_multiple_publishes():
     }
 
     assert len(payload) == 2
+    print(payload)
     assert payload[0].data == expected_payload1
     assert payload[1].data == expected_payload2

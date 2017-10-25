@@ -395,7 +395,7 @@ def test_uses_the_subscription_schema_for_subscriptions():
         'a': GraphQLField(GraphQLString, resolver=lambda root, info: Observable.from_(['b']))
     })
     result = execute(GraphQLSchema(Q, subscription=S),
-                     ast, Data(), operation_name='S')
+                     ast, Data(), operation_name='S', allow_subscriptions=True)
     assert isinstance(result, Observable)
     l = []
     result.subscribe(l.append)

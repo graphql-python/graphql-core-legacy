@@ -120,6 +120,7 @@ from .language.base import (  # no import order
 # Execute GraphQL queries.
 from .execution import (  # no import order
     execute,
+    subscribe,
     ResolveInfo,
     MiddlewareManager,
     middlewares
@@ -254,6 +255,7 @@ __all__ = (
     'print_ast',
     'visit',
     'execute',
+    'subscribe',
     'ResolveInfo',
     'MiddlewareManager',
     'middlewares',

@@ -151,7 +151,7 @@ def test_accepts_enum_literals_as_input_arguments_to_mutations():
 def test_accepts_enum_literals_as_input_arguments_to_subscriptions():
     result = graphql(
         Schema, 'subscription x($color: Color!) { subscribeToEnum(color: $color) }', variable_values={
-            'color': 'GREEN'})
+            'color': 'GREEN'}, allow_subscriptions=True)
     assert isinstance(result, Observable)
     l = []
     result.subscribe(l.append)
