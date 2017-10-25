@@ -23,8 +23,8 @@ sys.path[:] = path_copy
 
 install_requires = [
     'six>=1.10.0',
-    'promise>=2.1.dev',
-    'Rx>=1.5.9',
+    'promise>=2.1',
+    'rx>=1.6.0',
 ]
 
 tests_requires = [
