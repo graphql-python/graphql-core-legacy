@@ -39,6 +39,7 @@ matrix:
     install: pip install flake8
     script:
     - flake8
+    - py.test --cov=graphql graphql tests
 deploy:
   provider: pypi
   user: syrusakbary
