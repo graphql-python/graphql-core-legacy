@@ -23,7 +23,8 @@ sys.path[:] = path_copy
 
 install_requires = [
     'six>=1.10.0',
-    'promise>=2.1.dev'
+    'promise>=2.1',
+    'rx>=1.6.0',
 ]
 
 tests_requires = [
@@ -37,6 +38,7 @@ tests_requires = [
     'pytest-mock==1.2',
 ]
 
+
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -44,7 +46,7 @@ class PyTest(TestCommand):
         self.test_suite = True
 
     def run_tests(self):
-        #import here, cause outside the eggs aren't loaded
+        # import here, cause outside the eggs aren't loaded
         import pytest
         errno = pytest.main(self.test_args)
         sys.exit(errno)
@@ -75,10 +77,11 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
     ],
     keywords='api graphql protocol rest',
-    packages=find_packages(exclude=['tests', 'tests_py35', 'tests.*', 'tests_py35.*']),
+    packages=find_packages(
+        exclude=['tests', 'tests_py35', 'tests.*', 'tests_py35.*']),
     install_requires=install_requires,
     tests_require=tests_requires,
-    cmdclass = {'test': PyTest},
+    cmdclass={'test': PyTest},
     extras_require={
         'gevent': [
             'gevent==1.1rc1'

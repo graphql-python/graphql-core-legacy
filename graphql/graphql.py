@@ -40,7 +40,7 @@ def graphql(*args, **kwargs):
 
 def execute_graphql(schema, request_string='', root_value=None, context_value=None,
                     variable_values=None, operation_name=None, executor=None,
-                    return_promise=False, middleware=None):
+                    return_promise=False, middleware=None, allow_subscriptions=False):
     try:
         if isinstance(request_string, Document):
             ast = request_string
@@ -62,7 +62,8 @@ def execute_graphql(schema, request_string='', root_value=None, context_value=No
             variable_values=variable_values or {},
             executor=executor,
             middleware=middleware,
-            return_promise=return_promise
+            return_promise=return_promise,
+            allow_subscriptions=allow_subscriptions,
         )
     except Exception as e:
         return ExecutionResult(

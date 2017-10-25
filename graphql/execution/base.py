@@ -19,9 +19,9 @@ class ExecutionContext(object):
     and the fragments defined in the query document"""
 
     __slots__ = 'schema', 'fragments', 'root_value', 'operation', 'variable_values', 'errors', 'context_value', \
-                'argument_values_cache', 'executor', 'middleware', '_subfields_cache'
+                'argument_values_cache', 'executor', 'middleware', 'allow_subscriptions', '_subfields_cache'
 
-    def __init__(self, schema, document_ast, root_value, context_value, variable_values, operation_name, executor, middleware):
+    def __init__(self, schema, document_ast, root_value, context_value, variable_values, operation_name, executor, middleware, allow_subscriptions):
         """Constructs a ExecutionContext object from the arguments passed
         to execute, which we will pass throughout the other execution
         methods."""
@@ -32,7 +32,8 @@ class ExecutionContext(object):
         for definition in document_ast.definitions:
             if isinstance(definition, ast.OperationDefinition):
                 if not operation_name and operation:
-                    raise GraphQLError('Must provide operation name if query contains multiple operations.')
+                    raise GraphQLError(
+                        'Must provide operation name if query contains multiple operations.')
 
                 if not operation_name or definition.name and definition.name.value == operation_name:
                     operation = definition
@@ -42,18 +43,21 @@ class ExecutionContext(object):
 
             else:
                 raise GraphQLError(
-                    u'GraphQL cannot execute a request containing a {}.'.format(definition.__class__.__name__),
+                    u'GraphQL cannot execute a request containing a {}.'.format(
+                        definition.__class__.__name__),
                     definition
                 )
 
         if not operation:
             if operation_name:
-                raise GraphQLError(u'Unknown operation named "{}".'.format(operation_name))
+                raise GraphQLError(
+                    u'Unknown operation named "{}".'.format(operation_name))
 
             else:
                 raise GraphQLError('Must provide an operation.')
 
-        variable_values = get_variable_values(schema, operation.variable_definitions or [], variable_values)
+        variable_values = get_variable_values(
+            schema, operation.variable_definitions or [], variable_values)
 
         self.schema = schema
         self.fragments = fragments
@@ -65,6 +69,7 @@ class ExecutionContext(object):
         self.argument_values_cache = {}
         self.executor = executor
         self.middleware = middleware
+        self.allow_subscriptions = allow_subscriptions
         self._subfields_cache = {}
 
     def get_field_resolver(self, field_resolver):
@@ -82,7 +87,8 @@ class ExecutionContext(object):
         return result
 
     def report_error(self, error, traceback=None):
-        sys.excepthook(type(error), error, getattr(error, 'stack', None) or traceback)
+        sys.excepthook(type(error), error, getattr(
+            error, 'stack', None) or traceback)
         self.errors.append(error)
 
     def get_sub_fields(self, return_type, field_asts):
@@ -99,6 +105,20 @@ class ExecutionContext(object):
                     )
             self._subfields_cache[k] = subfield_asts
         return self._subfields_cache[k]
+
+
+class SubscriberExecutionContext(object):
+    __slots__ = 'exe_context', 'errors'
+
+    def __init__(self, exe_context):
+        self.exe_context = exe_context
+        self.errors = []
+
+    def reset(self):
+        self.errors = []
+
+    def __getattr__(self, name):
+        return getattr(self.exe_context, name)
 
 
 class ExecutionResult(object):
@@ -186,7 +206,8 @@ def collect_fields(ctx, runtime_type, selection_set, fields, prev_fragment_names
                     ctx, selection, runtime_type):
                 continue
 
-            collect_fields(ctx, runtime_type, selection.selection_set, fields, prev_fragment_names)
+            collect_fields(ctx, runtime_type,
+                           selection.selection_set, fields, prev_fragment_names)
 
         elif isinstance(selection, ast.FragmentSpread):
             frag_name = selection.name.value
@@ -202,7 +223,8 @@ def collect_fields(ctx, runtime_type, selection_set, fields, prev_fragment_names
                     does_fragment_condition_match(ctx, fragment, runtime_type):
                 continue
 
-            collect_fields(ctx, runtime_type, fragment.selection_set, fields, prev_fragment_names)
+            collect_fields(ctx, runtime_type,
+                           fragment.selection_set, fields, prev_fragment_names)
 
     return fields
 
