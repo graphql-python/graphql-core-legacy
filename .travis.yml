@@ -36,6 +36,8 @@ matrix:
     - pip install pytest-asyncio
     script:
     - py.test --cov=graphql graphql tests tests_py35
+  - python: '2.7'
+
 deploy:
   provider: pypi
   user: syrusakbary
