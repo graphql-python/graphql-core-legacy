@@ -44,9 +44,20 @@ EmailEventType = GraphQLObjectType(
 )
 
 
+def get_unbound_function(func):
+    if not getattr(func, '__self__', True):
+        return func.__func__
+    return func
+
+
 def email_schema_with_resolvers(resolve_fn=None):
     def default_resolver(root, info):
-        return getattr(root, 'importantEmail', Observable.empty)()
+        func = getattr(root, 'importantEmail', None)
+        if func:
+            func = get_unbound_function(func)
+            return func()
+        return Observable.empty()
+
     return GraphQLSchema(
         query=QueryType,
         subscription=GraphQLObjectType(
@@ -76,8 +87,8 @@ class MyObserver(Observer):
 
 
 def create_subscription(stream, schema=email_schema, ast=None, vars=None):
-    class Root:
-        class inbox:
+    class Root(object):
+        class inbox(object):
             emails = [
                 Email(
                     from_='joe@graphql.org',
