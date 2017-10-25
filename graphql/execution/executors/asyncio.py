@@ -30,7 +30,7 @@ except ImportError:
 
 try:
     from .asyncio_utils import asyncgen_to_observable, isasyncgen
-except:
+except Exception:
     def isasyncgen(obj): False
 
     def asyncgen_to_observable(asyncgen): pass
