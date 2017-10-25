@@ -19,7 +19,6 @@ before_install:
   fi
 install:
 - pip install -e .[test]
-after_install:
 - pip install flake8
 script:
 - flake8
