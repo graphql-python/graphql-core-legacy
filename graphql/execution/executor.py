@@ -105,7 +105,8 @@ def execute_operation(exe_context, operation, root_value):
                 "You will need to either use the subscribe function "
                 "or pass allow_subscriptions=True"
             )
-        return subscribe_fields(exe_context, type, root_value, fields)
+        results = subscribe_fields(exe_context, type, root_value, fields)
+        return results
 
     return execute_fields(exe_context, type, root_value, fields)
 
@@ -247,6 +248,17 @@ def resolve_field(exe_context, parent_type, source, field_asts):
         result
     )
 
+class PromiseObservable(Observable):
+
+    def __init__(self, promise):
+        self.promise = promise
+
+    def subscribe(self, on_next, on_error, on_completed):
+        def resolve_promise(result):
+            result.subscribe(lambda y: on_next(y))
+            # on_completed()
+        self.promise.then(resolve_promise)
+
 
 def subscribe_field(exe_context, parent_type, source, field_asts):
     field_ast = field_asts[0]
@@ -293,10 +305,12 @@ def subscribe_field(exe_context, parent_type, source, field_asts):
     if isinstance(result, Exception):
         raise result
 
+    if isinstance(result, Promise):
+        result = PromiseObservable(result)
+
     if not isinstance(result, Observable):
         raise GraphQLError(
             'Subscription must return Async Iterable or Observable. Received: {}'.format(repr(result)))
-
     return result.map(functools.partial(
         complete_value_catching_error,
         exe_context,
