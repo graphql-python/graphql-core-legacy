@@ -105,8 +105,7 @@ def execute_operation(exe_context, operation, root_value):
                 "You will need to either use the subscribe function "
                 "or pass allow_subscriptions=True"
             )
-        results = subscribe_fields(exe_context, type, root_value, fields)
-        return results
+        return subscribe_fields(exe_context, type, root_value, fields)
 
     return execute_fields(exe_context, type, root_value, fields)
 
