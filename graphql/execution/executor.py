@@ -32,7 +32,7 @@ def subscribe(*args, **kwargs):
 def execute(schema, document_ast, root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
             return_promise=False, middleware=None, allow_subscriptions=False,
-            tracing=True):
+            tracing=False):
     assert schema, 'Must provide schema'
     assert isinstance(schema, GraphQLSchema), (
         'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
