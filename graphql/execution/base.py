@@ -128,7 +128,7 @@ class ExecutionResult(object):
 
     __slots__ = 'data', 'errors', 'invalid', 'extensions'
 
-    def __init__(self, data=None, errors=None, extensions=None, invalid=False):
+    def __init__(self, data=None, errors=None, invalid=False, extensions=None):
         self.data = data
         self.errors = errors
         self.extensions = extensions or dict()
