@@ -39,16 +39,6 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         'not multiple versions of GraphQL installed in your node_modules directory.'
     )
 
-    tracing_middleware = None
-    if tracing:
-        tracing_middleware = TracingMiddleware()
-        tracing_middleware.start()
-
-        if not isinstance(middleware, MiddlewareManager):
-            middleware = MiddlewareManager(tracing_middleware)
-        else:
-            middleware.middlewares.insert(0, tracing_middleware)
-
     if middleware:
         if not isinstance(middleware, MiddlewareManager):
             middleware = MiddlewareManager(*middleware)
@@ -57,6 +47,17 @@ def execute(schema, document_ast, root_value=None, context_value=None,
             'middlewares have to be an instance'
             ' of MiddlewareManager. Received "{}".'.format(middleware)
         )
+
+    tracing_middleware = None
+    if tracing:
+        tracing_middleware = TracingMiddleware()
+        tracing_middleware.start()
+
+        if middleware:
+            middleware.middlewares.insert(0, tracing_middleware)
+        else:
+            middleware = MiddlewareManager(tracing_middleware)
+
 
     if executor is None:
         executor = SyncExecutor()
