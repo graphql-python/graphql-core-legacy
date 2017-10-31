@@ -7,18 +7,10 @@ from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLField,
                           GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull,
                           GraphQLObjectType, GraphQLSchema, GraphQLString)
 
-current_time = -1
-
 
 def test_tracing_result(mocker):
-
-    def get_time():
-        global current_time
-        current_time += 1
-        return current_time
-
     time_mock = mocker.patch('time.time')
-    time_mock.side_effect = get_time
+    time_mock.side_effect = range(0, 10000)
 
     BlogImage = GraphQLObjectType('BlogImage', {
         'url': GraphQLField(GraphQLString),
