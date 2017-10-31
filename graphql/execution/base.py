@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import sys
-import copy
 
 from ..error import GraphQLError
 from ..language import ast
@@ -311,22 +310,6 @@ class ResolveInfo(object):
         self.variable_values = variable_values
         self.context = context
         self.path = path
-
-    def clone(self):
-        return ResolveInfo(
-            field_name=self.field_name,
-            field_asts=self.field_asts,
-            return_type=self.return_type,
-            parent_type=self.parent_type,
-            schema=self.schema,
-            fragments=self.fragments,
-            root_value=self.root_value,
-            operation=self.operation,
-            variable_values=self.variable_values,
-            context=self.context,
-            path=copy.copy(self.path)
-        )
-
 
 
 def default_resolve_fn(source, info, **args):

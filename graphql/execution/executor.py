@@ -39,6 +39,7 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         'not multiple versions of GraphQL installed in your node_modules directory.'
     )
 
+    tracing_middleware = None
     if tracing:
         tracing_middleware = TracingMiddleware()
         tracing_middleware.start()
@@ -83,8 +84,10 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         if isinstance(data, Observable):
             return data
 
-        tracing_middleware.end()
-        extensions = dict(tracing=tracing_middleware.tracing_dict)
+        extensions = dict()
+        if tracing_middleware:
+            tracing_middleware.end()
+            extensions['tracing'] = tracing_middleware.tracing_dict
 
         if not context.errors:
             return ExecutionResult(data=data, extensions=extensions)
@@ -432,11 +435,12 @@ def complete_list_value(exe_context, return_type, field_asts, info, result):
     item_type = return_type.of_type
     completed_results = []
     contains_promise = False
+
     index = 0
+    path = info.path[:]
     for item in result:
-        new_info = info.clone()
-        new_info.path += [index]
-        completed_item = complete_value_catching_error(exe_context, item_type, field_asts, new_info, item)
+        info.path = path + [index]
+        completed_item = complete_value_catching_error(exe_context, item_type, field_asts, info, item)
         if not contains_promise and is_thenable(completed_item):
             contains_promise = True
 
