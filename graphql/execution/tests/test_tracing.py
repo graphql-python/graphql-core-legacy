@@ -8,7 +8,7 @@ from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLField,
                           GraphQLObjectType, GraphQLSchema, GraphQLString)
 
 
-def test_tracing_result(mocker):
+def test_tracing(mocker):
     time_mock = mocker.patch('time.time')
     time_mock.side_effect = range(0, 10000)
 
@@ -85,8 +85,17 @@ def test_tracing_result(mocker):
     {
         feed {
           id
-          title
-        }
+          ...articleFields
+          author {
+            id
+            name
+          }
+        },
+    }
+    fragment articleFields on Article {
+        title,
+        body,
+        hidden,
     }
     '''
 
@@ -99,11 +108,21 @@ def test_tracing_result(mocker):
             "feed": [
                 {
                     "id": "1",
-                    "title": "My Article 1"
+                    "title": "My Article 1",
+                    "body": "This is a post",
+                    "author": {
+                        "id": "123",
+                        "name": "John Smith"
+                    }
                 },
                 {
                     "id": "2",
-                    "title": "My Article 2"
+                    "title": "My Article 2",
+                    "body": "This is a post",
+                    "author": {
+                        "id": "123",
+                        "name": "John Smith"
+                    }
                 },
             ],
         }
@@ -111,50 +130,23 @@ def test_tracing_result(mocker):
     assert result.extensions['tracing'] == {
         'version': 1,
         'startTime': time.strftime(TracingMiddleware.DATETIME_FORMAT, time.gmtime(0)),
-        'endTime': time.strftime(TracingMiddleware.DATETIME_FORMAT, time.gmtime(16)),
-        'duration': 16000,
+        'endTime': time.strftime(TracingMiddleware.DATETIME_FORMAT, time.gmtime(40)),
+        'duration': 40000,
         'execution': {
             'resolvers': [
-                {
-                    'path': ['feed'],
-                    'parentType': 'Query',
-                    'fieldName': 'feed',
-                    'returnType': '[Article]',
-                    'startOffset': 3000,
-                    'duration': 1000
-                },
-                {
-                    'path': ['feed', 0, 'id'],
-                    'parentType': 'Article',
-                    'fieldName': 'id',
-                    'returnType': 'String!',
-                    'startOffset': 6000,
-                    'duration': 1000
-                },
-                {
-                    'path': ['feed', 0, 'title'],
-                    'parentType': 'Article',
-                    'fieldName': 'title',
-                    'returnType': 'String',
-                    'startOffset': 9000,
-                    'duration': 1000
-                },
-                {
-                    'path': ['feed', 1, 'id'],
-                    'parentType': 'Article',
-                    'fieldName': 'id',
-                    'returnType': 'String!',
-                    'startOffset': 12000,
-                    'duration': 1000
-                },
-                {
-                    'path': ['feed', 1, 'title'],
-                    'parentType': 'Article',
-                    'fieldName': 'title',
-                    'returnType': 'String',
-                    'startOffset': 15000,
-                    'duration': 1000
-                }
+                {'path': ['feed'],              'parentType': 'Query',      'fieldName': 'feed',    'returnType': '[Article]',  'startOffset': 3000,  'duration': 1000},
+                {'path': ['feed', 0, 'id'],     'parentType': 'Article',    'fieldName': 'id',      'returnType': 'String!',    'startOffset': 6000,  'duration': 1000},
+                {'path': ['feed', 0, 'title'],  'parentType': 'Article',    'fieldName': 'title',   'returnType': 'String',     'startOffset': 9000,  'duration': 1000},
+                {'path': ['feed', 0, 'body'],   'parentType': 'Article',    'fieldName': 'body',    'returnType': 'String',     'startOffset': 12000, 'duration': 1000},
+                {'path': ['feed', 0, 'author'], 'parentType': 'Article',    'fieldName': 'author',  'returnType': 'Author',     'startOffset': 15000, 'duration': 1000},
+                {'path': ['feed', 1, 'id'],     'parentType': 'Article',    'fieldName': 'id',      'returnType': 'String!',    'startOffset': 18000, 'duration': 1000},
+                {'path': ['feed', 1, 'title'],  'parentType': 'Article',    'fieldName': 'title',   'returnType': 'String',     'startOffset': 21000, 'duration': 1000},
+                {'path': ['feed', 1, 'body'],   'parentType': 'Article',    'fieldName': 'body',    'returnType': 'String',     'startOffset': 24000, 'duration': 1000},
+                {'path': ['feed', 1, 'author'], 'parentType': 'Article',    'fieldName': 'author',  'returnType': 'Author',     'startOffset': 27000, 'duration': 1000},
+                {'path': ['feed', 0, 'author', 'id'],   'parentType': 'Author', 'fieldName': 'id',  'returnType': 'String',     'startOffset': 30000, 'duration': 1000},
+                {'path': ['feed', 0, 'author', 'name'], 'parentType': 'Author', 'fieldName': 'name', 'returnType': 'String',    'startOffset': 33000, 'duration': 1000},
+                {'path': ['feed', 1, 'author', 'id'],   'parentType': 'Author', 'fieldName': 'id',   'returnType': 'String',    'startOffset': 36000, 'duration': 1000},
+                {'path': ['feed', 1, 'author', 'name'], 'parentType': 'Author', 'fieldName': 'name', 'returnType': 'String',    'startOffset': 39000, 'duration': 1000}
             ]
         }
     }
