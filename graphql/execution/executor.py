@@ -19,6 +19,7 @@ from .base import (ExecutionContext, ExecutionResult, ResolveInfo,
                    get_operation_root_type, SubscriberExecutionContext)
 from .executors.sync import SyncExecutor
 from .middleware import MiddlewareManager
+from .tracing import TracingMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +31,23 @@ def subscribe(*args, **kwargs):
 
 def execute(schema, document_ast, root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
-            return_promise=False, middleware=None, allow_subscriptions=False):
+            return_promise=False, middleware=None, allow_subscriptions=False,
+            tracing=True):
     assert schema, 'Must provide schema'
     assert isinstance(schema, GraphQLSchema), (
         'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
         'not multiple versions of GraphQL installed in your node_modules directory.'
     )
+
+    if tracing:
+        tracing_middleware = TracingMiddleware()
+        tracing_middleware.start()
+
+        if not isinstance(middleware, MiddlewareManager):
+            middleware = MiddlewareManager(tracing_middleware)
+        else:
+            middleware.middlewares.insert(0, tracing_middleware)
+
     if middleware:
         if not isinstance(middleware, MiddlewareManager):
             middleware = MiddlewareManager(*middleware)
@@ -71,12 +83,14 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         if isinstance(data, Observable):
             return data
 
-        if not context.errors:
-            return ExecutionResult(data=data)
-        return ExecutionResult(data=data, errors=context.errors)
+        extensions = dict(tracing=tracing_middleware.tracing_dict)
 
-    promise = Promise.resolve(None).then(
-        executor).catch(on_rejected).then(on_resolve)
+        if not context.errors:
+            return ExecutionResult(data=data, extensions=extensions)
+
+        return ExecutionResult(data=data, extensions=extensions, errors=context.errors)
+
+    promise = Promise.resolve(None).then(executor).catch(on_rejected).then(on_resolve)
 
     if not return_promise:
         context.executor.wait_until_finished()
@@ -326,8 +340,7 @@ def complete_value_catching_error(exe_context, return_type, field_asts, info, re
     # Otherwise, error protection is applied, logging the error and
     # resolving a null value for this field if one is encountered.
     try:
-        completed = complete_value(
-            exe_context, return_type, field_asts, info, result)
+        completed = complete_value(exe_context, return_type, field_asts, info, result)
         if is_thenable(completed):
             def handle_error(error):
                 traceback = completed._traceback

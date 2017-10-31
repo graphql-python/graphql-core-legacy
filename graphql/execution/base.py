@@ -128,9 +128,10 @@ class ExecutionResult(object):
 
     __slots__ = 'data', 'errors', 'invalid'
 
-    def __init__(self, data=None, errors=None, invalid=False):
+    def __init__(self, data=None, errors=None, extensions=None, invalid=False):
         self.data = data
         self.errors = errors
+        self.extensions = extensions or dict()
 
         if invalid:
             assert data is None
