@@ -132,7 +132,8 @@ def execute_fields_serially(exe_context, parent_type, source_value, fields):
             exe_context,
             parent_type,
             source_value,
-            field_asts
+            field_asts,
+            None
         )
         if result is Undefined:
             return results
@@ -193,8 +194,7 @@ def subscribe_fields(exe_context, parent_type, source_value, fields):
 
     for response_name, field_asts in fields.items():
 
-        result = subscribe_field(exe_context, parent_type,
-                                 source_value, field_asts)
+        result = subscribe_field(exe_context, parent_type, source_value, field_asts)
         if result is Undefined:
             continue
 
@@ -297,7 +297,8 @@ def subscribe_field(exe_context, parent_type, source, field_asts):
         root_value=exe_context.root_value,
         operation=exe_context.operation,
         variable_values=exe_context.variable_values,
-        context=context
+        context=context,
+        path=[field_name]
     )
 
     executor = exe_context.executor
