@@ -83,6 +83,7 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         if isinstance(data, Observable):
             return data
 
+        tracing_middleware.end()
         extensions = dict(tracing=tracing_middleware.tracing_dict)
 
         if not context.errors:
@@ -121,7 +122,7 @@ def execute_operation(exe_context, operation, root_value):
             )
         return subscribe_fields(exe_context, type, root_value, fields)
 
-    return execute_fields(exe_context, type, root_value, fields)
+    return execute_fields(exe_context, type, root_value, fields, None)
 
 
 def execute_fields_serially(exe_context, parent_type, source_value, fields):
@@ -152,14 +153,13 @@ def execute_fields_serially(exe_context, parent_type, source_value, fields):
     return functools.reduce(execute_field, fields.keys(), Promise.resolve(collections.OrderedDict()))
 
 
-def execute_fields(exe_context, parent_type, source_value, fields):
+def execute_fields(exe_context, parent_type, source_value, fields, info):
     contains_promise = False
 
     final_results = OrderedDict()
 
     for response_name, field_asts in fields.items():
-        result = resolve_field(exe_context, parent_type,
-                               source_value, field_asts)
+        result = resolve_field(exe_context, parent_type, source_value, field_asts, info)
         if result is Undefined:
             continue
 
@@ -211,7 +211,7 @@ def subscribe_fields(exe_context, parent_type, source_value, fields):
     return Observable.merge(observables)
 
 
-def resolve_field(exe_context, parent_type, source, field_asts):
+def resolve_field(exe_context, parent_type, source, field_asts, parent_info):
     field_ast = field_asts[0]
     field_name = field_ast.name.value
 
@@ -246,12 +246,12 @@ def resolve_field(exe_context, parent_type, source, field_asts):
         root_value=exe_context.root_value,
         operation=exe_context.operation,
         variable_values=exe_context.variable_values,
-        context=context
+        context=context,
+        path=parent_info.path+[field_name] if parent_info else [field_name]
     )
 
     executor = exe_context.executor
-    result = resolve_or_error(resolve_fn_middleware,
-                              source, info, args, executor)
+    result = resolve_or_error(resolve_fn_middleware, source, info, args, executor)
 
     return complete_value_catching_error(
         exe_context,
@@ -377,7 +377,6 @@ def complete_value(exe_context, return_type, field_asts, info, result):
     """
     # If field type is NonNull, complete for inner type, and throw field error
     # if result is null.
-
     if is_thenable(result):
         return Promise.resolve(result).then(
             lambda resolved: complete_value(
@@ -432,13 +431,16 @@ def complete_list_value(exe_context, return_type, field_asts, info, result):
     item_type = return_type.of_type
     completed_results = []
     contains_promise = False
+    index = 0
     for item in result:
-        completed_item = complete_value_catching_error(
-            exe_context, item_type, field_asts, info, item)
+        new_info = info.clone()
+        new_info.path += [index]
+        completed_item = complete_value_catching_error(exe_context, item_type, field_asts, new_info, item)
         if not contains_promise and is_thenable(completed_item):
             contains_promise = True
 
         completed_results.append(completed_item)
+        index += 1
 
     return Promise.all(completed_results) if contains_promise else completed_results
 
@@ -514,7 +516,7 @@ def complete_object_value(exe_context, return_type, field_asts, info, result):
 
     # Collect sub-fields to execute to complete this value.
     subfield_asts = exe_context.get_sub_fields(return_type, field_asts)
-    return execute_fields(exe_context, return_type, result, subfield_asts)
+    return execute_fields(exe_context, return_type, result, subfield_asts, info)
 
 
 def complete_nonnull_value(exe_context, return_type, field_asts, info, result):

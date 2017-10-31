@@ -51,7 +51,7 @@ class TracingMiddleware(object):
             elapsed_ms = (end - start) * 1000
 
             stat = {
-                # "path": [ <>, ...],
+                "path": info.path,
                 "parentType": str(info.parent_type),
                 "fieldName": info.field_name,
                 "returnType": str(info.return_type),

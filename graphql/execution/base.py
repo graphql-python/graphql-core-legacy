@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+import copy
 
 from ..error import GraphQLError
 from ..language import ast
@@ -126,7 +127,7 @@ class ExecutionResult(object):
     query, `errors` is null if no errors occurred, and is a
     non-empty array if an error occurred."""
 
-    __slots__ = 'data', 'errors', 'invalid'
+    __slots__ = 'data', 'errors', 'invalid', 'extensions'
 
     def __init__(self, data=None, errors=None, extensions=None, invalid=False):
         self.data = data
@@ -295,10 +296,10 @@ def get_field_entry_key(node):
 
 class ResolveInfo(object):
     __slots__ = ('field_name', 'field_asts', 'return_type', 'parent_type',
-                 'schema', 'fragments', 'root_value', 'operation', 'variable_values', 'context')
+                 'schema', 'fragments', 'root_value', 'operation', 'variable_values', 'context', 'path')
 
     def __init__(self, field_name, field_asts, return_type, parent_type,
-                 schema, fragments, root_value, operation, variable_values, context):
+                 schema, fragments, root_value, operation, variable_values, context, path):
         self.field_name = field_name
         self.field_asts = field_asts
         self.return_type = return_type
@@ -309,6 +310,23 @@ class ResolveInfo(object):
         self.operation = operation
         self.variable_values = variable_values
         self.context = context
+        self.path = path
+
+    def clone(self):
+        return ResolveInfo(
+            field_name=self.field_name,
+            field_asts=self.field_asts,
+            return_type=self.return_type,
+            parent_type=self.parent_type,
+            schema=self.schema,
+            fragments=self.fragments,
+            root_value=self.root_value,
+            operation=self.operation,
+            variable_values=self.variable_values,
+            context=self.context,
+            path=copy.copy(self.path)
+        )
+
 
 
 def default_resolve_fn(source, info, **args):
