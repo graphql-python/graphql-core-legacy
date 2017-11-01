@@ -19,7 +19,6 @@ from .base import (ExecutionContext, ExecutionResult, ResolveInfo,
                    get_operation_root_type, SubscriberExecutionContext)
 from .executors.sync import SyncExecutor
 from .middleware import MiddlewareManager
-from .tracing import TracingMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -31,8 +30,7 @@ def subscribe(*args, **kwargs):
 
 def execute(schema, document_ast, root_value=None, context_value=None,
             variable_values=None, operation_name=None, executor=None,
-            return_promise=False, middleware=None, allow_subscriptions=False,
-            tracing=False):
+            return_promise=False, middleware=None, allow_subscriptions=False):
     assert schema, 'Must provide schema'
     assert isinstance(schema, GraphQLSchema), (
         'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
@@ -47,17 +45,6 @@ def execute(schema, document_ast, root_value=None, context_value=None,
             'middlewares have to be an instance'
             ' of MiddlewareManager. Received "{}".'.format(middleware)
         )
-
-    tracing_middleware = None
-    if tracing:
-        tracing_middleware = TracingMiddleware()
-        tracing_middleware.start()
-
-        if middleware:
-            middleware.middlewares.insert(0, tracing_middleware)
-        else:
-            middleware = MiddlewareManager(tracing_middleware)
-
 
     if executor is None:
         executor = SyncExecutor()
@@ -85,15 +72,10 @@ def execute(schema, document_ast, root_value=None, context_value=None,
         if isinstance(data, Observable):
             return data
 
-        extensions = dict()
-        if tracing_middleware:
-            tracing_middleware.end()
-            extensions['tracing'] = tracing_middleware.tracing_dict
-
         if not context.errors:
-            return ExecutionResult(data=data, extensions=extensions)
+            return ExecutionResult(data=data)
 
-        return ExecutionResult(data=data, extensions=extensions, errors=context.errors)
+        return ExecutionResult(data=data, errors=context.errors)
 
     promise = Promise.resolve(None).then(executor).catch(on_rejected).then(on_resolve)
 
