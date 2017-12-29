@@ -47,7 +47,7 @@ def test_big_list_of_ints(benchmark):
 
 
 def test_big_list_of_ints_serialize(benchmark):
-    from ..executor import complete_leaf_value
+    from graphql.execution.utils import complete_leaf_value
 
     @benchmark
     def serialize():
