@@ -6,6 +6,14 @@ from ..pyutils.cached_property import cached_property
 from ..pyutils.ordereddict import OrderedDict
 from ..utils.assert_valid_name import assert_valid_name
 
+from ..execution.utils import (
+    complete_abstract_value,
+    complete_leaf_value,
+    complete_list_value, 
+    complete_nonnull_value,
+    complete_object_value,
+)
+
 
 def is_type(type):
     return isinstance(type, (
@@ -134,6 +142,10 @@ class GraphQLScalarType(GraphQLType):
     def __str__(self):
         return self.name
 
+    @staticmethod
+    def complete_value(exe_context, return_type, field_asts, info, result):
+        return complete_leaf_value(exe_context, return_type, field_asts, info, result)
+
 
 class GraphQLObjectType(GraphQLType):
     """Object Type Definition
@@ -182,6 +194,10 @@ class GraphQLObjectType(GraphQLType):
     @cached_property
     def interfaces(self):
         return define_interfaces(self, self._provided_interfaces)
+
+    @staticmethod
+    def complete_value(exe_context, return_type, field_asts, info, result):
+        return complete_object_value(exe_context, return_type, field_asts, info, result)
 
 
 def define_field_map(type, field_map):
@@ -316,7 +332,12 @@ class GraphQLInterfaceType(GraphQLType):
     @cached_property
     def fields(self):
         return define_field_map(self, self._fields)
+    
 
+    @staticmethod
+    def complete_value(exe_context, return_type, field_asts, info, result):
+        return complete_abstract_value(exe_context, return_type, field_asts, info, result)
+    
 
 class GraphQLUnionType(GraphQLType):
     """Union Type Definition
@@ -352,6 +373,10 @@ class GraphQLUnionType(GraphQLType):
     @cached_property
     def types(self):
         return define_types(self, self._types)
+
+    @staticmethod
+    def complete_value(exe_context, return_type, field_asts, info, result):
+        return complete_abstract_value(exe_context, return_type, field_asts, info, result)
 
 
 def define_types(union_type, types):
@@ -438,6 +463,10 @@ class GraphQLEnumType(GraphQLType):
     @cached_property
     def _name_lookup(self):
         return {value.name: value for value in self.values}
+
+    @staticmethod
+    def complete_value(exe_context, return_type, field_asts, info, result):
+        return complete_leaf_value(exe_context, return_type, field_asts, info, result)
 
 
 def define_enum_values(type, value_map):
@@ -590,6 +619,10 @@ class GraphQLList(GraphQLType):
 
     def is_same_type(self, other):
         return isinstance(other, GraphQLList) and self.of_type.is_same_type(other.of_type)
+
+    @staticmethod
+    def complete_value(exe_context, return_type, field_asts, info, result):
+        return complete_list_value(exe_context, return_type, field_asts, info, result)
 
 
 class GraphQLNonNull(GraphQLType):
