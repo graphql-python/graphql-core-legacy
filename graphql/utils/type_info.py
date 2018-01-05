@@ -148,7 +148,7 @@ class TypeInfo(object):
         self._argument = None
         pop(self._input_type_stack)
 
-    def leave_ListType(self):
+    def leave_ListValue(self):
         pop(self._input_type_stack)
 
-    leave_ObjectField = leave_ListType
+    leave_ObjectField = leave_ListValue
