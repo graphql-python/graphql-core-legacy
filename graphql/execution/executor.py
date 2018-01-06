@@ -65,6 +65,9 @@ def execute(schema, document_ast, root_value=None, context_value=None,
 
     def on_rejected(error):
         context.errors.append(error)
+
+        if middleware:
+            middleware.handle_excecute_end(context, None)
         return None
 
     def on_resolve(data):
