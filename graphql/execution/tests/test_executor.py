@@ -668,3 +668,42 @@ def test_middleware_skip_promise_wrap():
                       middleware=middlewares_without_promise)
     assert result1.data == result2.data and result1.data == {
         'ok': 'ok', 'not_ok': 'not_ok'}
+
+
+def test_middleware_execute_events():
+    doc = '''{
+        ok
+        not_ok
+    }'''
+
+    class Data(object):
+        def ok(self):
+            return 'ok'
+
+        def not_ok(self):
+            return 'not_ok'
+
+    doc_ast = parse(doc)
+
+    Type = GraphQLObjectType('Type', {
+        'ok': GraphQLField(GraphQLString),
+        'not_ok': GraphQLField(GraphQLString),
+    })
+
+    class MyMiddleware(object):
+        execute_start_count = 0
+        execute_end_count = 0
+
+        def on_excecute_start(self, context):
+            self.execute_start_count += 1
+
+        def on_excecute_end(self, context, data):
+            self.execute_end_count += 1
+
+    middleware = MyMiddleware()
+    middlewares = MiddlewareManager(middleware)
+    result = execute(GraphQLSchema(Type), doc_ast,
+                     Data(), middleware=middlewares)
+    assert result.data == {'ok': 'ok', 'not_ok': 'not_ok'}
+    assert middleware.execute_start_count == 1
+    assert middleware.execute_end_count == 1
