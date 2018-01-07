@@ -18,7 +18,7 @@ class ExecutionContext(object):
     Namely, schema of the type system that is currently executing,
     and the fragments defined in the query document"""
 
-    __slots__ = 'schema', 'fragments', 'root_value', 'operation', 'variable_values', 'errors', 'context_value', \
+    __slots__ = 'schema', 'document_ast', 'fragments', 'root_value', 'operation', 'variable_values', 'errors', 'context_value', \
                 'argument_values_cache', 'executor', 'middleware', 'allow_subscriptions', '_subfields_cache'
 
     def __init__(self, schema, document_ast, root_value, context_value, variable_values, operation_name, executor, middleware, allow_subscriptions):
@@ -60,6 +60,7 @@ class ExecutionContext(object):
             schema, operation.variable_definitions or [], variable_values)
 
         self.schema = schema
+        self.document_ast = document_ast
         self.fragments = fragments
         self.root_value = root_value
         self.operation = operation

@@ -5,6 +5,8 @@ from itertools import chain
 from promise import Promise
 
 MIDDLEWARE_RESOLVER_FUNCTION = 'resolve'
+MIDDLEWARE_EXECUTE_START_FUNCTION = 'on_excecute_start'
+MIDDLEWARE_EXECUTE_END_FUNCTION = 'on_excecute_end'
 
 
 class MiddlewareManager(object):
@@ -24,6 +26,22 @@ class MiddlewareManager(object):
             )
 
         return self._cached_resolvers[field_resolver]
+
+    def handle_excecute_start(self, exec_context):
+        for middleware in self.middlewares:
+            if inspect.isfunction(middleware):
+                continue
+            if not hasattr(middleware, MIDDLEWARE_EXECUTE_START_FUNCTION):
+                continue
+            getattr(middleware, MIDDLEWARE_EXECUTE_START_FUNCTION)(exec_context)
+
+    def handle_excecute_end(self, exec_context, data):
+        for middleware in self.middlewares:
+            if inspect.isfunction(middleware):
+                continue
+            if not hasattr(middleware, MIDDLEWARE_EXECUTE_END_FUNCTION):
+                continue
+            getattr(middleware, MIDDLEWARE_EXECUTE_END_FUNCTION)(exec_context, data)
 
 
 middlewares = MiddlewareManager

@@ -65,15 +65,24 @@ def execute(schema, document_ast, root_value=None, context_value=None,
 
     def on_rejected(error):
         context.errors.append(error)
+
+        if middleware:
+            middleware.handle_excecute_end(context, None)
         return None
 
     def on_resolve(data):
         if isinstance(data, Observable):
             return data
 
+        if middleware:
+            middleware.handle_excecute_end(context, data)
+
         if not context.errors:
             return ExecutionResult(data=data)
         return ExecutionResult(data=data, errors=context.errors)
+
+    if middleware:
+        middleware.handle_excecute_start(context)
 
     promise = Promise.resolve(None).then(
         executor).catch(on_rejected).then(on_resolve)
