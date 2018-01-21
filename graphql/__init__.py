@@ -194,7 +194,7 @@ from .utils.base import (
 )
 
 
-VERSION = (2, 0, 0, 'final', 0)
+VERSION = (2, 0, 1, 'final', 0)
 __version__ = get_version(VERSION)
 
 
