@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import sys
+import logging
+from traceback import format_exception
 
 from ..error import GraphQLError
 from ..language import ast
@@ -10,6 +11,8 @@ from ..type.introspection import (SchemaMetaFieldDef, TypeMetaFieldDef,
                                   TypeNameMetaFieldDef)
 from ..utils.type_from_ast import type_from_ast
 from .values import get_argument_values, get_variable_values
+
+logger = logging.getLogger(__name__)
 
 
 class ExecutionContext(object):
@@ -87,8 +90,8 @@ class ExecutionContext(object):
         return result
 
     def report_error(self, error, traceback=None):
-        sys.excepthook(type(error), error, getattr(
-            error, 'stack', None) or traceback)
+        exception = format_exception(type(error), error, getattr(error, 'stack', None) or traceback)
+        logger.error(''.join(exception))
         self.errors.append(error)
 
     def get_sub_fields(self, return_type, field_asts):
