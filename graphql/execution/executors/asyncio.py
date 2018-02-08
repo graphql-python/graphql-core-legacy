@@ -43,6 +43,7 @@ class AsyncioExecutor(object):
             loop = get_event_loop()
         self.loop = loop
         self.futures = []
+        self.return_promise = False
 
     def wait_until_finished(self):
         # if there are futures to wait for
@@ -56,7 +57,8 @@ class AsyncioExecutor(object):
         result = fn(*args, **kwargs)
         if isinstance(result, Future) or iscoroutine(result):
             future = ensure_future(result, loop=self.loop)
-            self.futures.append(future)
+            if not self.return_promise:
+                self.futures.append(future)
             return Promise.resolve(future)
         elif isasyncgen(result):
             return asyncgen_to_observable(result)

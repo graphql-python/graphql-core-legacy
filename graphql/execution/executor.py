@@ -49,6 +49,8 @@ def execute(schema, document_ast, root_value=None, context_value=None,
     if executor is None:
         executor = SyncExecutor()
 
+    executor.return_promise = return_promise
+
     context = ExecutionContext(
         schema,
         document_ast,
