@@ -127,11 +127,11 @@ def test_does_not_accept_values_with_incorrect_casing():
                                        'Expected type "Color", found green.'
 
 
-# TODO
 def test_does_not_accept_incorrect_internal_value():
     result = graphql(Schema, '{ colorEnum(fromString: "GREEN") }')
     assert result.data == {'colorEnum': None}
-    assert result.errors[0].messages == ''
+    assert result.errors[0].message == 'Expected a value of type "Color" ' \
+                                       'but received: GREEN'
 
 
 def test_does_not_accept_internal_value_in_place_of_enum_literal():
