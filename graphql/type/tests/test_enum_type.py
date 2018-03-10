@@ -1,7 +1,6 @@
 from collections import OrderedDict
 
 from rx import Observable
-from pytest import raises
 
 from graphql import graphql
 from graphql.type import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
@@ -114,13 +113,28 @@ def test_does_not_accept_string_literals():
                                        'Expected type "Color", found "GREEN".'
 
 
+def test_does_not_accept_values_not_in_the_enum():
+    result = graphql(Schema, '{ colorEnum(fromEnum: GREENISH) }')
+    assert not result.data
+    assert result.errors[0].message == 'Argument "fromEnum" has invalid value GREENISH.\n' \
+                                       'Expected type "Color", found GREENISH.'
+
+
+def test_does_not_accept_values_with_incorrect_casing():
+    result = graphql(Schema, '{ colorEnum(fromEnum: green) }')
+    assert not result.data
+    assert result.errors[0].message == 'Argument "fromEnum" has invalid value green.\n' \
+                                       'Expected type "Color", found green.'
+
+
+# TODO
 def test_does_not_accept_incorrect_internal_value():
     result = graphql(Schema, '{ colorEnum(fromString: "GREEN") }')
     assert result.data == {'colorEnum': None}
-    assert not result.errors
+    assert result.errors[0].messages == ''
 
 
-def test_does_not_accept_internal_value_in_placeof_enum_literal():
+def test_does_not_accept_internal_value_in_place_of_enum_literal():
     result = graphql(Schema, '{ colorEnum(fromEnum: 1) }')
     assert not result.data
     assert result.errors[0].message == 'Argument "fromEnum" has invalid value 1.\n' \
@@ -135,8 +149,11 @@ def test_does_not_accept_enum_literal_in_place_of_int():
 
 
 def test_accepts_json_string_as_enum_variable():
-    result = graphql(Schema, 'query test($color: Color!) { colorEnum(fromEnum: $color) }', variable_values={
-                     'color': 'BLUE'})
+    result = graphql(
+        Schema,
+        'query test($color: Color!) { colorEnum(fromEnum: $color) }',
+        variable_values={'color': 'BLUE'}
+    )
     assert not result.errors
     assert result.data == {'colorEnum': 'BLUE'}
 
