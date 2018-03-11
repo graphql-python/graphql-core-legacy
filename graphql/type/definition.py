@@ -196,6 +196,10 @@ def define_field_map(type, field_map):
     new_field_map = []
     for field_name, field in field_map.items():
         assert_valid_name(field_name)
+        assert isinstance(field, GraphQLField), (
+            '{}.{} must be an instance of GraphQLField.'.format(type, field_name)
+        )
+
         field_args = getattr(field, 'args', None)
 
         if field_args:
