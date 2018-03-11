@@ -118,6 +118,31 @@ def test_defines_a_subscription_schema():
     # assert subscription.name == 'articleSubscribe'
 
 
+def test_defines_an_enum_type_with_deprecated_value():
+    EnumTypeWithDeprecatedValue = GraphQLEnumType('EnumWithDeprecatedValue', {
+        'foo': GraphQLEnumValue(deprecation_reason='Just because'),
+    })
+    value = EnumTypeWithDeprecatedValue.getValues()[0]
+    assert value.name == 'foo'
+    assert value.description is None
+    assert value.is_deprecated is True
+    assert value.deprecation_reason == 'Just because'
+    assert value.value == 'foo'
+
+
+def test_defines_an_enum_type_with_a_value_of_none():
+    EnumTypeWithNoneValue = GraphQLEnumType('EnumWithNullishValue', {
+        'NULL': GraphQLEnumValue(None),
+    })
+
+    value = EnumTypeWithNoneValue.getValues()[0]
+    assert value.name == 'NULL'
+    assert value.description is None
+    assert value.is_deprecated is False
+    assert value.deprecation_reason is None
+    assert value.value is None
+
+
 def test_includes_nested_input_objects_in_the_map():
     NestedInputObject = GraphQLInputObjectType(
         name='NestedInputObject',
