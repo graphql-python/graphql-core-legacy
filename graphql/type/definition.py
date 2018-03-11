@@ -193,7 +193,7 @@ def define_field_map(type, field_map):
         'function which returns such a mapping.'
     ).format(type)
 
-    new_field_map = {}
+    new_field_map = []
     for field_name, field in field_map.items():
         assert_valid_name(field_name)
         field_args = getattr(field, 'args', None)
@@ -209,7 +209,7 @@ def define_field_map(type, field_map):
 
         field = copy.copy(field)
         field.name = field_name
-        new_field_map[field_name] = field
+        new_field_map.append((field_name, field))
 
     return OrderedDict(new_field_map)
 
