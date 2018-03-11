@@ -161,6 +161,23 @@ def test_includes_nested_input_objects_in_the_map():
     assert schema.get_type_map()['NestedInputObject'] is NestedInputObject
 
 
+def test_includes_interface_possible_types_in_the_type_map():
+    SomeInterface = GraphQLInterfaceType('SomeInterface', fields={'f': GraphQLField(GraphQLInt)})
+    SomeSubtype = GraphQLObjectType(
+        name='SomeSubtype',
+        fields={'f': GraphQLField(GraphQLInt)},
+        interfaces=[SomeInterface],
+        is_type_of=lambda: None
+    )
+    schema = GraphQLSchema(
+        query=GraphQLObjectType(
+            name='Query',
+            fields={
+                'iface': GraphQLField(SomeInterface)}),
+        types=[SomeSubtype])
+    assert schema.get_type_map()['SomeSubtype'] == SomeSubtype
+
+
 def test_includes_interfaces_thunk_subtypes_in_the_type_map():
     SomeInterface = GraphQLInterfaceType(
         name='SomeInterface',
@@ -186,23 +203,6 @@ def test_includes_interfaces_thunk_subtypes_in_the_type_map():
     ), types=[SomeSubtype])
 
     assert schema.get_type_map()['SomeSubtype'] is SomeSubtype
-
-
-def test_includes_interfaces_subtypes_in_the_type_map():
-    SomeInterface = GraphQLInterfaceType('SomeInterface', fields={'f': GraphQLField(GraphQLInt)})
-    SomeSubtype = GraphQLObjectType(
-        name='SomeSubtype',
-        fields={'f': GraphQLField(GraphQLInt)},
-        interfaces=[SomeInterface],
-        is_type_of=lambda: None
-    )
-    schema = GraphQLSchema(
-        query=GraphQLObjectType(
-            name='Query',
-            fields={
-                'iface': GraphQLField(SomeInterface)}),
-        types=[SomeSubtype])
-    assert schema.get_type_map()['SomeSubtype'] == SomeSubtype
 
 
 def test_stringifies_simple_types():

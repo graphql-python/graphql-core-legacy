@@ -212,6 +212,26 @@ def test_enum_inputs_may_be_nullable():
     assert result.data == {'colorEnum': None, 'colorInt': None}
 
 
+def test_presents_a_getValues_api():
+    values = ColorType.getValues()
+    assert len(values) == 3
+    assert values[0].name == 'RED'
+    assert values[0].value == 0
+    assert values[1].name == 'GREEN'
+    assert values[1].value == 1
+    assert values[2].name == 'BLUE'
+    assert values[2].value == 2
+
+
+def test_presents_a_getValue_api():
+    oneValue = ColorType.getValue('RED')
+    assert oneValue.name == 'RED'
+    assert oneValue.value == 0
+
+    badUsage = ColorType.getValue(0)
+    assert badUsage is None
+
+
 def test_sorts_values_if_not_using_ordered_dict():
     enum = GraphQLEnumType(name='Test', values={
         'c': GraphQLEnumValue(),
