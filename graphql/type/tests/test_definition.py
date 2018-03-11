@@ -71,13 +71,13 @@ def test_defines_a_query_only_schema():
     article_field = BlogQuery.fields['article']
     assert article_field.type == BlogArticle
     assert article_field.type.name == 'Article'
-    # assert article_field.name == 'article'
+    assert article_field.name == 'article'
 
     article_field_type = article_field.type
     assert isinstance(article_field_type, GraphQLObjectType)
 
     title_field = article_field_type.fields['title']
-    # assert title_field.name == 'title'
+    assert title_field.name == 'title'
     assert title_field.type == GraphQLString
     assert title_field.type.name == 'String'
 
@@ -90,7 +90,7 @@ def test_defines_a_query_only_schema():
 
     feed_field = BlogQuery.fields['feed']
     assert feed_field.type.of_type == BlogArticle
-    # assert feed_field.name == 'feed'
+    assert feed_field.name == 'feed'
 
 
 def test_defines_a_mutation_schema():
@@ -101,7 +101,7 @@ def test_defines_a_mutation_schema():
     write_mutation = BlogMutation.fields['writeArticle']
     assert write_mutation.type == BlogArticle
     assert write_mutation.type.name == 'Article'
-    # assert write_mutation.name == 'writeArticle'
+    assert write_mutation.name == 'writeArticle'
 
 
 def test_defines_a_subscription_schema():
@@ -115,7 +115,24 @@ def test_defines_a_subscription_schema():
     subscription = BlogSubscription.fields['articleSubscribe']
     assert subscription.type == BlogArticle
     assert subscription.type.name == 'Article'
-    # assert subscription.name == 'articleSubscribe'
+    assert subscription.name == 'articleSubscribe'
+
+
+def test_defines_an_object_type_with_deprecated_field():
+    TypeWithDeprecatedField = GraphQLObjectType('foo', fields={
+        'bar': GraphQLField(
+            type=GraphQLString,
+            deprecation_reason='A terrible reason'
+        ),
+    })
+
+    field = TypeWithDeprecatedField.fields['bar']
+    assert field.type == GraphQLString
+    assert field.description is None
+    assert field.deprecation_reason == 'A terrible reason'
+    assert field.is_deprecated is True
+    assert field.name == 'bar'
+    assert field.args == OrderedDict()
 
 
 def test_includes_nested_input_objects_in_the_map():
