@@ -193,6 +193,7 @@ def define_field_map(type, field_map):
         'function which returns such a mapping.'
     ).format(type)
 
+    new_field_map = {}
     for field_name, field in field_map.items():
         assert_valid_name(field_name)
         field_args = getattr(field, 'args', None)
@@ -206,7 +207,11 @@ def define_field_map(type, field_map):
             for arg_name, arg in field_args.items():
                 assert_valid_name(arg_name)
 
-    return OrderedDict(field_map)
+        field = copy.copy(field)
+        field.name = field_name
+        new_field_map[field_name] = field
+
+    return OrderedDict(new_field_map)
 
 
 def define_interfaces(type, interfaces):
@@ -237,7 +242,7 @@ def define_interfaces(type, interfaces):
 
 
 class GraphQLField(object):
-    __slots__ = 'type', 'args', 'resolver', 'deprecation_reason', 'description'
+    __slots__ = 'name', 'type', 'args', 'resolver', 'is_deprecated', 'deprecation_reason', 'description'
 
     def __init__(self, type, args=None, resolver=None, deprecation_reason=None, description=None):
         self.type = type
@@ -245,6 +250,7 @@ class GraphQLField(object):
         self.resolver = resolver
         self.deprecation_reason = deprecation_reason
         self.description = description
+        self.is_deprecated = bool(self.deprecation_reason)
 
     def __eq__(self, other):
         return (
