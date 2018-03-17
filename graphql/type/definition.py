@@ -406,10 +406,10 @@ class GraphQLEnumType(GraphQLType):
 
         self.values = define_enum_values(self, values)
 
-    def getValues(self):
+    def get_values(self):
         return self.values
 
-    def getValue(self, name):
+    def get_value(self, name):
         return self._name_lookup.get(name)
 
     def serialize(self, value):
@@ -476,14 +476,17 @@ class Undefined(object):
 
 
 class GraphQLEnumValue(object):
-    __slots__ = 'name', 'value', 'is_deprecated', 'deprecation_reason', 'description'
+    __slots__ = 'name', 'value', 'deprecation_reason', 'description'
 
     def __init__(self, value=Undefined, deprecation_reason=None, description=None, name=None):
         self.name = name
         self.value = value
         self.deprecation_reason = deprecation_reason
         self.description = description
-        self.is_deprecated = bool(deprecation_reason)
+
+    @property
+    def is_deprecated(self):
+        return bool(self.deprecation_reason)
 
     def __eq__(self, other):
         return (

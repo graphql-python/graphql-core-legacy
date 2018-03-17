@@ -212,8 +212,8 @@ def test_enum_inputs_may_be_nullable():
     assert result.data == {'colorEnum': None, 'colorInt': None}
 
 
-def test_presents_a_getValues_api():
-    values = ColorType.getValues()
+def test_presents_a_get_values_api():
+    values = ColorType.get_values()
     assert len(values) == 3
     assert values[0].name == 'RED'
     assert values[0].value == 0
@@ -223,12 +223,12 @@ def test_presents_a_getValues_api():
     assert values[2].value == 2
 
 
-def test_presents_a_getValue_api():
-    oneValue = ColorType.getValue('RED')
+def test_presents_a_get_value_api():
+    oneValue = ColorType.get_value('RED')
     assert oneValue.name == 'RED'
     assert oneValue.value == 0
 
-    badUsage = ColorType.getValue(0)
+    badUsage = ColorType.get_value(0)
     assert badUsage is None
 
 
