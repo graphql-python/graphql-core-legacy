@@ -1,3 +1,5 @@
+from copy import deepcopy
+from six import text_type
 from graphql.error import format_error
 from graphql.language.parser import parse
 from graphql.type import (
@@ -278,6 +280,12 @@ def sort_lists(value):
     return value
 
 
+def format_message(error):
+    error = deepcopy(error)
+    error["message"] = text_type(error["message"])
+    return error
+
+
 def expect_invalid(schema, rules, query, expected_errors, sort_list=True):
     errors = validate(schema, parse(query), rules)
     assert errors, "Should not validate"
@@ -286,13 +294,17 @@ def expect_invalid(schema, rules, query, expected_errors, sort_list=True):
             {"line": loc.line, "column": loc.column} for loc in error["locations"]
         ]
 
+    errors = list(map(format_error, errors))
+    msg = ("\nexpected errors: %s"
+           "\n     got errors: %s" % (expected_errors, errors))
     if sort_list:
-        assert sort_lists(list(map(format_error, errors))) == sort_lists(
-            expected_errors
-        )
+        sorted_errors = sort_lists(list(map(format_error, errors)))
+        expected_errors = map(format_message, expected_errors)
+        sorted_expected = sort_lists(list(map(format_error, expected_errors)))
+        assert sorted_errors == sorted_expected, msg
 
     else:
-        assert list(map(format_error, errors)) == expected_errors
+        assert errors == expected_errors, msg
 
 
 def expect_passes_rule(rule, query):

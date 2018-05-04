@@ -1,4 +1,5 @@
 from ..language import ast
+from ..utils.undefined import Undefined
 from ..type import (
     GraphQLEnumType,
     GraphQLInputObjectType,
@@ -23,7 +24,10 @@ def value_from_ast(value_ast, type, variables=None):
         # We're assuming that this query has been validated and the value used here is of the correct type.
         return value_from_ast(value_ast, type.of_type, variables)
 
-    if value_ast is None:
+    if value_ast is Undefined:
+        return value_ast
+
+    if isinstance(value_ast, ast.NullValue):
         return None
 
     if isinstance(value_ast, ast.Variable):
@@ -59,7 +63,7 @@ def value_from_ast(value_ast, type, variables=None):
         obj = {}
         for field_name, field in fields.items():
             if field_name not in field_asts:
-                if field.default_value is not None:
+                if field.default_value is not Undefined:
                     # We use out_name as the output name for the
                     # dict if exists
                     obj[field.out_name or field_name] = field.default_value

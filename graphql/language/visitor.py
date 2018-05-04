@@ -4,6 +4,7 @@ import six
 
 from . import ast
 from .visitor_meta import QUERY_DOCUMENT_KEYS, VisitorMeta
+from ..utils.undefined import Undefined
 
 # Necessary for static type checking
 if False:  # flake8: noqa
@@ -110,6 +111,9 @@ def visit(root, visitor, key_map=None):
                 key = None
                 node = new_root  # type: ignore
 
+            if node is Undefined:
+                continue
+
             if node is REMOVE or node is None:
                 continue
 
@@ -126,6 +130,9 @@ def visit(root, visitor, key_map=None):
 
             else:
                 result = enter(node, key, parent, path, ancestors)
+
+            if result is Undefined:
+                continue
 
             if result is BREAK:
                 break

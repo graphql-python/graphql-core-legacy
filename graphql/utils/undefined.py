@@ -1,6 +1,9 @@
 class _Undefined(object):
     """A representation of an Undefined value distinct from a None value"""
 
+    def __eq__(self, other):
+        return isinstance(other, _Undefined)
+
     def __bool__(self):
         # type: () -> bool
         return False

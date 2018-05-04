@@ -1,6 +1,7 @@
 import json
 
 from .visitor import Visitor, visit
+from ..utils.undefined import Undefined
 
 # Necessary for static type checking
 if False:  # flake8: noqa
@@ -82,7 +83,7 @@ class PrintingVisitor(Visitor):
 
     def leave_VariableDefinition(self, node, *args):
         # type: (Any, *Any) -> str
-        return node.variable + ": " + node.type + wrap(" = ", node.default_value)
+        return node.variable + ": " + node.type + wrap(" = ", node.default_value, is_default_value=True)
 
     def leave_SelectionSet(self, node, *args):
         # type: (Any, *Any) -> str
@@ -147,6 +148,12 @@ class PrintingVisitor(Visitor):
     def leave_BooleanValue(self, node, *args):
         # type: (Any, *Any) -> str
         return json.dumps(node.value)
+
+    def leave_NullValue(self, node, *args):
+        return "null"
+
+    def leave_UndefinedValue(self, node, *args):
+        return Undefined
 
     def leave_EnumValue(self, node, *args):
         # type: (Any, *Any) -> str
@@ -229,7 +236,7 @@ class PrintingVisitor(Visitor):
             node.name
             + ": "
             + node.type
-            + wrap(" = ", node.default_value)
+            + wrap(" = ", node.default_value, is_default_value=True)
             + wrap(" ", join(node.directives, " "))
         )
 
@@ -269,13 +276,14 @@ class PrintingVisitor(Visitor):
 
     def leave_InputObjectTypeDefinition(self, node, *args):
         # type: (Any, *Any) -> str
-        return (
+        s = (
             "input "
             + node.name
             + wrap(" ", join(node.directives, " "))
             + " "
             + block(node.fields)
         )
+        return s
 
     def leave_TypeExtensionDefinition(self, node, *args):
         # type: (Any, *Any) -> str
@@ -305,8 +313,14 @@ def block(_list):
     return "{}"
 
 
-def wrap(start, maybe_str, end=""):
-    # type: (str, Optional[str], str) -> str
+def wrap(start, maybe_str, end="", is_default_value=False):
+    # type: (str, Optional[str], str, bool) -> str
+    if is_default_value:
+        if maybe_str is Undefined:
+            return ""
+        s = "null" if maybe_str is None else maybe_str
+        return start + s + end
+
     if maybe_str:
         return start + maybe_str + end
     return ""

@@ -854,7 +854,6 @@ def test_introspects_on_input_object():
                     "name": None,
                     "ofType": {"kind": "SCALAR", "name": "String", "ofType": None},
                 },
-                "defaultValue": None,
             },
         ],
     } in result.data["__schema"]["types"]

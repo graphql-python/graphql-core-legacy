@@ -54,7 +54,9 @@ def test_variables_with_valid_default_values():
     query WithDefaultValues(
         $a: Int = 1,
         $b: String = "ok",
-        $c: ComplexInput = { requiredField: true, intField: 3 }
+        $c: ComplexInput = { requiredField: true, intField: 3 },
+        $d: ComplexInputl = null,
+        $d: [Int] = null
     ) {
         dog { name }
     }
@@ -84,7 +86,8 @@ def test_variables_with_invalid_default_values():
     query InvalidDefaultValues(
         $a: Int = "one",
         $b: String = 4,
-        $c: ComplexInput = "notverycomplex"
+        $c: ComplexInput = "notverycomplex",
+        $d: Int! = null
     ) {
         dog { name }
     }
@@ -100,6 +103,8 @@ def test_variables_with_invalid_default_values():
                 28,
                 ['Expected "ComplexInput", found not an object.'],
             ),
+            bad_value("d", "Int!", "null", 6, 20),
+            default_for_non_null_arg("d", "Int!", "Int", 6, 20)
         ],
     )
 
@@ -119,7 +124,7 @@ def test_variables_missing_required_field():
                 "{intField: 3}",
                 2,
                 51,
-                ['In field "requiredField": Expected "Boolean!", found null.'],
+                ['In field "requiredField": Expected type "Boolean!", found null.'],
             )
         ],
     )

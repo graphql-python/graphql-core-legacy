@@ -85,6 +85,14 @@ def test_correctly_prints_mutation_with_artifacts():
     )
 
 
+def test_correctly_prints_null():
+    query_ast_shorthanded = parse('{ thingy(null: "wow", name: null) }')
+    assert print_ast(query_ast_shorthanded) == """{
+  thingy(null: "wow", name: null)
+}
+"""
+
+
 def test_prints_kitchen_sink():
     # type: () -> None
     ast = parse(KITCHEN_SINK)
@@ -138,7 +146,7 @@ fragment frag on Friend {
 }
 
 {
-  unnamed(truthy: true, falsey: false)
+  unnamed(truthy: true, falsey: false, nullish: null)
   query
 }
 """

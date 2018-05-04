@@ -101,12 +101,72 @@ def test_does_not_accept_fragments_spread_of_on():
     assert "Syntax Error GraphQL (1:9) Expected Name, found }" in excinfo.value.message
 
 
-def test_does_not_allow_null_value():
+def test_allows_null_value():
     # type: () -> None
-    with raises(GraphQLSyntaxError) as excinfo:
-        parse("{ fieldWithNullableStringInput(input: null) }")
+    parse("{ fieldWithNullableStringInput(input: null) }")
 
-    assert 'Syntax Error GraphQL (1:39) Unexpected Name "null"' in excinfo.value.message
+
+def test_parses_null_value_to_null():
+    result = parse('{ fieldWithObjectInput(input: {a: null, b: null, c: "C", d: null}) }')
+    values = result.definitions[0].selection_set.selections[0].arguments[0].value.fields
+    expected = (
+        (u"a", ast.NullValue()),
+        (u"b", ast.NullValue()),
+        (u"c", ast.StringValue(value=u"C")),
+        (u"d", ast.NullValue()),
+    )
+    for name_value, actual in zip(expected, values):
+        assert name_value == (actual.name.value, actual.value)
+
+
+def test_parses_null_value_in_list():
+    result = parse('{ fieldWithObjectInput(input: {b: ["A", null, "C"], c: "C"}) }')
+    assert result == ast.Document(
+        definitions=[
+            ast.OperationDefinition(
+                operation="query", name=None, variable_definitions=None, directives=[],
+                selection_set=ast.SelectionSet(
+                    selections=[
+                        ast.Field(
+                            alias=None,
+                            name=ast.Name(value=u"fieldWithObjectInput"),
+                            directives=[],
+                            selection_set=None,
+                            arguments=[
+                                ast.Argument(
+                                    name=ast.Name(value=u"input"),
+                                    value=ast.ObjectValue(
+                                        fields=[
+                                            ast.ObjectField(
+                                                name=ast.Name(value=u"b"),
+                                                value=ast.ListValue(
+                                                    values=[
+                                                        ast.StringValue(value=u"A"),
+                                                        ast.NullValue(),
+                                                        ast.StringValue(value=u"C"),
+                                                    ],
+                                                ),
+                                            ),
+                                            ast.ObjectField(
+                                                name=ast.Name(value=u"c"),
+                                                value=ast.StringValue(value=u"C"),
+                                            ),
+                                        ]
+                                    ),
+                                ),
+                            ],
+                        ),
+                    ],
+                ),
+            ),
+        ],
+    )
+
+
+def test_null_as_name():
+    result = parse('{ thingy(null: "stringcheese") }')
+    assert result.definitions[0].selection_set.selections[0].name.value == "thingy"
+    assert result.definitions[0].selection_set.selections[0].arguments[0].name.value == "null"
 
 
 def test_parses_multi_byte_characters():
@@ -158,6 +218,7 @@ def tesst_allows_non_keywords_anywhere_a_name_is_allowed():
         "subscription",
         "true",
         "false",
+        "null",
     ]
 
     query_template = """

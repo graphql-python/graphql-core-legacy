@@ -219,7 +219,7 @@ def test_int_non_null_int():
                 "message": VariablesInAllowedPosition.bad_var_pos_message(
                     "intArg", "Int", "Int!"
                 ),
-                "locations": [SourceLocation(4, 45), SourceLocation(2, 19)],
+                "locations": [SourceLocation(2, 19), SourceLocation(4, 45)],
             }
         ],
     )
@@ -318,7 +318,7 @@ def test_string_string_fail():
     )
 
 
-def test_boolean_non_null_boolean_in_directive():
+def test_boolean_null_boolean_in_directive():
     expect_fails_rule(
         VariablesInAllowedPosition,
         """

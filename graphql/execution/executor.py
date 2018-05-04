@@ -359,6 +359,9 @@ def resolve_field(
     executor = exe_context.executor
     result = resolve_or_error(resolve_fn_middleware, source, info, args, executor)
 
+    if result is Undefined:
+        return Undefined
+
     return complete_value_catching_error(
         exe_context, return_type, field_asts, info, field_path, result
     )

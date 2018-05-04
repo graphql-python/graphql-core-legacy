@@ -2,6 +2,7 @@ from collections import OrderedDict, namedtuple
 
 from ..language.printer import print_ast
 from ..utils.ast_from_value import ast_from_value
+from ..utils.undefined import Undefined
 from .definition import (
     GraphQLArgument,
     GraphQLEnumType,
@@ -519,6 +520,15 @@ __Field = GraphQLObjectType(
     ),
 )
 
+
+def _resolve_default_value(input_value, *_):
+    if input_value.default_value is Undefined:
+        return Undefined
+    if input_value.default_value is None:
+        return None
+    return print_ast(ast_from_value(input_value.default_value, input_value))
+
+
 __InputValue = GraphQLObjectType(
     "__InputValue",
     description="Arguments provided to Fields or Directives and the input fields of an "
@@ -533,9 +543,7 @@ __InputValue = GraphQLObjectType(
                 "defaultValue",
                 GraphQLField(
                     type=GraphQLString,
-                    resolver=lambda input_val, *_: None
-                    if input_val.default_value is None
-                    else print_ast(ast_from_value(input_val.default_value, input_val)),
+                    resolver=_resolve_default_value,
                 ),
             ),
         ]
