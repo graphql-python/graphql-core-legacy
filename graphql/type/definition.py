@@ -261,6 +261,10 @@ class GraphQLField(object):
     def __hash__(self):
         return id(self)
 
+    @property
+    def is_deprecated(self):
+        return bool(self.deprecation_reason)
+
 
 class GraphQLArgument(object):
     __slots__ = 'type', 'default_value', 'description', 'out_name'
