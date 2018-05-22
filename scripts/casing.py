@@ -5,6 +5,7 @@
 # LICENSE file in the root directory of this source tree. An additional grant
 # of patent rights can be found in the PATENTS file in the same directory.
 
+
 def title(s):
     '''Capitalize the first character of s.'''
     return s[0].capitalize() + s[1:]

@@ -8,6 +8,7 @@ from graphql.type import (GraphQLArgument, GraphQLField,
                           GraphQLObjectType, GraphQLSchema, GraphQLString)
 from promise import Promise
 
+
 class CustomPromise(Promise):
     @classmethod
     def fulfilled(cls, x):
@@ -149,7 +150,6 @@ def test_maps_argument_out_names_well():
 def test_maps_argument_out_names_well_with_input():
     def resolver(source, info, **args):
         return json.dumps([source, args], separators=(',', ':'))
-
 
     TestInputObject = GraphQLInputObjectType('TestInputObject', lambda: OrderedDict([
         ('inputOne', GraphQLInputObjectField(GraphQLString, out_name="input_one")),

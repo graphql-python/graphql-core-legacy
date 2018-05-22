@@ -9,7 +9,7 @@ interface_type = GraphQLInterfaceType(
         'field_name': GraphQLField(
             type=GraphQLString,
             resolver=lambda *_: implementing_type
-            )
+        )
     }
 )
 
@@ -30,6 +30,7 @@ schema = GraphQLSchema(
         }
     )
 )
+
 
 def test_throws_human_readable_error_if_schematypes_not_defined():
     with raises(AssertionError) as exci:

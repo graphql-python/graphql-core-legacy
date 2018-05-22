@@ -28,7 +28,6 @@ def test_batches_correctly(executor):
 
     schema = GraphQLSchema(query=Query)
 
-
     doc = '''
 {
     business1: getBusiness(id: "1") {
@@ -41,9 +40,8 @@ def test_batches_correctly(executor):
     '''
     doc_ast = parse(doc)
 
-
     load_calls = []
-    
+
     class BusinessDataLoader(DataLoader):
         def batch_load_fn(self, keys):
             load_calls.append(keys)
@@ -51,7 +49,6 @@ def test_batches_correctly(executor):
 
     class Context(object):
         business_data_loader = BusinessDataLoader()
-
 
     result = execute(schema, doc_ast, None, context_value=Context(), executor=executor)
     assert not result.errors
@@ -63,7 +60,7 @@ def test_batches_correctly(executor):
             'id': '2'
         },
     }
-    assert load_calls == [['1','2']]
+    assert load_calls == [['1', '2']]
 
 
 @pytest.mark.parametrize("executor", [
@@ -78,8 +75,11 @@ def test_batches_multiple_together(executor):
 
     Business = GraphQLObjectType('Business', lambda: {
         'id': GraphQLField(GraphQLID, resolver=lambda root, info, **args: root),
-        'location': GraphQLField(Location,
-            resolver=lambda root, info, **args: info.context.location_data_loader.load('location-{}'.format(root))
+        'location': GraphQLField(
+            Location,
+            resolver=lambda root, info, **args: info.context.location_data_loader.load(
+                'location-{}'.format(root)
+            )
         ),
     })
 
@@ -93,7 +93,6 @@ def test_batches_multiple_together(executor):
     })
 
     schema = GraphQLSchema(query=Query)
-
 
     doc = '''
 {
@@ -113,16 +112,15 @@ def test_batches_multiple_together(executor):
     '''
     doc_ast = parse(doc)
 
-
     business_load_calls = []
-    
+
     class BusinessDataLoader(DataLoader):
         def batch_load_fn(self, keys):
             business_load_calls.append(keys)
             return Promise.resolve(keys)
 
     location_load_calls = []
-    
+
     class LocationDataLoader(DataLoader):
         def batch_load_fn(self, keys):
             location_load_calls.append(keys)
@@ -131,7 +129,6 @@ def test_batches_multiple_together(executor):
     class Context(object):
         business_data_loader = BusinessDataLoader()
         location_data_loader = LocationDataLoader()
-
 
     result = execute(schema, doc_ast, None, context_value=Context(), executor=executor)
     assert not result.errors
@@ -149,5 +146,5 @@ def test_batches_multiple_together(executor):
             }
         },
     }
-    assert business_load_calls == [['1','2']]
-    assert location_load_calls == [['location-1','location-2']]
+    assert business_load_calls == [['1', '2']]
+    assert location_load_calls == [['location-1', 'location-2']]

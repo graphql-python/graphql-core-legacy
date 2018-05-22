@@ -25,7 +25,7 @@ class Human(object):
         self.name = name
 
 
-is_type_of = lambda type: lambda obj, info: isinstance(obj, type)
+def is_type_of(type): return lambda obj, info: isinstance(obj, type)
 
 
 def make_type_resolver(types):

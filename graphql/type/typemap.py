@@ -41,7 +41,7 @@ class GraphQLTypeMap(OrderedDict):
             'Could not find possible implementing types for ${} in ' +
             'schema. Check that schema.types is defined and is an array of' +
             'all possible types in the schema.'
-            ).format(abstract_type)
+        ).format(abstract_type)
 
         if not self._possible_type_map[abstract_type.name]:
             self._possible_type_map[abstract_type.name].update([p.name for p in possible_types])

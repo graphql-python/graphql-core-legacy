@@ -233,7 +233,7 @@ def resolve_field(exe_context, parent_type, source, field_asts, parent_info):
         operation=exe_context.operation,
         variable_values=exe_context.variable_values,
         context=context,
-        path=parent_info.path+[field_name] if parent_info else [field_name]
+        path=parent_info.path + [field_name] if parent_info else [field_name]
     )
 
     executor = exe_context.executor
