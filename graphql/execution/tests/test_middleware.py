@@ -1,10 +1,12 @@
-from graphql.execution.middleware import middleware_chain 
-from graphql.execution.middleware import get_middleware_resolvers 
-from graphql.language.parser import parse
+from __future__ import print_function
+
 from graphql.execution import MiddlewareManager, execute
+from graphql.execution.middleware import (get_middleware_resolvers,
+                                          middleware_chain)
+from graphql.language.parser import parse
 from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLField,
-                          GraphQLInt, GraphQLList, GraphQLObjectType,
-                          GraphQLSchema, GraphQLString, GraphQLNonNull, GraphQLID)
+                          GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull,
+                          GraphQLObjectType, GraphQLSchema, GraphQLString)
 from promise import Promise
 
 
@@ -120,9 +122,9 @@ def test_middleware_chain(capsys):
             self.char = char
 
         def resolve(self, next, *args, **kwargs):
-            print(f'resolve() called for middleware {self.char}')
+            print("resolve() called for middleware {}".format(self.char))
             return next(*args, **kwargs).then(
-                lambda x: print(f'then() for {self.char}')
+                lambda x: print("then() for {}".format(self.char))
             )
 
     middlewares = [
