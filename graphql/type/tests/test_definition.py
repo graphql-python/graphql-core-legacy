@@ -142,6 +142,23 @@ def test_defines_an_enum_type_with_a_value_of_none():
     assert value.deprecation_reason is None
     assert value.value is None
 
+    
+def test_defines_an_object_type_with_deprecated_field():
+    TypeWithDeprecatedField = GraphQLObjectType('foo', fields={
+        'bar': GraphQLField(
+            type=GraphQLString,
+            deprecation_reason='A terrible reason'
+        ),
+    })
+
+    field = TypeWithDeprecatedField.fields['bar']
+    assert field.type == GraphQLString
+    assert field.description is None
+    assert field.deprecation_reason == 'A terrible reason'
+    assert field.is_deprecated is True
+    # assert field.name == 'bar'
+    assert field.args == OrderedDict()
+
 
 def test_includes_nested_input_objects_in_the_map():
     NestedInputObject = GraphQLInputObjectType(

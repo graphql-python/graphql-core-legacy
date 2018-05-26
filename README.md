@@ -114,6 +114,20 @@ from graphql.execution.execute import execute
 execute(schema, ast, executor=SyncExecutor())
 ```
 
+### Development
+
+Install development and test dependencies:
+
+```sh
+pip install -e ".[test]"
+```
+
+Run test suite:
+
+```sh
+pytest
+```
+
 ## Main Contributors
 
  * [@syrusakbary](https://github.com/syrusakbary/)

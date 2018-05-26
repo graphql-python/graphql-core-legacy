@@ -2,7 +2,7 @@ from collections import OrderedDict, Sequence, defaultdict
 from functools import reduce
 
 from ..utils.type_comparators import is_equal_type, is_type_sub_type_of
-from .definition import (GraphQLArgument, GraphQLField,
+from .definition import (GraphQLArgument,
                          GraphQLInputObjectField, GraphQLInputObjectType,
                          GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                          GraphQLObjectType, GraphQLUnionType, is_input_type,
@@ -87,9 +87,6 @@ class GraphQLTypeMap(OrderedDict):
                         '{}.{} field type must be Input Type but got: {}.'.format(type, field_name, field.type)
                     )
                 else:
-                    assert isinstance(field, (GraphQLField, GraphQLField)), (
-                        '{}.{} must be an instance of GraphQLField.'.format(type, field_name)
-                    )
                     assert is_output_type(field.type), (
                         '{}.{} field type must be Output Type but got: {}.'.format(type, field_name, field.type)
                     )
