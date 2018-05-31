@@ -745,9 +745,11 @@ def test_executor_properly_propogates_path_data(mocker):
     class PathCollectorMiddleware(object):
         def __init__(self):
             self.paths = []
+            self.document_paths = []
 
         def resolve(self, _next, root, info, *args, **kwargs):
             self.paths.append(info.path)
+            self.document_paths.append(info.document_path)
             return _next(root, info, *args, **kwargs)
 
     request = '''
@@ -757,13 +759,13 @@ def test_executor_properly_propogates_path_data(mocker):
           ...articleFields
           author {
             id
-            name
+            fullName: name
           }
         },
     }
     fragment articleFields on Article {
         title,
-        body,
+        content: body,
         hidden,
     }
     '''
@@ -778,19 +780,19 @@ def test_executor_properly_propogates_path_data(mocker):
                 {
                     "id": "1",
                     "title": "My Article 1",
-                    "body": "This is a post",
+                    "content": "This is a post",
                     "author": {
                         "id": "123",
-                        "name": "John Smith"
+                        "fullName": "John Smith"
                     }
                 },
                 {
                     "id": "2",
                     "title": "My Article 2",
-                    "body": "This is a post",
+                    "content": "This is a post",
                     "author": {
                         "id": "123",
-                        "name": "John Smith"
+                        "fullName": "John Smith"
                     }
                 },
             ],
@@ -813,3 +815,19 @@ def test_executor_properly_propogates_path_data(mocker):
         ['feed', 1, 'author', 'name']
     ]
 
+    traversed_document_paths = paths_middleware.document_paths
+    assert traversed_document_paths == [
+        ['feed'],
+        ['feed', 0, 'id'],
+        ['feed', 0, 'title'],
+        ['feed', 0, 'content'],
+        ['feed', 0, 'author'],
+        ['feed', 1, 'id'],
+        ['feed', 1, 'title'],
+        ['feed', 1, 'content'],
+        ['feed', 1, 'author'],
+        ['feed', 0, 'author', 'id'],
+        ['feed', 0, 'author', 'fullName'],
+        ['feed', 1, 'author', 'id'],
+        ['feed', 1, 'author', 'fullName']
+    ]

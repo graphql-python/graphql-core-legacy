@@ -200,6 +200,7 @@ def subscribe_fields(exe_context, parent_type, source_value, fields):
 def resolve_field(exe_context, parent_type, source, field_asts, parent_info):
     field_ast = field_asts[0]
     field_name = field_ast.name.value
+    field_document_name = field_ast.alias.value if field_ast.alias else field_name
 
     field_def = get_field_def(exe_context.schema, parent_type, field_name)
     if not field_def:
@@ -233,7 +234,8 @@ def resolve_field(exe_context, parent_type, source, field_asts, parent_info):
         operation=exe_context.operation,
         variable_values=exe_context.variable_values,
         context=context,
-        path=parent_info.path+[field_name] if parent_info else [field_name]
+        path=parent_info.path + [field_name] if parent_info else [field_name],
+        document_path=parent_info.document_path + [field_document_name] if parent_info else [field_document_name],
     )
 
     executor = exe_context.executor
@@ -251,6 +253,7 @@ def resolve_field(exe_context, parent_type, source, field_asts, parent_info):
 def subscribe_field(exe_context, parent_type, source, field_asts):
     field_ast = field_asts[0]
     field_name = field_ast.name.value
+    field_document_name = field_ast.alias.value if field_ast.alias else field_name
 
     field_def = get_field_def(exe_context.schema, parent_type, field_name)
     if not field_def:
@@ -284,7 +287,8 @@ def subscribe_field(exe_context, parent_type, source, field_asts):
         operation=exe_context.operation,
         variable_values=exe_context.variable_values,
         context=context,
-        path=[field_name]
+        path=[field_name],
+        document_path=[field_document_name]
     )
 
     executor = exe_context.executor
@@ -419,16 +423,26 @@ def complete_list_value(exe_context, return_type, field_asts, info, result):
     completed_results = []
     contains_promise = False
 
-    index = 0
-    path = info.path[:]
-    for item in result:
-        info.path = path + [index]
-        completed_item = complete_value_catching_error(exe_context, item_type, field_asts, info, item)
+    for index, item in enumerate(result):
+        item_info = ResolveInfo(
+            info.field_name,
+            info.field_asts,
+            info.return_type,
+            info.parent_type,
+            info.schema,
+            info.fragments,
+            info.root_value,
+            info.operation,
+            info.variable_values,
+            info.context,
+            info.path + [index],
+            info.document_path + [index]
+        )
+        completed_item = complete_value_catching_error(exe_context, item_type, field_asts, item_info, item)
         if not contains_promise and is_thenable(completed_item):
             contains_promise = True
 
         completed_results.append(completed_item)
-        index += 1
 
     return Promise.all(completed_results) if contains_promise else completed_results
 
