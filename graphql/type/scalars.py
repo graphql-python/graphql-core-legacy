@@ -6,7 +6,7 @@ from .definition import GraphQLScalarType
 # As per the GraphQL Spec, Integers are only treated as valid when a valid
 # 32-bit signed integer, providing the broadest support across platforms.
 #
-# n.b. JavaScript's integers are safe between -(2^53 - 1) and 2^53 - 1 because
+# n.b. JavaScript's integers are safe between -(2^31 - 1) and 2^31 - 1 because
 # they are internally represented as IEEE 754 doubles.
 MAX_INT = 2147483647
 MIN_INT = -2147483648
@@ -37,7 +37,7 @@ def parse_int_literal(ast):
 GraphQLInt = GraphQLScalarType(
     name='Int',
     description='The `Int` scalar type represents non-fractional signed whole numeric '
-                'values. Int can represent values between -(2^53 - 1) and 2^53 - 1 since '
+                'values. Int can represent values between -(2^31 - 1) and 2^31 - 1 since '
                 'represented in JSON as double-precision floating point numbers specified'
                 'by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).',
     serialize=coerce_int,
