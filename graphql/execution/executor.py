@@ -404,7 +404,7 @@ def complete_value(exe_context, return_type, field_asts, info, path, result):
                 resolved
             ),
             lambda error: Promise.rejected(
-                GraphQLLocatedError(field_asts, original_error=error))
+                GraphQLLocatedError(field_asts, original_error=error, path=path))
         )
 
     # print return_type, type(result)
@@ -552,7 +552,8 @@ def complete_nonnull_value(exe_context, return_type, field_asts, info, path, res
         raise GraphQLError(
             'Cannot return null for non-nullable field {}.{}.'.format(
                 info.parent_type, info.field_name),
-            field_asts
+            field_asts,
+            path=path
         )
 
     return completed

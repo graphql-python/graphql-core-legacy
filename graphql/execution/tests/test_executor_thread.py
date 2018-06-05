@@ -206,13 +206,13 @@ def test_synchronous_error_nulls_out_error_subtrees():
             'syncReturnErrorList': ['sync0', None, 'sync2', None]
         }
         assert sorted(list(map(format_error, result.errors)), key=sort_key) == sorted([
-            {'locations': [{'line': 4, 'column': 9}], 'message': 'Error getting syncError'},
-            {'locations': [{'line': 5, 'column': 9}], 'message': 'Error getting syncReturnError'},
-            {'locations': [{'line': 6, 'column': 9}], 'message': 'Error getting syncReturnErrorList1'},
-            {'locations': [{'line': 6, 'column': 9}], 'message': 'Error getting syncReturnErrorList3'},
-            {'locations': [{'line': 8, 'column': 9}], 'message': 'Error getting asyncReject'},
-            {'locations': [{'line': 9, 'column': 9}], 'message': 'An unknown error occurred.'},
-            {'locations': [{'line': 10, 'column': 9}], 'message': 'Error getting asyncReturnError'}
+            {'locations': [{'line': 4, 'column': 9}], 'path':['syncError'], 'message': 'Error getting syncError'},
+            {'locations': [{'line': 5, 'column': 9}], 'path':['syncReturnError'], 'message': 'Error getting syncReturnError'},
+            {'locations': [{'line': 6, 'column': 9}], 'path':['syncReturnErrorList', 1], 'message': 'Error getting syncReturnErrorList1'},
+            {'locations': [{'line': 6, 'column': 9}], 'path':['syncReturnErrorList', 3], 'message': 'Error getting syncReturnErrorList3'},
+            {'locations': [{'line': 8, 'column': 9}], 'path':['asyncReject'], 'message': 'Error getting asyncReject'},
+            {'locations': [{'line': 9, 'column': 9}], 'path':['asyncEmptyReject'], 'message': 'An unknown error occurred.'},
+            {'locations': [{'line': 10, 'column': 9}], 'path':['asyncReturnError'], 'message': 'Error getting asyncReturnError'}
         ], key=sort_key)
 
     handle_results(execute(schema, ast, Data(), executor=ThreadExecutor()))

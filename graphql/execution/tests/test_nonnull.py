@@ -120,7 +120,11 @@ def test_nulls_a_nullable_field_that_throws_sync():
 
     check(doc, ThrowingData(), {
         'data': {'sync': None},
-        'errors': [{'locations': [{'column': 13, 'line': 3}], 'message': str(sync_error)}]
+        'errors': [{
+            'locations': [{'column': 13, 'line': 3}],
+            'path': ['sync'],
+            'message': str(sync_error)
+        }]
     })
 
 
@@ -133,7 +137,11 @@ def test_nulls_a_nullable_field_that_throws_in_a_promise():
 
     check(doc, ThrowingData(), {
         'data': {'promise': None},
-        'errors': [{'locations': [{'column': 13, 'line': 3}], 'message': str(promise_error)}]
+        'errors': [{
+            'locations': [{'column': 13, 'line': 3}],
+            'path': ['promise'],
+            'message': str(promise_error)
+        }]
     })
 
 
@@ -149,6 +157,7 @@ def test_nulls_a_sync_returned_object_that_contains_a_non_nullable_field_that_th
     check(doc, ThrowingData(), {
         'data': {'nest': None},
         'errors': [{'locations': [{'column': 17, 'line': 4}],
+                    'path': ['nest', 'nonNullSync'],
                     'message': str(non_null_sync_error)}]
     })
 
@@ -165,6 +174,7 @@ def test_nulls_a_synchronously_returned_object_that_contains_a_non_nullable_fiel
     check(doc, ThrowingData(), {
         'data': {'nest': None},
         'errors': [{'locations': [{'column': 17, 'line': 4}],
+                    'path': ['nest', 'nonNullPromise'],
                     'message': str(non_null_promise_error)}]
     })
 
@@ -181,6 +191,7 @@ def test_nulls_an_object_returned_in_a_promise_that_contains_a_non_nullable_fiel
     check(doc, ThrowingData(), {
         'data': {'promiseNest': None},
         'errors': [{'locations': [{'column': 17, 'line': 4}],
+                    'path': ['promiseNest', 'nonNullSync'],
                     'message': str(non_null_sync_error)}]
     })
 
@@ -197,6 +208,7 @@ def test_nulls_an_object_returned_in_a_promise_that_contains_a_non_nullable_fiel
     check(doc, ThrowingData(), {
         'data': {'promiseNest': None},
         'errors': [{'locations': [{'column': 17, 'line': 4}],
+                    'path': ['promiseNest', 'nonNullPromise'],
                     'message': str(non_null_promise_error)}]
     })
 
@@ -239,18 +251,18 @@ def test_nulls_a_complex_tree_of_nullable_fields_that_throw():
                                  'promise': None,
                                  'promiseNest': {'promise': None, 'sync': None},
                                  'sync': None}},
-        'errors': [{'locations': [{'column': 11, 'line': 4}], 'message': str(sync_error)},
-                   {'locations': [{'column': 11, 'line': 5}], 'message': str(promise_error)},
-                   {'locations': [{'column': 13, 'line': 7}], 'message': str(sync_error)},
-                   {'locations': [{'column': 13, 'line': 8}], 'message': str(promise_error)},
-                   {'locations': [{'column': 13, 'line': 11}], 'message': str(sync_error)},
-                   {'locations': [{'column': 13, 'line': 12}], 'message': str(promise_error)},
-                   {'locations': [{'column': 11, 'line': 16}], 'message': str(sync_error)},
-                   {'locations': [{'column': 11, 'line': 17}], 'message': str(promise_error)},
-                   {'locations': [{'column': 13, 'line': 19}], 'message': str(sync_error)},
-                   {'locations': [{'column': 13, 'line': 20}], 'message': str(promise_error)},
-                   {'locations': [{'column': 13, 'line': 23}], 'message': str(sync_error)},
-                   {'locations': [{'column': 13, 'line': 24}], 'message': str(promise_error)}]
+        'errors': [{'locations': [{'column': 11, 'line': 4}], 'path': ['nest', 'sync'], 'message': str(sync_error)},
+                   {'locations': [{'column': 11, 'line': 5}], 'path': ['nest', 'promise'], 'message': str(promise_error)},
+                   {'locations': [{'column': 13, 'line': 7}], 'path': ['nest', 'nest', 'sync'], 'message': str(sync_error)},
+                   {'locations': [{'column': 13, 'line': 8}], 'path': ['nest', 'nest', 'promise'], 'message': str(promise_error)},
+                   {'locations': [{'column': 13, 'line': 11}], 'path': ['nest', 'promiseNest', 'sync'], 'message': str(sync_error)},
+                   {'locations': [{'column': 13, 'line': 12}], 'path': ['nest', 'promiseNest', 'promise'], 'message': str(promise_error)},
+                   {'locations': [{'column': 11, 'line': 16}], 'path': ['promiseNest', 'sync'], 'message': str(sync_error)},
+                   {'locations': [{'column': 11, 'line': 17}], 'path': ['promiseNest', 'promise'], 'message': str(promise_error)},
+                   {'locations': [{'column': 13, 'line': 19}], 'path': ['promiseNest', 'nest', 'sync'], 'message': str(sync_error)},
+                   {'locations': [{'column': 13, 'line': 20}], 'path': ['promiseNest', 'nest', 'promise'], 'message': str(promise_error)},
+                   {'locations': [{'column': 13, 'line': 23}], 'path': ['promiseNest', 'promiseNest', 'sync'], 'message': str(sync_error)},
+                   {'locations': [{'column': 13, 'line': 24}], 'path': ['promiseNest', 'promiseNest', 'promise'], 'message': str(promise_error)}]
     })
 
 
@@ -306,12 +318,28 @@ def test_nulls_the_first_nullable_object_after_a_field_throws_in_a_long_chain_of
     check(doc, ThrowingData(), {
         'data': {'nest': None, 'promiseNest': None, 'anotherNest': None, 'anotherPromiseNest': None},
         'errors': [{'locations': [{'column': 19, 'line': 8}],
+                    'path': [
+                        'nest', 'nonNullNest', 'nonNullPromiseNest',
+                        'nonNullNest',  'nonNullPromiseNest', 'nonNullSync'
+                    ],
                     'message': str(non_null_sync_error)},
                    {'locations': [{'column': 19, 'line': 19}],
+                   'path': [
+                        'promiseNest', 'nonNullNest', 'nonNullPromiseNest',
+                        'nonNullNest',  'nonNullPromiseNest', 'nonNullSync'
+                    ],
                     'message': str(non_null_sync_error)},
                    {'locations': [{'column': 19, 'line': 30}],
+                   'path': [
+                        'anotherNest', 'nonNullNest', 'nonNullPromiseNest',
+                        'nonNullNest',  'nonNullPromiseNest', 'nonNullPromise'
+                    ],
                     'message': str(non_null_promise_error)},
                    {'locations': [{'column': 19, 'line': 41}],
+                   'path': [
+                        'anotherPromiseNest', 'nonNullNest', 'nonNullPromiseNest',
+                        'nonNullNest',  'nonNullPromiseNest', 'nonNullPromise'
+                    ],
                     'message': str(non_null_promise_error)}]
     })
 
@@ -351,6 +379,7 @@ def test_nulls_a_sync_returned_object_that_contains_a_non_nullable_field_that_re
     check(doc, NullingData(), {
         'data': {'nest': None},
         'errors': [{'locations': [{'column': 17, 'line': 4}],
+                    'path': ['nest', 'nonNullSync'],
                     'message': 'Cannot return null for non-nullable field DataType.nonNullSync.'}]
     })
 
@@ -366,6 +395,7 @@ def test_nulls_a_synchronously_returned_object_that_contains_a_non_nullable_fiel
     check(doc, NullingData(), {
         'data': {'nest': None},
         'errors': [{'locations': [{'column': 17, 'line': 4}],
+                    'path': ['nest', 'nonNullPromise'],
                     'message': 'Cannot return null for non-nullable field DataType.nonNullPromise.'}]
     })
 
@@ -381,6 +411,7 @@ def test_nulls_an_object_returned_in_a_promise_that_contains_a_non_nullable_fiel
     check(doc, NullingData(), {
         'data': {'promiseNest': None},
         'errors': [{'locations': [{'column': 17, 'line': 4}],
+                    'path': ['promiseNest', 'nonNullSync'],
                     'message': 'Cannot return null for non-nullable field DataType.nonNullSync.'}]
     })
 
@@ -398,6 +429,7 @@ def test_nulls_an_object_returned_in_a_promise_that_contains_a_non_nullable_fiel
         'data': {'promiseNest': None},
         'errors': [
             {'locations': [{'column': 17, 'line': 4}],
+             'path': ['promiseNest', 'nonNullPromise'],
              'message': 'Cannot return null for non-nullable field DataType.nonNullPromise.'}
         ]
     })
@@ -521,12 +553,36 @@ def test_nulls_the_first_nullable_object_after_a_field_returns_null_in_a_long_ch
         },
         'errors': [
             {'locations': [{'column': 19, 'line': 8}],
+            'path': ['nest',
+                     'nonNullNest',
+                     'nonNullPromiseNest',
+                     'nonNullNest',
+                     'nonNullPromiseNest',
+                     'nonNullSync'],
              'message': 'Cannot return null for non-nullable field DataType.nonNullSync.'},
             {'locations': [{'column': 19, 'line': 19}],
+            'path': ['promiseNest',
+                     'nonNullNest',
+                     'nonNullPromiseNest',
+                     'nonNullNest',
+                     'nonNullPromiseNest',
+                     'nonNullSync'],
              'message': 'Cannot return null for non-nullable field DataType.nonNullSync.'},
             {'locations': [{'column': 19, 'line': 30}],
+            'path': ['anotherNest',
+                     'nonNullNest',
+                     'nonNullPromiseNest',
+                     'nonNullNest',
+                     'nonNullPromiseNest',
+                     'nonNullPromise'],
              'message': 'Cannot return null for non-nullable field DataType.nonNullPromise.'},
             {'locations': [{'column': 19, 'line': 41}],
+            'path': ['anotherPromiseNest',
+                     'nonNullNest',
+                     'nonNullPromiseNest',
+                     'nonNullNest',
+                     'nonNullPromiseNest',
+                     'nonNullPromise'],
              'message': 'Cannot return null for non-nullable field DataType.nonNullPromise.'}
         ]
     })
@@ -540,6 +596,7 @@ def test_nulls_the_top_level_if_sync_non_nullable_field_throws():
         'data': None,
         'errors': [
             {'locations': [{'column': 19, 'line': 2}],
+             'path': ['nonNullSync'],
              'message': str(non_null_sync_error)}
         ]
     })
@@ -554,6 +611,7 @@ def test_nulls_the_top_level_if_async_non_nullable_field_errors():
         'data': None,
         'errors': [
             {'locations': [{'column': 19, 'line': 2}],
+             'path': ['nonNullPromise'],
              'message': str(non_null_promise_error)}
         ]
     })
@@ -567,6 +625,7 @@ def test_nulls_the_top_level_if_sync_non_nullable_field_returns_null():
         'data': None,
         'errors': [
             {'locations': [{'column': 19, 'line': 2}],
+             'path': ['nonNullSync'],
              'message': 'Cannot return null for non-nullable field DataType.nonNullSync.'}
         ]
     })
@@ -580,6 +639,7 @@ def test_nulls_the_top_level_if_async_non_nullable_field_resolves_null():
         'data': None,
         'errors': [
             {'locations': [{'column': 19, 'line': 2}],
+             'path': ['nonNullPromise'],
              'message': 'Cannot return null for non-nullable field DataType.nonNullPromise.'}
         ]
     })

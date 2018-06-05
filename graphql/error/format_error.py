@@ -11,5 +11,7 @@ def format_error(error):
                 {'line': loc.line, 'column': loc.column}
                 for loc in error.locations
             ]
+        if error.path is not None:
+            formatted_error['path'] = error.path
 
     return formatted_error

@@ -59,7 +59,11 @@ class Test_ListOfT_Promise_Array_T:  # [T] Promise<Array<T>>
     test_returns_null = check(resolved(None), {'data': {'nest': {'test': None}}})
     test_rejected = check(lambda: rejected(Exception('bad')), {
         'data': {'nest': {'test': None}},
-        'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
+        'errors': [{
+            'locations': [{'column': 10, 'line': 1}],
+            'path': ['nest', 'test'],
+            'message': 'bad'
+        }]
     })
 
 
@@ -70,7 +74,11 @@ class Test_ListOfT_Array_Promise_T:  # [T] Array<Promise<T>>
     test_contains_null = check([resolved(1), resolved(None), resolved(2)], {'data': {'nest': {'test': [1, None, 2]}}})
     test_contains_reject = check(lambda: [resolved(1), rejected(Exception('bad')), resolved(2)], {
         'data': {'nest': {'test': [1, None, 2]}},
-        'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
+        'errors': [{
+            'locations': [{'column': 10, 'line': 1}],
+            'path': ['nest', 'test', 1],
+            'message': 'bad'
+        }]
     })
 
 
@@ -82,6 +90,7 @@ class Test_NotNullListOfT_Array_T:  # [T]! Array<T>
     test_returns_null = check(resolved(None), {
         'data': {'nest': None},
         'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'path': ['nest', 'test'],
                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
     })
 
@@ -94,12 +103,17 @@ class Test_NotNullListOfT_Promise_Array_T:  # [T]! Promise<Array<T>>>
     test_returns_null = check(resolved(None), {
         'data': {'nest': None},
         'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'path': ['nest', 'test'],
                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
     })
 
     test_rejected = check(lambda: rejected(Exception('bad')), {
         'data': {'nest': None},
-        'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
+        'errors': [{
+            'locations': [{'column': 10, 'line': 1}],
+            'path': ['nest', 'test'],
+            'message': 'bad'
+        }]
     })
 
 
@@ -109,7 +123,11 @@ class Test_NotNullListOfT_Array_Promise_T:  # [T]! Promise<Array<T>>>
     test_contains_null = check([resolved(1), resolved(None), resolved(2)], {'data': {'nest': {'test': [1, None, 2]}}})
     test_contains_reject = check(lambda: [resolved(1), rejected(Exception('bad')), resolved(2)], {
         'data': {'nest': {'test': [1, None, 2]}},
-        'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
+        'errors': [{
+            'locations': [{'column': 10, 'line': 1}],
+            'path': ['nest', 'test', 1],
+            'message': 'bad'
+        }]
     })
 
 
@@ -120,6 +138,7 @@ class TestListOfNotNullT_Array_T:  # [T!] Array<T>
     test_contains_null = check([1, None, 2], {
         'data': {'nest': {'test': None}},
         'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'path': ['nest', 'test', 1],
                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
     })
     test_returns_null = check(None, {'data': {'nest': {'test': None}}})
@@ -132,6 +151,7 @@ class TestListOfNotNullT_Promise_Array_T:  # [T!] Promise<Array<T>>
     test_contains_null = check(resolved([1, None, 2]), {
         'data': {'nest': {'test': None}},
         'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'path': ['nest', 'test', 1],
                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
     })
 
@@ -139,7 +159,11 @@ class TestListOfNotNullT_Promise_Array_T:  # [T!] Promise<Array<T>>
 
     test_rejected = check(lambda: rejected(Exception('bad')), {
         'data': {'nest': {'test': None}},
-        'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
+        'errors': [{
+            'locations': [{'column': 10, 'line': 1}],
+            'path': ['nest', 'test'],
+            'message': 'bad'
+        }]
     })
 
 
@@ -150,11 +174,16 @@ class TestListOfNotNullT_Array_Promise_T:  # [T!] Array<Promise<T>>
     test_contains_null = check([resolved(1), resolved(None), resolved(2)], {
         'data': {'nest': {'test': None}},
         'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'path': ['nest', 'test', 1],
                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
     })
     test_contains_reject = check(lambda: [resolved(1), rejected(Exception('bad')), resolved(2)], {
         'data': {'nest': {'test': None}},
-        'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
+        'errors': [{
+            'locations': [{'column': 10, 'line': 1}],
+            'path': ['nest', 'test', 1],
+            'message': 'bad'
+        }]
     })
 
 
@@ -165,11 +194,13 @@ class TestNotNullListOfNotNullT_Array_T:  # [T!]! Array<T>
     test_contains_null = check([1, None, 2], {
         'data': {'nest': None},
         'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'path': ['nest', 'test', 1],
                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
     })
     test_returns_null = check(None, {
         'data': {'nest': None},
         'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'path': ['nest', 'test'],
                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
     })
 
@@ -181,18 +212,24 @@ class TestNotNullListOfNotNullT_Promise_Array_T:  # [T!]! Promise<Array<T>>
     test_contains_null = check(resolved([1, None, 2]), {
         'data': {'nest': None},
         'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'path': ['nest', 'test', 1],
                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
     })
 
     test_returns_null = check(resolved(None), {
         'data': {'nest': None},
         'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'path': ['nest', 'test'],
                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
     })
 
     test_rejected = check(lambda: rejected(Exception('bad')), {
         'data': {'nest': None},
-        'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
+        'errors': [{
+            'locations': [{'column': 10, 'line': 1}],
+            'path': ['nest', 'test'],
+            'message': 'bad'
+        }]
     })
 
 
@@ -203,9 +240,14 @@ class TestNotNullListOfNotNullT_Array_Promise_T:  # [T!]! Array<Promise<T>>
     test_contains_null = check([resolved(1), resolved(None), resolved(2)], {
         'data': {'nest': None},
         'errors': [{'locations': [{'column': 10, 'line': 1}],
+                    'path': ['nest', 'test', 1],
                     'message': 'Cannot return null for non-nullable field DataType.test.'}]
     })
     test_contains_reject = check(lambda: [resolved(1), rejected(Exception('bad')), resolved(2)], {
         'data': {'nest': None},
-        'errors': [{'locations': [{'column': 10, 'line': 1}], 'message': 'bad'}]
+        'errors': [{
+            'locations': [{'column': 10, 'line': 1}],
+            'path': ['nest', 'test', 1],
+            'message': 'bad'
+        }]
     })
