@@ -1,4 +1,6 @@
 class _Undefined(object):
+    """A representation of an Undefined value distinct from a None value"""
+
     def __bool__(self):
         return False
 

@@ -5,6 +5,7 @@ from ..language import ast
 from ..pyutils.cached_property import cached_property
 from ..pyutils.ordereddict import OrderedDict
 from ..utils.assert_valid_name import assert_valid_name
+from ..utils.undefined import Undefined
 
 
 def is_type(type):
@@ -476,11 +477,6 @@ def define_enum_values(type, value_map):
         values.append(value)
 
     return values
-
-
-class Undefined(object):
-    """A representation of an Undefined value distinct from a None value"""
-    pass
 
 
 class GraphQLEnumValue(object):
