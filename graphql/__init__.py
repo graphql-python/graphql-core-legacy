@@ -193,6 +193,16 @@ from .utils.base import (
     Undefined,
 )
 
+# Utilities for dynamic execution engines
+from .backend import (
+    GraphQLBackend,
+    GraphQLDocument,
+    GraphQLCoreBackend,
+    GraphQLDeciderBackend,
+    GraphQLCachedBackend,
+    get_default_backend,
+    set_default_backend,
+)
 
 VERSION = (2, 0, 1, 'final', 0)
 __version__ = get_version(VERSION)
@@ -282,4 +292,11 @@ __all__ = (
     'value_from_ast',
     'get_version',
     'Undefined',
+    'GraphQLBackend',
+    'GraphQLDocument',
+    'GraphQLCoreBackend',
+    'GraphQLDeciderBackend',
+    'GraphQLCachedBackend',
+    'get_default_backend',
+    'set_default_backend',
 )
