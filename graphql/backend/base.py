@@ -1,4 +1,6 @@
+from ..pyutils.cached_property import cached_property
 from ..language import ast
+
 from abc import ABCMeta, abstractmethod
 import six
 
@@ -18,7 +20,12 @@ class GraphQLDocument(object):
         self.document_ast = document_ast
         self.execute = execute
 
-    def get_operations(self):
+    @cached_property
+    def operations_map(self):
+        '''
+        returns a Mapping of operation names and it's associated types.
+        E.g. {'myQuery': 'query', 'myMutation': 'mutation'}
+        '''
         document_ast = self.document_ast
         operations = {}
         for definition in document_ast.definitions:
@@ -29,3 +36,15 @@ class GraphQLDocument(object):
                     operation_name = None
                 operations[operation_name] = definition.operation
         return operations
+
+    def get_operation_type(self, operation_name):
+        '''
+        Returns the operation type ('query', 'mutation', 'subscription' or None)
+        for the given operation_name.
+        If no operation_name is provided (and only one operation exists) it will return the
+        operation type for that operation
+        '''
+        operations_map = self.operations_map
+        if not operation_name and len(operations_map) == 1:
+            return next(iter(operations_map.values()))
+        return operations_map.get(operation_name)
