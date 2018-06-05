@@ -10,8 +10,15 @@ from graphql.execution.executors.sync import SyncExecutor
 from .schema import schema
 
 
-def test_backend_is_cached_when_needed():
+def test_cached_backend():
     cached_backend = GraphQLCachedBackend(GraphQLCoreBackend())
+    document1 = cached_backend.document_from_string(schema, "{ hello }")
+    document2 = cached_backend.document_from_string(schema, "{ hello }")
+    assert document1 == document2
+
+
+def test_cached_backend_with_use_consistent_hash():
+    cached_backend = GraphQLCachedBackend(GraphQLCoreBackend(), use_consistent_hash=True)
     document1 = cached_backend.document_from_string(schema, "{ hello }")
     document2 = cached_backend.document_from_string(schema, "{ hello }")
     assert document1 == document2
