@@ -142,7 +142,8 @@ def execute_fields_serially(exe_context, parent_type, source_value, fields):
             parent_type,
             source_value,
             field_asts,
-            None
+            None,
+            [response_name]
         )
         if result is Undefined:
             return results
@@ -169,7 +170,7 @@ def execute_fields(exe_context, parent_type, source_value, fields, info):
     final_results = OrderedDict()
 
     for response_name, field_asts in fields.items():
-        result = resolve_field(exe_context, parent_type, source_value, field_asts, info)
+        result = resolve_field(exe_context, parent_type, source_value, field_asts, info, (info.path if info else []) + [response_name])
         if result is Undefined:
             continue
 
@@ -220,7 +221,7 @@ def subscribe_fields(exe_context, parent_type, source_value, fields):
     return Observable.merge(observables)
 
 
-def resolve_field(exe_context, parent_type, source, field_asts, parent_info):
+def resolve_field(exe_context, parent_type, source, field_asts, parent_info, field_path):
     field_ast = field_asts[0]
     field_name = field_ast.name.value
 
@@ -256,7 +257,7 @@ def resolve_field(exe_context, parent_type, source, field_asts, parent_info):
         operation=exe_context.operation,
         variable_values=exe_context.variable_values,
         context=context,
-        path=parent_info.path + [field_name] if parent_info else [field_name]
+        path=field_path
     )
 
     executor = exe_context.executor

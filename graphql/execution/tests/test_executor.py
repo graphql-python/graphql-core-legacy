@@ -758,6 +758,7 @@ def test_executor_properly_propogates_path_data(mocker):
           author {
             id
             name
+            nameAlias: name
           }
         },
     }
@@ -781,7 +782,8 @@ def test_executor_properly_propogates_path_data(mocker):
                     "body": "This is a post",
                     "author": {
                         "id": "123",
-                        "name": "John Smith"
+                        "name": "John Smith",
+                        "nameAlias": "John Smith"
                     }
                 },
                 {
@@ -790,7 +792,8 @@ def test_executor_properly_propogates_path_data(mocker):
                     "body": "This is a post",
                     "author": {
                         "id": "123",
-                        "name": "John Smith"
+                        "name": "John Smith",
+                        "nameAlias": "John Smith"
                     }
                 },
             ],
@@ -809,6 +812,8 @@ def test_executor_properly_propogates_path_data(mocker):
         ['feed', 1, 'author'],
         ['feed', 0, 'author', 'id'],
         ['feed', 0, 'author', 'name'],
+        ['feed', 0, 'author', 'nameAlias'],
         ['feed', 1, 'author', 'id'],
-        ['feed', 1, 'author', 'name']
+        ['feed', 1, 'author', 'name'],
+        ['feed', 1, 'author', 'nameAlias'],
     ]
