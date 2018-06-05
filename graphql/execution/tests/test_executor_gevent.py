@@ -59,7 +59,11 @@ def test_gevent_executor_with_error():
 
     result = execute(GraphQLSchema(Type), ast, executor=GeventExecutor())
     formatted_errors = list(map(format_error, result.errors))
-    assert formatted_errors == [{'locations': [{'line': 1, 'column': 20}], 'message': 'resolver_2 failed!'}]
+    assert formatted_errors == [{
+        'locations': [{'line': 1, 'column': 20}],
+        'path': ['b'],
+        'message': 'resolver_2 failed!'
+    }]
     assert result.data == {'a': 'hey', 'b': None}
 
 

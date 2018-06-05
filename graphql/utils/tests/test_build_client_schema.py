@@ -573,7 +573,11 @@ def test_cannot_use_client_schema_for_general_execution():
 
     assert result.data == {'foo': None}
     assert [format_error(e) for e in result.errors] == [
-        {'locations': [{'column': 32, 'line': 1}], 'message': 'Client Schema cannot be used for execution.'}
+        {
+            'locations': [{'column': 32, 'line': 1}],
+            'message': 'Client Schema cannot be used for execution.',
+            'path': ['foo']
+        }
     ]
 
 
