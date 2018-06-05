@@ -7,7 +7,7 @@ __all__ = ['GraphQLLocatedError']
 
 class GraphQLLocatedError(GraphQLError):
 
-    def __init__(self, nodes, original_error=None):
+    def __init__(self, nodes, original_error=None, path=None):
         if original_error:
             try:
                 message = str(original_error)
@@ -24,6 +24,7 @@ class GraphQLLocatedError(GraphQLError):
         super(GraphQLLocatedError, self).__init__(
             message=message,
             nodes=nodes,
-            stack=stack
+            stack=stack,
+            path=path
         )
         self.original_error = original_error

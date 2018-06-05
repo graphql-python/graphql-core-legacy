@@ -3,9 +3,9 @@ from ..language.location import get_location
 
 
 class GraphQLError(Exception):
-    __slots__ = 'message', 'nodes', 'stack', 'original_error', '_source', '_positions', '_locations'
+    __slots__ = 'message', 'nodes', 'stack', 'original_error', '_source', '_positions', '_locations', 'path'
 
-    def __init__(self, message, nodes=None, stack=None, source=None, positions=None, locations=None):
+    def __init__(self, message, nodes=None, stack=None, source=None, positions=None, locations=None, path=None):
         super(GraphQLError, self).__init__(message)
         self.message = message
         self.nodes = nodes
@@ -13,6 +13,7 @@ class GraphQLError(Exception):
         self._source = source
         self._positions = positions
         self._locations = locations
+        self.path = path
 
     @property
     def source(self):
