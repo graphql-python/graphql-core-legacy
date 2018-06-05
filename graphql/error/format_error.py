@@ -1,9 +1,11 @@
+from six import text_type
+
 from .base import GraphQLError
 
 
 def format_error(error):
     formatted_error = {
-        'message': str(error),
+        'message': text_type(error),
     }
     if isinstance(error, GraphQLError):
         if error.locations is not None:
