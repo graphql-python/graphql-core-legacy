@@ -52,6 +52,9 @@ class AsyncioExecutor(object):
             self.futures = []
             self.loop.run_until_complete(wait(futures))
 
+    def clean(self):
+        self.futures = []
+
     def execute(self, fn, *args, **kwargs):
         result = fn(*args, **kwargs)
         if isinstance(result, Future) or iscoroutine(result):

@@ -19,8 +19,13 @@ class ThreadExecutor(object):
             self.execute = self.execute_in_thread
 
     def wait_until_finished(self):
-        for thread in self.threads:
-            thread.join()
+        while self.threads:
+            threads = self.threads
+            self.threads = []
+            [thread.join() for thread in threads]
+
+    def clean(self):
+        self.threads = []
 
     def execute_in_thread(self, fn, *args, **kwargs):
         promise = Promise()

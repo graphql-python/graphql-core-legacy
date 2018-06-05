@@ -105,6 +105,10 @@ def execute(schema, document_ast, root=None, context=None,
     if not return_promise:
         exe_context.executor.wait_until_finished()
         return promise.get()
+    else:
+        clean = getattr(exe_context.executor, 'clean', None)
+        if clean:
+            clean()
 
     return promise
 
