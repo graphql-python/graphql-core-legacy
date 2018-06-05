@@ -465,10 +465,15 @@ def complete_leaf_value(return_type, result):
     """
     Complete a Scalar or Enum by serializing to a valid value, returning null if serialization is not possible.
     """
-    # serialize = getattr(return_type, 'serialize', None)
-    # assert serialize, 'Missing serialize method on type'
+    assert hasattr(return_type, 'serialize'), 'Missing serialize method on type'
+    serialized_result = return_type.serialize(result)
 
-    return return_type.serialize(result)
+    if serialized_result is None:
+        raise GraphQLError(
+            ('Expected a value of type "{}" but ' +
+             'received: {}').format(return_type, result)
+        )
+    return serialized_result
 
 
 def complete_abstract_value(exe_context, return_type, field_asts, info, result):

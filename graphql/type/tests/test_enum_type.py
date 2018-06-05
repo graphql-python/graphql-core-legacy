@@ -1,7 +1,6 @@
 from collections import OrderedDict
 
 from rx import Observable
-from pytest import raises
 
 from graphql import graphql
 from graphql.type import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
@@ -114,13 +113,28 @@ def test_does_not_accept_string_literals():
                                        'Expected type "Color", found "GREEN".'
 
 
+def test_does_not_accept_values_not_in_the_enum():
+    result = graphql(Schema, '{ colorEnum(fromEnum: GREENISH) }')
+    assert not result.data
+    assert result.errors[0].message == 'Argument "fromEnum" has invalid value GREENISH.\n' \
+                                       'Expected type "Color", found GREENISH.'
+
+
+def test_does_not_accept_values_with_incorrect_casing():
+    result = graphql(Schema, '{ colorEnum(fromEnum: green) }')
+    assert not result.data
+    assert result.errors[0].message == 'Argument "fromEnum" has invalid value green.\n' \
+                                       'Expected type "Color", found green.'
+
+
 def test_does_not_accept_incorrect_internal_value():
     result = graphql(Schema, '{ colorEnum(fromString: "GREEN") }')
     assert result.data == {'colorEnum': None}
-    assert not result.errors
+    assert result.errors[0].message == 'Expected a value of type "Color" ' \
+                                       'but received: GREEN'
 
 
-def test_does_not_accept_internal_value_in_placeof_enum_literal():
+def test_does_not_accept_internal_value_in_place_of_enum_literal():
     result = graphql(Schema, '{ colorEnum(fromEnum: 1) }')
     assert not result.data
     assert result.errors[0].message == 'Argument "fromEnum" has invalid value 1.\n' \
@@ -135,8 +149,11 @@ def test_does_not_accept_enum_literal_in_place_of_int():
 
 
 def test_accepts_json_string_as_enum_variable():
-    result = graphql(Schema, 'query test($color: Color!) { colorEnum(fromEnum: $color) }', variable_values={
-                     'color': 'BLUE'})
+    result = graphql(
+        Schema,
+        'query test($color: Color!) { colorEnum(fromEnum: $color) }',
+        variable_values={'color': 'BLUE'}
+    )
     assert not result.errors
     assert result.data == {'colorEnum': 'BLUE'}
 
@@ -193,6 +210,26 @@ def test_enum_inputs_may_be_nullable():
     result = graphql(Schema, '{ colorEnum colorInt }')
     assert not result.errors
     assert result.data == {'colorEnum': None, 'colorInt': None}
+
+
+def test_presents_a_get_values_api():
+    values = ColorType.get_values()
+    assert len(values) == 3
+    assert values[0].name == 'RED'
+    assert values[0].value == 0
+    assert values[1].name == 'GREEN'
+    assert values[1].value == 1
+    assert values[2].name == 'BLUE'
+    assert values[2].value == 2
+
+
+def test_presents_a_get_value_api():
+    oneValue = ColorType.get_value('RED')
+    assert oneValue.name == 'RED'
+    assert oneValue.value == 0
+
+    badUsage = ColorType.get_value(0)
+    assert badUsage is None
 
 
 def test_sorts_values_if_not_using_ordered_dict():

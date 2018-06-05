@@ -414,6 +414,12 @@ class GraphQLEnumType(GraphQLType):
 
         self.values = define_enum_values(self, values)
 
+    def get_values(self):
+        return self.values
+
+    def get_value(self, name):
+        return self._name_lookup.get(name)
+
     def serialize(self, value):
         if isinstance(value, collections.Hashable):
             enum_value = self._value_lookup.get(value)
@@ -464,7 +470,7 @@ def define_enum_values(type, value_map):
         )
         value = copy.copy(value)
         value.name = value_name
-        if value.value is None:
+        if value.value == Undefined:
             value.value = value_name
 
         values.append(value)
@@ -472,14 +478,23 @@ def define_enum_values(type, value_map):
     return values
 
 
+class Undefined(object):
+    """A representation of an Undefined value distinct from a None value"""
+    pass
+
+
 class GraphQLEnumValue(object):
     __slots__ = 'name', 'value', 'deprecation_reason', 'description'
 
-    def __init__(self, value=None, deprecation_reason=None, description=None, name=None):
+    def __init__(self, value=Undefined, deprecation_reason=None, description=None, name=None):
         self.name = name
         self.value = value
         self.deprecation_reason = deprecation_reason
         self.description = description
+
+    @property
+    def is_deprecated(self):
+        return bool(self.deprecation_reason)
 
     def __eq__(self, other):
         return (

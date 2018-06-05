@@ -118,6 +118,31 @@ def test_defines_a_subscription_schema():
     # assert subscription.name == 'articleSubscribe'
 
 
+def test_defines_an_enum_type_with_deprecated_value():
+    EnumTypeWithDeprecatedValue = GraphQLEnumType('EnumWithDeprecatedValue', {
+        'foo': GraphQLEnumValue(deprecation_reason='Just because'),
+    })
+    value = EnumTypeWithDeprecatedValue.get_values()[0]
+    assert value.name == 'foo'
+    assert value.description is None
+    assert value.is_deprecated is True
+    assert value.deprecation_reason == 'Just because'
+    assert value.value == 'foo'
+
+
+def test_defines_an_enum_type_with_a_value_of_none():
+    EnumTypeWithNoneValue = GraphQLEnumType('EnumWithNullishValue', {
+        'NULL': GraphQLEnumValue(None),
+    })
+
+    value = EnumTypeWithNoneValue.get_values()[0]
+    assert value.name == 'NULL'
+    assert value.description is None
+    assert value.is_deprecated is False
+    assert value.deprecation_reason is None
+    assert value.value is None
+
+    
 def test_defines_an_object_type_with_deprecated_field():
     TypeWithDeprecatedField = GraphQLObjectType('foo', fields={
         'bar': GraphQLField(
@@ -178,6 +203,23 @@ def test_includes_nested_input_objects_in_the_map():
     assert schema.get_type_map()['NestedInputObject'] is NestedInputObject
 
 
+def test_includes_interface_possible_types_in_the_type_map():
+    SomeInterface = GraphQLInterfaceType('SomeInterface', fields={'f': GraphQLField(GraphQLInt)})
+    SomeSubtype = GraphQLObjectType(
+        name='SomeSubtype',
+        fields={'f': GraphQLField(GraphQLInt)},
+        interfaces=[SomeInterface],
+        is_type_of=lambda: None
+    )
+    schema = GraphQLSchema(
+        query=GraphQLObjectType(
+            name='Query',
+            fields={
+                'iface': GraphQLField(SomeInterface)}),
+        types=[SomeSubtype])
+    assert schema.get_type_map()['SomeSubtype'] == SomeSubtype
+
+
 def test_includes_interfaces_thunk_subtypes_in_the_type_map():
     SomeInterface = GraphQLInterfaceType(
         name='SomeInterface',
@@ -203,23 +245,6 @@ def test_includes_interfaces_thunk_subtypes_in_the_type_map():
     ), types=[SomeSubtype])
 
     assert schema.get_type_map()['SomeSubtype'] is SomeSubtype
-
-
-def test_includes_interfaces_subtypes_in_the_type_map():
-    SomeInterface = GraphQLInterfaceType('SomeInterface', fields={'f': GraphQLField(GraphQLInt)})
-    SomeSubtype = GraphQLObjectType(
-        name='SomeSubtype',
-        fields={'f': GraphQLField(GraphQLInt)},
-        interfaces=[SomeInterface],
-        is_type_of=lambda: None
-    )
-    schema = GraphQLSchema(
-        query=GraphQLObjectType(
-            name='Query',
-            fields={
-                'iface': GraphQLField(SomeInterface)}),
-        types=[SomeSubtype])
-    assert schema.get_type_map()['SomeSubtype'] == SomeSubtype
 
 
 def test_stringifies_simple_types():
