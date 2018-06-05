@@ -20,6 +20,7 @@ REMAP_TYPES = {
     'ArrayValue': 'ListValue',
 }
 
+
 def remap_type(typename):
     return REMAP_TYPES.get(typename, typename)
 
@@ -101,7 +102,7 @@ class {name}({parent_type}):'''.format(name=name, parent_type=parent_type))
             [field for field in self._fields if not field[2]] +
             [field for field in self._fields if field[2]])
         args = '\n'.join('''            self.{},'''.format(snake(name)) for (type, name, nullable, plural) in fields)
-        print ('''
+        print('''
     def __copy__(self):
         return type(self)(
 {}
@@ -139,4 +140,3 @@ class {name}(Node):
 
     def end_union(self, name):
         self._current_union = None
-

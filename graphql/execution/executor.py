@@ -2,6 +2,7 @@ import collections
 import functools
 import logging
 import sys
+import warnings
 from rx import Observable
 
 from six import string_types
@@ -28,9 +29,31 @@ def subscribe(*args, **kwargs):
     return execute(*args, allow_subscriptions=allow_subscriptions, **kwargs)
 
 
-def execute(schema, document_ast, root_value=None, context_value=None,
-            variable_values=None, operation_name=None, executor=None,
-            return_promise=False, middleware=None, allow_subscriptions=False):
+def execute(schema, document_ast, root=None, context=None,
+            variables=None, operation_name=None, executor=None,
+            return_promise=False, middleware=None, allow_subscriptions=False, **options):
+
+    if root is None and 'root_value' in options:
+        warnings.warn(
+            'root_value has been deprecated. Please use root=... instead.',
+            category=DeprecationWarning,
+            stacklevel=2
+        )
+        root = options['root_value']
+    if context is None and 'context_value' in options:
+        warnings.warn(
+            'context_value has been deprecated. Please use context=... instead.',
+            category=DeprecationWarning,
+            stacklevel=2
+        )
+        context = options['context_value']
+    if variables is None and 'variable_values' in options:
+        warnings.warn(
+            'variable_values has been deprecated. Please use values=... instead.',
+            category=DeprecationWarning,
+            stacklevel=2
+        )
+        variables = options['variable_values']
     assert schema, 'Must provide schema'
     assert isinstance(schema, GraphQLSchema), (
         'Schema must be an instance of GraphQLSchema. Also ensure that there are ' +
@@ -49,12 +72,12 @@ def execute(schema, document_ast, root_value=None, context_value=None,
     if executor is None:
         executor = SyncExecutor()
 
-    context = ExecutionContext(
+    exe_context = ExecutionContext(
         schema,
         document_ast,
-        root_value,
-        context_value,
-        variable_values,
+        root,
+        context,
+        variables or {},
         operation_name,
         executor,
         middleware,
@@ -62,25 +85,25 @@ def execute(schema, document_ast, root_value=None, context_value=None,
     )
 
     def executor(v):
-        return execute_operation(context, context.operation, root_value)
+        return execute_operation(exe_context, exe_context.operation, root)
 
     def on_rejected(error):
-        context.errors.append(error)
+        exe_context.errors.append(error)
         return None
 
     def on_resolve(data):
         if isinstance(data, Observable):
             return data
 
-        if not context.errors:
+        if not exe_context.errors:
             return ExecutionResult(data=data)
 
-        return ExecutionResult(data=data, errors=context.errors)
+        return ExecutionResult(data=data, errors=exe_context.errors)
 
     promise = Promise.resolve(None).then(executor).catch(on_rejected).then(on_resolve)
 
     if not return_promise:
-        context.executor.wait_until_finished()
+        exe_context.executor.wait_until_finished()
         return promise.get()
 
     return promise
@@ -233,7 +256,7 @@ def resolve_field(exe_context, parent_type, source, field_asts, parent_info):
         operation=exe_context.operation,
         variable_values=exe_context.variable_values,
         context=context,
-        path=parent_info.path+[field_name] if parent_info else [field_name]
+        path=parent_info.path + [field_name] if parent_info else [field_name]
     )
 
     executor = exe_context.executor

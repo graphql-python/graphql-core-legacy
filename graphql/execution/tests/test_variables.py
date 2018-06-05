@@ -35,7 +35,8 @@ TestCustomInputObject = GraphQLInputObjectType('TestCustomInputObject', OrderedD
     ('a', GraphQLInputObjectField(GraphQLString)),
 ]), container_type=my_special_dict)
 
-stringify = lambda obj: json.dumps(obj, sort_keys=True)
+
+def stringify(obj): return json.dumps(obj, sort_keys=True)
 
 
 def input_to_json(obj, info, **args):

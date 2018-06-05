@@ -116,7 +116,7 @@ class PrintingVisitor(Visitor):
             'schema',
             join(node.directives, ' '),
             block(node.operation_types),
-            ], ' ')
+        ], ' ')
 
     def leave_OperationTypeDefinition(self, node, *args):
         return '{}: {}'.format(node.operation, node.type)

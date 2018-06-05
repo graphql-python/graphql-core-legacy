@@ -161,6 +161,7 @@ class GraphQLObjectType(GraphQLType):
             'bestFriend': GraphQLField(PersonType)
         })
     """
+
     def __init__(self, name, fields, interfaces=None, is_type_of=None, description=None):
         assert name, 'Type must be named.'
         assert_valid_name(name)
@@ -513,6 +514,7 @@ class GraphQLInputObjectType(GraphQLType):
                     default_value=0)
             }
     """
+
     def __init__(self, name, fields, description=None, container_type=None):
         assert name, 'Type must be named.'
         self.name = name

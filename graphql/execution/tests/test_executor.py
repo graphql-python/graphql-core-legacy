@@ -812,4 +812,3 @@ def test_executor_properly_propogates_path_data(mocker):
         ['feed', 1, 'author', 'id'],
         ['feed', 1, 'author', 'name']
     ]
-

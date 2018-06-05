@@ -619,7 +619,7 @@ def test_succeds_on_smaller_equals_than_7_deep_lists():
                         GraphQLNonNull(GraphQLList(GraphQLNonNull(
                             GraphQLList(GraphQLNonNull(GraphQLString))
                         ))
-                    )))
+                        )))
                 )
             }
         )
