@@ -1,6 +1,6 @@
 try:
     import requests
-except:
+except ImportError:
     raise ImportError(
         "requests package is required for Quiver Cloud backend.\n"
         "You can install it using: pip install requests"
@@ -38,7 +38,7 @@ class GraphQLQuiverCloudBackend(GraphQLBackend):
         super(GraphQLQuiverCloudBackend, self).__init__(**options)
         try:
             url = urlparse(dsn.strip())
-        except:
+        except Exception:
             raise Exception("Received wrong url {}".format(dsn))
 
         netloc = url.hostname
@@ -93,7 +93,10 @@ class GraphQLQuiverCloudBackend(GraphQLBackend):
         source = self.generate_source(schema, request_string)
         filename = "<document>"
         code = compile(source, filename, "exec")
-        uptodate = lambda: True
+
+        def uptodate():
+            return True
+
         document = GraphQLCompiledDocument.from_code(
             schema, code, uptodate, self.extra_namespace
         )

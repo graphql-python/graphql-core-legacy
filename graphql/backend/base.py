@@ -3,7 +3,6 @@ from abc import ABCMeta, abstractmethod
 import six
 
 
-
 class GraphQLBackend(six.with_metaclass(ABCMeta)):
     @abstractmethod
     def document_from_string(self, schema, request_string):
@@ -27,6 +26,6 @@ class GraphQLDocument(object):
                 if definition.name:
                     operation_name = definition.name.value
                 else:
-                    operation_name =  None
+                    operation_name = None
                 operations[operation_name] = definition.operation
         return operations

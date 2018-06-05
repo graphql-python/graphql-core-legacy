@@ -5,7 +5,6 @@ from ..execution import execute, ExecutionResult
 from ..language.base import parse, print_ast
 from ..language import ast
 from ..validation import validate
-from ..error import GraphQLError
 
 from .base import GraphQLBackend, GraphQLDocument
 
