@@ -39,7 +39,7 @@ def test_reraise():
     formatted_tb = [row[2:] for row in extracted]
     if formatted_tb[2][0] == 'reraise':
         formatted_tb[2:] = formatted_tb[3:]
-    
+
     assert formatted_tb == [
         ('test_reraise', 'result.errors[0].reraise()'),
         ('reraise', 'six.reraise(type(self), self, self.stack)'),
