@@ -397,9 +397,9 @@ def test_uses_the_subscription_schema_for_subscriptions():
     result = execute(GraphQLSchema(Q, subscription=S),
                      ast, Data(), operation_name='S', allow_subscriptions=True)
     assert isinstance(result, Observable)
-    l = []
-    result.subscribe(l.append)
-    result = l[0]
+    writeback_list = []
+    result.subscribe(writeback_list.append)
+    result = writeback_list[0]
     assert not result.errors
     assert result.data == {'a': 'b'}
 

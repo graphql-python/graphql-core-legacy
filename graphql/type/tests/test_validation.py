@@ -9,9 +9,18 @@ from graphql.type import (GraphQLEnumType, GraphQLEnumValue, GraphQLField,
                           GraphQLString, GraphQLUnionType)
 from graphql.type.definition import GraphQLArgument
 
-_none = lambda *args: None
-_true = lambda *args: True
-_false = lambda *args: False
+
+def _none(*args):
+    return None
+
+
+def _true(*args):
+    return True
+
+
+def _false(*args):
+    return False
+
 
 SomeScalarType = GraphQLScalarType(
     name='SomeScalar',
@@ -1474,28 +1483,6 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
 
         assert str(excinfo.value) == 'AnotherInterface.field(input:) expects type "String" ' \
                                      'but AnotherObject.field(input:) provides type "SomeScalar".'
-
-    def test_rejects_an_object_with_an_incorrectly_typed_interface_field(self):
-        AnotherInterface = GraphQLInterfaceType(
-            name='AnotherInterface',
-            resolve_type=_none,
-            fields={
-                'field': GraphQLField(GraphQLString)
-            }
-        )
-        AnotherObject = GraphQLObjectType(
-            name='AnotherObject',
-            interfaces=[AnotherInterface],
-            fields={
-                'field': GraphQLField(SomeScalarType)
-            }
-        )
-
-        with raises(AssertionError) as excinfo:
-            schema_with_field_type(AnotherObject)
-
-        assert str(excinfo.value) == 'AnotherInterface.field expects type "String" ' \
-                                     'but AnotherObject.field provides type "SomeScalar".'
 
     def test_rejects_an_object_with_a_differently_typed_Interface_field(self):
         TypeA = GraphQLObjectType(

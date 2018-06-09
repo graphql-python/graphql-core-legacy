@@ -168,10 +168,10 @@ def test_accepts_multiple_subscription_fields_defined_in_schema():
         message='Tests are good',
         unread=True,
     )
-    l = []
-    stream.subscribe(l.append)
+    writeback_list = []
+    stream.subscribe(writeback_list.append)
     send_important_email(email)
-    assert l[0][0] == email
+    assert writeback_list[0][0] == email
 
 
 def test_accepts_type_definition_with_sync_subscribe_function():
@@ -197,11 +197,11 @@ def test_accepts_type_definition_with_sync_subscribe_function():
         message='Tests are good',
         unread=True,
     )
-    l = []
-    subscription.subscribe(l.append)
+    writeback_list = []
+    subscription.subscribe(writeback_list.append)
     send_important_email(email)
 
-    assert l  # [0].data == {'importantEmail': None}
+    assert writeback_list  # [0].data == {'importantEmail': None}
 
 
 def test_throws_an_error_if_subscribe_does_not_return_an_iterator():

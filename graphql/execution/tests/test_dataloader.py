@@ -4,12 +4,10 @@ from promise.dataloader import DataLoader
 
 from graphql import GraphQLObjectType, GraphQLField, GraphQLID, GraphQLArgument, GraphQLNonNull, GraphQLSchema, parse, execute
 from graphql.execution.executors.sync import SyncExecutor
-from graphql.execution.executors.thread import ThreadExecutor
 
 
 @pytest.mark.parametrize("executor", [
     SyncExecutor(),
-    # ThreadExecutor(),
 ])
 def test_batches_correctly(executor):
 
@@ -17,14 +15,16 @@ def test_batches_correctly(executor):
         'id': GraphQLField(GraphQLID, resolver=lambda root, info, **args: root),
     })
 
-    Query = GraphQLObjectType('Query', lambda: {
-        'getBusiness': GraphQLField(Business,
-            args={
-                'id': GraphQLArgument(GraphQLNonNull(GraphQLID)),
-            },
-            resolver=lambda root, info, **args: info.context.business_data_loader.load(args.get('id'))
-        ),
-    })
+    Query = GraphQLObjectType(
+        'Query',
+        lambda: {
+            'getBusiness': GraphQLField(
+                Business,
+                args={'id': GraphQLArgument(GraphQLNonNull(GraphQLID))},
+                resolver=lambda root, info, **args: info.context.business_data_loader.load(args.get('id'))
+            ),
+        }
+    )
 
     schema = GraphQLSchema(query=Query)
 
@@ -83,14 +83,17 @@ def test_batches_multiple_together(executor):
         ),
     })
 
-    Query = GraphQLObjectType('Query', lambda: {
-        'getBusiness': GraphQLField(Business,
-            args={
-                'id': GraphQLArgument(GraphQLNonNull(GraphQLID)),
-            },
-            resolver=lambda root, info, **args: info.context.business_data_loader.load(args.get('id'))
-        ),
-    })
+    Query = GraphQLObjectType(
+        'Query', lambda: {
+            'getBusiness': GraphQLField(
+                Business,
+                args={
+                    'id': GraphQLArgument(GraphQLNonNull(GraphQLID)),
+                },
+                resolver=lambda root, info, **args: info.context.business_data_loader.load(args.get('id'))
+            ),
+        }
+    )
 
     schema = GraphQLSchema(query=Query)
 

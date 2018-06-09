@@ -49,10 +49,6 @@ def test_is_equal_type_nonnull_is_not_equal_to_nullable():
     assert not is_equal_type(GraphQLNonNull(GraphQLInt), GraphQLInt)
 
 
-def test_is_equal_type_nonnull_is_not_equal_to_nullable():
-    assert not is_equal_type(GraphQLNonNull(GraphQLInt), GraphQLInt)
-
-
 def test_is_type_sub_type_of_same_reference_is_subtype():
     schema = _test_schema(GraphQLString)
     assert is_type_sub_type_of(schema, GraphQLString, GraphQLString)

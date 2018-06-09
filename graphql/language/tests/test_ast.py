@@ -1,6 +1,6 @@
 import copy
 
-from graphql.language.visitor_meta import QUERY_DOCUMENT_KEYS, VisitorMeta
+from graphql.language.visitor_meta import QUERY_DOCUMENT_KEYS
 
 
 def test_ast_is_hashable():

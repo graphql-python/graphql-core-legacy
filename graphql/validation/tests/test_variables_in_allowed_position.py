@@ -144,7 +144,7 @@ def test_complex_input_complex_input_in_field_position():
     ''')
 
 
-def test_boolean_non_null_boolean_in_directive():
+def test_boolean_non_null_boolean_in_directive_passes():
     expect_passes_rule(VariablesInAllowedPosition, '''
       query Query($boolVar: Boolean!)
       {
@@ -236,7 +236,7 @@ def test_string_string_fail():
     ])
 
 
-def test_boolean_non_null_boolean_in_directive():
+def test_boolean_non_null_boolean_in_directive_fails():
     expect_fails_rule(VariablesInAllowedPosition, '''
       query Query($boolVar: Boolean) {
         dog @include(if: $boolVar)

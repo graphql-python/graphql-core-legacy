@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Tests for `graphql.backend.cache` module."""
-
-import pytest
-
 from ..core import GraphQLCoreBackend
 from ..cache import GraphQLCachedBackend
-from graphql.execution.executors.sync import SyncExecutor
 from .schema import schema
 
 

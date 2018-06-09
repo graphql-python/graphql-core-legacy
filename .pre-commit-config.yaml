@@ -1,5 +1,6 @@
+repos:
 -   repo: git://github.com/pre-commit/pre-commit-hooks
-    sha: v0.8.0
+    rev: v1.3.0
     hooks:
     -   id: autopep8-wrapper
         args:
@@ -16,3 +17,5 @@
         args:
         - --autofix
         - --indent=4
+    -   id: flake8
+        exclude: (^docs/.*$|^scripts/generate_ast.py$)

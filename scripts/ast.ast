@@ -117,7 +117,7 @@ S Type type
 T NonNullType
 # JS version prohibits nesting nonnull in nonnull, we can't because we
 # can't support multiple unions. Fix?
-S Type type  
+S Type type
 
 T Name
 S string value

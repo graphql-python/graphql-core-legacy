@@ -4,7 +4,7 @@ from collections import OrderedDict
 from graphql import graphql
 from graphql.type import (GraphQLArgument, GraphQLField,
                           GraphQLInputObjectField, GraphQLInputObjectType,
-                          GraphQLInt, GraphQLList, GraphQLNonNull,
+                          GraphQLInt,
                           GraphQLObjectType, GraphQLSchema, GraphQLString)
 from promise import Promise
 

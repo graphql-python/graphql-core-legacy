@@ -31,7 +31,7 @@ def test_document_operations_map_multiple_queries():
     }
 
 
-def test_document_operations_map_multiple_queries():
+def test_document_operations_map_multiple_query_mutation_subscription():
     document = create_document('''
     query MyQuery { hello }
     mutation MyMutation { hello }

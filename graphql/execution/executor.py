@@ -147,7 +147,7 @@ def execute_fields_serially(exe_context, parent_type, source_value, path, fields
             source_value,
             field_asts,
             None,
-            path+[response_name]
+            path + [response_name]
         )
         if result is Undefined:
             return results

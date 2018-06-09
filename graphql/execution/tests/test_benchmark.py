@@ -1,5 +1,4 @@
 from collections import namedtuple
-from functools import partial
 
 from graphql import (GraphQLField, GraphQLInt, GraphQLList, GraphQLObjectType,
                      GraphQLSchema, Source, execute, parse)
@@ -13,13 +12,15 @@ Container = namedtuple('Container', 'x y z o')
 big_int_list = [x for x in range(SIZE)]
 big_container_list = [Container(x=x, y=x, z=x, o=x) for x in range(SIZE)]
 
-ContainerType = GraphQLObjectType('Container',
+ContainerType = GraphQLObjectType(
+    'Container',
     fields={
         'x': GraphQLField(GraphQLInt),
         'y': GraphQLField(GraphQLInt),
         'z': GraphQLField(GraphQLInt),
         'o': GraphQLField(GraphQLInt),
-    })
+    }
+)
 
 
 def resolve_all_containers(root, info, **args):
@@ -47,8 +48,6 @@ def test_big_list_of_ints(benchmark):
 
 
 def test_big_list_of_ints_serialize(benchmark):
-    from ..executor import complete_leaf_value
-
     @benchmark
     def serialize():
         map(GraphQLInt.serialize, big_int_list)

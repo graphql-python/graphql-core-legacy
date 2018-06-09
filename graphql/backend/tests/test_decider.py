@@ -2,10 +2,7 @@
 # -*- coding: utf-8 -*-
 """Tests for `graphql.backend.decider` module."""
 
-import pytest
-
-from ..base import GraphQLBackend, GraphQLDocument
-from ..core import GraphQLCoreBackend
+from ..base import GraphQLBackend
 from ..cache import GraphQLCachedBackend
 from ..decider import GraphQLDeciderBackend
 

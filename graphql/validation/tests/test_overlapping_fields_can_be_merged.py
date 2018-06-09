@@ -1,5 +1,5 @@
 from graphql.language.location import SourceLocation as L
-from graphql.type.definition import (GraphQLArgument, GraphQLField,
+from graphql.type.definition import (GraphQLField,
                                      GraphQLInterfaceType, GraphQLList,
                                      GraphQLNonNull, GraphQLObjectType)
 from graphql.type.scalars import GraphQLID, GraphQLInt, GraphQLString

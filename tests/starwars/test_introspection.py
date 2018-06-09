@@ -1,5 +1,4 @@
 from graphql import graphql
-from graphql.error import format_error
 from graphql.pyutils.contain_subset import contain_subset
 
 from .starwars_schema import StarWarsSchema

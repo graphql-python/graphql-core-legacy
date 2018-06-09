@@ -170,9 +170,9 @@ def test_accepts_enum_literals_as_input_arguments_to_subscriptions():
         Schema, 'subscription x($color: Color!) { subscribeToEnum(color: $color) }', variable_values={
             'color': 'GREEN'}, allow_subscriptions=True)
     assert isinstance(result, Observable)
-    l = []
-    result.subscribe(l.append)
-    result = l[0]
+    writeback_list = []
+    result.subscribe(writeback_list.append)
+    result = writeback_list[0]
     assert not result.errors
     assert result.data == {'subscribeToEnum': 'GREEN'}
 
