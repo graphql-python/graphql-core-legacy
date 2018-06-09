@@ -4,9 +4,10 @@
 
 import pytest
 
-from ..core import GraphQLCoreBackend
-from ..cache import GraphQLCachedBackend
 from graphql.execution.executors.sync import SyncExecutor
+
+from ..cache import GraphQLCachedBackend
+from ..core import GraphQLCoreBackend
 from .schema import schema
 
 

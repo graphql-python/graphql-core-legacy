@@ -1,15 +1,9 @@
 # We keep the following imports to preserve compatibility
-from .utils import (
-    ExecutionContext,
-    SubscriberExecutionContext,
-    get_operation_root_type,
-    collect_fields,
-    should_include_node,
-    does_fragment_condition_match,
-    get_field_entry_key,
-    default_resolve_fn,
-    get_field_def
-)
+from .utils import (ExecutionContext, SubscriberExecutionContext,
+                    collect_fields, default_resolve_fn,
+                    does_fragment_condition_match, get_field_def,
+                    get_field_entry_key, get_operation_root_type,
+                    should_include_node)
 
 
 class ExecutionResult(object):

@@ -5,10 +5,9 @@
 import pytest
 
 from ..base import GraphQLBackend, GraphQLDocument
-from ..core import GraphQLCoreBackend
 from ..cache import GraphQLCachedBackend
+from ..core import GraphQLCoreBackend
 from ..decider import GraphQLDeciderBackend
-
 from .schema import schema
 
 

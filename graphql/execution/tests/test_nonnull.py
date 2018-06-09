@@ -320,27 +320,27 @@ def test_nulls_the_first_nullable_object_after_a_field_throws_in_a_long_chain_of
         'errors': [{'locations': [{'column': 19, 'line': 8}],
                     'path': [
                         'nest', 'nonNullNest', 'nonNullPromiseNest',
-                        'nonNullNest',  'nonNullPromiseNest', 'nonNullSync'
-                    ],
-                    'message': str(non_null_sync_error)},
-                   {'locations': [{'column': 19, 'line': 19}],
-                   'path': [
-                        'promiseNest', 'nonNullNest', 'nonNullPromiseNest',
-                        'nonNullNest',  'nonNullPromiseNest', 'nonNullSync'
-                    ],
-                    'message': str(non_null_sync_error)},
-                   {'locations': [{'column': 19, 'line': 30}],
-                   'path': [
-                        'anotherNest', 'nonNullNest', 'nonNullPromiseNest',
-                        'nonNullNest',  'nonNullPromiseNest', 'nonNullPromise'
-                    ],
-                    'message': str(non_null_promise_error)},
-                   {'locations': [{'column': 19, 'line': 41}],
-                   'path': [
-                        'anotherPromiseNest', 'nonNullNest', 'nonNullPromiseNest',
-                        'nonNullNest',  'nonNullPromiseNest', 'nonNullPromise'
-                    ],
-                    'message': str(non_null_promise_error)}]
+                        'nonNullNest', 'nonNullPromiseNest', 'nonNullSync'
+        ],
+            'message': str(non_null_sync_error)},
+            {'locations': [{'column': 19, 'line': 19}],
+             'path': [
+                'promiseNest', 'nonNullNest', 'nonNullPromiseNest',
+                'nonNullNest', 'nonNullPromiseNest', 'nonNullSync'
+            ],
+            'message': str(non_null_sync_error)},
+            {'locations': [{'column': 19, 'line': 30}],
+             'path': [
+                'anotherNest', 'nonNullNest', 'nonNullPromiseNest',
+                'nonNullNest', 'nonNullPromiseNest', 'nonNullPromise'
+            ],
+            'message': str(non_null_promise_error)},
+            {'locations': [{'column': 19, 'line': 41}],
+             'path': [
+                'anotherPromiseNest', 'nonNullNest', 'nonNullPromiseNest',
+                'nonNullNest', 'nonNullPromiseNest', 'nonNullPromise'
+            ],
+            'message': str(non_null_promise_error)}]
     })
 
 

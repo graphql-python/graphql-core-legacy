@@ -3,6 +3,7 @@
 """Tests for `graphql.backend.core` module."""
 
 import pytest
+
 from graphql.execution.executors.sync import SyncExecutor
 
 from ..base import GraphQLBackend, GraphQLDocument

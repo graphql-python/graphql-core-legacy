@@ -6,12 +6,11 @@ except ImportError:
         "You can install it using: pip install requests"
     )
 
-from ..utils.schema_printer import print_schema
+from six import urlparse
 
+from ..utils.schema_printer import print_schema
 from .base import GraphQLBackend
 from .compiled import GraphQLCompiledDocument
-
-from six import urlparse
 
 GRAPHQL_QUERY = """
 mutation($schemaDsl: String!, $query: String!) {
@@ -51,7 +50,7 @@ class GraphQLQuiverCloudBackend(GraphQLBackend):
         else:
             path = ""
 
-        self.api_url = "%s://%s%s" % (url.scheme.rsplit("+", 1)[-1], netloc, path)
+        self.api_url = "{}://{}{}".format(url.scheme.rsplit("+", 1)[-1], netloc, path)
         self.public_key = url.username
         self.secret_key = url.password
         self.extra_namespace = {}
