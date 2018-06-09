@@ -1,7 +1,8 @@
-from .execution import ExecutionResult
-from .backend import get_default_backend
-
 from promise import promisify
+
+from .backend import get_default_backend
+from .execution import ExecutionResult
+
 
 # This is the primary entry point function for fulfilling GraphQL operations
 # by parsing, validating, and executing a GraphQL document along side a

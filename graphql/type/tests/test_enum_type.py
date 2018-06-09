@@ -1,11 +1,10 @@
 from collections import OrderedDict
 
-from rx import Observable
-
 from graphql import graphql
 from graphql.type import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
                           GraphQLField, GraphQLInt, GraphQLObjectType,
                           GraphQLSchema, GraphQLString)
+from rx import Observable
 
 ColorType = GraphQLEnumType(
     name='Color',

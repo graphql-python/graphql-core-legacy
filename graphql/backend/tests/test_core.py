@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 """Tests for `graphql.backend.core` module."""
 
-import pytest
 from graphql.execution.executors.sync import SyncExecutor
+
+import pytest
 
 from ..base import GraphQLBackend, GraphQLDocument
 from ..core import GraphQLCoreBackend

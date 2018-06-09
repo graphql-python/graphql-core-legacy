@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 """Tests for `graphql.backend.cache` module."""
 
+from graphql.execution.executors.sync import SyncExecutor
+
 import pytest
 
-from ..core import GraphQLCoreBackend
 from ..cache import GraphQLCachedBackend
-from graphql.execution.executors.sync import SyncExecutor
+from ..core import GraphQLCoreBackend
 from .schema import schema
 
 

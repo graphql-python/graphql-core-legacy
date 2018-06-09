@@ -1,8 +1,9 @@
-from ..pyutils.cached_property import cached_property
-from ..language import ast
-
 from abc import ABCMeta, abstractmethod
+
 import six
+
+from ..language import ast
+from ..pyutils.cached_property import cached_property
 
 
 class GraphQLBackend(six.with_metaclass(ABCMeta)):

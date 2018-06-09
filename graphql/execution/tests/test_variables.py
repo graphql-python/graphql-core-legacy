@@ -1,15 +1,15 @@
 import json
 from collections import OrderedDict
 
-from pytest import raises
-
 from graphql.error import GraphQLError, format_error
 from graphql.execution import execute
 from graphql.language.parser import parse
-from graphql.type import (GraphQLArgument, GraphQLField, GraphQLBoolean,
+from graphql.type import (GraphQLArgument, GraphQLBoolean, GraphQLField,
                           GraphQLInputObjectField, GraphQLInputObjectType,
                           GraphQLList, GraphQLNonNull, GraphQLObjectType,
                           GraphQLScalarType, GraphQLSchema, GraphQLString)
+
+from pytest import raises
 
 TestComplexScalar = GraphQLScalarType(
     name='ComplexScalar',

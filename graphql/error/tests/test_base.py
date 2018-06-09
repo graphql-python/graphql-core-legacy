@@ -1,10 +1,11 @@
-import pytest
 import traceback
 
 from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import (GraphQLField, GraphQLObjectType, GraphQLSchema,
                           GraphQLString)
+
+import pytest
 
 
 def test_raise():

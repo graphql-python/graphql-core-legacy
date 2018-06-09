@@ -1,10 +1,11 @@
-import pytest
+from graphql import (GraphQLArgument, GraphQLField, GraphQLID, GraphQLNonNull,
+                     GraphQLObjectType, GraphQLSchema, execute, parse)
+from graphql.execution.executors.sync import SyncExecutor
+from graphql.execution.executors.thread import ThreadExecutor
 from promise import Promise
 from promise.dataloader import DataLoader
 
-from graphql import GraphQLObjectType, GraphQLField, GraphQLID, GraphQLArgument, GraphQLNonNull, GraphQLSchema, parse, execute
-from graphql.execution.executors.sync import SyncExecutor
-from graphql.execution.executors.thread import ThreadExecutor
+import pytest
 
 
 @pytest.mark.parametrize("executor", [

@@ -1,11 +1,11 @@
 from functools import partial
+
 from six import string_types
 
-from ..execution import execute, ExecutionResult
-from ..language.base import parse, print_ast
+from ..execution import ExecutionResult, execute
 from ..language import ast
+from ..language.base import parse, print_ast
 from ..validation import validate
-
 from .base import GraphQLBackend, GraphQLDocument
 
 

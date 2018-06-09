@@ -1,8 +1,8 @@
-from pytest import raises
-
 from graphql import GraphQLInt, parse
 from graphql.utils.build_ast_schema import build_ast_schema
 from graphql.utils.schema_printer import print_schema
+
+from pytest import raises
 
 from ...type import (GraphQLDeprecatedDirective, GraphQLIncludeDirective,
                      GraphQLSkipDirective)
