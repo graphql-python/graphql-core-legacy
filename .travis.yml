@@ -1,43 +1,14 @@
 language: python
-sudo: false
-python:
-- 2.7
-# - "pypy-5.3.1"
-before_install:
-- |
-  if [ "$TRAVIS_PYTHON_VERSION" = "pypy" ]; then
-    export PYENV_ROOT="$HOME/.pyenv"
-    if [ -f "$PYENV_ROOT/bin/pyenv" ]; then
-      cd "$PYENV_ROOT" && git pull
-    else
-      rm -rf "$PYENV_ROOT" && git clone --depth 1 https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
-    fi
-    export PYPY_VERSION="4.0.1"
-    "$PYENV_ROOT/bin/pyenv" install "pypy-$PYPY_VERSION"
-    virtualenv --python="$PYENV_ROOT/versions/pypy-$PYPY_VERSION/bin/python" "$HOME/virtualenvs/pypy-$PYPY_VERSION"
-    source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
-  fi
-install:
-- pip install -e .[test]
-- pip install flake8
-script:
-- flake8
-- py.test --cov=graphql graphql tests
-after_success:
-- coveralls
-matrix:
-  include:
-  - python: '3.5'
-    after_install:
-    - pip install pytest-asyncio
-    script:
-    - py.test --cov=graphql graphql tests tests_py35
-  - python: '3.6'
-    after_install:
-    - pip install pytest-asyncio
-    script:
-    - py.test --cov=graphql graphql tests tests_py35
-  - python: '2.7'
+python: 3.6
+env:  # These should match the tox env list.
+    - TOXENV=flake8
+    - TOXENV=py27
+    - TOXENV=py33
+    - TOXENV=py34
+    - TOXENV=py35
+    - TOXENV=py36
+    - TOXENV=pypy
+    - TOXENV=pre-commit
 
 deploy:
   provider: pypi
