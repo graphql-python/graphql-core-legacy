@@ -1,14 +1,12 @@
-from inspect import isasyncgen
 from asyncio import ensure_future
-from rx import Observable, AnonymousObserver
-from rx.core import ObservableBase, Disposable, ObserverBase
+from inspect import isasyncgen
 
+from rx import AnonymousObserver, Observable
 from rx.concurrency import current_thread_scheduler
-
-from rx.core import Observer, Observable, Disposable
+from rx.core import (Disposable, Observable, ObservableBase, Observer,
+                     ObserverBase)
 from rx.core.anonymousobserver import AnonymousObserver
 from rx.core.autodetachobserver import AutoDetachObserver
-
 
 # class AsyncgenDisposable(Disposable):
 #     """Represents a Disposable that disposes the asyncgen automatically."""

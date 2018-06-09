@@ -3,21 +3,21 @@ import functools
 import logging
 import sys
 import warnings
-from rx import Observable
 
+from promise import Promise, is_thenable, promise_for_dict
+from rx import Observable
 from six import string_types
-from promise import Promise, promise_for_dict, is_thenable
 
 from ..error import GraphQLError, GraphQLLocatedError
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
 from ..pyutils.ordereddict import OrderedDict
-from ..utils.undefined import Undefined
 from ..type import (GraphQLEnumType, GraphQLInterfaceType, GraphQLList,
                     GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
                     GraphQLSchema, GraphQLUnionType)
+from ..utils.undefined import Undefined
 from .base import (ExecutionContext, ExecutionResult, ResolveInfo,
-                   collect_fields, default_resolve_fn, get_field_def,
-                   get_operation_root_type, SubscriberExecutionContext)
+                   SubscriberExecutionContext, collect_fields,
+                   default_resolve_fn, get_field_def, get_operation_root_type)
 from .executors.sync import SyncExecutor
 from .middleware import MiddlewareManager
 
@@ -147,7 +147,7 @@ def execute_fields_serially(exe_context, parent_type, source_value, path, fields
             source_value,
             field_asts,
             None,
-            path+[response_name]
+            path + [response_name]
         )
         if result is Undefined:
             return results

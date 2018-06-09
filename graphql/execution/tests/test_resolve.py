@@ -1,12 +1,13 @@
 import json
 from collections import OrderedDict
 
+from promise import Promise
+
 from graphql import graphql
 from graphql.type import (GraphQLArgument, GraphQLField,
                           GraphQLInputObjectField, GraphQLInputObjectType,
                           GraphQLInt, GraphQLList, GraphQLNonNull,
                           GraphQLObjectType, GraphQLSchema, GraphQLString)
-from promise import Promise
 
 
 class CustomPromise(Promise):

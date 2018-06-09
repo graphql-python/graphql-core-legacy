@@ -1,17 +1,15 @@
 # flake8: noqa
-import pytest
 import asyncio
 import functools
+
+import pytest
+
 from graphql.error import format_error
 from graphql.execution import execute
-from graphql.language.parser import parse
 from graphql.execution.executors.asyncio import AsyncioExecutor
-from graphql.type import (
-    GraphQLSchema,
-    GraphQLObjectType,
-    GraphQLField,
-    GraphQLString
-)
+from graphql.language.parser import parse
+from graphql.type import (GraphQLField, GraphQLObjectType, GraphQLSchema,
+                          GraphQLString)
 
 
 def test_asyncio_py35_executor():

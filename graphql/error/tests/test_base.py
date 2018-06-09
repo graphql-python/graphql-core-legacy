@@ -1,5 +1,6 @@
-import pytest
 import traceback
+
+import pytest
 
 from graphql.execution import execute
 from graphql.language.parser import parse

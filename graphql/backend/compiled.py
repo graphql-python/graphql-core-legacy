@@ -1,4 +1,5 @@
 from six import string_types
+
 from .base import GraphQLDocument
 
 

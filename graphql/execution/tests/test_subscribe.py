@@ -1,7 +1,11 @@
 from collections import OrderedDict, namedtuple
+
 from rx import Observable, Observer
 from rx.subjects import Subject
-from graphql import parse, GraphQLObjectType, GraphQLString, GraphQLBoolean, GraphQLInt, GraphQLField, GraphQLList, GraphQLSchema, graphql, subscribe
+
+from graphql import (GraphQLBoolean, GraphQLField, GraphQLInt, GraphQLList,
+                     GraphQLObjectType, GraphQLSchema, GraphQLString, graphql,
+                     parse, subscribe)
 
 Email = namedtuple('Email', 'from_,subject,message,unread')
 
