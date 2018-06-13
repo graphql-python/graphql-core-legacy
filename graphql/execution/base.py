@@ -39,7 +39,7 @@ class ExecutionResult(object):
                 self.invalid == other.invalid
             )
         )
-    
+
     def to_dict(self, format_error=None, dict_class=dict):
         if format_error is None:
             format_error = default_format_error
