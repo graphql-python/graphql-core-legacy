@@ -11,7 +11,7 @@ from ..utils.schema_printer import print_schema
 from .base import GraphQLBackend
 from .compiled import GraphQLCompiledDocument
 
-from six import urlparse
+from six.moves.urllib.parse import urlparse
 
 GRAPHQL_QUERY = """
 mutation($schemaDsl: String!, $query: String!) {
