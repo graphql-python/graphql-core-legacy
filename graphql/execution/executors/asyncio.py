@@ -62,5 +62,5 @@ class AsyncioExecutor(object):
             self.futures.append(future)
             return Promise.resolve(future)
         elif isasyncgen(result):
-            return asyncgen_to_observable(result)
+            return asyncgen_to_observable(result, loop=self.loop)
         return result
