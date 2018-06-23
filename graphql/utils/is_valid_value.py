@@ -15,7 +15,7 @@ from ..type import (
     GraphQLScalarType,
 )
 
-if False:
+if False:  # flake8: noqa
     from typing import Any, List
 
 _empty_list = []  # type: List

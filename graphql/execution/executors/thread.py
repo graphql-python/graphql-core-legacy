@@ -4,7 +4,7 @@ from threading import Thread
 from promise import Promise
 from .utils import process
 
-if False:
+if False:  # flake8: noqa
     from typing import Any, Callable
 
 

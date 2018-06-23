@@ -8,7 +8,7 @@ from ..type.definition import (
     GraphQLScalarType,
 )
 
-if False:
+if False:  # flake8: noqa
     from ..language.ast import ObjectValue, StringValue
     from ..type.definition import GraphQLInputObjectType, GraphQLScalarType
     from typing import Union, Any, List

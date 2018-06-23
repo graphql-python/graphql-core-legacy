@@ -11,7 +11,7 @@ from ..type.directives import DEFAULT_DEPRECATION_REASON
 from .ast_from_value import ast_from_value
 
 
-if False:
+if False:  # flake8: noqa
     from ..type.definition import (
         GraphQLArgument,
         GraphQLType,

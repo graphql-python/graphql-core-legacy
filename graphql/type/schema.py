@@ -5,7 +5,7 @@ from .directives import GraphQLDirective, specified_directives
 from .introspection import IntrospectionSchema
 from .typemap import GraphQLTypeMap
 
-if False:
+if False:  # flake8: noqa
     from .definition import GraphQLInterfaceType, GraphQLUnionType, GraphQLType
     from typing import Dict, Union, Any, List, Optional
 

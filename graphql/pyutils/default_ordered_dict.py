@@ -1,7 +1,7 @@
 import copy
 from collections import OrderedDict
 
-if False:
+if False:  # flake8: noqa
     from typing import Any, List
 
 

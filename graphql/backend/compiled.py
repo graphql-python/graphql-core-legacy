@@ -1,7 +1,7 @@
 from six import string_types
 from .base import GraphQLDocument
 
-if False:
+if False:  # flake8: noqa
     from ..type.schema import GraphQLSchema
     from typing import Any, Optional, Dict, Callable, Union
 

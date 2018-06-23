@@ -3,7 +3,7 @@ from six import string_types, text_type
 from ..language.ast import BooleanValue, FloatValue, IntValue, StringValue
 from .definition import GraphQLScalarType
 
-if False:
+if False:  # flake8: noqa
     from typing import Any, Optional, Union
 
 # As per the GraphQL Spec, Integers are only treated as valid when a valid

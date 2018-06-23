@@ -1,6 +1,6 @@
 from ..language import ast
 
-if False:
+if False:  # flake8: noqa
     from ..language.ast import Document, OperationDefinition
     from typing import Optional
 

@@ -1,7 +1,7 @@
 from ..language import ast
 from ..type.definition import GraphQLList, GraphQLNonNull
 
-if False:
+if False:  # flake8: noqa
     from ..language.ast import ListType, NamedType, NonNullType
     from ..type.schema import GraphQLSchema
     from typing import Any, Union

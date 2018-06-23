@@ -1,6 +1,6 @@
 from sys import exc_info
 
-if False:
+if False:  # flake8: noqa
     from ..base import ResolveInfo
     from promise import Promise
     from typing import Callable, Dict, Tuple, Union

@@ -3,7 +3,7 @@ from ...language.printer import print_ast
 from ...type.definition import is_composite_type
 from .base import ValidationRule
 
-if False:
+if False:  # flake8: noqa
     from ...language.ast import Field, InlineFragment
     from typing import Any, List, Union
 

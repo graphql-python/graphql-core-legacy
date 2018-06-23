@@ -1,4 +1,4 @@
-if False:
+if False:  # flake8: noqa
     from .parser import Loc
     from typing import Any, Optional, Union, List, Tuple, Iterable
 

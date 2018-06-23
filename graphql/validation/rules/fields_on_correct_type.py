@@ -7,7 +7,7 @@ from ...utils.quoted_or_list import quoted_or_list
 from ...utils.suggestion_list import suggestion_list
 from .base import ValidationRule
 
-if False:
+if False:  # flake8: noqa
     from ...language.ast import Field, InlineFragment
     from typing import Any, List, Union
 

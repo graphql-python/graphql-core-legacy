@@ -2,7 +2,7 @@ import itertools
 
 from ..language.ast import Document
 
-if False:
+if False:  # flake8: noqa
     from typing import Iterable
 
 

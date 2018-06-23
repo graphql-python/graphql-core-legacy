@@ -1,7 +1,7 @@
 from ...error import GraphQLError
 from .base import ValidationRule
 
-if False:
+if False:  # flake8: noqa
     from ..validation import ValidationContext
     from ...language.ast import Document, OperationDefinition
     from typing import Any, List, Optional, Union

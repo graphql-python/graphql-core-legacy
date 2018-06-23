@@ -2,7 +2,7 @@ from ...error import GraphQLError
 from ...type.definition import GraphQLNonNull
 from .base import ValidationRule
 
-if False:
+if False:  # flake8: noqa
     from ...language.ast import Field, InlineFragment
     from typing import Any, List, Optional, Union
 

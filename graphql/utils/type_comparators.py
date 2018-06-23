@@ -7,7 +7,7 @@ from ..type.definition import (
     is_abstract_type,
 )
 
-if False:
+if False:  # flake8: noqa
     from ..type.typemap import GraphQLTypeMap
     from ..type.definition import (
         GraphQLScalarType,

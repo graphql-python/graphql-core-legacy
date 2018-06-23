@@ -2,7 +2,7 @@ import json
 
 from .visitor import Visitor, visit
 
-if False:
+if False:  # flake8: noqa
     from typing import Any, List, Optional, Union
     from graphql.language.ast import (
         Node,

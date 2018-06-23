@@ -3,7 +3,7 @@ from ...utils.type_comparators import do_types_overlap
 from ...utils.type_from_ast import type_from_ast
 from .base import ValidationRule
 
-if False:
+if False:  # flake8: noqa
     from ..language.ast import Field, InlineFragment
     from typing import Any, List, Union
 

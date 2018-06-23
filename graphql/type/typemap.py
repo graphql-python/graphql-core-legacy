@@ -15,7 +15,7 @@ from .definition import (
     is_output_type,
 )
 
-if False:
+if False:  # flake8: noqa
     from typing import Any, List, Optional, Union
 
 

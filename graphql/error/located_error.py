@@ -2,7 +2,7 @@ import sys
 
 from .base import GraphQLError
 
-if False:
+if False:  # flake8: noqa
     from ..language.ast import Field
     from typing import List, Union
 

@@ -5,7 +5,7 @@ from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import GraphQLField, GraphQLObjectType, GraphQLSchema, GraphQLString
 
-if False:
+if False:  # flake8: noqa
     from graphql.execution.base import ResolveInfo
     from typing import Any
     from typing import Optional

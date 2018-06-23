@@ -5,7 +5,7 @@ import six
 from . import ast
 from .visitor_meta import QUERY_DOCUMENT_KEYS, VisitorMeta
 
-if False:
+if False:  # flake8: noqa
     from typing import Any, List, Optional, Union, Tuple, Dict
     from ..utils.type_info import TypeInfo
     from ..validation.validation import UsageVisitor

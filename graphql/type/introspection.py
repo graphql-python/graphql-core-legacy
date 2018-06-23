@@ -18,7 +18,7 @@ from .definition import (
 from .directives import DirectiveLocation
 from .scalars import GraphQLBoolean, GraphQLString
 
-if False:
+if False:  # flake8: noqa
     from ..execution.base import ResolveInfo
     from typing import Union, List, Optional, Any
 

@@ -7,7 +7,7 @@ from ..pyutils.ordereddict import OrderedDict
 from ..utils.assert_valid_name import assert_valid_name
 from ..utils.undefined import Undefined
 
-if False:
+if False:  # flake8: noqa
     from typing import List, Dict, Any, Callable, Optional, Union, Type
 
 

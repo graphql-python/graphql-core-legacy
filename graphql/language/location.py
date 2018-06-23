@@ -1,4 +1,4 @@
-if False:
+if False:  # flake8: noqa
     from .source import Source
     from typing import Any
 

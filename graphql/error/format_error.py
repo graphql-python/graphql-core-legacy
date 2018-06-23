@@ -2,7 +2,7 @@ from six import text_type
 
 from .base import GraphQLError
 
-if False:
+if False:  # flake8: noqa
     from .base import GraphQLError
     from .located_error import GraphQLLocatedError
     from typing import Any, Dict, Union

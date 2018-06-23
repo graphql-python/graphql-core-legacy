@@ -12,7 +12,7 @@ from graphql.type import (
 
 from .utils import rejected, resolved
 
-if False:
+if False:  # flake8: noqa
     from promise import Promise
     from typing import Any, Optional, Dict, Tuple, Union
 

@@ -5,7 +5,7 @@ from ..type.introspection import (
     TypeNameMetaFieldDef,
 )
 
-if False:
+if False:  # flake8: noqa
     from ..language.ast import Field
     from ..type.definition import GraphQLField, GraphQLInterfaceType, GraphQLObjectType
     from ..type.schema import GraphQLSchema

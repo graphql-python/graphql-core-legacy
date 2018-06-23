@@ -7,7 +7,7 @@ from ..type import (
     GraphQLScalarType,
 )
 
-if False:
+if False:  # flake8: noqa
     from ..language.ast import Node
     from ..type.definition import GraphQLType
     from typing import Any, Dict, Union, Optional, List

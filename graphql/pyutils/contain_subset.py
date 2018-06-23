@@ -1,4 +1,4 @@
-if False:
+if False:  # flake8: noqa
     from typing import Any, Dict
 
 obj = (dict, list, tuple)

@@ -4,7 +4,7 @@ from asyncio import Future, get_event_loop, iscoroutine, wait
 
 from promise import Promise
 
-if False:
+if False:  # flake8: noqa
     from asyncio.unix_events import _UnixSelectorEventLoop
     from typing import Optional, Any, Callable
 

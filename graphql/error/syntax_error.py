@@ -1,7 +1,7 @@
 from ..language.location import get_location
 from .base import GraphQLError
 
-if False:
+if False:  # flake8: noqa
     from ..language.source import Source
     from ..language.location import SourceLocation
 

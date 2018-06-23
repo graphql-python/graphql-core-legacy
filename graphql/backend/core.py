@@ -8,7 +8,7 @@ from ..validation import validate
 
 from .base import GraphQLBackend, GraphQLDocument
 
-if False:
+if False:  # flake8: noqa
     from typing import Any, Optional, Union
     from .base import GraphQLDocument
     from ..language.ast import Document

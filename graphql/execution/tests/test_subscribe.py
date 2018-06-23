@@ -15,7 +15,7 @@ from graphql import (
     subscribe,
 )
 
-if False:
+if False:  # flake8: noqa
     from graphql.execution.base import ResolveInfo
     from rx import Observable
     from typing import Optional, Union, Any, Callable, Tuple

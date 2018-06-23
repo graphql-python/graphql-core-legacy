@@ -15,7 +15,7 @@ from ..type.introspection import (
 from ..utils.type_from_ast import type_from_ast
 from .values import get_argument_values, get_variable_values
 
-if False:
+if False:  # flake8: noqa
     from ..type.definition import GraphQLObjectType, GraphQLField
     from ..type.schema import GraphQLSchema
     from ..language.ast import (

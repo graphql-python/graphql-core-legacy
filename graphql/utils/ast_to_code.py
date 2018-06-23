@@ -1,7 +1,7 @@
 from ..language.ast import Node
 from ..language.parser import Loc
 
-if False:
+if False:  # flake8: noqa
     from typing import Any
 
 

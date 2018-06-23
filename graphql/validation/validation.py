@@ -4,7 +4,7 @@ from ..type import GraphQLSchema
 from ..utils.type_info import TypeInfo
 from .rules import specified_rules
 
-if False:
+if False:  # flake8: noqa
     from typing import List, Union
     from ..language.ast import Document, OperationDefinition, SelectionSet
     from ..language.visitor_meta import VisitorMeta

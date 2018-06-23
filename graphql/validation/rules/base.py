@@ -1,6 +1,6 @@
 from ...language.visitor import Visitor
 
-if False:
+if False:  # flake8: noqa
     from ..validation import ValidationContext
 
 

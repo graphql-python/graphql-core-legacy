@@ -4,7 +4,7 @@ from six import unichr
 
 from ..error import GraphQLSyntaxError
 
-if False:
+if False:  # flake8: noqa
     from typing import Optional
     from .source import Source
 
