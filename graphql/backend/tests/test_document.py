@@ -1,9 +1,11 @@
 from ...language.base import parse
 from ..base import GraphQLDocument
 from .schema import schema
+from graphql.backend.base import GraphQLDocument
 
 
 def create_document(document_string):
+    # type: (str) -> GraphQLDocument
     document_ast = parse(document_string)
     return GraphQLDocument(
         schema=schema,
@@ -14,6 +16,7 @@ def create_document(document_string):
 
 
 def test_document_operations_map_unnamed_operation():
+    # type: () -> None
     document = create_document('{ hello }')
     assert document.operations_map == {
         None: 'query'
@@ -32,6 +35,7 @@ def test_document_operations_map_multiple_queries():
 
 
 def test_document_operations_map_multiple_queries():
+    # type: () -> None
     document = create_document('''
     query MyQuery { hello }
     mutation MyMutation { hello }
@@ -45,6 +49,7 @@ def test_document_operations_map_multiple_queries():
 
 
 def test_document_get_operation_type_unnamed_operation():
+    # type: () -> None
     document = create_document('''
     query { hello }
     ''')
@@ -53,6 +58,7 @@ def test_document_get_operation_type_unnamed_operation():
 
 
 def test_document_get_operation_type_multiple_operations():
+    # type: () -> None
     document = create_document('''
     query MyQuery { hello }
     mutation MyMutation {hello}
@@ -64,6 +70,7 @@ def test_document_get_operation_type_multiple_operations():
 
 
 def test_document_get_operation_type_multiple_operations_empty_operation_name():
+    # type: () -> None
     document = create_document('''
     query MyQuery { hello }
     mutation {hello}

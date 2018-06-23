@@ -5,6 +5,7 @@ class Source(object):
     __slots__ = 'body', 'name'
 
     def __init__(self, body, name='GraphQL'):
+        # type: (str, str) -> None
         self.body = body
         self.name = name
 

@@ -1,8 +1,14 @@
 from ..language import ast
 from ..type.definition import GraphQLList, GraphQLNonNull
 
+if False:
+    from ..language.ast import ListType, NamedType, NonNullType
+    from ..type.schema import GraphQLSchema
+    from typing import Any, Union
+
 
 def type_from_ast(schema, input_type_ast):
+    # type: (GraphQLSchema, Union[ListType, NamedType, NonNullType]) -> Any
     if isinstance(input_type_ast, ast.ListType):
         inner_type = type_from_ast(schema, input_type_ast.type)
         if inner_type:
@@ -17,5 +23,5 @@ def type_from_ast(schema, input_type_ast):
         else:
             return None
 
-    assert isinstance(input_type_ast, ast.NamedType), 'Must be a type name.'
+    assert isinstance(input_type_ast, ast.NamedType), "Must be a type name."
     return schema.get_type(input_type_ast.name.value)

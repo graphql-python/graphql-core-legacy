@@ -4,6 +4,10 @@ from asyncio import Future, get_event_loop, iscoroutine, wait
 
 from promise import Promise
 
+if False:
+    from asyncio.unix_events import _UnixSelectorEventLoop
+    from typing import Optional, Any, Callable
+
 try:
     from asyncio import ensure_future
 except ImportError:
@@ -15,7 +19,7 @@ except ImportError:
         """
         if isinstance(coro_or_future, Future):
             if loop is not None and loop is not coro_or_future._loop:
-                raise ValueError('loop argument must agree with Future')
+                raise ValueError("loop argument must agree with Future")
             return coro_or_future
         elif iscoroutine(coro_or_future):
             if loop is None:
@@ -25,26 +29,30 @@ except ImportError:
                 del task._source_traceback[-1]
             return task
         else:
-            raise TypeError(
-                'A Future, a coroutine or an awaitable is required')
+            raise TypeError("A Future, a coroutine or an awaitable is required")
+
 
 try:
     from .asyncio_utils import asyncgen_to_observable, isasyncgen
 except Exception:
-    def isasyncgen(obj): False
 
-    def asyncgen_to_observable(asyncgen): pass
+    def isasyncgen(obj):
+        False
+
+    def asyncgen_to_observable(asyncgen):
+        pass
 
 
 class AsyncioExecutor(object):
-
     def __init__(self, loop=None):
+        # type: (Optional[_UnixSelectorEventLoop]) -> None
         if loop is None:
             loop = get_event_loop()
         self.loop = loop
         self.futures = []
 
     def wait_until_finished(self):
+        # type: () -> None
         # if there are futures to wait for
         while self.futures:
             # wait for the futures to finish
@@ -56,6 +64,7 @@ class AsyncioExecutor(object):
         self.futures = []
 
     def execute(self, fn, *args, **kwargs):
+        # type: (Callable, *Any, **Any) -> Any
         result = fn(*args, **kwargs)
         if isinstance(result, Future) or iscoroutine(result):
             future = ensure_future(result, loop=self.loop)

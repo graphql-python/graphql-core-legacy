@@ -4,14 +4,17 @@ from graphql import Source, parse
 from graphql.error import GraphQLSyntaxError
 from graphql.language import ast
 from graphql.language.parser import Loc
+from typing import Callable
 
 
 def create_loc_fn(body):
+    # type: (str) -> Callable
     source = Source(body)
     return lambda start, end: Loc(start, end, source)
 
 
 def test_parses_simple_type():
+    # type: () -> None
     body = '''
 type Hello {
   world: String
@@ -56,6 +59,7 @@ type Hello {
 
 
 def test_parses_simple_extension():
+    # type: () -> None
     body = '''
 extend type Hello {
   world: String
@@ -103,6 +107,7 @@ extend type Hello {
 
 
 def test_simple_non_null_type():
+    # type: () -> None
     body = '''
 type Hello {
   world: String!
@@ -149,6 +154,7 @@ type Hello {
 
 
 def test_parses_simple_type_inheriting_interface():
+    # type: () -> None
     body = 'type Hello implements World { }'
     loc = create_loc_fn(body)
     doc = parse(body)
@@ -180,6 +186,7 @@ def test_parses_simple_type_inheriting_interface():
 
 
 def test_parses_simple_type_inheriting_multiple_interfaces():
+    # type: () -> None
     body = 'type Hello implements Wo, rld { }'
     loc = create_loc_fn(body)
     doc = parse(body)
@@ -217,6 +224,7 @@ def test_parses_simple_type_inheriting_multiple_interfaces():
 
 
 def test_parses_single_value_enum():
+    # type: () -> None
     body = 'enum Hello { WORLD }'
     loc = create_loc_fn(body)
     doc = parse(body)
@@ -248,6 +256,7 @@ def test_parses_single_value_enum():
 
 
 def test_parses_double_value_enum():
+    # type: () -> None
     body = 'enum Hello { WO, RLD }'
     loc = create_loc_fn(body)
     doc = parse(body)
@@ -287,6 +296,7 @@ def test_parses_double_value_enum():
 
 
 def test_parses_simple_interface():
+    # type: () -> None
     body = '''
 interface Hello {
   world: String
@@ -330,6 +340,7 @@ interface Hello {
 
 
 def test_parses_simple_field_with_arg():
+    # type: () -> None
     body = '''
 type Hello {
   world(flag: Boolean): String
@@ -390,6 +401,7 @@ type Hello {
 
 
 def test_parses_simple_field_with_arg_with_default_value():
+    # type: () -> None
     body = '''
 type Hello {
   world(flag: Boolean = true): String
@@ -453,6 +465,7 @@ type Hello {
 
 
 def test_parses_simple_field_with_list_arg():
+    # type: () -> None
     body = '''
 type Hello {
   world(things: [String]): String
@@ -515,6 +528,7 @@ type Hello {
 
 
 def test_parses_simple_field_with_two_args():
+    # type: () -> None
     body = '''
 type Hello {
   world(argOne: Boolean, argTwo: Int): String
@@ -590,6 +604,7 @@ type Hello {
 
 
 def test_parses_simple_union():
+    # type: () -> None
     body = 'union Hello = World'
     loc = create_loc_fn(body)
     doc = parse(body)
@@ -619,6 +634,7 @@ def test_parses_simple_union():
 
 
 def test_parses_union_with_two_types():
+    # type: () -> None
     body = 'union Hello = Wo | Rld'
     loc = create_loc_fn(body)
     doc = parse(body)
@@ -655,6 +671,7 @@ def test_parses_union_with_two_types():
 
 
 def test_parses_scalar():
+    # type: () -> None
     body = 'scalar Hello'
     loc = create_loc_fn(body)
     doc = parse(body)
@@ -675,6 +692,7 @@ def test_parses_scalar():
 
 
 def test_parses_simple_input_object():
+    # type: () -> None
     body = '''
 input Hello {
   world: String
@@ -716,6 +734,7 @@ input Hello {
 
 
 def test_parsing_simple_input_object_with_args_should_fail():
+    # type: () -> None
     body = '''
 input Hello {
   world(foo: Int): String

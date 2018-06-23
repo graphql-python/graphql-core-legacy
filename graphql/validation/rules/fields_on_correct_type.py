@@ -2,11 +2,14 @@ from collections import Counter
 
 from ...error import GraphQLError
 from ...pyutils.ordereddict import OrderedDict
-from ...type.definition import (GraphQLInterfaceType, GraphQLObjectType,
-                                GraphQLUnionType)
+from ...type.definition import GraphQLInterfaceType, GraphQLObjectType, GraphQLUnionType
 from ...utils.quoted_or_list import quoted_or_list
 from ...utils.suggestion_list import suggestion_list
 from .base import ValidationRule
+
+if False:
+    from ...language.ast import Field, InlineFragment
+    from typing import Any, List, Union
 
 try:
     # Python 2
@@ -16,8 +19,7 @@ except ImportError:
     izip = zip
 
 
-def _undefined_field_message(field_name, type, suggested_types,
-                             suggested_fields):
+def _undefined_field_message(field_name, type, suggested_types, suggested_fields):
     message = 'Cannot query field "{}" on type "{}".'.format(field_name, type)
 
     if suggested_types:
@@ -35,13 +37,21 @@ class OrderedCounter(Counter, OrderedDict):
 
 
 class FieldsOnCorrectType(ValidationRule):
-    '''Fields on correct type
+    """Fields on correct type
 
       A GraphQL document is only valid if all fields selected are defined by the
       parent type, or are an allowed meta field such as __typenamme
-    '''
+    """
 
-    def enter_Field(self, node, key, parent, path, ancestors):
+    def enter_Field(
+        self,
+        node,  # type: Field
+        key,  # type: int
+        parent,  # type: Union[List[Union[Field, InlineFragment]], List[Field]]
+        path,  # type: List[Union[int, str]]
+        ancestors,  # type: List[Any]
+    ):
+        # type: (...) -> None
         parent_type = self.context.get_parent_type()
         if not parent_type:
             return
@@ -53,22 +63,35 @@ class FieldsOnCorrectType(ValidationRule):
             field_name = node.name.value
 
             # First determine if there are any suggested types to condition on.
-            suggested_type_names = get_suggested_type_names(schema, parent_type, field_name)
+            suggested_type_names = get_suggested_type_names(
+                schema, parent_type, field_name
+            )
             # if there are no suggested types perhaps it was a typo?
-            suggested_field_names = [] if suggested_type_names else get_suggested_field_names(schema, parent_type, field_name)
+            suggested_field_names = (
+                []
+                if suggested_type_names
+                else get_suggested_field_names(schema, parent_type, field_name)
+            )
 
             # report an error including helpful suggestions.
-            self.context.report_error(GraphQLError(
-                _undefined_field_message(field_name, parent_type.name, suggested_type_names, suggested_field_names),
-                [node]
-            ))
+            self.context.report_error(
+                GraphQLError(
+                    _undefined_field_message(
+                        field_name,
+                        parent_type.name,
+                        suggested_type_names,
+                        suggested_field_names,
+                    ),
+                    [node],
+                )
+            )
 
 
 def get_suggested_type_names(schema, output_type, field_name):
-    '''Go through all of the implementations of type, as well as the interfaces
+    """Go through all of the implementations of type, as well as the interfaces
       that they implement. If any of those types include the provided field,
       suggest them, sorted by how often the type is referenced,  starting
-      with Interfaces.'''
+      with Interfaces."""
 
     if isinstance(output_type, (GraphQLInterfaceType, GraphQLUnionType)):
         suggested_object_types = []
@@ -86,11 +109,15 @@ def get_suggested_type_names(schema, output_type, field_name):
 
                 # This interface type defines this field.
                 interface_usage_count[possible_interface.name] = (
-                    interface_usage_count.get(possible_interface.name, 0) + 1)
+                    interface_usage_count.get(possible_interface.name, 0) + 1
+                )
 
         # Suggest interface types based on how common they are.
-        suggested_interface_types = sorted(list(interface_usage_count.keys()), key=lambda k: interface_usage_count[k],
-                                           reverse=True)
+        suggested_interface_types = sorted(
+            list(interface_usage_count.keys()),
+            key=lambda k: interface_usage_count[k],
+            reverse=True,
+        )
 
         # Suggest both interface and object types.
         suggested_interface_types.extend(suggested_object_types)
@@ -101,8 +128,8 @@ def get_suggested_type_names(schema, output_type, field_name):
 
 
 def get_suggested_field_names(schema, graphql_type, field_name):
-    '''For the field name provided, determine if there are any similar field names
-    that may be the result of a typo.'''
+    """For the field name provided, determine if there are any similar field names
+    that may be the result of a typo."""
 
     if isinstance(graphql_type, (GraphQLInterfaceType, GraphQLObjectType)):
         possible_field_names = list(graphql_type.fields.keys())

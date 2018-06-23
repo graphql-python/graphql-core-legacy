@@ -5,13 +5,20 @@ import six
 from . import ast
 from .visitor_meta import QUERY_DOCUMENT_KEYS, VisitorMeta
 
+if False:
+    from typing import Any, List, Optional, Union, Tuple, Dict
+    from ..utils.type_info import TypeInfo
+    from ..validation.validation import UsageVisitor
+    from .ast import Node, Document, OperationDefinition
+    from .printer import PrintingVisitor
+
 
 class Falsey(object):
-
     def __nonzero__(self):
         return False
 
     def __bool__(self):
+        # type: () -> bool
         return False
 
 
@@ -20,9 +27,10 @@ REMOVE = Falsey()
 
 
 class Stack(object):
-    __slots__ = 'in_array', 'index', 'keys', 'edits', 'prev'
+    __slots__ = "in_array", "index", "keys", "edits", "prev"
 
     def __init__(self, in_array, index, keys, edits, prev):
+        # type: (bool, int, Any, List[Tuple[str, str]], Optional[Stack]) -> None
         self.in_array = in_array
         self.index = index
         self.keys = keys
@@ -31,16 +39,17 @@ class Stack(object):
 
 
 def visit(root, visitor, key_map=None):
+    # type: (Union[Node, List[Node]], Visitor, Optional[Dict[Node, Tuple]]) -> Any
     visitor_keys = key_map or QUERY_DOCUMENT_KEYS
 
-    stack = None
+    stack = None  # type: Optional[Stack]
     in_array = isinstance(root, list)
     keys = [root]
     index = -1
-    edits = []
-    parent = None
-    path = []
-    ancestors = []
+    edits = []  # type: List[Tuple[int, Any]]
+    parent = None  # type: Optional[Node]
+    path = []  # type: List
+    ancestors = []  # type: List[Node]
     new_root = root
     leave = visitor.leave
     enter = visitor.enter
@@ -60,8 +69,7 @@ def visit(root, visitor, key_map=None):
 
             if is_edited:
                 if in_array:
-                    node = list(node)
-
+                    node = list(node)  # type: ignore
                 else:
                     node = copy(node)
                 edit_offset = 0
@@ -70,7 +78,7 @@ def visit(root, visitor, key_map=None):
                         edit_key -= edit_offset
 
                     if in_array and edit_value is REMOVE:
-                        node.pop(edit_key)
+                        node.pop(edit_key)  # type: ignore
                         edit_offset += 1
 
                     else:
@@ -78,13 +86,13 @@ def visit(root, visitor, key_map=None):
                             node[edit_key] = edit_value
 
                         else:
-                            setattr(node, edit_key, edit_value)
+                            setattr(node, edit_key, edit_value)  # type: ignore
 
-            index = stack.index
-            keys = stack.keys
-            edits = stack.edits
-            in_array = stack.in_array
-            stack = stack.prev
+            index = stack.index  # type: ignore
+            keys = stack.keys  # type: ignore
+            edits = stack.edits  # type: ignore
+            in_array = stack.in_array  # type: ignore
+            stack = stack.prev  # type: ignore
 
         else:
             if parent:
@@ -97,7 +105,7 @@ def visit(root, visitor, key_map=None):
 
             else:
                 key = None
-                node = new_root
+                node = new_root  # type: ignore
 
             if node is REMOVE or node is None:
                 continue
@@ -108,7 +116,7 @@ def visit(root, visitor, key_map=None):
         result = None
 
         if not isinstance(node, list):
-            assert isinstance(node, ast.Node), 'Invalid AST Node: ' + repr(node)
+            assert isinstance(node, ast.Node), "Invalid AST Node: " + repr(node)
 
             if is_leaving:
                 result = leave(node, key, parent, path, ancestors)
@@ -162,25 +170,50 @@ def visit(root, visitor, key_map=None):
 class Visitor(object):
     __slots__ = ()
 
-    def enter(self, node, key, parent, path, ancestors):
+    def enter(
+        self,
+        node,  # type: Any
+        key,  # type: Union[None, int, str]
+        parent,  # type: Any
+        path,  # type: List[Union[int, str]]
+        ancestors,  # type: List[Any]
+    ):
+        # type: (...) -> Optional[Any]
         method = self._get_enter_handler(type(node))
         if method:
             return method(self, node, key, parent, path, ancestors)
 
-    def leave(self, node, key, parent, path, ancestors):
+    def leave(
+        self,
+        node,  # type: Any
+        key,  # type: Union[None, int, str]
+        parent,  # type: Any
+        path,  # type: List[Union[int, str]]
+        ancestors,  # type: List[Any]
+    ):
+        # type: (...) -> Optional[Any]
         method = self._get_leave_handler(type(node))
         if method:
             return method(self, node, key, parent, path, ancestors)
 
 
 class ParallelVisitor(Visitor):
-    __slots__ = 'skipping', 'visitors'
+    __slots__ = "skipping", "visitors"
 
     def __init__(self, visitors):
+        # type: (List[Any]) -> None
         self.visitors = visitors
         self.skipping = [None] * len(visitors)
 
-    def enter(self, node, key, parent, path, ancestors):
+    def enter(
+        self,
+        node,  # type: Any
+        key,  # type: Union[None, int, str]
+        parent,  # type: Any
+        path,  # type: List[Union[int, str]]
+        ancestors,  # type: List[Any]
+    ):
+        # type: (...) -> Optional[Any]
         for i, visitor in enumerate(self.visitors):
             if not self.skipping[i]:
                 result = visitor.enter(node, key, parent, path, ancestors)
@@ -191,7 +224,15 @@ class ParallelVisitor(Visitor):
                 elif result is not None:
                     return result
 
-    def leave(self, node, key, parent, path, ancestors):
+    def leave(
+        self,
+        node,  # type: Any
+        key,  # type: Union[None, int, str]
+        parent,  # type: Any
+        path,  # type: List[Union[int, str]]
+        ancestors,  # type: List[Any]
+    ):
+        # type: (...) -> Optional[Any]
         for i, visitor in enumerate(self.visitors):
             if not self.skipping[i]:
                 result = visitor.leave(node, key, parent, path, ancestors)
@@ -204,13 +245,26 @@ class ParallelVisitor(Visitor):
 
 
 class TypeInfoVisitor(Visitor):
-    __slots__ = 'visitor', 'type_info'
+    __slots__ = "visitor", "type_info"
 
-    def __init__(self, type_info, visitor):
+    def __init__(
+        self,
+        type_info,  # type: TypeInfo
+        visitor,  # type: Union[TestVisitor, ParallelVisitor, UsageVisitor]
+    ):
+        # type: (...) -> None
         self.type_info = type_info
         self.visitor = visitor
 
-    def enter(self, node, key, parent, path, ancestors):
+    def enter(
+        self,
+        node,  # type: Any
+        key,  # type: Union[None, int, str]
+        parent,  # type: Any
+        path,  # type: List[Union[int, str]]
+        ancestors,  # type: List[Any]
+    ):
+        # type: (...) -> Optional[Any]
         self.type_info.enter(node)
         result = self.visitor.enter(node, key, parent, path, ancestors)
         if result is not None:
@@ -219,7 +273,15 @@ class TypeInfoVisitor(Visitor):
                 self.type_info.enter(result)
         return result
 
-    def leave(self, node, key, parent, path, ancestors):
+    def leave(
+        self,
+        node,  # type: Any
+        key,  # type: Union[None, int, str]
+        parent,  # type: Any
+        path,  # type: List[Union[int, str]]
+        ancestors,  # type: List[Any]
+    ):
+        # type: (...) -> Optional[Any]
         result = self.visitor.leave(node, key, parent, path, ancestors)
         self.type_info.leave(node)
         return result

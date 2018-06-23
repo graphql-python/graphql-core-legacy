@@ -6,16 +6,33 @@ from six import string_types
 from ..error import GraphQLError
 from ..language import ast
 from ..language.printer import print_ast
-from ..type import (GraphQLEnumType, GraphQLInputObjectType, GraphQLList,
-                    GraphQLNonNull, GraphQLScalarType, is_input_type)
+from ..type import (
+    GraphQLEnumType,
+    GraphQLInputObjectType,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLScalarType,
+    is_input_type,
+)
 from ..utils.is_valid_value import is_valid_value
 from ..utils.type_from_ast import type_from_ast
 from ..utils.value_from_ast import value_from_ast
 
-__all__ = ['get_variable_values', 'get_argument_values']
+if False:
+    from ..language.ast import VariableDefinition, Argument
+    from ..type.schema import GraphQLSchema
+    from ..type.definition import GraphQLArgument
+    from typing import Any, Dict, List, Union, Dict
+
+__all__ = ["get_variable_values", "get_argument_values"]
 
 
-def get_variable_values(schema, definition_asts, inputs):
+def get_variable_values(
+    schema,  # type: GraphQLSchema
+    definition_asts,  # type: List[VariableDefinition]
+    inputs,  # type: Any
+):
+    # type: (...) -> Union[Dict[str, Dict[str, Any]], Dict[str, Dict[str, str]], Dict[str, int]]
     """Prepares an object map of variables of the correct type based on the provided variable definitions and arbitrary input.
     If the input cannot be parsed to match the variable definitions, a GraphQLError will be thrown."""
     if inputs is None:
@@ -30,10 +47,9 @@ def get_variable_values(schema, definition_asts, inputs):
         if not is_input_type(var_type):
             raise GraphQLError(
                 'Variable "${var_name}" expected value of type "{var_type}" which cannot be used as an input type.'.format(
-                    var_name=var_name,
-                    var_type=print_ast(def_ast.type),
+                    var_name=var_name, var_type=print_ast(def_ast.type)
                 ),
-                [def_ast]
+                [def_ast],
             )
         elif value is None:
             if def_ast.default_value is not None:
@@ -42,30 +58,34 @@ def get_variable_values(schema, definition_asts, inputs):
                 raise GraphQLError(
                     'Variable "${var_name}" of required type "{var_type}" was not provided.'.format(
                         var_name=var_name, var_type=var_type
-                    ), [def_ast]
+                    ),
+                    [def_ast],
                 )
         else:
             errors = is_valid_value(value, var_type)
             if errors:
-                message = u'\n' + u'\n'.join(errors)
+                message = u"\n" + u"\n".join(errors)
                 raise GraphQLError(
                     'Variable "${}" got invalid value {}.{}'.format(
-                        var_name,
-                        json.dumps(value, sort_keys=True),
-                        message
+                        var_name, json.dumps(value, sort_keys=True), message
                     ),
-                    [def_ast]
+                    [def_ast],
                 )
             coerced_value = coerce_value(var_type, value)
             if coerced_value is None:
-                raise Exception('Should have reported error.')
+                raise Exception("Should have reported error.")
 
             values[var_name] = coerced_value
 
     return values
 
 
-def get_argument_values(arg_defs, arg_asts, variables=None):
+def get_argument_values(
+    arg_defs,  # type: Union[Dict[str, GraphQLArgument], Dict]
+    arg_asts,  # type: List[Argument]
+    variables=None,  # type: Dict[str, int]
+):
+    # type: (...) -> Dict[str, Any]
     """Prepares an object map of argument values given a list of argument
     definitions and list of argument AST nodes."""
     if not arg_defs:
@@ -85,10 +105,12 @@ def get_argument_values(arg_defs, arg_asts, variables=None):
                 result[arg_def.out_name or name] = arg_def.default_value
                 continue
             elif isinstance(arg_type, GraphQLNonNull):
-                raise GraphQLError('Argument "{name}" of required type {arg_type}" was not provided.'.format(
-                    name=name,
-                    arg_type=arg_type
-                ), arg_asts)
+                raise GraphQLError(
+                    'Argument "{name}" of required type {arg_type}" was not provided.'.format(
+                        name=name, arg_type=arg_type
+                    ),
+                    arg_asts,
+                )
         elif isinstance(value_ast.value, ast.Variable):
             variable_name = value_ast.value.name.value
             variable_value = variables.get(variable_name)
@@ -97,21 +119,18 @@ def get_argument_values(arg_defs, arg_asts, variables=None):
             elif arg_def.default_value is not None:
                 result[arg_def.out_name or name] = arg_def.default_value
             elif isinstance(arg_type, GraphQLNonNull):
-                raise GraphQLError('Argument "{name}" of required type {arg_type}" provided the variable "${variable_name}" which was not provided'.format(
-                    name=name,
-                    arg_type=arg_type,
-                    variable_name=variable_name
-                ), arg_asts)
+                raise GraphQLError(
+                    'Argument "{name}" of required type {arg_type}" provided the variable "${variable_name}" which was not provided'.format(
+                        name=name, arg_type=arg_type, variable_name=variable_name
+                    ),
+                    arg_asts,
+                )
             continue
 
         else:
             value_ast = value_ast.value
 
-            value = value_from_ast(
-                value_ast,
-                arg_type,
-                variables
-            )
+            value = value_from_ast(value_ast, arg_type, variables)
             if value is None:
                 if arg_def.default_value is not None:
                     value = arg_def.default_value
@@ -125,6 +144,7 @@ def get_argument_values(arg_defs, arg_asts, variables=None):
 
 
 def coerce_value(type, value):
+    # type: (Any, Any) -> Union[int, str]
     """Given a type and any value, return a runtime value coerced to match the type."""
     if isinstance(type, GraphQLNonNull):
         # Note: we're not checking that the result of coerceValue is
@@ -137,7 +157,9 @@ def coerce_value(type, value):
 
     if isinstance(type, GraphQLList):
         item_type = type.of_type
-        if not isinstance(value, string_types) and isinstance(value, collections.Iterable):
+        if not isinstance(value, string_types) and isinstance(
+            value, collections.Iterable
+        ):
             return [coerce_value(item_type, item) for item in value]
         else:
             return [coerce_value(item_type, value)]
@@ -156,7 +178,6 @@ def coerce_value(type, value):
 
         return type.create_container(obj)
 
-    assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
-        'Must be input type'
+    assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), "Must be input type"
 
     return type.parse_value(value)

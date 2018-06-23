@@ -1,7 +1,12 @@
 from ..language import ast
 
+if False:
+    from ..language.ast import Document, OperationDefinition
+    from typing import Optional
+
 
 def get_operation_ast(document_ast, operation_name=None):
+    # type: (Document, Optional[str]) -> Optional[OperationDefinition]
     operation = None
 
     for definition in document_ast.definitions:

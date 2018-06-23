@@ -5,12 +5,18 @@ from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import (GraphQLField, GraphQLObjectType, GraphQLSchema,
                           GraphQLString)
+from graphql.execution.base import ResolveInfo
+from mypy_extensions import NoReturn
+from typing import Any
+from typing import Optional
 
 
 def test_raise():
+    # type: () -> None
     ast = parse('query Example { a }')
 
     def resolver(context, *_):
+        # type: (Optional[Any], *ResolveInfo) -> NoReturn
         raise Exception('Failed')
 
     Type = GraphQLObjectType('Type', {
@@ -22,9 +28,11 @@ def test_raise():
 
 
 def test_reraise():
+    # type: () -> None
     ast = parse('query Example { a }')
 
     def resolver(context, *_):
+        # type: (Optional[Any], *ResolveInfo) -> NoReturn
         raise Exception('Failed')
 
     Type = GraphQLObjectType('Type', {

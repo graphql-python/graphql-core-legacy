@@ -1,20 +1,36 @@
-from ..language.ast import (FragmentDefinition, FragmentSpread,
-                            OperationDefinition)
+from ..language.ast import FragmentDefinition, FragmentSpread, OperationDefinition
 from ..language.visitor import ParallelVisitor, TypeInfoVisitor, Visitor, visit
 from ..type import GraphQLSchema
 from ..utils.type_info import TypeInfo
 from .rules import specified_rules
 
+if False:
+    from typing import List, Union
+    from ..language.ast import Document, OperationDefinition, SelectionSet
+    from ..language.visitor_meta import VisitorMeta
+    from ..type.schema import GraphQLSchema
+    from ..type.definition import (
+        GraphQLList,
+        GraphQLObjectType,
+        GraphQLScalarType,
+        GraphQLInterfaceType,
+        GraphQLUnionType,
+        GraphQLField,
+        GraphQLArgument,
+    )
+
 
 def validate(schema, ast, rules=specified_rules):
-    assert schema, 'Must provide schema'
-    assert ast, 'Must provide document'
+    # type: (GraphQLSchema, Document, List[VisitorMeta]) -> List
+    assert schema, "Must provide schema"
+    assert ast, "Must provide document"
     assert isinstance(schema, GraphQLSchema)
     type_info = TypeInfo(schema)
     return visit_using_rules(schema, type_info, ast, rules)
 
 
 def visit_using_rules(schema, type_info, ast, rules):
+    # type: (GraphQLSchema, TypeInfo, Document, List[VisitorMeta]) -> List
     context = ValidationContext(schema, ast, type_info)
     visitors = [rule(context) for rule in rules]
     visit(ast, TypeInfoVisitor(type_info, ParallelVisitor(visitors)))
@@ -22,7 +38,7 @@ def visit_using_rules(schema, type_info, ast, rules):
 
 
 class VariableUsage(object):
-    __slots__ = 'node', 'type'
+    __slots__ = "node", "type"
 
     def __init__(self, node, type):
         self.node = node
@@ -30,9 +46,10 @@ class VariableUsage(object):
 
 
 class UsageVisitor(Visitor):
-    __slots__ = 'usages', 'type_info'
+    __slots__ = "usages", "type_info"
 
     def __init__(self, usages, type_info):
+        # type: (List, TypeInfo) -> None
         self.usages = usages
         self.type_info = type_info
 
@@ -45,10 +62,20 @@ class UsageVisitor(Visitor):
 
 
 class ValidationContext(object):
-    __slots__ = ('_schema', '_ast', '_type_info', '_errors', '_fragments', '_fragment_spreads',
-                 '_recursively_referenced_fragments', '_variable_usages', '_recursive_variable_usages')
+    __slots__ = (
+        "_schema",
+        "_ast",
+        "_type_info",
+        "_errors",
+        "_fragments",
+        "_fragment_spreads",
+        "_recursively_referenced_fragments",
+        "_variable_usages",
+        "_recursive_variable_usages",
+    )
 
     def __init__(self, schema, ast, type_info):
+        # type: (GraphQLSchema, Document, TypeInfo) -> None
         self._schema = schema
         self._ast = ast
         self._type_info = type_info
@@ -63,12 +90,15 @@ class ValidationContext(object):
         self._errors.append(error)
 
     def get_errors(self):
+        # type: () -> List
         return self._errors
 
     def get_schema(self):
+        # type: () -> GraphQLSchema
         return self._schema
 
     def get_variable_usages(self, node):
+        # type: (OperationDefinition) -> List
         usages = self._variable_usages.get(node)
         if usages is None:
             usages = []
@@ -79,6 +109,7 @@ class ValidationContext(object):
         return usages
 
     def get_recursive_variable_usages(self, operation):
+        # type: (OperationDefinition) -> List
         assert isinstance(operation, OperationDefinition)
         usages = self._recursive_variable_usages.get(operation)
         if usages is None:
@@ -91,6 +122,7 @@ class ValidationContext(object):
         return usages
 
     def get_recursively_referenced_fragments(self, operation):
+        # type: (OperationDefinition) -> List
         assert isinstance(operation, OperationDefinition)
         fragments = self._recursively_referenced_fragments.get(operation)
         if not fragments:
@@ -112,6 +144,7 @@ class ValidationContext(object):
         return fragments
 
     def get_fragment_spreads(self, node):
+        # type: (SelectionSet) -> List
         spreads = self._fragment_spreads.get(node)
         if not spreads:
             spreads = []
@@ -140,19 +173,23 @@ class ValidationContext(object):
         return fragments.get(name)
 
     def get_type(self):
+        # type: () -> Union[GraphQLList, GraphQLObjectType, GraphQLScalarType]
         return self._type_info.get_type()
 
     def get_parent_type(self):
+        # type: () -> Union[GraphQLInterfaceType, GraphQLObjectType, GraphQLUnionType]
         return self._type_info.get_parent_type()
 
     def get_input_type(self):
         return self._type_info.get_input_type()
 
     def get_field_def(self):
+        # type: () -> GraphQLField
         return self._type_info.get_field_def()
 
     def get_directive(self):
         return self._type_info.get_directive()
 
     def get_argument(self):
+        # type: () -> GraphQLArgument
         return self._type_info.get_argument()

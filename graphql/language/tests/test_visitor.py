@@ -9,18 +9,36 @@ from graphql.utils.type_info import TypeInfo
 
 from ...validation.tests.utils import test_schema
 from .fixtures import KITCHEN_SINK
+from graphql.language.ast import Document
+from graphql.language.ast import OperationDefinition
+from graphql.language.ast import SelectionSet
+from typing import Any
+from typing import Optional
+from typing import Union
+from graphql.language.ast import Field
+from graphql.language.ast import Name
+from graphql.language.visitor import Falsey
+from typing import List
+from graphql.language.ast import Argument
+from graphql.language.ast import IntValue
 
 
 def test_allows_editing_a_node_both_on_enter_and_on_leave():
+    # type: () -> None
     ast = parse('{ a, b, c { a, b, c } }', no_location=True)
 
     class TestVisitor(Visitor):
 
         def __init__(self):
+            # type: () -> None
             self.did_enter = False
             self.did_leave = False
 
-        def enter(self, node, *args):
+        def enter(self,
+                  node,  # type: Union[Document, OperationDefinition, SelectionSet]
+                  *args  # type: Any
+                  ):
+            # type: (...) -> Optional[OperationDefinition]
             if isinstance(node, OperationDefinition):
                 self.did_enter = True
                 selection_set = node.selection_set
@@ -37,7 +55,11 @@ def test_allows_editing_a_node_both_on_enter_and_on_leave():
                     operation=node.operation,
                     selection_set=new_selection_set)
 
-        def leave(self, node, *args):
+        def leave(self,
+                  node,  # type: Union[Document, OperationDefinition, SelectionSet]
+                  *args  # type: Any
+                  ):
+            # type: (...) -> Optional[OperationDefinition]
             if isinstance(node, OperationDefinition):
                 self.did_leave = True
                 new_selection_set = None
@@ -61,6 +83,7 @@ def test_allows_editing_a_node_both_on_enter_and_on_leave():
 
 
 def test_allows_editing_the_root_node_on_enter_and_on_leave():
+    # type: () -> None
     ast = parse('{ a, b, c { a, b, c } }', no_location=True)
 
     definitions = ast.definitions
@@ -68,10 +91,12 @@ def test_allows_editing_the_root_node_on_enter_and_on_leave():
     class TestVisitor(Visitor):
 
         def __init__(self):
+            # type: () -> None
             self.did_enter = False
             self.did_leave = False
 
         def enter(self, node, *args):
+            # type: (Document, *Any) -> Document
             if isinstance(node, Document):
                 self.did_enter = True
                 return Document(
@@ -79,6 +104,7 @@ def test_allows_editing_the_root_node_on_enter_and_on_leave():
                     definitions=[])
 
         def leave(self, node, *args):
+            # type: (Document, *Any) -> Document
             if isinstance(node, Document):
                 self.did_leave = True
                 return Document(
@@ -93,11 +119,13 @@ def test_allows_editing_the_root_node_on_enter_and_on_leave():
 
 
 def test_allows_for_editing_on_enter():
+    # type: () -> None
     ast = parse('{ a, b, c { a, b, c } }', no_location=True)
 
     class TestVisitor(Visitor):
 
         def enter(self, node, *args):
+            # type: (Any, *Any) -> Optional[Any]
             if isinstance(node, Field) and node.name.value == 'b':
                 return REMOVE
 
@@ -108,11 +136,13 @@ def test_allows_for_editing_on_enter():
 
 
 def test_allows_for_editing_on_leave():
+    # type: () -> None
     ast = parse('{ a, b, c { a, b, c } }', no_location=True)
 
     class TestVisitor(Visitor):
 
         def leave(self, node, *args):
+            # type: (Union[Field, Name], *Any) -> Optional[Falsey]
             if isinstance(node, Field) and node.name.value == 'b':
                 return REMOVE
 
@@ -123,15 +153,18 @@ def test_allows_for_editing_on_leave():
 
 
 def test_visits_edited_node():
+    # type: () -> None
     added_field = Field(name=Name(value='__typename'))
     ast = parse('{ a { x } }')
 
     class TestVisitor(Visitor):
 
         def __init__(self):
+            # type: () -> None
             self.did_visit_added_field = False
 
         def enter(self, node, *args):
+            # type: (Any, *Any) -> Optional[Field]
             if isinstance(node, Field) and node.name.value == 'a':
                 selection_set = node.selection_set
                 selections = []
@@ -149,18 +182,21 @@ def test_visits_edited_node():
 
 
 def test_allows_skipping_a_subtree():
+    # type: () -> None
     visited = []
     ast = parse('{ a, b { x }, c }')
 
     class TestVisitor(Visitor):
 
         def enter(self, node, *args):
+            # type: (Any, *Any) -> Optional[Any]
             visited.append(
                 ['enter', type(node).__name__, getattr(node, 'value', None)])
             if isinstance(node, Field) and node.name.value == 'b':
                 return False
 
         def leave(self, node, *args):
+            # type: (Union[Field, Name, SelectionSet], *Any) -> None
             visited.append(
                 ['leave', type(node).__name__, getattr(node, 'value', None)])
 
@@ -186,18 +222,21 @@ def test_allows_skipping_a_subtree():
 
 
 def test_allows_early_exit_while_visiting():
+    # type: () -> None
     visited = []
     ast = parse('{ a, b { x }, c }')
 
     class TestVisitor(Visitor):
 
         def enter(self, node, *args):
+            # type: (Any, *Any) -> Optional[Any]
             visited.append(
                 ['enter', type(node).__name__, getattr(node, 'value', None)])
             if isinstance(node, Name) and node.value == 'x':
                 return BREAK
 
         def leave(self, node, *args):
+            # type: (Union[Field, Name], *Any) -> None
             visited.append(
                 ['leave', type(node).__name__, getattr(node, 'value', None)])
 
@@ -221,20 +260,24 @@ def test_allows_early_exit_while_visiting():
 
 
 def test_allows_a_named_functions_visitor_api():
+    # type: () -> None
     visited = []
     ast = parse('{ a, b { x }, c }')
 
     class TestVisitor(Visitor):
 
         def enter_Name(self, node, *args):
+            # type: (Name, *Any) -> None
             visited.append(
                 ['enter', type(node).__name__, getattr(node, 'value', None)])
 
         def enter_SelectionSet(self, node, *args):
+            # type: (SelectionSet, *Any) -> None
             visited.append(
                 ['enter', type(node).__name__, getattr(node, 'value', None)])
 
         def leave_SelectionSet(self, node, *args):
+            # type: (SelectionSet, *Any) -> None
             visited.append(
                 ['leave', type(node).__name__, getattr(node, 'value', None)])
 
@@ -253,18 +296,21 @@ def test_allows_a_named_functions_visitor_api():
 
 
 def test_visits_kitchen_sink():
+    # type: () -> None
     visited = []
     ast = parse(KITCHEN_SINK)
 
     class TestVisitor(Visitor):
 
         def enter(self, node, key, parent, *args):
+            # type: (Any, Union[None, int, str], Any, *List[Any]) -> None
             kind = parent and type(parent).__name__
             if kind == 'list':
                 kind = None
             visited.append(['enter', type(node).__name__, key, kind])
 
         def leave(self, node, key, parent, *args):
+            # type: (Any, Union[int, str], Any, *List[Any]) -> None
             kind = parent and type(parent).__name__
             if kind == 'list':
                 kind = None
@@ -574,18 +620,26 @@ def test_visits_kitchen_sink():
 
 
 def test_visits_in_pararell_allows_skipping_a_subtree():
+    # type: () -> None
     visited = []
     ast = parse('{ a, b { x }, c }')
 
     class TestVisitor(Visitor):
 
         def enter(self, node, key, parent, *args):
+            # type: (Any, Union[None, int, str], Any, *List[Any]) -> Optional[Any]
             visited.append(
                 ['enter', type(node).__name__, getattr(node, 'value', None)])
             if type(node).__name__ == 'Field' and node.name.value == 'b':
                 return False
 
-        def leave(self, node, key, parent, *args):
+        def leave(self,
+                  node,  # type: Union[Field, Name, SelectionSet]
+                  key,  # type: Union[int, str]
+                  parent,  # type: Union[List[Field], Field, OperationDefinition]
+                  *args  # type: List[Any]
+                  ):
+            # type: (...) -> None
             visited.append(
                 ['leave', type(node).__name__, getattr(node, 'value', None)])
 
@@ -610,21 +664,35 @@ def test_visits_in_pararell_allows_skipping_a_subtree():
 
 
 def test_visits_in_pararell_allows_skipping_different_subtrees():
+    # type: () -> None
     visited = []
     ast = parse('{ a { x }, b { y} }')
 
     class TestVisitor(Visitor):
 
         def __init__(self, name):
+            # type: (str) -> None
             self.name = name
 
-        def enter(self, node, key, parent, *args):
+        def enter(self,
+                  node,  # type: Union[Document, OperationDefinition, SelectionSet]
+                  key,  # type: Union[None, int, str]
+                  parent,  # type: Union[List[OperationDefinition], None, OperationDefinition]
+                  *args  # type: Any
+                  ):
+            # type: (...) -> Optional[Any]
             visited.append(["no-{}".format(self.name), 'enter',
                             type(node).__name__, getattr(node, 'value', None)])
             if type(node).__name__ == 'Field' and node.name.value == self.name:
                 return False
 
-        def leave(self, node, key, parent, *args):
+        def leave(self,
+                  node,  # type: Union[Field, Name, SelectionSet]
+                  key,  # type: Union[int, str]
+                  parent,  # type: Union[List[Field], Field]
+                  *args  # type: List[Any]
+                  ):
+            # type: (...) -> None
             visited.append(["no-{}".format(self.name), 'leave',
                             type(node).__name__, getattr(node, 'value', None)])
 
@@ -668,16 +736,24 @@ def test_visits_in_pararell_allows_skipping_different_subtrees():
 
 
 def test_visits_in_pararell_allows_early_exit_while_visiting():
+    # type: () -> None
     visited = []
     ast = parse('{ a, b { x }, c }')
 
     class TestVisitor(Visitor):
 
         def enter(self, node, key, parent, *args):
+            # type: (Any, Union[None, int, str], Any, *List[Any]) -> None
             visited.append(
                 ['enter', type(node).__name__, getattr(node, 'value', None)])
 
-        def leave(self, node, key, parent, *args):
+        def leave(self,
+                  node,  # type: Union[Field, Name]
+                  key,  # type: Union[int, str]
+                  parent,  # type: Union[List[Field], Field]
+                  *args  # type: List[Any]
+                  ):
+            # type: (...) -> Optional[object]
             visited.append(
                 ['leave', type(node).__name__, getattr(node, 'value', None)])
             if type(node).__name__ == 'Name' and node.value == 'x':
@@ -703,19 +779,33 @@ def test_visits_in_pararell_allows_early_exit_while_visiting():
 
 
 def test_visits_in_pararell_allows_early_exit_from_different_points():
+    # type: () -> None
     visited = []
     ast = parse('{ a { y }, b { x } }')
 
     class TestVisitor(Visitor):
 
         def __init__(self, name):
+            # type: (str) -> None
             self.name = name
 
-        def enter(self, node, key, parent, *args):
+        def enter(self,
+                  node,  # type: Union[Document, OperationDefinition, SelectionSet]
+                  key,  # type: Union[None, int, str]
+                  parent,  # type: Union[List[OperationDefinition], None, OperationDefinition]
+                  *args  # type: Any
+                  ):
+            # type: (...) -> None
             visited.append(["break-{}".format(self.name), 'enter',
                             type(node).__name__, getattr(node, 'value', None)])
 
-        def leave(self, node, key, parent, *args):
+        def leave(self,
+                  node,  # type: Union[Field, Name]
+                  key,  # type: Union[int, str]
+                  parent,  # type: Union[List[Field], Field]
+                  *args  # type: List[Any]
+                  ):
+            # type: (...) -> Optional[Any]
             visited.append(["break-{}".format(self.name), 'leave',
                             type(node).__name__, getattr(node, 'value', None)])
             if type(node).__name__ == 'Field' and node.name.value == self.name:
@@ -763,22 +853,31 @@ def test_visits_in_pararell_allows_early_exit_from_different_points():
 
 
 def test_visits_in_pararell_allows_for_editing_on_enter():
+    # type: () -> None
     visited = []
     ast = parse('{ a, b, c { a, b, c } }', no_location=True)
 
     class TestVisitor1(Visitor):
 
         def enter(self, node, key, parent, *args):
+            # type: (Any, Union[None, int, str], Any, *List[Any]) -> Optional[Any]
             if type(node).__name__ == 'Field' and node.name.value == 'b':
                 return REMOVE
 
     class TestVisitor2(Visitor):
 
         def enter(self, node, key, parent, *args):
+            # type: (Any, Union[None, int, str], Any, *List[Any]) -> None
             visited.append(
                 ['enter', type(node).__name__, getattr(node, 'value', None)])
 
-        def leave(self, node, key, parent, *args):
+        def leave(self,
+                  node,  # type: Union[Field, Name]
+                  key,  # type: Union[int, str]
+                  parent,  # type: Union[List[Field], Field]
+                  *args  # type: List[Any]
+                  ):
+            # type: (...) -> None
             visited.append(
                 ['leave', type(node).__name__, getattr(node, 'value', None)])
 
@@ -816,22 +915,36 @@ def test_visits_in_pararell_allows_for_editing_on_enter():
 
 
 def test_visits_in_pararell_allows_for_editing_on_leave():
+    # type: () -> None
     visited = []
     ast = parse('{ a, b, c { a, b, c } }', no_location=True)
 
     class TestVisitor1(Visitor):
 
-        def leave(self, node, key, parent, *args):
+        def leave(self,
+                  node,  # type: Union[Field, Name]
+                  key,  # type: Union[int, str]
+                  parent,  # type: Union[List[Field], Field]
+                  *args  # type: List[Any]
+                  ):
+            # type: (...) -> Optional[Falsey]
             if type(node).__name__ == 'Field' and node.name.value == 'b':
                 return REMOVE
 
     class TestVisitor2(Visitor):
 
         def enter(self, node, key, parent, *args):
+            # type: (Any, Union[None, int, str], Any, *List[Any]) -> None
             visited.append(
                 ['enter', type(node).__name__, getattr(node, 'value', None)])
 
-        def leave(self, node, key, parent, *args):
+        def leave(self,
+                  node,  # type: Union[Field, Name]
+                  key,  # type: Union[int, str]
+                  parent,  # type: Union[List[Field], Field]
+                  *args  # type: List[Any]
+                  ):
+            # type: (...) -> None
             visited.append(
                 ['leave', type(node).__name__, getattr(node, 'value', None)])
 
@@ -875,6 +988,7 @@ def test_visits_in_pararell_allows_for_editing_on_leave():
 
 
 def test_visits_with_typeinfo_maintains_type_info_during_visit():
+    # type: () -> None
     visited = []
     ast = parse('{ human(id: 4) { name, pets { name }, unknown } }')
 
@@ -883,6 +997,7 @@ def test_visits_with_typeinfo_maintains_type_info_during_visit():
     class TestVisitor(Visitor):
 
         def enter(self, node, key, parent, *args):
+            # type: (Any, Union[None, int, str], Any, *List[Any]) -> None
             parent_type = type_info.get_parent_type()
             _type = type_info.get_type()
             input_type = type_info.get_input_type()
@@ -895,7 +1010,13 @@ def test_visits_with_typeinfo_maintains_type_info_during_visit():
                 str(input_type) if input_type else None
             ])
 
-        def leave(self, node, key, parent, *args):
+        def leave(self,
+                  node,  # type: Union[Argument, IntValue, Name]
+                  key,  # type: Union[int, str]
+                  parent,  # type: Union[List[Argument], Argument, Field]
+                  *args  # type: List[Any]
+                  ):
+            # type: (...) -> None
             parent_type = type_info.get_parent_type()
             _type = type_info.get_type()
             input_type = type_info.get_input_type()
@@ -950,6 +1071,7 @@ def test_visits_with_typeinfo_maintains_type_info_during_visit():
 
 
 def test_visits_with_typeinfo_maintains_type_info_during_edit():
+    # type: () -> None
     visited = []
     ast = parse('{ human(id: 4) { name, pets }, alien }')
 
@@ -958,6 +1080,7 @@ def test_visits_with_typeinfo_maintains_type_info_during_edit():
     class TestVisitor(Visitor):
 
         def enter(self, node, key, parent, *args):
+            # type: (Any, Union[None, int, str], Any, *List[Any]) -> Optional[Any]
             parent_type = type_info.get_parent_type()
             _type = type_info.get_type()
             input_type = type_info.get_input_type()
@@ -982,7 +1105,13 @@ def test_visits_with_typeinfo_maintains_type_info_during_edit():
                     )
                 )
 
-        def leave(self, node, key, parent, *args):
+        def leave(self,
+                  node,  # type: Union[Argument, IntValue, Name]
+                  key,  # type: Union[int, str]
+                  parent,  # type: Union[List[Argument], Argument, Field]
+                  *args  # type: List[Any]
+                  ):
+            # type: (...) -> None
             parent_type = type_info.get_parent_type()
             _type = type_info.get_type()
             input_type = type_info.get_input_type()

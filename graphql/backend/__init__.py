@@ -9,10 +9,14 @@ from .core import GraphQLCoreBackend
 from .decider import GraphQLDeciderBackend
 from .cache import GraphQLCachedBackend
 
+if False:
+    from typing import Union
+
 _default_backend = None
 
 
 def get_default_backend():
+    # type: () -> GraphQLCoreBackend
     global _default_backend
     if _default_backend is None:
         _default_backend = GraphQLCoreBackend()
@@ -20,6 +24,7 @@ def get_default_backend():
 
 
 def set_default_backend(backend):
+    # type: (GraphQLCoreBackend) -> None
     global _default_backend
     assert isinstance(
         backend, GraphQLBackend

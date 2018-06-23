@@ -10,11 +10,13 @@ from .fixtures import KITCHEN_SINK
 
 
 def test_repr_loc():
+    # type: () -> None
     loc = Loc(start=10, end=25, source='foo')
     assert repr(loc) == '<Loc start=10 end=25 source=foo>'
 
 
 def test_empty_parse():
+    # type: () -> None
     with raises(GraphQLSyntaxError) as excinfo:
         parse("")
     assert (
@@ -24,6 +26,7 @@ def test_empty_parse():
 
 
 def test_parse_provides_useful_errors():
+    # type: () -> None
     with raises(GraphQLSyntaxError) as excinfo:
         parse("""{""")
     assert (
@@ -60,6 +63,7 @@ fragment MissingOn Type
 
 
 def test_parse_provides_useful_error_when_using_source():
+    # type: () -> None
     with raises(GraphQLSyntaxError) as excinfo:
         parse(Source('query', 'MyQuery.graphql'))
     assert 'Syntax Error MyQuery.graphql (1:6) Expected {, found EOF' in str(
@@ -67,16 +71,19 @@ def test_parse_provides_useful_error_when_using_source():
 
 
 def test_parses_variable_inline_values():
+    # type: () -> None
     parse('{ field(complex: { a: { b: [ $var ] } }) }')
 
 
 def test_parses_constant_default_values():
+    # type: () -> None
     with raises(GraphQLSyntaxError) as excinfo:
         parse('query Foo($x: Complex = { a: { b: [ $var ] } }) { field }')
     assert 'Syntax Error GraphQL (1:37) Unexpected $' in str(excinfo.value)
 
 
 def test_does_not_accept_fragments_named_on():
+    # type: () -> None
     with raises(GraphQLSyntaxError) as excinfo:
         parse('fragment on on on { on }')
 
@@ -84,6 +91,7 @@ def test_does_not_accept_fragments_named_on():
 
 
 def test_does_not_accept_fragments_spread_of_on():
+    # type: () -> None
     with raises(GraphQLSyntaxError) as excinfo:
         parse('{ ...on }')
 
@@ -91,6 +99,7 @@ def test_does_not_accept_fragments_spread_of_on():
 
 
 def test_does_not_allow_null_value():
+    # type: () -> None
     with raises(GraphQLSyntaxError) as excinfo:
         parse('{ fieldWithNullableStringInput(input: null) }')
 
@@ -98,6 +107,7 @@ def test_does_not_allow_null_value():
 
 
 def test_parses_multi_byte_characters():
+    # type: () -> None
     result = parse(u'''
         # This comment has a \u0A0A multi-byte character.
         { field(arg: "Has a \u0A0A multi-byte character.") }
@@ -152,10 +162,12 @@ def tesst_allows_non_keywords_anywhere_a_name_is_allowed():
 
 
 def test_parses_kitchen_sink():
+    # type: () -> None
     parse(KITCHEN_SINK)
 
 
 def test_parses_anonymous_mutation_operations():
+    # type: () -> None
     parse('''
         mutation {
             mutationField
@@ -164,6 +176,7 @@ def test_parses_anonymous_mutation_operations():
 
 
 def test_parses_anonymous_subscription_operations():
+    # type: () -> None
     parse('''
         subscription {
             mutationField
@@ -172,6 +185,7 @@ def test_parses_anonymous_subscription_operations():
 
 
 def test_parses_named_mutation_operations():
+    # type: () -> None
     parse('''
         mutation Foo {
             mutationField
@@ -180,6 +194,7 @@ def test_parses_named_mutation_operations():
 
 
 def test_parses_named_subscription_operations():
+    # type: () -> None
     parse('''
         subscription Foo {
             subscriptionField
@@ -188,6 +203,7 @@ def test_parses_named_subscription_operations():
 
 
 def test_parse_creates_ast():
+    # type: () -> None
     source = Source("""{
   node(id: 4) {
     id,

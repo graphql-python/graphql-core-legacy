@@ -1,24 +1,40 @@
 from ...error import GraphQLError
 from .base import ValidationRule
 
+if False:
+    from ..validation import ValidationContext
+    from ...language.ast import Document, OperationDefinition
+    from typing import List, Union
+
 
 class UniqueFragmentNames(ValidationRule):
-    __slots__ = 'known_fragment_names',
+    __slots__ = ("known_fragment_names",)
 
     def __init__(self, context):
+        # type: (ValidationContext) -> None
         super(UniqueFragmentNames, self).__init__(context)
         self.known_fragment_names = {}
 
-    def enter_OperationDefinition(self, node, key, parent, path, ancestors):
+    def enter_OperationDefinition(
+        self,
+        node,  # type: OperationDefinition
+        key,  # type: int
+        parent,  # type: List[OperationDefinition]
+        path,  # type: List[Union[int, str]]
+        ancestors,  # type: List[Document]
+    ):
+        # type: (...) -> bool
         return False
 
     def enter_FragmentDefinition(self, node, key, parent, path, ancestors):
         fragment_name = node.name.value
         if fragment_name in self.known_fragment_names:
-            self.context.report_error(GraphQLError(
-                self.duplicate_fragment_name_message(fragment_name),
-                [self.known_fragment_names[fragment_name], node.name]
-            ))
+            self.context.report_error(
+                GraphQLError(
+                    self.duplicate_fragment_name_message(fragment_name),
+                    [self.known_fragment_names[fragment_name], node.name],
+                )
+            )
         else:
             self.known_fragment_names[fragment_name] = node.name
         return False

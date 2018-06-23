@@ -7,11 +7,17 @@ from .definition import (GraphQLArgument,
                          GraphQLInterfaceType, GraphQLList, GraphQLNonNull,
                          GraphQLObjectType, GraphQLUnionType, is_input_type,
                          is_output_type)
+if False:
+    from typing import Any, List, Optional, Union
 
 
 class GraphQLTypeMap(OrderedDict):
 
-    def __init__(self, types):
+    def __init__(self,
+                 # type: Union[List[Optional[GraphQLObjectType]], List[GraphQLObjectType]]
+                 types,
+                 ):
+        # type: (...) -> None
         super(GraphQLTypeMap, self).__init__()
         self.update(reduce(self.reducer, types, OrderedDict()))
         self._possible_type_map = defaultdict(set)
@@ -21,21 +27,32 @@ class GraphQLTypeMap(OrderedDict):
         for gql_type in self.values():
             if isinstance(gql_type, GraphQLObjectType):
                 for interface in gql_type.interfaces:
-                    self._implementations.setdefault(interface.name, []).append(gql_type)
+                    self._implementations.setdefault(
+                        interface.name, []).append(gql_type)
 
         # Enforce correct interface implementations.
         for type in self.values():
             if isinstance(type, GraphQLObjectType):
                 for interface in type.interfaces:
-                    self.assert_object_implements_interface(self, type, interface)
+                    self.assert_object_implements_interface(
+                        self, type, interface)
 
-    def get_possible_types(self, abstract_type):
+    def get_possible_types(self,
+                           # type: Union[GraphQLInterfaceType, GraphQLUnionType]
+                           abstract_type,
+                           ):
+        # type: (...) -> List[GraphQLObjectType]
         if isinstance(abstract_type, GraphQLUnionType):
             return abstract_type.types
         assert isinstance(abstract_type, GraphQLInterfaceType)
         return self._implementations.get(abstract_type.name, None)
 
-    def is_possible_type(self, abstract_type, possible_type):
+    def is_possible_type(self,
+                         # type: Union[GraphQLInterfaceType, GraphQLUnionType]
+                         abstract_type,
+                         possible_type,  # type: GraphQLObjectType
+                         ):
+        # type: (...) -> bool
         possible_types = self.get_possible_types(abstract_type)
         assert isinstance(possible_types, Sequence), (
             'Could not find possible implementing types for ${} in ' +
@@ -44,12 +61,14 @@ class GraphQLTypeMap(OrderedDict):
         ).format(abstract_type)
 
         if not self._possible_type_map[abstract_type.name]:
-            self._possible_type_map[abstract_type.name].update([p.name for p in possible_types])
+            self._possible_type_map[abstract_type.name].update(
+                [p.name for p in possible_types])
 
         return possible_type.name in self._possible_type_map[abstract_type.name]
 
     @classmethod
     def reducer(cls, map, type):
+        # type: (OrderedDict, Any) -> OrderedDict
         if not type:
             return map
 
@@ -81,18 +100,22 @@ class GraphQLTypeMap(OrderedDict):
             for field_name, field in field_map.items():
                 if type_is_input:
                     assert isinstance(field, GraphQLInputObjectField), (
-                        '{}.{} must be an instance of GraphQLInputObjectField.'.format(type, field_name)
+                        '{}.{} must be an instance of GraphQLInputObjectField.'.format(
+                            type, field_name)
                     )
                     assert is_input_type(field.type), (
-                        '{}.{} field type must be Input Type but got: {}.'.format(type, field_name, field.type)
+                        '{}.{} field type must be Input Type but got: {}.'.format(
+                            type, field_name, field.type)
                     )
                 else:
                     assert is_output_type(field.type), (
-                        '{}.{} field type must be Output Type but got: {}.'.format(type, field_name, field.type)
+                        '{}.{} field type must be Output Type but got: {}.'.format(
+                            type, field_name, field.type)
                     )
                     for arg_name, arg in field.args.items():
                         assert isinstance(arg, (GraphQLArgument, GraphQLArgument)), (
-                            '{}.{}({}:) argument must be an instance of GraphQLArgument.'.format(type, field_name, arg_name)
+                            '{}.{}({}:) argument must be an instance of GraphQLArgument.'.format(
+                                type, field_name, arg_name)
                         )
                         assert is_input_type(arg.type), (
                             '{}.{}({}:) argument type must be Input Type but got: {}.'.format(type, field_name, arg_name,
@@ -100,12 +123,18 @@ class GraphQLTypeMap(OrderedDict):
                         )
                         reduced_map = cls.reducer(reduced_map, arg.type)
 
-                reduced_map = cls.reducer(reduced_map, getattr(field, 'type', None))
+                reduced_map = cls.reducer(
+                    reduced_map, getattr(field, 'type', None))
 
         return reduced_map
 
     @classmethod
-    def assert_object_implements_interface(cls, schema, object, interface):
+    def assert_object_implements_interface(cls,
+                                           schema,  # type: GraphQLTypeMap
+                                           object,  # type: GraphQLObjectType
+                                           interface,  # type: GraphQLInterfaceType
+                                           ):
+        # type: (...) -> None
         object_field_map = object.fields
         interface_field_map = interface.fields
 

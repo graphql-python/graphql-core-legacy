@@ -4,18 +4,40 @@ from ...utils.type_comparators import is_type_sub_type_of
 from ...utils.type_from_ast import type_from_ast
 from .base import ValidationRule
 
+if False:
+    from ..validation import ValidationContext
+    from ...language.ast import Document, OperationDefinition
+    from typing import List, Union
+
 
 class VariablesInAllowedPosition(ValidationRule):
-    __slots__ = 'var_def_map'
+    __slots__ = "var_def_map"
 
     def __init__(self, context):
+        # type: (ValidationContext) -> None
         super(VariablesInAllowedPosition, self).__init__(context)
         self.var_def_map = {}
 
-    def enter_OperationDefinition(self, node, key, parent, path, ancestors):
+    def enter_OperationDefinition(
+        self,
+        node,  # type: OperationDefinition
+        key,  # type: int
+        parent,  # type: List[OperationDefinition]
+        path,  # type: List[Union[int, str]]
+        ancestors,  # type: List[Document]
+    ):
+        # type: (...) -> None
         self.var_def_map = {}
 
-    def leave_OperationDefinition(self, operation, key, parent, path, ancestors):
+    def leave_OperationDefinition(
+        self,
+        operation,  # type: OperationDefinition
+        key,  # type: int
+        parent,  # type: List[OperationDefinition]
+        path,  # type: List[str]
+        ancestors,  # type: List[Document]
+    ):
+        # type: (...) -> None
         usages = self.context.get_recursive_variable_usages(operation)
 
         for usage in usages:
@@ -31,11 +53,15 @@ class VariablesInAllowedPosition(ValidationRule):
                 # than the expected item type (contravariant).
                 schema = self.context.get_schema()
                 var_type = type_from_ast(schema, var_def.type)
-                if var_type and not is_type_sub_type_of(schema, self.effective_type(var_type, var_def), type):
-                    self.context.report_error(GraphQLError(
-                        self.bad_var_pos_message(var_name, var_type, type),
-                        [var_def, node]
-                    ))
+                if var_type and not is_type_sub_type_of(
+                    schema, self.effective_type(var_type, var_def), type
+                ):
+                    self.context.report_error(
+                        GraphQLError(
+                            self.bad_var_pos_message(var_name, var_type, type),
+                            [var_def, node],
+                        )
+                    )
 
     def enter_VariableDefinition(self, node, key, parent, path, ancestors):
         self.var_def_map[node.variable.name.value] = node
@@ -49,5 +75,6 @@ class VariablesInAllowedPosition(ValidationRule):
 
     @staticmethod
     def bad_var_pos_message(var_name, var_type, expected_type):
-        return 'Variable "{}" of type "{}" used in position expecting type "{}".'.format(var_name, var_type,
-                                                                                         expected_type)
+        return 'Variable "{}" of type "{}" used in position expecting type "{}".'.format(
+            var_name, var_type, expected_type
+        )

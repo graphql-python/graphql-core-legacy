@@ -1,3 +1,4 @@
+# type: ignore
 import json
 
 from pytest import raises
@@ -12,6 +13,7 @@ from promise import Promise
 
 
 def test_executes_arbitary_code():
+    # type: () -> None
     class Data(object):
         a = 'Apple'
         b = 'Banana'
@@ -21,12 +23,15 @@ def test_executes_arbitary_code():
         f = 'Fish'
 
         def pic(self, size=50):
+            # type: (int) -> str
             return 'Pic of size: {}'.format(size)
 
         def deep(self):
+            # type: () -> DeepData
             return DeepData()
 
         def promise(self):
+            # type: () -> Data
             # FIXME: promise is unsupported
             return Data()
 
@@ -36,6 +41,7 @@ def test_executes_arbitary_code():
         c = ['Contrived', None, 'Confusing']
 
         def deeper(self):
+            # type: () -> List[Optional[Data]]
             return [Data(), None, Data()]
 
     doc = '''
@@ -119,6 +125,7 @@ def test_executes_arbitary_code():
 
 
 def test_merges_parallel_fragments():
+    # type: () -> None
     ast = parse('''
         { a, deep {...FragOne, ...FragTwo} }
 
@@ -162,6 +169,7 @@ def test_merges_parallel_fragments():
 
 
 def test_threads_root_value_context_correctly():
+    # type: () -> None
     doc = 'query Example { a }'
 
     class Data(object):
@@ -170,6 +178,7 @@ def test_threads_root_value_context_correctly():
     ast = parse(doc)
 
     def resolver(root_value, *_):
+        # type: (Data, *ResolveInfo) -> None
         assert root_value.context_thing == 'thing'
         resolver.got_here = True
 
@@ -186,6 +195,7 @@ def test_threads_root_value_context_correctly():
 
 
 def test_correctly_threads_arguments():
+    # type: () -> None
     doc = '''
         query Example {
             b(numArg: 123, stringArg: "foo")
@@ -193,6 +203,7 @@ def test_correctly_threads_arguments():
     '''
 
     def resolver(source, info, numArg, stringArg):
+        # type: (Optional[Any], ResolveInfo, int, str) -> None
         assert numArg == 123
         assert stringArg == 'foo'
         resolver.got_here = True
@@ -218,6 +229,7 @@ def test_correctly_threads_arguments():
 
 
 def test_nulls_out_error_subtrees():
+    # type: () -> None
     doc = '''{
         ok,
         error
@@ -226,9 +238,11 @@ def test_nulls_out_error_subtrees():
     class Data(object):
 
         def ok(self):
+            # type: () -> str
             return 'ok'
 
         def error(self):
+            # type: () -> NoReturn
             raise Exception('Error getting error')
 
     doc_ast = parse(doc)
@@ -246,6 +260,7 @@ def test_nulls_out_error_subtrees():
 
 
 def test_uses_the_inline_operation_if_no_operation_name_is_provided():
+    # type: () -> None
     doc = '{ a }'
 
     class Data(object):
@@ -261,6 +276,7 @@ def test_uses_the_inline_operation_if_no_operation_name_is_provided():
 
 
 def test_uses_the_only_operation_if_no_operation_name_is_provided():
+    # type: () -> None
     doc = 'query Example { a }'
 
     class Data(object):
@@ -276,6 +292,7 @@ def test_uses_the_only_operation_if_no_operation_name_is_provided():
 
 
 def test_uses_the_named_operation_if_operation_name_is_provided():
+    # type: () -> None
     doc = 'query Example { first: a } query OtherExample { second: a }'
 
     class Data(object):
@@ -292,6 +309,7 @@ def test_uses_the_named_operation_if_operation_name_is_provided():
 
 
 def test_raises_if_no_operation_is_provided():
+    # type: () -> None
     doc = 'fragment Example on Type { a }'
 
     class Data(object):
@@ -307,6 +325,7 @@ def test_raises_if_no_operation_is_provided():
 
 
 def test_raises_if_no_operation_name_is_provided_with_multiple_operations():
+    # type: () -> None
     doc = 'query Example { a } query OtherExample { a }'
 
     class Data(object):
@@ -323,6 +342,7 @@ def test_raises_if_no_operation_name_is_provided_with_multiple_operations():
 
 
 def test_raises_if_unknown_operation_name_is_provided():
+    # type: () -> None
     doc = 'query Example { a } query OtherExample { a }'
 
     class Data(object):
@@ -339,6 +359,7 @@ def test_raises_if_unknown_operation_name_is_provided():
 
 
 def test_uses_the_query_schema_for_queries():
+    # type: () -> None
     doc = 'query Q { a } mutation M { c } subscription S { a }'
 
     class Data(object):
@@ -361,6 +382,7 @@ def test_uses_the_query_schema_for_queries():
 
 
 def test_uses_the_mutation_schema_for_queries():
+    # type: () -> None
     doc = 'query Q { a } mutation M { c }'
 
     class Data(object):
@@ -380,6 +402,7 @@ def test_uses_the_mutation_schema_for_queries():
 
 
 def test_uses_the_subscription_schema_for_subscriptions():
+    # type: () -> None
     from rx import Observable
     doc = 'query Q { a } subscription S { a }'
 
@@ -405,6 +428,7 @@ def test_uses_the_subscription_schema_for_subscriptions():
 
 
 def test_avoids_recursion():
+    # type: () -> None
     doc = '''
         query Q {
             a
@@ -430,6 +454,7 @@ def test_avoids_recursion():
 
 
 def test_does_not_include_illegal_fields_in_output():
+    # type: () -> None
     doc = 'mutation M { thisIsIllegalDontIncludeMe }'
     ast = parse(doc)
     Q = GraphQLObjectType('Q', {
@@ -444,6 +469,7 @@ def test_does_not_include_illegal_fields_in_output():
 
 
 def test_does_not_include_arguments_that_were_not_set():
+    # type: () -> None
     schema = GraphQLSchema(GraphQLObjectType(
         'Type',
         {
@@ -470,14 +496,17 @@ def test_does_not_include_arguments_that_were_not_set():
 
 
 def test_fails_when_an_is_type_of_check_is_not_met():
+    # type: () -> None
     class Special(object):
 
         def __init__(self, value):
+            # type: (str) -> None
             self.value = value
 
     class NotSpecial(object):
 
         def __init__(self, value):
+            # type: (str) -> None
             self.value = value
 
     SpecialType = GraphQLObjectType(
@@ -519,6 +548,7 @@ def test_fails_when_an_is_type_of_check_is_not_met():
 
 
 def test_fails_to_execute_a_query_containing_a_type_definition():
+    # type: () -> None
     query = parse('''
     { foo }
 
@@ -541,6 +571,7 @@ def test_fails_to_execute_a_query_containing_a_type_definition():
 
 
 def test_exceptions_are_reraised_if_specified(mocker):
+    # type: (MockFixture) -> None
 
     logger = mocker.patch('graphql.execution.executor.logger')
 
@@ -549,6 +580,7 @@ def test_exceptions_are_reraised_if_specified(mocker):
     ''')
 
     def resolver(*_):
+        # type: (*Any) -> NoReturn
         raise Exception("UH OH!")
 
     schema = GraphQLSchema(
@@ -566,6 +598,7 @@ def test_exceptions_are_reraised_if_specified(mocker):
 
 
 def test_middleware():
+    # type: () -> None
     doc = '''{
         ok
         not_ok
@@ -574,9 +607,11 @@ def test_middleware():
     class Data(object):
 
         def ok(self):
+            # type: () -> str
             return 'ok'
 
         def not_ok(self):
+            # type: () -> str
             return 'not_ok'
 
     doc_ast = parse(doc)
@@ -587,6 +622,7 @@ def test_middleware():
     })
 
     def reversed_middleware(next, *args, **kwargs):
+        # type: (Callable, *Any, **Any) -> Promise
         p = next(*args, **kwargs)
         return p.then(lambda x: x[::-1])
 
@@ -597,6 +633,7 @@ def test_middleware():
 
 
 def test_middleware_class():
+    # type: () -> None
     doc = '''{
         ok
         not_ok
@@ -605,9 +642,11 @@ def test_middleware_class():
     class Data(object):
 
         def ok(self):
+            # type: () -> str
             return 'ok'
 
         def not_ok(self):
+            # type: () -> str
             return 'not_ok'
 
     doc_ast = parse(doc)
@@ -619,6 +658,7 @@ def test_middleware_class():
 
     class MyMiddleware(object):
         def resolve(self, next, *args, **kwargs):
+            # type: (Callable, *Any, **Any) -> Promise
             p = next(*args, **kwargs)
             return p.then(lambda x: x[::-1])
 
@@ -629,6 +669,7 @@ def test_middleware_class():
 
 
 def test_middleware_skip_promise_wrap():
+    # type: () -> None
     doc = '''{
         ok
         not_ok
@@ -637,9 +678,11 @@ def test_middleware_skip_promise_wrap():
     class Data(object):
 
         def ok(self):
+            # type: () -> str
             return 'ok'
 
         def not_ok(self):
+            # type: () -> str
             return 'not_ok'
 
     doc_ast = parse(doc)
@@ -651,10 +694,12 @@ def test_middleware_skip_promise_wrap():
 
     class MyPromiseMiddleware(object):
         def resolve(self, next, *args, **kwargs):
+            # type: (Callable, *Any, **Any) -> Promise
             return Promise.resolve(next(*args, **kwargs))
 
     class MyEmptyMiddleware(object):
         def resolve(self, next, *args, **kwargs):
+            # type: (Callable, *Any, **Any) -> str
             return next(*args, **kwargs)
 
     middlewares_with_promise = MiddlewareManager(
@@ -671,6 +716,7 @@ def test_middleware_skip_promise_wrap():
 
 
 def test_executor_properly_propogates_path_data(mocker):
+    # type: (MockFixture) -> None
     time_mock = mocker.patch('time.time')
     time_mock.side_effect = range(0, 10000)
 
@@ -718,6 +764,7 @@ def test_executor_properly_propogates_path_data(mocker):
     class Article(object):
 
         def __init__(self, id):
+            # type: (int) -> None
             self.id = id
             self.isPublished = True
             self.author = Author()
@@ -744,9 +791,17 @@ def test_executor_properly_propogates_path_data(mocker):
 
     class PathCollectorMiddleware(object):
         def __init__(self):
+            # type: () -> None
             self.paths = []
 
-        def resolve(self, _next, root, info, *args, **kwargs):
+        def resolve(self,
+                    _next,  # type: Callable
+                    root,  # type: Optional[Article]
+                    info,  # type: ResolveInfo
+                    *args,  # type: Any
+                    **kwargs  # type: Any
+                    ):
+            # type: (...) -> Promise
             self.paths.append(info.path)
             return _next(root, info, *args, **kwargs)
 

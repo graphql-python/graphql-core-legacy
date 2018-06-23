@@ -6,15 +6,18 @@ from graphql.language.source import Source
 
 
 def lex_one(s):
+    # type: (str) -> Token
     return Lexer(Source(s)).next_token()
 
 
 def test_repr_token():
+    # type: () -> None
     token = lex_one('500')
     assert repr(token) == "<Token kind=Int at 0..3 value='500'>"
 
 
 def test_disallows_uncommon_control_characters():
+    # type: () -> None
     with raises(GraphQLSyntaxError) as excinfo:
         lex_one(u'\u0007')
 
@@ -22,10 +25,12 @@ def test_disallows_uncommon_control_characters():
 
 
 def test_accepts_bom_header():
+    # type: () -> None
     assert lex_one(u'\uFEFF foo') == Token(TokenKind.NAME, 2, 5, u'foo')
 
 
 def test_skips_whitespace():
+    # type: () -> None
     assert lex_one(u"""
 
     foo
@@ -42,6 +47,7 @@ def test_skips_whitespace():
 
 
 def test_errors_respect_whitespace():
+    # type: () -> None
     with raises(GraphQLSyntaxError) as excinfo:
         lex_one(u"""
 
@@ -60,6 +66,7 @@ def test_errors_respect_whitespace():
 
 
 def test_lexes_strings():
+    # type: () -> None
     assert lex_one(u'"simple"') == Token(TokenKind.STRING, 0, 8, 'simple')
     assert lex_one(u'" white space "') == Token(TokenKind.STRING, 0, 15, ' white space ')
     assert lex_one(u'"quote \\""') == Token(TokenKind.STRING, 0, 10, 'quote "')
@@ -70,6 +77,7 @@ def test_lexes_strings():
 
 
 def test_lex_reports_useful_string_errors():
+    # type: () -> None
     with raises(GraphQLSyntaxError) as excinfo:
         lex_one(u'"')
     assert u'Syntax Error GraphQL (1:2) Unterminated string' in excinfo.value.message
@@ -124,6 +132,7 @@ def test_lex_reports_useful_string_errors():
 
 
 def test_lexes_numbers():
+    # type: () -> None
     assert lex_one(u'4') == Token(TokenKind.INT, 0, 1, '4')
     assert lex_one(u'4.123') == Token(TokenKind.FLOAT, 0, 5, '4.123')
     assert lex_one(u'-4') == Token(TokenKind.INT, 0, 2, '-4')
@@ -143,6 +152,7 @@ def test_lexes_numbers():
 
 
 def test_lex_reports_useful_number_errors():
+    # type: () -> None
     with raises(GraphQLSyntaxError) as excinfo:
         lex_one(u'00')
     assert u'Syntax Error GraphQL (1:2) Invalid number, unexpected digit after 0: "0".' in excinfo.value.message
@@ -177,6 +187,7 @@ def test_lex_reports_useful_number_errors():
 
 
 def test_lexes_punctuation():
+    # type: () -> None
     assert lex_one(u'!') == Token(TokenKind.BANG, 0, 1)
     assert lex_one(u'$') == Token(TokenKind.DOLLAR, 0, 1)
     assert lex_one(u'(') == Token(TokenKind.PAREN_L, 0, 1)
@@ -193,6 +204,7 @@ def test_lexes_punctuation():
 
 
 def test_lex_reports_useful_unknown_character_error():
+    # type: () -> None
     with raises(GraphQLSyntaxError) as excinfo:
         lex_one(u'..')
     assert u'Syntax Error GraphQL (1:1) Unexpected character "."' in excinfo.value.message
@@ -211,6 +223,7 @@ def test_lex_reports_useful_unknown_character_error():
 
 
 def test_lex_reports_useful_information_for_dashes_in_names():
+    # type: () -> None
     q = u'a-b'
     lexer = Lexer(Source(q))
     first_token = lexer.next_token()

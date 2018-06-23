@@ -5,6 +5,7 @@ from .schema import schema
 
 
 def test_compileddocument_from_module_dict():
+    # type: () -> None
     document_string = '{ hello }'
     document_ast = parse(document_string)
     document = GraphQLCompiledDocument.from_module_dict(schema, {
@@ -22,6 +23,7 @@ def test_compileddocument_from_module_dict():
 
 
 def test_compileddocument_from_code():
+    # type: () -> None
     document_string = '{ hello }'
     document_ast = parse(document_string)
     code = '''
