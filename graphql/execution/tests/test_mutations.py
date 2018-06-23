@@ -10,7 +10,6 @@ from graphql.type import (
     GraphQLSchema,
     GraphQLString,
 )
-from mypy_extensions import NoReturn
 
 # from graphql.execution.executors.asyncio import AsyncioExecutor
 # from graphql.execution.executors.thread import ThreadExecutor
@@ -39,11 +38,11 @@ class Root(object):
         return self.immediately_change_the_number(n)
 
     def fail_to_change_the_number(self, n):
-        # type: (int) -> NoReturn
+        # type: (int) -> None
         raise Exception("Cannot change the number")
 
     def promise_and_fail_to_change_the_number(self, n):
-        # type: (int) -> NoReturn
+        # type: (int) -> None
         # TODO: async
         self.fail_to_change_the_number(n)
 

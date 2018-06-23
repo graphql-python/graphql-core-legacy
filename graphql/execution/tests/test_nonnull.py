@@ -12,13 +12,9 @@ from graphql.type import (
 
 from .utils import rejected, resolved
 
-# from mypy_extensions import NoReturn
-# from promise.promise import Promise
-# from typing import Any
-# from typing import Optional
-# from typing import Dict
-# from typing import Tuple
-# from typing import Union
+if False:
+    from promise import Promise
+    from typing import Any, Optional, Dict, Tuple, Union
 
 sync_error = Exception("sync")
 non_null_sync_error = Exception("nonNullSync")
@@ -28,11 +24,11 @@ non_null_promise_error = Exception("nonNullPromise")
 
 class ThrowingData(object):
     def sync(self):
-        # type: () -> NoReturn
+        # type: () -> None
         raise sync_error
 
     def nonNullSync(self):
-        # type: () -> NoReturn
+        # type: () -> None
         raise non_null_sync_error
 
     def promise(self):

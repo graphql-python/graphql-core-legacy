@@ -15,17 +15,11 @@ from graphql import (
     subscribe,
 )
 
-# from graphql.execution.base import ResolveInfo
-# from rx.core.anonymousobservable import AnonymousObservable
-# from rx.subjects.subject import Subject
-# from typing import Optional
-# from typing import Union
-# from mypy_extensions import NoReturn
-# from typing import Any
-# from typing import Callable
-# from graphql.type.schema import GraphQLSchema
-# from graphql.execution.base import ExecutionResult
-# from typing import Tuple
+if False:
+    from graphql.execution.base import ResolveInfo
+    from rx.core.anonymousobservable import AnonymousObservable
+    from typing import Optional, Union, Any, Callable, Tuple
+    from graphql.execution.base import ExecutionResult
 
 Email = namedtuple("Email", "from_,subject,message,unread")
 
@@ -277,7 +271,7 @@ def test_returns_an_error_if_subscribe_function_returns_error():
     exc = Exception("Throw!")
 
     def thrower(root, info):
-        # type: (Optional[Any], ResolveInfo) -> NoReturn
+        # type: (Optional[Any], ResolveInfo) -> None
         raise exc
 
     erroring_email_schema = email_schema_with_resolvers(thrower)
