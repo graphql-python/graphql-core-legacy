@@ -17,7 +17,7 @@ from graphql import (
 
 if False:
     from graphql.execution.base import ResolveInfo
-    from rx.core.anonymousobservable import AnonymousObservable
+    from rx import Observable
     from typing import Optional, Union, Any, Callable, Tuple
     from graphql.execution.base import ExecutionResult
 
@@ -84,7 +84,7 @@ def get_unbound_function(func):
 def email_schema_with_resolvers(resolve_fn=None):
     # type: (Callable) -> GraphQLSchema
     def default_resolver(root, info):
-        # type: (Any, ResolveInfo) -> Union[AnonymousObservable, Subject]
+        # type: (Any, ResolveInfo) -> Union[Observable, Subject]
         func = getattr(root, "importantEmail", None)
         if func:
             func = get_unbound_function(func)
@@ -129,7 +129,7 @@ def create_subscription(
     ast=None,  # type: Optional[Any]
     vars=None,  # type: Optional[Any]
 ):
-    # type: (...) -> Tuple[Callable, Union[ExecutionResult, AnonymousObservable]]
+    # type: (...) -> Tuple[Callable, Union[ExecutionResult, Observable]]
     class Root(object):
         class inbox(object):
             emails = [

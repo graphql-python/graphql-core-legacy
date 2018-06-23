@@ -14,7 +14,7 @@ if False:
     from ..language.ast import Document
     from ..type.schema import GraphQLSchema
     from ..execution.base import ExecutionResult
-    from rx.core.anonymousobservable import AnonymousObservable
+    from rx import Observable
 
 
 def execute_and_validate(
@@ -23,7 +23,7 @@ def execute_and_validate(
     *args,  # type: Any
     **kwargs  # type: Any
 ):
-    # type: (...) -> Union[ExecutionResult, AnonymousObservable]
+    # type: (...) -> Union[ExecutionResult, Observable]
     do_validation = kwargs.get("validate", True)
     if do_validation:
         validation_errors = validate(schema, document_ast)

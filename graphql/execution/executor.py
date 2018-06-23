@@ -37,7 +37,7 @@ from .middleware import MiddlewareManager
 
 if False:
     from typing import Any, Optional, Union, Dict, List, Callable
-    from rx.core.anonymousobservable import AnonymousObservable
+    from rx import Observable
     from ..type.schema import GraphQLSchema
     from ..language.ast import Document, OperationDefinition, Field
 
@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 
 def subscribe(*args, **kwargs):
-    # type: (*Any, **Any) -> Union[ExecutionResult, AnonymousObservable]
+    # type: (*Any, **Any) -> Union[ExecutionResult, Observable]
     allow_subscriptions = kwargs.pop("allow_subscriptions", True)
     return execute(*args, allow_subscriptions=allow_subscriptions, **kwargs)
 
@@ -117,7 +117,7 @@ def execute(
     )
 
     def executor(v):
-        # type: (Optional[Any]) -> Union[OrderedDict, Promise, AnonymousObservable]
+        # type: (Optional[Any]) -> Union[OrderedDict, Promise, Observable]
         return execute_operation(exe_context, exe_context.operation, root)
 
     def on_rejected(error):
@@ -126,7 +126,7 @@ def execute(
         return None
 
     def on_resolve(data):
-        # type: (Union[None, OrderedDict, AnonymousObservable]) -> Union[ExecutionResult, AnonymousObservable]
+        # type: (Union[None, OrderedDict, Observable]) -> Union[ExecutionResult, Observable]
         if isinstance(data, Observable):
             return data
 
@@ -260,7 +260,7 @@ def subscribe_fields(
     source_value,  # type: Union[None, Data, type]
     fields,  # type: DefaultOrderedDict
 ):
-    # type: (...) -> AnonymousObservable
+    # type: (...) -> Observable
     exe_context = SubscriberExecutionContext(exe_context)
 
     def on_error(error):
@@ -364,7 +364,7 @@ def subscribe_field(
     field_asts,  # type: List[Field]
     path,  # type: List[str]
 ):
-    # type: (...) -> AnonymousObservable
+    # type: (...) -> Observable
     field_ast = field_asts[0]
     field_name = field_ast.name.value
 
