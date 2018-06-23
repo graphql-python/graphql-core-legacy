@@ -78,9 +78,9 @@ class GraphQLQuiverCloudBackend(GraphQLBackend):
             json_payload={"query": GRAPHQL_QUERY, "variables": variables},
         )
 
-        errors = json_response.get('errors')
+        errors = json_response.get("errors")
         if errors:
-            raise Exception(errors[0].get('message'))
+            raise Exception(errors[0].get("message"))
         data = json_response.get("data", {})
         code_generation = data.get("generateCode", {})
         code = code_generation.get("code")

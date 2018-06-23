@@ -388,4 +388,3 @@ def test_resolve_type_can_use_type_string():
     assert result.data == {
         "pets": [{"woofs": True, "name": "Odie"}, {"name": "Garfield", "meows": False}]
     }
-

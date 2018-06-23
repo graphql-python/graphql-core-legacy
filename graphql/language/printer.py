@@ -316,4 +316,3 @@ def indent(maybe_str):
     if maybe_str:
         return maybe_str.replace("\n", "\n  ")
     return ""
-

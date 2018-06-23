@@ -763,4 +763,3 @@ class GraphQLNonNull(GraphQLType):
         return isinstance(other, GraphQLNonNull) and self.of_type.is_same_type(
             other.of_type
         )
-

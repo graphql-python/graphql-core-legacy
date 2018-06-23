@@ -729,7 +729,7 @@ def parse_field_definition(parser):
     # type: (Parser) -> FieldDefinition
     start = parser.token.start
 
-    return ast.FieldDefinition( # type: ignore
+    return ast.FieldDefinition(  # type: ignore
         name=parse_name(parser),
         arguments=parse_argument_defs(parser),
         type=expect(parser, TokenKind.COLON) and parse_type(parser),
@@ -750,7 +750,7 @@ def parse_input_value_def(parser):
     # type: (Parser) -> InputValueDefinition
     start = parser.token.start
 
-    return ast.InputValueDefinition( # type: ignore
+    return ast.InputValueDefinition(  # type: ignore
         name=parse_name(parser),
         type=expect(parser, TokenKind.COLON) and parse_type(parser),
         default_value=parse_const_value(parser)
@@ -781,7 +781,7 @@ def parse_union_type_definition(parser):
     start = parser.token.start
     expect_keyword(parser, "union")
 
-    return ast.UnionTypeDefinition( # type: ignore
+    return ast.UnionTypeDefinition(  # type: ignore
         name=parse_name(parser),
         directives=parse_directives(parser),
         types=expect(parser, TokenKind.EQUALS) and parse_union_members(parser),

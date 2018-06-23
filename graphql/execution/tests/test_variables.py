@@ -782,4 +782,3 @@ class TestUsesArgumentDefaultValues:
         """,
             {"data": {"fieldWithDefaultArgumentValue": '"Hello World"'}},
         )
-

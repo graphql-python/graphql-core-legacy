@@ -28,6 +28,7 @@ if False:
         Field,
     )
     from .base import ResolveInfo
+    from types import TracebackType
     from typing import Any, List, Dict, Optional, Union, Callable, Set
 
 logger = logging.getLogger(__name__)
@@ -142,10 +143,8 @@ class ExecutionContext(object):
 
         return result
 
-    def report_error(
-        self, error, traceback=None  # type: GraphQLError  # type: Optional[traceback]
-    ):
-        # type: (...) -> None
+    def report_error(self, error, traceback=None):
+        # type: (GraphQLError, Optional[TracebackType]) -> None
         exception = format_exception(
             type(error), error, getattr(error, "stack", None) or traceback
         )

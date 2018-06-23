@@ -896,4 +896,3 @@ def test_nulls_the_top_level_if_async_non_nullable_field_resolves_null():
             ],
         },
     )
-

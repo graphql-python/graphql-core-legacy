@@ -5,4 +5,4 @@ try:
 except ImportError:
     from collections import OrderedDict
 
-__all__ = ['OrderedDict']
+__all__ = ["OrderedDict"]

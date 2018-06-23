@@ -1497,4 +1497,3 @@ class DirectiveDefinition(TypeSystemDefinition):
     def __hash__(self):
         # type: () -> int
         return id(self)
-

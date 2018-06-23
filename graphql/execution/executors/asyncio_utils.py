@@ -28,4 +28,3 @@ async def iterate_asyncgen(asyncgen, observer):
         pass
     except Exception as e:
         observer.on_error(e)
-

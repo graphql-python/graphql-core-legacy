@@ -657,4 +657,3 @@ TypeNameMetaFieldDef = GraphQLField(
     resolver=lambda source, info, **args: info.parent_type.name,
     args={},
 )
-

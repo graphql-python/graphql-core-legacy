@@ -4,132 +4,149 @@ from pytest import raises
 
 from graphql import parse
 from graphql.execution import execute
-from graphql.type import (GraphQLArgument, GraphQLEnumType, GraphQLEnumValue,
-                          GraphQLField, GraphQLID, GraphQLInterfaceType,
-                          GraphQLList, GraphQLNonNull, GraphQLObjectType,
-                          GraphQLSchema, GraphQLString, GraphQLUnionType)
+from graphql.type import (
+    GraphQLArgument,
+    GraphQLEnumType,
+    GraphQLEnumValue,
+    GraphQLField,
+    GraphQLID,
+    GraphQLInterfaceType,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLObjectType,
+    GraphQLSchema,
+    GraphQLString,
+    GraphQLUnionType,
+)
 from graphql.utils.extend_schema import extend_schema
 from graphql.utils.schema_printer import print_schema
 
 # Test schema.
 SomeInterfaceType = GraphQLInterfaceType(
-    name='SomeInterface',
+    name="SomeInterface",
     resolve_type=lambda: FooType,
-    fields=lambda: OrderedDict([
-        ('name', GraphQLField(GraphQLString)),
-        ('some', GraphQLField(SomeInterfaceType)),
-    ])
+    fields=lambda: OrderedDict(
+        [
+            ("name", GraphQLField(GraphQLString)),
+            ("some", GraphQLField(SomeInterfaceType)),
+        ]
+    ),
 )
 
 
 FooType = GraphQLObjectType(
-    name='Foo',
+    name="Foo",
     interfaces=[SomeInterfaceType],
-    fields=lambda: OrderedDict([
-        ('name', GraphQLField(GraphQLString)),
-        ('some', GraphQLField(SomeInterfaceType)),
-        ('tree', GraphQLField(GraphQLNonNull(GraphQLList(FooType)))),
-    ])
+    fields=lambda: OrderedDict(
+        [
+            ("name", GraphQLField(GraphQLString)),
+            ("some", GraphQLField(SomeInterfaceType)),
+            ("tree", GraphQLField(GraphQLNonNull(GraphQLList(FooType)))),
+        ]
+    ),
 )
 
 BarType = GraphQLObjectType(
-    name='Bar',
+    name="Bar",
     interfaces=[SomeInterfaceType],
-    fields=lambda: OrderedDict([
-        ('name', GraphQLField(GraphQLString)),
-        ('some', GraphQLField(SomeInterfaceType)),
-        ('foo', GraphQLField(FooType)),
-    ])
+    fields=lambda: OrderedDict(
+        [
+            ("name", GraphQLField(GraphQLString)),
+            ("some", GraphQLField(SomeInterfaceType)),
+            ("foo", GraphQLField(FooType)),
+        ]
+    ),
 )
 
 BizType = GraphQLObjectType(
-    name='Biz',
-    fields=lambda: OrderedDict([
-        ('fizz', GraphQLField(GraphQLString)),
-    ])
+    name="Biz", fields=lambda: OrderedDict([("fizz", GraphQLField(GraphQLString))])
 )
 
 SomeUnionType = GraphQLUnionType(
-    name='SomeUnion',
-    resolve_type=lambda: FooType,
-    types=[FooType, BizType],
+    name="SomeUnion", resolve_type=lambda: FooType, types=[FooType, BizType]
 )
 
 SomeEnumType = GraphQLEnumType(
-    name='SomeEnum',
-    values=OrderedDict([
-        ('ONE', GraphQLEnumValue(1)),
-        ('TWO', GraphQLEnumValue(2)),
-    ])
+    name="SomeEnum",
+    values=OrderedDict([("ONE", GraphQLEnumValue(1)), ("TWO", GraphQLEnumValue(2))]),
 )
 
 test_schema = GraphQLSchema(
     query=GraphQLObjectType(
-        name='Query',
-        fields=lambda: OrderedDict([
-            ('foo', GraphQLField(FooType)),
-            ('someUnion', GraphQLField(SomeUnionType)),
-            ('someEnum', GraphQLField(SomeEnumType)),
-            ('someInterface', GraphQLField(
-                SomeInterfaceType,
-                args={
-                    'id': GraphQLArgument(GraphQLNonNull(GraphQLID))
-                },
-            )),
-        ])
+        name="Query",
+        fields=lambda: OrderedDict(
+            [
+                ("foo", GraphQLField(FooType)),
+                ("someUnion", GraphQLField(SomeUnionType)),
+                ("someEnum", GraphQLField(SomeEnumType)),
+                (
+                    "someInterface",
+                    GraphQLField(
+                        SomeInterfaceType,
+                        args={"id": GraphQLArgument(GraphQLNonNull(GraphQLID))},
+                    ),
+                ),
+            ]
+        ),
     ),
-    types=[FooType, BarType]
+    types=[FooType, BarType],
 )
 
 
 def test_returns_original_schema_if_no_type_definitions():
-    ast = parse('{ field }')
+    ast = parse("{ field }")
     extended_schema = extend_schema(test_schema, ast)
     assert extended_schema == test_schema
 
 
 def test_extends_without_altering_original_schema():
-    ast = parse('''
+    ast = parse(
+        """
       extend type Query {
         newField: String
       }
-    ''')
+    """
+    )
     original_print = print_schema(test_schema)
     extended_schema = extend_schema(test_schema, ast)
     assert extend_schema != test_schema
     assert print_schema(test_schema) == original_print
-    assert 'newField' in print_schema(extended_schema)
-    assert 'newField' not in print_schema(test_schema)
+    assert "newField" in print_schema(extended_schema)
+    assert "newField" not in print_schema(test_schema)
 
 
 def test_cannot_be_used_for_execution():
-    ast = parse('''
+    ast = parse(
+        """
       extend type Query {
         newField: String
       }
-    ''')
+    """
+    )
     extended_schema = extend_schema(test_schema, ast)
-    clientQuery = parse('{ newField }')
+    clientQuery = parse("{ newField }")
 
     result = execute(extended_schema, clientQuery, object())
-    assert result.data['newField'] is None
-    assert str(result.errors[0]
-               ) == 'Client Schema cannot be used for execution.'
+    assert result.data["newField"] is None
+    assert str(result.errors[0]) == "Client Schema cannot be used for execution."
 
 
 def test_extends_objects_by_adding_new_fields():
-    ast = parse('''
+    ast = parse(
+        """
       extend type Foo {
         newField: String
       }
-    ''')
+    """
+    )
     original_print = print_schema(test_schema)
     extended_schema = extend_schema(test_schema, ast)
     assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
     # print original_print
-    assert print_schema(extended_schema) == \
-        '''schema {
+    assert (
+        print_schema(extended_schema)
+        == """schema {
   query: Query
 }
 
@@ -168,22 +185,26 @@ interface SomeInterface {
 }
 
 union SomeUnion = Foo | Biz
-'''
+"""
+    )
 
 
 def test_extends_objects_by_adding_new_unused_types():
-    ast = parse('''
+    ast = parse(
+        """
       type Unused {
         someField: String
       }
-    ''')
+    """
+    )
     original_print = print_schema(test_schema)
     extended_schema = extend_schema(test_schema, ast)
     assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
     # print original_print
-    assert print_schema(extended_schema) == \
-        '''schema {
+    assert (
+        print_schema(extended_schema)
+        == """schema {
   query: Query
 }
 
@@ -225,11 +246,13 @@ union SomeUnion = Foo | Biz
 type Unused {
   someField: String
 }
-'''
+"""
+    )
 
 
 def test_extends_objects_by_adding_new_fields_with_arguments():
-    ast = parse('''
+    ast = parse(
+        """
       extend type Foo {
         newField(arg1: String, arg2: NewInputObj!): String
       }
@@ -238,13 +261,15 @@ def test_extends_objects_by_adding_new_fields_with_arguments():
         field2: [Float]
         field3: String!
       }
-    ''')
+    """
+    )
     original_print = print_schema(test_schema)
     extended_schema = extend_schema(test_schema, ast)
     assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
-    assert print_schema(extended_schema) == \
-        '''schema {
+    assert (
+        print_schema(extended_schema)
+        == """schema {
   query: Query
 }
 
@@ -289,21 +314,25 @@ interface SomeInterface {
 }
 
 union SomeUnion = Foo | Biz
-'''
+"""
+    )
 
 
 def test_extends_objects_by_adding_new_fields_with_existing_types():
-    ast = parse('''
+    ast = parse(
+        """
       extend type Foo {
         newField(arg1: SomeEnum!): SomeEnum
       }
-    ''')
+    """
+    )
     original_print = print_schema(test_schema)
     extended_schema = extend_schema(test_schema, ast)
     assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
-    assert print_schema(extended_schema) == \
-        '''schema {
+    assert (
+        print_schema(extended_schema)
+        == """schema {
   query: Query
 }
 
@@ -342,22 +371,26 @@ interface SomeInterface {
 }
 
 union SomeUnion = Foo | Biz
-'''
+"""
+    )
 
 
 def test_extends_objects_by_adding_implemented_interfaces():
-    ast = parse('''
+    ast = parse(
+        """
       extend type Biz implements SomeInterface {
         name: String
         some: SomeInterface
       }
-    ''')
+    """
+    )
     original_print = print_schema(test_schema)
     extended_schema = extend_schema(test_schema, ast)
     assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
-    assert print_schema(extended_schema) == \
-        '''schema {
+    assert (
+        print_schema(extended_schema)
+        == """schema {
   query: Query
 }
 
@@ -397,11 +430,13 @@ interface SomeInterface {
 }
 
 union SomeUnion = Foo | Biz
-'''
+"""
+    )
 
 
 def test_extends_objects_by_adding_implemented_interfaces_2():
-    ast = parse('''
+    ast = parse(
+        """
       extend type Foo {
         newObject: NewObject
         newInterface: NewInterface
@@ -425,13 +460,15 @@ def test_extends_objects_by_adding_implemented_interfaces_2():
         OPTION_A
         OPTION_B
       }
-    ''')
+    """
+    )
     original_print = print_schema(test_schema)
     extended_schema = extend_schema(test_schema, ast)
     assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
-    assert print_schema(extended_schema) == \
-        '''schema {
+    assert (
+        print_schema(extended_schema)
+        == """schema {
   query: Query
 }
 
@@ -496,24 +533,28 @@ interface SomeInterface {
 }
 
 union SomeUnion = Foo | Biz
-'''
+"""
+    )
 
 
 def test_extends_objects_by_adding_implemented_new_interfaces():
-    ast = parse('''
+    ast = parse(
+        """
       extend type Foo implements NewInterface {
         baz: String
       }
       interface NewInterface {
         baz: String
       }
-    ''')
+    """
+    )
     original_print = print_schema(test_schema)
     extended_schema = extend_schema(test_schema, ast)
     assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
-    assert print_schema(extended_schema) == \
-        '''schema {
+    assert (
+        print_schema(extended_schema)
+        == """schema {
   query: Query
 }
 
@@ -556,11 +597,13 @@ interface SomeInterface {
 }
 
 union SomeUnion = Foo | Biz
-'''
+"""
+    )
 
 
 def test_extends_objects_multiple_times():
-    ast = parse('''
+    ast = parse(
+        """
       extend type Biz implements NewInterface {
         buzz: String
       }
@@ -576,13 +619,15 @@ def test_extends_objects_multiple_times():
       interface NewInterface {
         buzz: String
       }
-    ''')
+    """
+    )
     original_print = print_schema(test_schema)
     extended_schema = extend_schema(test_schema, ast)
     assert extended_schema != test_schema
     assert print_schema(test_schema) == original_print
-    assert print_schema(extended_schema) == \
-        '''schema {
+    assert (
+        print_schema(extended_schema)
+        == """schema {
   query: Query
 }
 
@@ -629,32 +674,25 @@ interface SomeInterface {
 }
 
 union SomeUnion = Foo | Biz
-'''
+"""
+    )
 
 
 def test_may_extend_mutations_and_subscriptions():
     mutationSchema = GraphQLSchema(
         query=GraphQLObjectType(
-            'Query',
-            fields=lambda: {
-                'queryField': GraphQLField(GraphQLString),
-            }
+            "Query", fields=lambda: {"queryField": GraphQLField(GraphQLString)}
         ),
         mutation=GraphQLObjectType(
-            'Mutation',
-            fields={
-                'mutationField': GraphQLField(GraphQLString),
-            }
+            "Mutation", fields={"mutationField": GraphQLField(GraphQLString)}
         ),
         subscription=GraphQLObjectType(
-            'Subscription',
-            fields={
-                'subscriptionField': GraphQLField(GraphQLString),
-            }
+            "Subscription", fields={"subscriptionField": GraphQLField(GraphQLString)}
         ),
     )
 
-    ast = parse('''
+    ast = parse(
+        """
       extend type Query {
         newQueryField: Int
       }
@@ -664,13 +702,15 @@ def test_may_extend_mutations_and_subscriptions():
       extend type Subscription {
         newSubscriptionField: Int
       }
-    ''')
+    """
+    )
     original_print = print_schema(mutationSchema)
     extended_schema = extend_schema(mutationSchema, ast)
     assert extended_schema != mutationSchema
     assert print_schema(mutationSchema) == original_print
-    assert print_schema(extended_schema) == \
-        '''schema {
+    assert (
+        print_schema(extended_schema)
+        == """schema {
   query: Query
   mutation: Mutation
   subscription: Subscription
@@ -690,85 +730,103 @@ type Subscription {
   subscriptionField: String
   newSubscriptionField: Int
 }
-'''
+"""
+    )
 
 
 def test_does_not_allow_replacing_an_existing_type():
-    ast = parse('''
+    ast = parse(
+        """
       type Bar {
         baz: String
       }
-    ''')
+    """
+    )
     with raises(Exception) as exc_info:
         extend_schema(test_schema, ast)
 
-    assert str(exc_info.value) == \
-        ('Type "Bar" already exists in the schema. It cannot also be defined ' +
-         'in this type definition.')
+    assert str(exc_info.value) == (
+        'Type "Bar" already exists in the schema. It cannot also be defined '
+        + "in this type definition."
+    )
 
 
 def test_does_not_allow_replacing_an_existing_field():
-    ast = parse('''
+    ast = parse(
+        """
       extend type Bar {
         foo: Foo
       }
-    ''')
+    """
+    )
     with raises(Exception) as exc_info:
         extend_schema(test_schema, ast)
 
-    assert str(exc_info.value) == \
-        ('Field "Bar.foo" already exists in the schema. It cannot also be ' +
-         'defined in this type extension.')
+    assert str(exc_info.value) == (
+        'Field "Bar.foo" already exists in the schema. It cannot also be '
+        + "defined in this type extension."
+    )
 
 
 def test_does_not_allow_replacing_an_existing_interface():
-    ast = parse('''
+    ast = parse(
+        """
       extend type Foo implements SomeInterface {
         otherField: String
       }
-    ''')
+    """
+    )
     with raises(Exception) as exc_info:
         extend_schema(test_schema, ast)
 
-    assert str(exc_info.value) == \
-        ('Type "Foo" already implements "SomeInterface". It cannot also be ' +
-         'implemented in this type extension.')
+    assert str(exc_info.value) == (
+        'Type "Foo" already implements "SomeInterface". It cannot also be '
+        + "implemented in this type extension."
+    )
 
 
 def test_does_not_allow_referencing_an_unknown_type():
-    ast = parse('''
+    ast = parse(
+        """
       extend type Bar {
         quix: Quix
       }
-    ''')
+    """
+    )
     with raises(Exception) as exc_info:
         extend_schema(test_schema, ast)
 
-    assert str(exc_info.value) == \
-        ('Unknown type: "Quix". Ensure that this type exists either in the ' +
-         'original schema, or is added in a type definition.')
+    assert str(exc_info.value) == (
+        'Unknown type: "Quix". Ensure that this type exists either in the '
+        + "original schema, or is added in a type definition."
+    )
 
 
 def test_does_not_allow_extending_an_unknown_type():
-    ast = parse('''
+    ast = parse(
+        """
       extend type UnknownType {
         baz: String
       }
-    ''')
+    """
+    )
     with raises(Exception) as exc_info:
         extend_schema(test_schema, ast)
 
-    assert str(exc_info.value) == \
-        ('Cannot extend type "UnknownType" because it does not exist in the ' +
-         'existing schema.')
+    assert str(exc_info.value) == (
+        'Cannot extend type "UnknownType" because it does not exist in the '
+        + "existing schema."
+    )
 
 
 def test_does_not_allow_extending_an_interface():
-    ast = parse('''
+    ast = parse(
+        """
       extend type SomeInterface {
         baz: String
       }
-    ''')
+    """
+    )
     with raises(Exception) as exc_info:
         extend_schema(test_schema, ast)
 
@@ -776,11 +834,13 @@ def test_does_not_allow_extending_an_interface():
 
 
 def test_does_not_allow_extending_a_scalar():
-    ast = parse('''
+    ast = parse(
+        """
       extend type String {
         baz: String
       }
-    ''')
+    """
+    )
     with raises(Exception) as exc_info:
         extend_schema(test_schema, ast)
 

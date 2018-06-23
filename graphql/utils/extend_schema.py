@@ -387,4 +387,3 @@ def extend_schema(schema, documentAST=None):
 
 def cannot_execute_client_schema(*args, **kwargs):
     raise Exception("Client Schema cannot be used for execution.")
-

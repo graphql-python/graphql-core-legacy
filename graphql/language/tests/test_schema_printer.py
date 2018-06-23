@@ -11,16 +11,14 @@ from .fixtures import SCHEMA_KITCHEN_SINK
 
 def test_prints_minimal_ast():
     # type: () -> None
-    node = ast.ScalarTypeDefinition(
-        name=ast.Name('foo')
-    )
+    node = ast.ScalarTypeDefinition(name=ast.Name("foo"))
 
-    assert print_ast(node) == 'scalar foo'
+    assert print_ast(node) == "scalar foo"
 
 
 def test_print_produces_helpful_error_messages():
     # type: () -> None
-    bad_ast = {'random': 'Data'}
+    bad_ast = {"random": "Data"}
     with raises(AssertionError) as excinfo:
         print_ast(bad_ast)
 
@@ -40,7 +38,7 @@ def test_prints_kitchen_sink():
     ast = parse(SCHEMA_KITCHEN_SINK)
     printed = print_ast(ast)
 
-    expected = '''schema {
+    expected = """schema {
   query: QueryType
   mutation: MutationType
 }
@@ -105,6 +103,6 @@ type NoFields {}
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-'''
+"""
 
     assert printed == expected

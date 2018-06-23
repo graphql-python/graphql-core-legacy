@@ -116,17 +116,17 @@ def execute(
         allow_subscriptions,
     )
 
-    def executor(v):  # type: Optional[Any]
-        # type: (...) -> Union[OrderedDict, Promise, AnonymousObservable]
+    def executor(v):
+        # type: (Optional[Any]) -> Union[OrderedDict, Promise, AnonymousObservable]
         return execute_operation(exe_context, exe_context.operation, root)
 
-    def on_rejected(error):  # type: Union[Exception, GraphQLError, GraphQLLocatedError]
-        # type: (...) -> Optional[Any]
+    def on_rejected(error):
+        # type: (Exception) -> Optional[Any]
         exe_context.errors.append(error)
         return None
 
-    def on_resolve(data):  # type: Union[None, OrderedDict, AnonymousObservable]
-        # type: (...) -> Union[ExecutionResult, AnonymousObservable]
+    def on_resolve(data):
+        # type: (Union[None, OrderedDict, AnonymousObservable]) -> Union[ExecutionResult, AnonymousObservable]
         if isinstance(data, Observable):
             return data
 

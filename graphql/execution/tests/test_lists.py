@@ -387,4 +387,3 @@ class TestNotNullListOfNotNullT_Array_Promise_T:  # [T!]! Array<Promise<T>>
             ],
         },
     )
-

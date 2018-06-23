@@ -275,4 +275,3 @@ def test_works_directives_no_include_or_skip():
     result = execute_test_query("{ a, b @include(if: false) @skip(if: false) }")
     assert not result.errors
     assert result.data == {"a": "a"}
-

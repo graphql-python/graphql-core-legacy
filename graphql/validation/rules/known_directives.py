@@ -5,30 +5,37 @@ from .base import ValidationRule
 
 
 class KnownDirectives(ValidationRule):
-
     def enter_Directive(self, node, key, parent, path, ancestors):
-        directive_def = next((
-            definition for definition in self.context.get_schema().get_directives()
-            if definition.name == node.name.value
-        ), None)
+        directive_def = next(
+            (
+                definition
+                for definition in self.context.get_schema().get_directives()
+                if definition.name == node.name.value
+            ),
+            None,
+        )
 
         if not directive_def:
-            return self.context.report_error(GraphQLError(
-                self.unknown_directive_message(node.name.value),
-                [node]
-            ))
+            return self.context.report_error(
+                GraphQLError(self.unknown_directive_message(node.name.value), [node])
+            )
 
         candidate_location = get_directive_location_for_ast_path(ancestors)
         if not candidate_location:
-            self.context.report_error(GraphQLError(
-                self.misplaced_directive_message(node.name.value, node.type),
-                [node]
-            ))
+            self.context.report_error(
+                GraphQLError(
+                    self.misplaced_directive_message(node.name.value, node.type), [node]
+                )
+            )
         elif candidate_location not in directive_def.locations:
-            self.context.report_error(GraphQLError(
-                self.misplaced_directive_message(node.name.value, candidate_location),
-                [node]
-            ))
+            self.context.report_error(
+                GraphQLError(
+                    self.misplaced_directive_message(
+                        node.name.value, candidate_location
+                    ),
+                    [node],
+                )
+            )
 
     @staticmethod
     def unknown_directive_message(directive_name):
@@ -36,13 +43,15 @@ class KnownDirectives(ValidationRule):
 
     @staticmethod
     def misplaced_directive_message(directive_name, location):
-        return 'Directive "{}" may not be used on "{}".'.format(directive_name, location)
+        return 'Directive "{}" may not be used on "{}".'.format(
+            directive_name, location
+        )
 
 
 _operation_definition_map = {
-    'query': DirectiveLocation.QUERY,
-    'mutation': DirectiveLocation.MUTATION,
-    'subscription': DirectiveLocation.SUBSCRIPTION,
+    "query": DirectiveLocation.QUERY,
+    "mutation": DirectiveLocation.MUTATION,
+    "subscription": DirectiveLocation.SUBSCRIPTION,
 }
 
 
@@ -92,6 +101,8 @@ def get_directive_location_for_ast_path(ancestors):
 
     elif isinstance(applied_to, ast.InputValueDefinition):
         parent_node = ancestors[-3]
-        return (DirectiveLocation.INPUT_FIELD_DEFINITION
-                if isinstance(parent_node, ast.InputObjectTypeDefinition)
-                else DirectiveLocation.ARGUMENT_DEFINITION)
+        return (
+            DirectiveLocation.INPUT_FIELD_DEFINITION
+            if isinstance(parent_node, ast.InputObjectTypeDefinition)
+            else DirectiveLocation.ARGUMENT_DEFINITION
+        )
