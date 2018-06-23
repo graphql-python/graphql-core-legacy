@@ -1,9 +1,16 @@
 # We keep the following imports to preserve compatibility
-from .utils import (ExecutionContext, SubscriberExecutionContext,
-                    collect_fields, default_resolve_fn,
-                    does_fragment_condition_match, get_field_def,
-                    get_field_entry_key, get_operation_root_type,
-                    should_include_node)
+from .utils import (
+    ExecutionContext,
+    SubscriberExecutionContext,
+    get_operation_root_type,
+    collect_fields,
+    should_include_node,
+    does_fragment_condition_match,
+    get_field_entry_key,
+    default_resolve_fn,
+    get_field_def
+)
+from ..error.format_error import format_error as default_format_error
 
 
 class ExecutionResult(object):
@@ -32,6 +39,19 @@ class ExecutionResult(object):
                 self.invalid == other.invalid
             )
         )
+
+    def to_dict(self, format_error=None, dict_class=dict):
+        if format_error is None:
+            format_error = default_format_error
+
+        response = dict_class()
+        if self.errors:
+            response['errors'] = [format_error(e) for e in self.errors]
+
+        if not self.invalid:
+            response['data'] = self.data
+
+        return response
 
 
 class ResolveInfo(object):

@@ -6,11 +6,11 @@ except ImportError:
         "You can install it using: pip install requests"
     )
 
-from six import urlparse
-
 from ..utils.schema_printer import print_schema
 from .base import GraphQLBackend
 from .compiled import GraphQLCompiledDocument
+
+from six.moves.urllib.parse import urlparse
 
 
 GRAPHQL_QUERY = """

@@ -205,7 +205,7 @@ from .backend import (
     set_default_backend,
 )
 
-VERSION = (2, 1, 0, 'rc', 1)
+VERSION = (2, 1, 0, 'rc', 2)
 __version__ = get_version(VERSION)
 
 

@@ -1,4 +1,4 @@
-from asyncio import ensure_future
+from asyncio import ensure_future, wait, CancelledError
 from inspect import isasyncgen
 
 from rx import AnonymousObserver, Observable
@@ -7,6 +7,7 @@ from rx.core import (Disposable, Observable, ObservableBase, Observer,
                      ObserverBase)
 from rx.core.anonymousobserver import AnonymousObserver
 from rx.core.autodetachobserver import AutoDetachObserver
+from rx import AnonymousObservable
 
 
 # class AsyncgenDisposable(Disposable):
@@ -102,27 +103,16 @@ class AsyncgenObservable(ObservableBase):
             else:
                 auto_detach_observer.disposable = fix_subscriber(subscriber)
 
-        # Subscribe needs to set up the trampoline before for subscribing.
-        # Actually, the first call to Subscribe creates the trampoline so
-        # that it may assign its disposable before any observer executes
-        # OnNext over the CurrentThreadScheduler. This enables single-
-        # threaded cancellation
-        # https://social.msdn.microsoft.com/Forums/en-US/eb82f593-9684-4e27-
-        # 97b9-8b8886da5c33/whats-the-rationale-behind-how-currentthreadsche
-        # dulerschedulerequired-behaves?forum=rx
-        if current_thread_scheduler.schedule_required():
-            current_thread_scheduler.schedule(set_disposable)
-        else:
-            set_disposable()
+        def dispose():
+            async def await_task():
+                await task
 
-        # Hide the identity of the auto detach observer
-        return Disposable.create(auto_detach_observer.dispose)
+            task.cancel()
+            ensure_future(await_task(), loop=loop)
 
+        return dispose
 
-def asyncgen_to_observable(asyncgen):
-    def emit(observer):
-        ensure_future(iterate_asyncgen(asyncgen, observer))
-    return AsyncgenObservable(emit, asyncgen)
+    return AnonymousObservable(emit)
 
 
 async def iterate_asyncgen(asyncgen, observer):
@@ -130,5 +120,7 @@ async def iterate_asyncgen(asyncgen, observer):
         async for item in asyncgen:
             observer.on_next(item)
         observer.on_completed()
+    except CancelledError:
+        pass
     except Exception as e:
         observer.on_error(e)
