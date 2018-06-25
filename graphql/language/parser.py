@@ -418,7 +418,11 @@ def parse_value_literal(parser, is_const):
             advance(parser)
             return ast.BooleanValue(value=token.value == 'true', loc=loc(parser, token.start))
 
-        if token.value != 'null':
+        elif token.value in ('null', ):
+            advance(parser)
+            return ast.NullValue(loc=loc(parser, token.start))
+
+        else:
             advance(parser)
             return ast.EnumValue(value=token.value, loc=loc(parser, token.start))
 

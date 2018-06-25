@@ -118,7 +118,7 @@ fragment frag on Friend {
 }
 
 {
-  unnamed(truthy: true, falsey: false)
+  unnamed(truthy: true, falsey: false, nullish: null)
   query
 }
 '''

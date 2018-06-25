@@ -81,6 +81,9 @@ class PrintingVisitor(Visitor):
     def leave_BooleanValue(self, node, *args):
         return json.dumps(node.value)
 
+    def leave_NullValue(self, node, *args):
+        return json.dumps(node.value)
+
     def leave_EnumValue(self, node, *args):
         return node.value
 
