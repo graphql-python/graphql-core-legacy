@@ -14,14 +14,12 @@ from .compiled import GraphQLCompiledDocument
 from six.moves.urllib.parse import urlparse
 
 GRAPHQL_QUERY = """
-mutation($schemaDsl: String!, $query: String!) {
+mutation($schemaDsl: String!, $query: String!, $pythonOptions: PythonOptions) {
   generateCode(
     schemaDsl: $schemaDsl
     query: $query,
     language: PYTHON,
-    pythonOptions: {
-      asyncFramework: PROMISE
-    }
+    pythonOptions: $pythonOptions
   ) {
     code
     compilationTime
@@ -56,7 +54,7 @@ class GraphQLQuiverCloudBackend(GraphQLBackend):
         self.secret_key = url.password
         self.extra_namespace = {}
         if python_options is None:
-            python_options = {}
+            python_options = {"asyncFramework": "PROMISE"}
         wait_for_promises = python_options.pop("wait_for_promises", None)
         if wait_for_promises:
             assert callable(wait_for_promises), "wait_for_promises must be callable."
@@ -70,7 +68,11 @@ class GraphQLQuiverCloudBackend(GraphQLBackend):
         return response.json()
 
     def generate_source(self, schema, query):
-        variables = {"schemaDsl": print_schema(schema), "query": query}
+        variables = {
+            "schemaDsl": print_schema(schema),
+            "query": query,
+            "pythonOptions": self.python_options,
+        }
 
         json_response = self.make_post_request(
             "{}/graphql".format(self.api_url),
