@@ -3,8 +3,8 @@ from .base import ValidationRule
 
 if False:  # flake8: noqa
     from ..validation import ValidationContext
-    from ...language.ast import Field, InlineFragment, Argument
-    from typing import Any, List, Union
+    from ...language.ast import Field, InlineFragment, Argument, Name
+    from typing import Any, List, Union, Dict
 
 
 class UniqueArgumentNames(ValidationRule):
@@ -13,7 +13,7 @@ class UniqueArgumentNames(ValidationRule):
     def __init__(self, context):
         # type: (ValidationContext) -> None
         super(UniqueArgumentNames, self).__init__(context)
-        self.known_arg_names = {}
+        self.known_arg_names = {}  # type: Dict[str, Name]
 
     def enter_Field(
         self,

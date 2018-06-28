@@ -3,8 +3,9 @@ from .base import ValidationRule
 
 if False:  # flake8: noqa
     from ..validation import ValidationContext
-    from ...language.ast import Document, OperationDefinition
-    from typing import List, Union
+    from ...language.ast import Document, OperationDefinition, FragmentSpread
+    from ...error import GraphQLError
+    from typing import List, Union, Dict, Set
 
 
 class NoFragmentCycles(ValidationRule):
@@ -13,10 +14,10 @@ class NoFragmentCycles(ValidationRule):
     def __init__(self, context):
         # type: (ValidationContext) -> None
         super(NoFragmentCycles, self).__init__(context)
-        self.errors = []
-        self.visited_frags = set()
-        self.spread_path = []
-        self.spread_path_index_by_name = {}
+        self.errors = []  # type: List[GraphQLError]
+        self.visited_frags = set()  # type: Set[str]
+        self.spread_path = []  # type: List[FragmentSpread]
+        self.spread_path_index_by_name = {}  # type: Dict[str, int]
 
     def enter_OperationDefinition(
         self,

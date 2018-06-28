@@ -84,14 +84,22 @@ def get_named_type(type):
 
 
 class GraphQLType(object):
+    pass
+
+
+class GraphQLNamedType(GraphQLType):
     __slots__ = ("name",)
+
+    def __init__(self, name):
+        # type: (str) -> None
+        self.name = name
 
     def __str__(self):
         # type: () -> str
         return self.name
 
     def is_same_type(self, other):
-        # type: (GraphQLObjectType) -> bool
+        # type: (Any) -> bool
         return self.__class__ is other.__class__ and self.name == other.name
 
 
@@ -99,7 +107,7 @@ def none_func(x):
     None
 
 
-class GraphQLScalarType(GraphQLType):
+class GraphQLScalarType(GraphQLNamedType):
     """Scalar Type Definition
 
     The leaf values of any request and input values to arguments are
@@ -120,12 +128,13 @@ class GraphQLScalarType(GraphQLType):
 
     def __init__(
         self,
-        name,
-        description=None,
-        serialize=None,
-        parse_value=None,
-        parse_literal=None,
+        name,  # type: str
+        description=None,  # type: Optional[str]
+        serialize=None,  # type: Optional[Callable]
+        parse_value=None,  # type: Optional[Callable]
+        parse_literal=None,  # type: Optional[Callable]
     ):
+        # type: (...) -> None
         assert name, "Type must be named."
         assert_valid_name(name)
         self.name = name
@@ -153,7 +162,7 @@ class GraphQLScalarType(GraphQLType):
         return self.name
 
 
-class GraphQLObjectType(GraphQLType):
+class GraphQLObjectType(GraphQLNamedType):
     """Object Type Definition
 
     Almost all of the GraphQL types you define will be object types.
@@ -325,8 +334,7 @@ class GraphQLArgument(object):
 
     def __init__(
         self,
-        # type: Union[GraphQLInputObjectType, GraphQLNonNull, GraphQLScalarType]
-        type,
+        type,  # type: Union[GraphQLInputObjectType, GraphQLNonNull, GraphQLList, GraphQLScalarType]
         default_value=None,  # type: Optional[Any]
         description=None,  # type: Optional[Any]
         out_name=None,  # type: Optional[str]
@@ -350,7 +358,7 @@ class GraphQLArgument(object):
         return id(self)
 
 
-class GraphQLInterfaceType(GraphQLType):
+class GraphQLInterfaceType(GraphQLNamedType):
     """Interface Type Definition
 
     When a field can return one of a heterogeneous set of types, a Interface type is used to describe what types are possible,
@@ -392,7 +400,7 @@ class GraphQLInterfaceType(GraphQLType):
         return define_field_map(self, self._fields)
 
 
-class GraphQLUnionType(GraphQLType):
+class GraphQLUnionType(GraphQLNamedType):
     """Union Type Definition
 
     When a field can return one of a heterogeneous set of types, a Union type is used to describe what types are possible
@@ -414,7 +422,7 @@ class GraphQLUnionType(GraphQLType):
     def __init__(
         self,
         name,  # type: str
-        types=None,  # type: List[GraphQLObjectType]
+        types,  # type: Union[Callable[[], List[GraphQLObjectType]], List[GraphQLObjectType]]
         resolve_type=None,  # type: Optional[Callable]
         description=None,  # type: Optional[Any]
     ):
@@ -441,7 +449,7 @@ class GraphQLUnionType(GraphQLType):
 # fmt: off
 def define_types(
     union_type,  # type: GraphQLUnionType
-    types,  # type: List[GraphQLObjectType]
+    types,  # type: Union[Callable[[], List[GraphQLObjectType]], List[GraphQLObjectType]]
 ):
     # type: (...) -> List[GraphQLObjectType]
     # fmt: on
@@ -471,7 +479,7 @@ def define_types(
     return types
 
 
-class GraphQLEnumType(GraphQLType):
+class GraphQLEnumType(GraphQLNamedType):
     """Enum Type Definition
 
     Some leaf values of requests and input values are Enums. GraphQL serializes Enum values as strings,
@@ -506,7 +514,7 @@ class GraphQLEnumType(GraphQLType):
         return self._name_lookup.get(name)
 
     def serialize(self, value):
-        # type: (str) -> str
+        # type: (str) -> Optional[str]
         if isinstance(value, collections.Hashable):
             enum_value = self._value_lookup.get(value)
 
@@ -594,7 +602,7 @@ class GraphQLEnumValue(object):
         )
 
 
-class GraphQLInputObjectType(GraphQLType):
+class GraphQLInputObjectType(GraphQLNamedType):
     """Input Object Type Definition
 
     An input object defines a structured collection of fields which may be
@@ -627,7 +635,7 @@ class GraphQLInputObjectType(GraphQLType):
         self.name = name
         self.description = description
         if container_type is None:
-            container_type = dict
+            container_type = dict # type: ignore
         assert callable(container_type), "container_type must be callable"
         self.container_type = container_type
         self._fields = fields
@@ -643,9 +651,10 @@ class GraphQLInputObjectType(GraphQLType):
 
     def _define_field_map(self):
         # type: () -> OrderedDict
-        fields = self._fields
-        if callable(fields):
-            fields = fields()
+        if callable(self._fields):
+            fields = self._fields()
+        else:
+            fields = self._fields
 
         assert isinstance(fields, collections.Mapping) and len(fields) > 0, (
             "{} fields must be a mapping (dict / OrderedDict) with field names as keys or a "
@@ -665,8 +674,7 @@ class GraphQLInputObjectField(object):
 
     def __init__(
         self,
-        # type: Union[GraphQLInputObjectType, GraphQLScalarType]
-        type,
+        type,  # type: Union[GraphQLInputObjectType, GraphQLScalarType]
         default_value=None,  # type: Optional[Any]
         description=None,  # type: Optional[Any]
         out_name=None,  # type: str
@@ -746,8 +754,7 @@ class GraphQLNonNull(GraphQLType):
 
     def __init__(
         self,
-        # type: Union[GraphQLList, GraphQLObjectType, GraphQLScalarType]
-        type,
+        type, # type: Union[GraphQLList, GraphQLObjectType, GraphQLScalarType, GraphQLInputObjectType, GraphQLInterfaceType]
     ):
         # type: (...) -> None
         assert is_type(type) and not isinstance(

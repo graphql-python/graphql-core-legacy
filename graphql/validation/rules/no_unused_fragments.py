@@ -3,7 +3,7 @@ from .base import ValidationRule
 
 if False:  # flake8: noqa
     from ..validation import ValidationContext
-    from ...language.ast import Document, OperationDefinition
+    from ...language.ast import Document, OperationDefinition, FragmentDefinition
     from typing import List, Union, Any, Optional
 
 
@@ -18,8 +18,8 @@ class NoUnusedFragments(ValidationRule):
     def __init__(self, context):
         # type: (ValidationContext) -> None
         super(NoUnusedFragments, self).__init__(context)
-        self.operation_definitions = []
-        self.fragment_definitions = []
+        self.operation_definitions = []  # type: List[OperationDefinition]
+        self.fragment_definitions = []  # type: List[FragmentDefinition]
 
     def enter_OperationDefinition(
         self,

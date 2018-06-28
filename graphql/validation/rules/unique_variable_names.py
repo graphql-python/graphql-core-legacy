@@ -4,7 +4,7 @@ from .base import ValidationRule
 if False:  # flake8: noqa
     from ..validation import ValidationContext
     from ...language.ast import Document, OperationDefinition
-    from typing import List, Union
+    from typing import List, Union, Dict
 
 
 class UniqueVariableNames(ValidationRule):
@@ -13,7 +13,7 @@ class UniqueVariableNames(ValidationRule):
     def __init__(self, context):
         # type: (ValidationContext) -> None
         super(UniqueVariableNames, self).__init__(context)
-        self.known_variable_names = {}
+        self.known_variable_names = {}  # type: Dict[str, str]
 
     def enter_OperationDefinition(
         self,

@@ -462,9 +462,8 @@ class Variable(Value):
         # type: (Any) -> bool
         return self is other or (
             isinstance(other, Variable)
-            and
-            # self.loc == other.loc and
-            self.name == other.name
+            and self.name == other.name
+            # and self.loc == other.loc
         )
 
     def __repr__(self):

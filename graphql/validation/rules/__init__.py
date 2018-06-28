@@ -23,6 +23,11 @@ from .unique_variable_names import UniqueVariableNames
 from .variables_are_input_types import VariablesAreInputTypes
 from .variables_in_allowed_position import VariablesInAllowedPosition
 
+if False:  # flake8: noqa
+    from typing import List, Type
+    from ...language.visitor import Visitor
+
+
 specified_rules = [
     UniqueOperationNames,
     LoneAnonymousOperation,
@@ -48,7 +53,7 @@ specified_rules = [
     OverlappingFieldsCanBeMerged,
     UniqueInputFieldNames,
     UniqueVariableNames,
-]
+]  # type: List[Type[Visitor]]
 
 __all__ = [
     "ArgumentsOfCorrectType",

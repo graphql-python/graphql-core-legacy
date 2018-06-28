@@ -35,6 +35,7 @@ class ProvidedNonNullArguments(ValidationRule):
                         [node],
                     )
                 )
+        return None
 
     def leave_Directive(self, node, key, parent, path, ancestors):
         directive_def = self.context.get_directive()

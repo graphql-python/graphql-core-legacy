@@ -4,7 +4,7 @@ from ...utils.type_from_ast import type_from_ast
 from .base import ValidationRule
 
 if False:  # flake8: noqa
-    from ..language.ast import Field, InlineFragment
+    from ...language.ast import Field, InlineFragment
     from typing import Any, List, Union
 
 
@@ -13,7 +13,7 @@ class PossibleFragmentSpreads(ValidationRule):
         self,
         node,  # type: InlineFragment
         key,  # type: int
-        parent,  # type: Union[List[Union[Field, InlineFragment]], List[InlineFragment]]
+        parent,  # type: List[Union[Field, InlineFragment]]
         path,  # type: List[Union[int, str]]
         ancestors,  # type: List[Any]
     ):
@@ -24,7 +24,7 @@ class PossibleFragmentSpreads(ValidationRule):
         if (
             frag_type
             and parent_type
-            and not do_types_overlap(schema, frag_type, parent_type)
+            and not do_types_overlap(schema, frag_type, parent_type)  # type: ignore
         ):
             self.context.report_error(
                 GraphQLError(

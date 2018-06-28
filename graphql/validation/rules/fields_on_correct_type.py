@@ -13,7 +13,7 @@ if False:  # flake8: noqa
 
 try:
     # Python 2
-    from itertools import izip
+    from itertools import izip  # type: ignore
 except ImportError:
     # Python 3
     izip = zip

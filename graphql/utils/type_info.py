@@ -16,8 +16,12 @@ if False:  # flake8: noqa
     from ..type.definition import (
         GraphQLType,
         GraphQLInputObjectType,
+        GraphQLInterfaceType,
+        GraphQLObjectType,
         GraphQLField,
         GraphQLArgument,
+        GraphQLNonNull,
+        GraphQLScalarType,
     )
     from ..type.directives import GraphQLDirective
     from ..language.ast import (
@@ -28,7 +32,7 @@ if False:  # flake8: noqa
         Argument,
         ObjectField,
     )
-    from typing import Callable, Optional, Any, List
+    from typing import Callable, Optional, Any, List, Union
 
 
 def pop(lst):
@@ -54,10 +58,10 @@ class TypeInfo(object):
     def __init__(self, schema, get_field_def_fn=get_field_def):
         # type: (GraphQLSchema, Callable) -> None
         self._schema = schema
-        self._type_stack = []  # type: List[GraphQLType]
-        self._parent_type_stack = []  # type: List[GraphQLType]
-        self._input_type_stack = []  # type: List[GraphQLInputObjectType]
-        self._field_def_stack = []  # type: List[GraphQLField]
+        self._type_stack = []  # type: List[Optional[GraphQLType]]
+        self._parent_type_stack = []  # type: List[Union[GraphQLInterfaceType, GraphQLObjectType, None]]
+        self._input_type_stack = []  # type: List[Optional[Union[GraphQLInputObjectType, GraphQLNonNull, GraphQLList, GraphQLScalarType, None]]]
+        self._field_def_stack = []  # type: List[Optional[GraphQLField]]
         self._directive = None  # type: Optional[GraphQLDirective]
         self._argument = None  # type: Optional[GraphQLArgument]
         self._get_field_def_fn = get_field_def_fn
@@ -69,13 +73,13 @@ class TypeInfo(object):
         return None
 
     def get_parent_type(self):
-        # type: () -> Optional[GraphQLType]
+        # type: () -> Union[GraphQLInterfaceType, GraphQLObjectType, None]
         if self._parent_type_stack:
             return self._parent_type_stack[-1]
         return None
 
     def get_input_type(self):
-        # type: () -> Optional[GraphQLInputObjectType]
+        # type: () -> Union[GraphQLInputObjectType, GraphQLNonNull, GraphQLList, GraphQLScalarType, None]
         if self._input_type_stack:
             return self._input_type_stack[-1]
         return None
@@ -114,7 +118,7 @@ class TypeInfo(object):
         composite_type = None
         if is_composite_type(named_type):
             composite_type = named_type
-        self._parent_type_stack.append(composite_type)
+        self._parent_type_stack.append(composite_type)  # type: ignore
 
     def enter_Field(self, node):
         # type: (Field) -> None

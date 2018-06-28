@@ -3,8 +3,8 @@ from .base import ValidationRule
 
 if False:  # flake8: noqa
     from ..validation import ValidationContext
-    from ...language.ast import Document, OperationDefinition
-    from typing import Any, List, Optional, Union
+    from ...language.ast import Document, OperationDefinition, Name
+    from typing import Any, List, Optional, Union, Dict
 
 
 class UniqueOperationNames(ValidationRule):
@@ -13,7 +13,7 @@ class UniqueOperationNames(ValidationRule):
     def __init__(self, context):
         # type: (ValidationContext) -> None
         super(UniqueOperationNames, self).__init__(context)
-        self.known_operation_names = {}
+        self.known_operation_names = {}  # type: Dict[str, Name]
 
     def enter_OperationDefinition(
         self,
@@ -26,7 +26,7 @@ class UniqueOperationNames(ValidationRule):
         # type: (...) -> Optional[Any]
         operation_name = node.name
         if not operation_name:
-            return
+            return None
 
         if operation_name.value in self.known_operation_names:
             self.context.report_error(

@@ -6,8 +6,8 @@ from .base import ValidationRule
 
 if False:  # flake8: noqa
     from ..validation import ValidationContext
-    from ...language.ast import Document, OperationDefinition
-    from typing import List, Union
+    from ...language.ast import Document, OperationDefinition, VariableDefinition
+    from typing import List, Union, Dict, Any
 
 
 class VariablesInAllowedPosition(ValidationRule):
@@ -16,7 +16,7 @@ class VariablesInAllowedPosition(ValidationRule):
     def __init__(self, context):
         # type: (ValidationContext) -> None
         super(VariablesInAllowedPosition, self).__init__(context)
-        self.var_def_map = {}
+        self.var_def_map = {}  # type: Dict[str, VariableDefinition]
 
     def enter_OperationDefinition(
         self,
@@ -63,7 +63,15 @@ class VariablesInAllowedPosition(ValidationRule):
                         )
                     )
 
-    def enter_VariableDefinition(self, node, key, parent, path, ancestors):
+    def enter_VariableDefinition(
+        self,
+        node,  # type: VariableDefinition
+        key,  # type: int
+        parent,  # type: Any
+        path,  # type: List[str]
+        ancestors,  # type: List[Document]
+    ):
+
         self.var_def_map[node.variable.name.value] = node
 
     @staticmethod

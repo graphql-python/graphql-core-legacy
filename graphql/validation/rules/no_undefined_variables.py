@@ -4,7 +4,7 @@ from .base import ValidationRule
 if False:  # flake8: noqa
     from ..validation import ValidationContext
     from ...language.ast import Document, OperationDefinition
-    from typing import List, Union
+    from typing import List, Union, Set
 
 
 class NoUndefinedVariables(ValidationRule):
@@ -12,7 +12,7 @@ class NoUndefinedVariables(ValidationRule):
 
     def __init__(self, context):
         # type: (ValidationContext) -> None
-        self.defined_variable_names = set()
+        self.defined_variable_names = set()  # type: Set[str]
         super(NoUndefinedVariables, self).__init__(context)
 
     @staticmethod

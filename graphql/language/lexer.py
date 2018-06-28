@@ -5,7 +5,7 @@ from six import unichr
 from ..error import GraphQLSyntaxError
 
 if False:  # flake8: noqa
-    from typing import Optional
+    from typing import Optional, Any, List
     from .source import Source
 
 __all__ = ["Token", "Lexer", "TokenKind", "get_token_desc", "get_token_kind_desc"]
@@ -28,9 +28,10 @@ class Token(object):
         )
 
     def __eq__(self, other):
-        # type: (Token) -> bool
+        # type: (Any) -> bool
         return (
-            self.kind == other.kind
+            isinstance(other, Token)
+            and self.kind == other.kind
             and self.start == other.start
             and self.end == other.end
             and self.value == other.value
@@ -163,29 +164,33 @@ def read_token(source, from_position):
         return Token(TokenKind.EOF, position, position)
 
     code = char_code_at(body, position)
+    if code:
+        if code < 0x0020 and code not in (0x0009, 0x000A, 0x000D):
+            raise GraphQLSyntaxError(
+                source, position, u"Invalid character {}.".format(print_char_code(code))
+            )
 
-    if code < 0x0020 and code not in (0x0009, 0x000A, 0x000D):
-        raise GraphQLSyntaxError(
-            source, position, u"Invalid character {}.".format(print_char_code(code))
-        )
+        kind = PUNCT_CODE_TO_KIND.get(code)
+        if kind is not None:
+            return Token(kind, position, position + 1)
 
-    kind = PUNCT_CODE_TO_KIND.get(code)
-    if kind is not None:
-        return Token(kind, position, position + 1)
+        if code == 46:  # .
+            if (
+                char_code_at(body, position + 1)
+                == char_code_at(body, position + 2)
+                == 46
+            ):
+                return Token(TokenKind.SPREAD, position, position + 3)
 
-    if code == 46:  # .
-        if char_code_at(body, position + 1) == char_code_at(body, position + 2) == 46:
-            return Token(TokenKind.SPREAD, position, position + 3)
+        elif 65 <= code <= 90 or code == 95 or 97 <= code <= 122:
+            # A-Z, _, a-z
+            return read_name(source, position)
 
-    elif 65 <= code <= 90 or code == 95 or 97 <= code <= 122:
-        # A-Z, _, a-z
-        return read_name(source, position)
+        elif code == 45 or 48 <= code <= 57:  # -, 0-9
+            return read_number(source, position, code)
 
-    elif code == 45 or 48 <= code <= 57:  # -, 0-9
-        return read_number(source, position, code)
-
-    elif code == 34:  # "
-        return read_string(source, position)
+        elif code == 34:  # "
+            return read_string(source, position)
 
     raise GraphQLSyntaxError(
         source, position, u"Unexpected character {}.".format(print_char_code(code))
@@ -238,7 +243,7 @@ def position_after_whitespace(body, start_position):
 
 
 def read_number(source, start, first_code):
-    # type: (Source, int, int) -> Token
+    # type: (Source, int, Optional[int]) -> Token
     """Reads a number token from the source file, either a float
     or an int depending on whether a decimal point appears.
 
@@ -341,26 +346,23 @@ def read_string(source, start):
 
     position = start + 1
     chunk_start = position
-    code = 0
-    value = []
+    code = 0  # type: Optional[int]
+    value = []  # type: List[str]
     append = value.append
 
     while position < body_length:
         code = char_code_at(body, position)
-        if not (
-            code is not None
-            and code
-            not in (
-                # LineTerminator
-                0x000A,
-                0x000D,
-                # Quote
-                34,
-            )
+        if code in (
+            None,
+            # LineTerminator
+            0x000A,
+            0x000D,
+            # Quote
+            34,
         ):
             break
 
-        if code < 0x0020 and code != 0x0009:
+        if code < 0x0020 and code != 0x0009:  # type: ignore
             raise GraphQLSyntaxError(
                 source,
                 position,
@@ -372,7 +374,7 @@ def read_string(source, start):
             append(body[chunk_start : position - 1])
 
             code = char_code_at(body, position)
-            escaped = ESCAPED_CHAR_CODES.get(code)
+            escaped = ESCAPED_CHAR_CODES.get(code)  # type: ignore
             if escaped is not None:
                 append(escaped)
 
@@ -399,7 +401,9 @@ def read_string(source, start):
                 raise GraphQLSyntaxError(
                     source,
                     position,
-                    u"Invalid character escape sequence: \\{}.".format(unichr(code)),
+                    u"Invalid character escape sequence: \\{}.".format(
+                        unichr(code)  # type: ignore
+                    ),
                 )
 
             position += 1

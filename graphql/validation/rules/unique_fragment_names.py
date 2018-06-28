@@ -3,8 +3,8 @@ from .base import ValidationRule
 
 if False:  # flake8: noqa
     from ..validation import ValidationContext
-    from ...language.ast import Document, OperationDefinition
-    from typing import List, Union
+    from ...language.ast import Document, OperationDefinition, Name
+    from typing import List, Union, Dict
 
 
 class UniqueFragmentNames(ValidationRule):
@@ -13,7 +13,7 @@ class UniqueFragmentNames(ValidationRule):
     def __init__(self, context):
         # type: (ValidationContext) -> None
         super(UniqueFragmentNames, self).__init__(context)
-        self.known_fragment_names = {}
+        self.known_fragment_names = {}  # type: Dict[str, Name]
 
     def enter_OperationDefinition(
         self,

@@ -485,7 +485,7 @@ class TestTypeSystem_UnionTypesMustBeArray:
     def test_rejects_a_union_without_types(self):
         with raises(AssertionError) as excinfo:
             schema_with_field_type(
-                GraphQLUnionType(name="SomeUnion", resolve_type=_none)
+                GraphQLUnionType(name="SomeUnion", resolve_type=_none, types=[])
             )
 
         assert str(excinfo.value) == "Must provide types for Union SomeUnion."

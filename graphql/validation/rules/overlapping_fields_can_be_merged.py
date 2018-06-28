@@ -19,10 +19,17 @@ from .base import ValidationRule
 
 if False:  # flake8: noqa
     from ..validation import ValidationContext
-    from ...language.ast import OperationDefinition, Field, InlineFragment, SelectionSet
+    from ...language.ast import (
+        Node,
+        OperationDefinition,
+        Field,
+        Argument,
+        InlineFragment,
+        SelectionSet,
+    )
     from ...type.definition import GraphQLUnionType, GraphQLField, GraphQLScalarType
     from ...pyutils.pair_set import PairSet
-    from typing import List, Union, Any, Optional, Dict
+    from typing import List, Union, Any, Optional, Dict, Tuple
 
 
 class OverlappingFieldsCanBeMerged(ValidationRule):
@@ -39,7 +46,7 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
         # A cache for the "field map" and list of fragment names found in any given
         # selection set. Selection sets may be asked for this information multiple
         # times, so this improves the performance of this validator.
-        self._cached_fields_and_fragment_names = {}
+        self._cached_fields_and_fragment_names = {}  # type: Dict[SelectionSet, Tuple[Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]], List[str]]]
 
     def leave_SelectionSet(
         self,
@@ -157,18 +164,17 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
 
 def _find_conflicts_within_selection_set(
     context,  # type: ValidationContext
-    cached_fields_and_fragment_names,  # type: Dict[SelectionSet, List[Union[List, OrderedDict]]]
+    cached_fields_and_fragment_names,  # type: Dict[SelectionSet, Tuple[Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]], List[str]]]
     compared_fragments,  # type: PairSet
-    parent_type,  # type: Union[GraphQLInterfaceType, GraphQLObjectType, GraphQLUnionType]
+    parent_type,  # type: Union[GraphQLInterfaceType, GraphQLObjectType, None]
     selection_set,  # type: SelectionSet
 ):
-    # type: (...) -> List
+    # type: (...) ->  List[Tuple[Tuple[str, str], List[Node], List[Node]]]
     """Find all conflicts found "within" a selection set, including those found via spreading in fragments.
 
        Called when visiting each SelectionSet in the GraphQL Document.
     """
-    conflicts = []
-
+    conflicts = []  # type: List[Tuple[Tuple[str, str], List[Node], List[Node]]]
     field_map, fragment_names = _get_fields_and_fragments_names(
         context, cached_fields_and_fragment_names, parent_type, selection_set
     )
@@ -215,13 +221,13 @@ def _find_conflicts_within_selection_set(
 
 
 def _collect_conflicts_between_fields_and_fragment(
-    context,
-    conflicts,
-    cached_fields_and_fragment_names,
-    compared_fragments,
-    are_mutually_exclusive,
-    field_map,
-    fragment_name,
+    context,  # type: ValidationContext
+    conflicts,  # type: List[Tuple[Tuple[str, str], List[Node], List[Node]]]
+    cached_fields_and_fragment_names,  # type: Dict[SelectionSet, Tuple[Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]], List[str]]]
+    compared_fragments,  # type: PairSet
+    are_mutually_exclusive,  # type: bool
+    field_map,  # type: Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]]
+    fragment_name,  # type: str
 ):
 
     fragment = context.get_fragment(fragment_name)
@@ -262,13 +268,13 @@ def _collect_conflicts_between_fields_and_fragment(
 # Collect all conflicts found between two fragments, including via spreading in
 # any nested fragments
 def _collect_conflicts_between_fragments(
-    context,
-    conflicts,
-    cached_fields_and_fragment_names,
-    compared_fragments,
-    are_mutually_exclusive,
-    fragment_name1,
-    fragment_name2,
+    context,  # type: ValidationContext
+    conflicts,  # type: List[Tuple[Tuple[str, str], List[Node], List[Node]]]
+    cached_fields_and_fragment_names,  # type: Dict[SelectionSet, Tuple[Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]], List[str]]]
+    compared_fragments,  # type: PairSet
+    are_mutually_exclusive,  # type: bool
+    fragment_name1,  # type: str
+    fragment_name2,  # type: str
 ):
 
     fragment1 = context.get_fragment(fragment_name1)
@@ -333,24 +339,27 @@ def _collect_conflicts_between_fragments(
             fragment_name2,
         )
 
+    conflicts,  # type: List[Tuple[Tuple[str, str], List[Node], List[Node]]]
+    are_mutually_exclusive,  # type: bool
+
 
 def _find_conflicts_between_sub_selection_sets(
-    context,
-    cached_fields_and_fragment_names,
-    compared_fragments,
-    are_mutually_exclusive,
-    parent_type1,
-    selection_set1,
-    parent_type2,
-    selection_set2,
+    context,  # type: ValidationContext
+    cached_fields_and_fragment_names,  # type: Dict[SelectionSet, Tuple[Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]], List[str]]]
+    compared_fragments,  # type: PairSet
+    are_mutually_exclusive,  # type: bool
+    parent_type1,  # type: Union[GraphQLInterfaceType, GraphQLObjectType, None]
+    selection_set1,  # type: SelectionSet
+    parent_type2,  # type: Union[GraphQLInterfaceType, GraphQLObjectType, None]
+    selection_set2,  # type: SelectionSet
 ):
+    # type: (...) ->  List[Tuple[Tuple[str, str], List[Node], List[Node]]]
     """Find all conflicts found between two selection sets.
 
        Includes those found via spreading in fragments. Called when determining if conflicts exist
        between the sub-fields of two overlapping fields.
     """
-
-    conflicts = []
+    conflicts = []  # type: List[Tuple[Tuple[str, str], List[Node], List[Node]]]
 
     field_map1, fragment_names1 = _get_fields_and_fragments_names(
         context, cached_fields_and_fragment_names, parent_type1, selection_set1
@@ -417,10 +426,10 @@ def _find_conflicts_between_sub_selection_sets(
 
 def _collect_conflicts_within(
     context,  # type: ValidationContext
-    conflicts,  # type: List
-    cached_fields_and_fragment_names,  # type: Dict[SelectionSet, List[Union[List, OrderedDict]]]
+    conflicts,  # type: List[Tuple[Tuple[str, str], List[Node], List[Node]]]
+    cached_fields_and_fragment_names,  # type: Dict[SelectionSet, Tuple[Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]], List[str]]]
     compared_fragments,  # type: PairSet
-    field_map,  # type: OrderedDict
+    field_map,  # type: Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]]
 ):
     # type: (...) -> None
     """Collect all Conflicts "within" one collection of fields."""
@@ -450,14 +459,15 @@ def _collect_conflicts_within(
 
 
 def _collect_conflicts_between(
-    context,
-    conflicts,
-    cached_fields_and_fragment_names,
-    compared_fragments,
-    parent_fields_are_mutually_exclusive,
-    field_map1,
-    field_map2,
+    context,  # type: ValidationContext
+    conflicts,  # type: List[Tuple[Tuple[str, str], List[Node], List[Node]]]
+    cached_fields_and_fragment_names,  # type: Dict[SelectionSet, Tuple[Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]], List[str]]]
+    compared_fragments,  # type: PairSet
+    parent_fields_are_mutually_exclusive,  # type: bool
+    field_map1,  # type: Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]]
+    field_map2,  # type: Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]]
 ):
+    # type: (...) -> None
     """Collect all Conflicts between two collections of fields.
 
        This is similar to, but different from the `collect_conflicts_within` function above. This check assumes that
@@ -491,14 +501,14 @@ def _collect_conflicts_between(
 
 def _find_conflict(
     context,  # type: ValidationContext
-    cached_fields_and_fragment_names,  # type: Dict[SelectionSet, List[Union[List, OrderedDict]]]
+    cached_fields_and_fragment_names,  # type: Dict[SelectionSet, Tuple[Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]], List[str]]]
     compared_fragments,  # type: PairSet
     parent_fields_are_mutually_exclusive,  # type: bool
     response_name,  # type: str
-    field1,  # type: List[Union[Field, GraphQLField, GraphQLObjectType]]
-    field2,  # type: List[Union[Field, GraphQLField, GraphQLObjectType]]
+    field1,  # type: Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]
+    field2,  # type: Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]
 ):
-    # type: (...) -> Optional[Any]
+    # type: (...) -> Optional[Tuple[Tuple[str, str], List[Node], List[Node]]]
     """Determines if there is a conflict between two particular fields."""
     parent_type1, ast1, def1 = field1
     parent_type2, ast2, def2 = field2
@@ -555,44 +565,51 @@ def _find_conflict(
     selection_set2 = ast2.selection_set
 
     if selection_set1 and selection_set2:
-        conflicts = _find_conflicts_between_sub_selection_sets(
+        conflicts = _find_conflicts_between_sub_selection_sets(  # type: ignore
             context,
             cached_fields_and_fragment_names,
             compared_fragments,
             are_mutually_exclusive,
-            get_named_type(type1),
+            get_named_type(type1),  # type: ignore
             selection_set1,
-            get_named_type(type2),
+            get_named_type(type2),  # type: ignore
             selection_set2,
         )
 
         return _subfield_conflicts(conflicts, response_name, ast1, ast2)
 
+    return None
+
 
 def _get_fields_and_fragments_names(
     context,  # type: ValidationContext
-    cached_fields_and_fragment_names,  # type: Dict[SelectionSet, List[Union[List, OrderedDict]]]
-    parent_type,  # type: Union[GraphQLInterfaceType, GraphQLObjectType, GraphQLUnionType]
+    cached_fields_and_fragment_names,  # type: Dict[SelectionSet, Tuple[Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]], List[str]]]
+    parent_type,  # type: Union[GraphQLInterfaceType, GraphQLObjectType, None]
     selection_set,  # type: SelectionSet
 ):
-    # type: (...) -> List[Union[List, OrderedDict]]
+    # type: (...) -> Tuple[Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]], List[str]]
     cached = cached_fields_and_fragment_names.get(selection_set)
 
     if not cached:
-        ast_and_defs = OrderedDict()
-        fragment_names = OrderedDict()
+        ast_and_defs = (
+            OrderedDict()
+        )  # type: Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]]
+        fragment_names = OrderedDict()  # type: Dict[str, bool]
         _collect_fields_and_fragment_names(
             context, parent_type, selection_set, ast_and_defs, fragment_names
         )
-        cached = [ast_and_defs, list(fragment_names.keys())]
+        cached = (ast_and_defs, list(fragment_names.keys()))
         cached_fields_and_fragment_names[selection_set] = cached
 
     return cached
 
 
 def _get_referenced_fields_and_fragment_names(
-    context, cached_fields_and_fragment_names, fragment
+    context,  # ValidationContext
+    cached_fields_and_fragment_names,  # type: Dict[SelectionSet, Tuple[Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]], List[str]]]
+    fragment,  # type: InlineFragment
 ):
+    # type: (...) -> Tuple[Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]], List[str]]
     """Given a reference to a fragment, return the represented collection of fields as well as a list of
     nested fragment names referenced via fragment spreads."""
 
@@ -602,7 +619,9 @@ def _get_referenced_fields_and_fragment_names(
     if cached:
         return cached
 
-    fragment_type = type_from_ast(context.get_schema(), fragment.type_condition)
+    fragment_type = type_from_ast(  # type: ignore
+        context.get_schema(), fragment.type_condition
+    )
 
     return _get_fields_and_fragments_names(
         context, cached_fields_and_fragment_names, fragment_type, fragment.selection_set
@@ -611,10 +630,10 @@ def _get_referenced_fields_and_fragment_names(
 
 def _collect_fields_and_fragment_names(
     context,  # type: ValidationContext
-    parent_type,  # type: Union[GraphQLInterfaceType, GraphQLObjectType, GraphQLUnionType]
+    parent_type,  # type: Union[GraphQLInterfaceType, GraphQLObjectType, None]
     selection_set,  # type: SelectionSet
-    ast_and_defs,  # type: OrderedDict
-    fragment_names,  # type: OrderedDict
+    ast_and_defs,  # type: Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]]
+    fragment_names,  # type: Dict[str, bool]
 ):
     # type: (...) -> None
 
@@ -629,16 +648,16 @@ def _collect_fields_and_fragment_names(
             response_name = selection.alias.value if selection.alias else field_name
 
             if not ast_and_defs.get(response_name):
-                ast_and_defs[response_name] = []
+                ast_and_defs[response_name] = []  # type: ignore
 
-            ast_and_defs[response_name].append([parent_type, selection, field_def])
+            ast_and_defs[response_name].append((parent_type, selection, field_def))
 
         elif isinstance(selection, ast.FragmentSpread):
             fragment_names[selection.name.value] = True
         elif isinstance(selection, ast.InlineFragment):
             type_condition = selection.type_condition
             if type_condition:
-                inline_fragment_type = type_from_ast(
+                inline_fragment_type = type_from_ast(  # type: ignore
                     context.get_schema(), selection.type_condition
                 )
             else:
@@ -653,14 +672,21 @@ def _collect_fields_and_fragment_names(
             )
 
 
-def _subfield_conflicts(conflicts, response_name, ast1, ast2):
+def _subfield_conflicts(
+    conflicts,  # type: List[Tuple[Tuple[str, str], List[Node], List[Node]]]
+    response_name,  # type: str
+    ast1,  # type: Node
+    ast2,  # type: Node
+):
+    # type: (...) -> Optional[Tuple[Tuple[str, str], List[Node], List[Node]]]
     """Given a series of Conflicts which occurred between two sub-fields, generate a single Conflict."""
     if conflicts:
         return (
             (response_name, [conflict[0] for conflict in conflicts]),
             tuple(itertools.chain([ast1], *[conflict[1] for conflict in conflicts])),
             tuple(itertools.chain([ast2], *[conflict[2] for conflict in conflicts])),
-        )
+        )  # type: ignore
+    return None
 
 
 def do_types_conflict(type1, type2):
@@ -692,14 +718,26 @@ def do_types_conflict(type1, type2):
 
 
 def _same_value(value1, value2):
-    return (not value1 and not value2) or print_ast(value1) == print_ast(value2)
+    # type: (Optional[Node], Optional[Node]) -> bool
+    if not value1 and not value2:
+        return True
+    if not value1 or not value2:
+        return False
+    return print_ast(value1) == print_ast(value2)
 
 
 def _same_arguments(arguments1, arguments2):
+    # type: (Optional[List[Argument]], Optional[List[Argument]]) -> bool
     # Check to see if they are empty arguments or nones. If they are, we can
     # bail out early.
-    if not (arguments1 or arguments2):
+    if not arguments1 and not arguments2:
         return True
+
+    if not arguments1:
+        return False
+
+    if not arguments2:
+        return False
 
     if len(arguments1) != len(arguments2):
         return False

@@ -17,7 +17,7 @@ _empty_list = []  # type: List
 
 
 def is_valid_literal_value(type, value_ast):
-    # type: (Union[GraphQLInputObjectType, GraphQLScalarType], Any) -> List
+    # type: (Union[GraphQLInputObjectType, GraphQLScalarType, GraphQLNonNull], Any) -> List
     if isinstance(type, GraphQLNonNull):
         of_type = type.of_type
         if not value_ast:

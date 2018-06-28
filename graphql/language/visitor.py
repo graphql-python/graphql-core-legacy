@@ -13,7 +13,7 @@ if False:  # flake8: noqa
     from .printer import PrintingVisitor
 
 
-class Falsey(object):
+class _Falsey(object):
     def __nonzero__(self):
         return False
 
@@ -22,15 +22,19 @@ class Falsey(object):
         return False
 
 
-BREAK = object()
-REMOVE = Falsey()
+class _Break(object):
+    pass
+
+
+BREAK = _Break()
+REMOVE = _Falsey()
 
 
 class Stack(object):
     __slots__ = "in_array", "index", "keys", "edits", "prev"
 
     def __init__(self, in_array, index, keys, edits, prev):
-        # type: (bool, int, Any, List[Tuple[str, str]], Optional[Stack]) -> None
+        # type: (bool, int, Any, List[Tuple[Union[str, int], Any]], Optional[Stack]) -> None
         self.in_array = in_array
         self.index = index
         self.keys = keys
@@ -46,7 +50,7 @@ def visit(root, visitor, key_map=None):
     in_array = isinstance(root, list)
     keys = [root]
     index = -1
-    edits = []  # type: List[Tuple[int, Any]]
+    edits = []  # type: List[Tuple[Union[str, int], Any]]
     parent = None  # type: Optional[Node]
     path = []  # type: List
     ancestors = []  # type: List[Node]
@@ -75,7 +79,7 @@ def visit(root, visitor, key_map=None):
                 edit_offset = 0
                 for edit_key, edit_value in edits:
                     if in_array:
-                        edit_key -= edit_offset
+                        edit_key -= edit_offset  # type: ignore
 
                     if in_array and edit_value is REMOVE:
                         node.pop(edit_key)  # type: ignore
@@ -84,7 +88,6 @@ def visit(root, visitor, key_map=None):
                     else:
                         if isinstance(node, list):
                             node[edit_key] = edit_value
-
                         else:
                             setattr(node, edit_key, edit_value)  # type: ignore
 
@@ -99,7 +102,6 @@ def visit(root, visitor, key_map=None):
                 key = index if in_array else keys[index]
                 if isinstance(parent, list):
                     node = parent[key]
-
                 else:
                     node = getattr(parent, key, None)
 
@@ -148,7 +150,11 @@ def visit(root, visitor, key_map=None):
         if not is_leaving:
             stack = Stack(in_array, index, keys, edits, stack)
             in_array = isinstance(node, list)
-            keys = node if in_array else visitor_keys.get(type(node), None) or []
+            keys = (
+                node
+                if in_array
+                else visitor_keys.get(type(node), None) or []  # type: ignore
+            )  # type: ignore
             index = -1
             edits = []
 
@@ -178,10 +184,11 @@ class Visitor(object):
         path,  # type: List[Union[int, str]]
         ancestors,  # type: List[Any]
     ):
-        # type: (...) -> Optional[Any]
-        method = self._get_enter_handler(type(node))
+        # type: (...) -> Any
+        method = self._get_enter_handler(type(node))  # type: ignore
         if method:
             return method(self, node, key, parent, path, ancestors)
+        return None
 
     def leave(
         self,
@@ -191,10 +198,11 @@ class Visitor(object):
         path,  # type: List[Union[int, str]]
         ancestors,  # type: List[Any]
     ):
-        # type: (...) -> Optional[Any]
-        method = self._get_leave_handler(type(node))
+        # type: (...) -> Any
+        method = self._get_leave_handler(type(node))  # type: ignore
         if method:
             return method(self, node, key, parent, path, ancestors)
+        return None
 
 
 class ParallelVisitor(Visitor):
@@ -203,7 +211,10 @@ class ParallelVisitor(Visitor):
     def __init__(self, visitors):
         # type: (List[Any]) -> None
         self.visitors = visitors
-        self.skipping = [None] * len(visitors)
+        self.skipping = [None] * len(
+            visitors
+        )  # type: List[Union[Node, _Break, _Falsey, None]]
+        return None
 
     def enter(
         self,
@@ -213,7 +224,7 @@ class ParallelVisitor(Visitor):
         path,  # type: List[Union[int, str]]
         ancestors,  # type: List[Any]
     ):
-        # type: (...) -> Optional[Any]
+        # type: (...) -> Any
         for i, visitor in enumerate(self.visitors):
             if not self.skipping[i]:
                 result = visitor.enter(node, key, parent, path, ancestors)
@@ -223,6 +234,7 @@ class ParallelVisitor(Visitor):
                     self.skipping[i] = BREAK
                 elif result is not None:
                     return result
+        return None
 
     def leave(
         self,
@@ -232,7 +244,7 @@ class ParallelVisitor(Visitor):
         path,  # type: List[Union[int, str]]
         ancestors,  # type: List[Any]
     ):
-        # type: (...) -> Optional[Any]
+        # type: (...) -> Any
         for i, visitor in enumerate(self.visitors):
             if not self.skipping[i]:
                 result = visitor.leave(node, key, parent, path, ancestors)
@@ -242,17 +254,14 @@ class ParallelVisitor(Visitor):
                     return result
             elif self.skipping[i] == node:
                 self.skipping[i] = REMOVE
+        return None
 
 
 class TypeInfoVisitor(Visitor):
     __slots__ = "visitor", "type_info"
 
-    def __init__(
-        self,
-        type_info,  # type: TypeInfo
-        visitor,  # type: Union[TestVisitor, ParallelVisitor, UsageVisitor]
-    ):
-        # type: (...) -> None
+    def __init__(self, type_info, visitor):
+        # type: (TypeInfo, Visitor) -> None
         self.type_info = type_info
         self.visitor = visitor
 

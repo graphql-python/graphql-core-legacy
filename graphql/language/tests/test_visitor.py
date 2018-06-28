@@ -28,7 +28,7 @@ from typing import Optional
 from typing import Union
 from graphql.language.ast import Field
 from graphql.language.ast import Name
-from graphql.language.visitor import Falsey
+from graphql.language.visitor import _Falsey
 from typing import List
 from graphql.language.ast import Argument
 from graphql.language.ast import IntValue

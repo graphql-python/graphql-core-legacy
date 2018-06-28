@@ -8,7 +8,6 @@ from ..type.definition import (
 )
 
 if False:  # flake8: noqa
-    from ..type.typemap import GraphQLTypeMap
     from ..type.definition import (
         GraphQLScalarType,
         GraphQLInterfaceType,
@@ -33,7 +32,7 @@ def is_equal_type(type_a, type_b):
 
 
 def is_type_sub_type_of(schema, maybe_subtype, super_type):
-    # type: (GraphQLTypeMap, GraphQLScalarType, GraphQLScalarType) -> bool
+    # type: (GraphQLSchema, GraphQLScalarType, GraphQLScalarType) -> bool
     if maybe_subtype is super_type:
         return True
 
@@ -67,7 +66,7 @@ def is_type_sub_type_of(schema, maybe_subtype, super_type):
 
 def do_types_overlap(
     schema,  # type: GraphQLSchema
-    t1,  # type: GraphQLObjectType
+    t1,  # type: Union[GraphQLInterfaceType, GraphQLUnionType]
     t2,  # type: Union[GraphQLInterfaceType, GraphQLUnionType]
 ):
     # type: (...) -> bool

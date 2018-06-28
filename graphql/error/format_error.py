@@ -10,7 +10,7 @@ if False:  # flake8: noqa
 
 def format_error(error):
     # type: (Union[GraphQLError, GraphQLLocatedError]) -> Dict[str, Any]
-    formatted_error = {"message": text_type(error)}
+    formatted_error = {"message": text_type(error)}  # type: Dict[str, Any]
     if isinstance(error, GraphQLError):
         if error.locations is not None:
             formatted_error["locations"] = [

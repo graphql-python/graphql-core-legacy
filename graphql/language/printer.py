@@ -56,15 +56,15 @@ class PrintingVisitor(Visitor):
 
     def leave_Name(self, node, *args):
         # type: (Name, *Any) -> str
-        return node.value
+        return node.value  # type: ignore
 
     def leave_Variable(self, node, *args):
         # type: (Variable, *Any) -> str
-        return "$" + node.name
+        return "$" + node.name  # type: ignore
 
     def leave_Document(self, node, *args):
         # type: (Document, *Any) -> str
-        return join(node.definitions, "\n\n") + "\n"
+        return join(node.definitions, "\n\n") + "\n"  # type: ignore
 
     def leave_OperationDefinition(self, node, *args):
         # type: (OperationDefinition, *Any) -> str

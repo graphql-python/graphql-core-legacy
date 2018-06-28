@@ -3,8 +3,8 @@ from .base import ValidationRule
 
 if False:  # flake8: noqa
     from ..validation import ValidationContext
-    from ...language.ast import Argument, ObjectValue, ObjectField
-    from typing import Any, List, Union
+    from ...language.ast import Argument, ObjectValue, ObjectField, Name
+    from typing import Any, List, Union, Dict
 
 
 class UniqueInputFieldNames(ValidationRule):
@@ -13,8 +13,8 @@ class UniqueInputFieldNames(ValidationRule):
     def __init__(self, context):
         # type: (ValidationContext) -> None
         super(UniqueInputFieldNames, self).__init__(context)
-        self.known_names = {}
-        self.known_names_stack = []
+        self.known_names = {}  # type: Dict[str, Name]
+        self.known_names_stack = []  # type: List[Dict[str, Name]]
 
     def enter_ObjectValue(
         self,

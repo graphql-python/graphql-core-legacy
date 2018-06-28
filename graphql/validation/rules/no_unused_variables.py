@@ -3,7 +3,7 @@ from .base import ValidationRule
 
 if False:  # flake8: noqa
     from ..validation import ValidationContext
-    from ...language.ast import Document, OperationDefinition
+    from ...language.ast import Document, OperationDefinition, VariableDefinition
     from typing import List, Union
 
 
@@ -12,7 +12,7 @@ class NoUnusedVariables(ValidationRule):
 
     def __init__(self, context):
         # type: (ValidationContext) -> None
-        self.variable_definitions = []
+        self.variable_definitions = []  # type: List[VariableDefinition]
         super(NoUnusedVariables, self).__init__(context)
 
     def enter_OperationDefinition(
