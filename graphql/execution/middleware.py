@@ -2,11 +2,11 @@ import inspect
 from functools import partial
 from itertools import chain
 
-from promise import Promise
+from promise import Promise, promisify
 
 if False:  # flake8: noqa
     from .base import ResolveInfo
-    from typing import Any, Callable, Iterator, Tuple, Union, List, Dict
+    from typing import Any, Callable, Iterator, Tuple, Union, List, Dict, Iterable
 
 MIDDLEWARE_RESOLVER_FUNCTION = "resolve"
 
@@ -20,16 +20,16 @@ class MiddlewareManager(object):
     )
 
     def __init__(self, *middlewares, **kwargs):
-        # type: (*Any, **Dict[str, bool]) -> None
+        # type: (*Callable, **bool) -> None
         self.middlewares = middlewares
         self.wrap_in_promise = kwargs.get("wrap_in_promise", True)
         self._middleware_resolvers = (
             list(get_middleware_resolvers(middlewares)) if middlewares else []
         )
-        self._cached_resolvers = {}
+        self._cached_resolvers = {}  # type: Dict[Callable, Callable]
 
     def get_field_resolver(self, field_resolver):
-        # type: (Callable[[Any, ResolveInfo, ...], Any]) -> Callable[[Any, ResolveInfo, ...], Any]
+        # type: (Callable) -> Callable
         if field_resolver not in self._cached_resolvers:
             self._cached_resolvers[field_resolver] = middleware_chain(
                 field_resolver,
@@ -44,7 +44,7 @@ middlewares = MiddlewareManager
 
 
 def get_middleware_resolvers(middlewares):
-    # type: (Tuple[Any]) -> Iterator[Callable]
+    # type: (Tuple[Any, ...]) -> Iterator[Callable]
     for middleware in middlewares:
         # If the middleware is a function instead of a class
         if inspect.isfunction(middleware):
@@ -55,7 +55,7 @@ def get_middleware_resolvers(middlewares):
 
 
 def middleware_chain(func, middlewares, wrap_in_promise):
-    # type: (Callable, List[Callable], bool) -> Callable
+    # type: (Callable, Iterable[Callable], bool) -> Callable
     if not middlewares:
         return func
     if wrap_in_promise:
@@ -66,9 +66,10 @@ def middleware_chain(func, middlewares, wrap_in_promise):
     for middleware in middlewares:
         last_func = partial(middleware, last_func) if last_func else middleware
 
-    return last_func
+    return last_func  # type: ignore
 
 
-def make_it_promise(next, *a, **b):
-    # type: (Callable, *Any, **Any) -> Promise
-    return Promise.resolve(next(*a, **b))
+@promisify
+def make_it_promise(next, *args, **kwargs):
+    # type: (Callable, *Any, **Any) -> Any
+    return next(*args, **kwargs)

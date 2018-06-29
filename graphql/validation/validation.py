@@ -185,7 +185,7 @@ class ValidationContext(object):
 
     def get_input_type(self):
         # type: () -> Optional[GraphQLInputObjectType]
-        return self._type_info.get_input_type()
+        return self._type_info.get_input_type()  # type: ignore
 
     def get_field_def(self):
         # type: () -> Optional[GraphQLField]

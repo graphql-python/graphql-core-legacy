@@ -20,7 +20,8 @@ from .scalars import GraphQLBoolean, GraphQLString
 
 if False:  # flake8: noqa
     from ..execution.base import ResolveInfo
-    from typing import Union, List, Optional, Any
+    from .definition import GraphQLInputObjectField
+    from typing import Union, List, Optional, Any, Dict
 
 InputField = namedtuple("InputField", ["name", "description", "type", "default_value"])
 Field = namedtuple(
@@ -29,6 +30,7 @@ Field = namedtuple(
 
 
 def input_fields_to_list(input_fields):
+    # type: (Dict[str, GraphQLInputObjectField]) -> List[InputField]
     fields = []
     for field_name, field in input_fields.items():
         fields.append(
@@ -53,7 +55,9 @@ __Schema = GraphQLObjectType(
                 "types",
                 GraphQLField(
                     description="A list of all types supported by this server.",
-                    type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__Type))),
+                    type=GraphQLNonNull(
+                        GraphQLList(GraphQLNonNull(__Type))  # type: ignore
+                    ),
                     resolver=lambda schema, *_: schema.get_type_map().values(),
                 ),
             ),
@@ -61,7 +65,7 @@ __Schema = GraphQLObjectType(
                 "queryType",
                 GraphQLField(
                     description="The type that query operations will be rooted at.",
-                    type=GraphQLNonNull(__Type),
+                    type=GraphQLNonNull(__Type),  # type: ignore
                     resolver=lambda schema, *_: schema.get_query_type(),
                 ),
             ),
@@ -70,7 +74,7 @@ __Schema = GraphQLObjectType(
                 GraphQLField(
                     description="If this server supports mutation, the type that "
                     "mutation operations will be rooted at.",
-                    type=__Type,
+                    type=__Type,  # type: ignore
                     resolver=lambda schema, *_: schema.get_mutation_type(),
                 ),
             ),
@@ -79,7 +83,7 @@ __Schema = GraphQLObjectType(
                 GraphQLField(
                     description="If this server support subscription, the type "
                     "that subscription operations will be rooted at.",
-                    type=__Type,
+                    type=__Type,  # type: ignore
                     resolver=lambda schema, *_: schema.get_subscription_type(),
                 ),
             ),
@@ -87,7 +91,9 @@ __Schema = GraphQLObjectType(
                 "directives",
                 GraphQLField(
                     description="A list of all directives supported by this server.",
-                    type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__Directive))),
+                    type=GraphQLNonNull(
+                        GraphQLList(GraphQLNonNull(__Directive))  # type: ignore
+                    ),
                     resolver=lambda schema, *_: schema.get_directives(),
                 ),
             ),
@@ -115,14 +121,16 @@ __Directive = GraphQLObjectType(
                 "locations",
                 GraphQLField(
                     type=GraphQLNonNull(
-                        GraphQLList(GraphQLNonNull(__DirectiveLocation))
+                        GraphQLList(GraphQLNonNull(__DirectiveLocation))  # type: ignore
                     )
                 ),
             ),
             (
                 "args",
                 GraphQLField(
-                    type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
+                    type=GraphQLNonNull(
+                        GraphQLList(GraphQLNonNull(__InputValue))  # type: ignore
+                    ),
                     resolver=lambda directive, *args: input_fields_to_list(
                         directive.args
                     ),
@@ -359,13 +367,11 @@ class TypeFieldResolvers(object):
         return None
 
     @staticmethod
-    def interfaces(
-        type,  # type: Union[GraphQLInterfaceType, GraphQLUnionType]
-        info,  # type: ResolveInfo
-    ):
-        # type: (...) -> Optional[Any]
+    def interfaces(type, info):
+        # type: (Optional[GraphQLObjectType], ResolveInfo) -> Optional[List[GraphQLInterfaceType]]
         if isinstance(type, GraphQLObjectType):
             return type.interfaces
+        return None
 
     @staticmethod
     def possible_types(
@@ -379,24 +385,22 @@ class TypeFieldResolvers(object):
 
     @staticmethod
     def enum_values(
-        type,  # type: Union[GraphQLInterfaceType, GraphQLUnionType]
+        type,  # type: GraphQLEnumType
         info,  # type: ResolveInfo
         includeDeprecated=None,  # type: bool
     ):
-        # type: (...) -> Optional[Any]
+        # type: (...) -> Optional[List[GraphQLEnumValue]]
         if isinstance(type, GraphQLEnumType):
             values = type.values
             if not includeDeprecated:
                 values = [v for v in values if not v.deprecation_reason]
 
             return values
+        return None
 
     @staticmethod
-    def input_fields(
-        type,  # type: Union[GraphQLInterfaceType, GraphQLUnionType]
-        info,  # type: ResolveInfo
-    ):
-        # type: (...) -> Optional[Any]
+    def input_fields(type, info):
+        # type: (GraphQLInputObjectType, ResolveInfo) -> List[InputField]
         if isinstance(type, GraphQLInputObjectType):
             return input_fields_to_list(type.fields)
 
@@ -416,7 +420,8 @@ __Type = GraphQLObjectType(
             (
                 "kind",
                 GraphQLField(
-                    type=GraphQLNonNull(__TypeKind), resolver=TypeFieldResolvers.kind
+                    type=GraphQLNonNull(__TypeKind),  # type: ignore
+                    resolver=TypeFieldResolvers.kind,
                 ),
             ),
             ("name", GraphQLField(GraphQLString)),
@@ -424,7 +429,7 @@ __Type = GraphQLObjectType(
             (
                 "fields",
                 GraphQLField(
-                    type=GraphQLList(GraphQLNonNull(__Field)),
+                    type=GraphQLList(GraphQLNonNull(__Field)),  # type: ignore
                     args={
                         "includeDeprecated": GraphQLArgument(
                             GraphQLBoolean, default_value=False
@@ -436,21 +441,21 @@ __Type = GraphQLObjectType(
             (
                 "interfaces",
                 GraphQLField(
-                    type=GraphQLList(GraphQLNonNull(__Type)),
+                    type=GraphQLList(GraphQLNonNull(__Type)),  # type: ignore
                     resolver=TypeFieldResolvers.interfaces,
                 ),
             ),
             (
                 "possibleTypes",
                 GraphQLField(
-                    type=GraphQLList(GraphQLNonNull(__Type)),
+                    type=GraphQLList(GraphQLNonNull(__Type)),  # type: ignore
                     resolver=TypeFieldResolvers.possible_types,
                 ),
             ),
             (
                 "enumValues",
                 GraphQLField(
-                    type=GraphQLList(GraphQLNonNull(__EnumValue)),
+                    type=GraphQLList(GraphQLNonNull(__EnumValue)),  # type: ignore
                     args={
                         "includeDeprecated": GraphQLArgument(
                             GraphQLBoolean, default_value=False
@@ -462,14 +467,14 @@ __Type = GraphQLObjectType(
             (
                 "inputFields",
                 GraphQLField(
-                    type=GraphQLList(GraphQLNonNull(__InputValue)),
+                    type=GraphQLList(GraphQLNonNull(__InputValue)),  # type: ignore
                     resolver=TypeFieldResolvers.input_fields,
                 ),
             ),
             (
                 "ofType",
                 GraphQLField(
-                    type=__Type,
+                    type=__Type,  # type: ignore
                     resolver=lambda type, *_: getattr(type, "of_type", None),
                 ),
             ),
@@ -488,11 +493,13 @@ __Field = GraphQLObjectType(
             (
                 "args",
                 GraphQLField(
-                    type=GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
+                    type=GraphQLNonNull(
+                        GraphQLList(GraphQLNonNull(__InputValue))  # type: ignore
+                    ),
                     resolver=lambda field, *_: input_fields_to_list(field.args),
                 ),
             ),
-            ("type", GraphQLField(GraphQLNonNull(__Type))),
+            ("type", GraphQLField(GraphQLNonNull(__Type))),  # type: ignore
             (
                 "isDeprecated",
                 GraphQLField(

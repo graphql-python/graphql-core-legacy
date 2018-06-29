@@ -5,7 +5,7 @@ from promise import Promise
 from .utils import process
 
 if False:  # flake8: noqa
-    from typing import Any, Callable
+    from typing import Any, Callable, List
 
 
 class ThreadExecutor(object):
@@ -14,7 +14,7 @@ class ThreadExecutor(object):
 
     def __init__(self, pool=False):
         # type: (bool) -> None
-        self.threads = []
+        self.threads = []  # type: List[Thread]
         if pool:
             self.execute = self.execute_in_pool
             self.pool = ThreadPool(processes=pool)
@@ -26,7 +26,8 @@ class ThreadExecutor(object):
         while self.threads:
             threads = self.threads
             self.threads = []
-            [thread.join() for thread in threads]
+            for thread in threads:
+                thread.join()
 
     def clean(self):
         self.threads = []

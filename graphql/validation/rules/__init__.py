@@ -25,7 +25,7 @@ from .variables_in_allowed_position import VariablesInAllowedPosition
 
 if False:  # flake8: noqa
     from typing import List, Type
-    from ...language.visitor import Visitor
+    from .base import ValidationRule
 
 
 specified_rules = [
@@ -53,7 +53,7 @@ specified_rules = [
     OverlappingFieldsCanBeMerged,
     UniqueInputFieldNames,
     UniqueVariableNames,
-]  # type: List[Type[Visitor]]
+]  # type: List[Type[ValidationRule]]
 
 __all__ = [
     "ArgumentsOfCorrectType",

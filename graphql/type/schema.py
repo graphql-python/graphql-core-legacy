@@ -6,7 +6,12 @@ from .introspection import IntrospectionSchema
 from .typemap import GraphQLTypeMap
 
 if False:  # flake8: noqa
-    from .definition import GraphQLInterfaceType, GraphQLUnionType, GraphQLType
+    from .definition import (
+        GraphQLNamedType,
+        GraphQLInterfaceType,
+        GraphQLUnionType,
+        GraphQLType,
+    )
     from typing import Dict, Union, Any, List, Optional
 
 
@@ -51,7 +56,7 @@ class GraphQLSchema(object):
         mutation=None,  # type: Optional[GraphQLObjectType]
         subscription=None,  # type: Optional[GraphQLObjectType]
         directives=None,  # type: Optional[List[GraphQLDirective]]
-        types=None,  # type: Optional[List[GraphQLObjectType]]
+        types=None,  # type: Optional[List[GraphQLNamedType]]
     ):
         # type: (...) -> None
         assert isinstance(
@@ -87,10 +92,12 @@ class GraphQLSchema(object):
         )
         self._directives = directives
 
-        initial_types = [query, mutation, subscription, IntrospectionSchema]
+        initial_types = list(
+            filter(None, [query, mutation, subscription, IntrospectionSchema])
+        )  # type: List[GraphQLNamedType]
         if types:
             initial_types += types
-        self._type_map = GraphQLTypeMap(initial_types)  # type: Dict[str, GraphQLType]
+        self._type_map = GraphQLTypeMap(initial_types)  # type: GraphQLTypeMap
 
     def get_query_type(self):
         # type: () -> GraphQLObjectType
@@ -109,8 +116,9 @@ class GraphQLSchema(object):
         return self._type_map
 
     def get_type(self, name):
-        # type: (str) -> Optional[GraphQLType]
+        # type: (str) -> Optional[GraphQLNamedType]
         return self._type_map.get(name)
+        # raise Exception("Type {name} not found in schema.".format(name=name))
 
     def get_directives(self):
         # type: () -> List[GraphQLDirective]
@@ -124,18 +132,13 @@ class GraphQLSchema(object):
 
         return None
 
-    def get_possible_types(
-        self,
-        # type: Union[GraphQLInterfaceType, GraphQLUnionType]
-        abstract_type,
-    ):
-        # type: (...) -> List[GraphQLObjectType]
+    def get_possible_types(self, abstract_type):
+        # type: (Union[GraphQLInterfaceType, GraphQLUnionType]) -> List[GraphQLObjectType]
         return self._type_map.get_possible_types(abstract_type)
 
     def is_possible_type(
         self,
-        # type: Union[GraphQLInterfaceType, GraphQLUnionType]
-        abstract_type,
+        abstract_type,  # type: Union[GraphQLInterfaceType, GraphQLUnionType]
         possible_type,  # type: GraphQLObjectType
     ):
         # type: (...) -> bool

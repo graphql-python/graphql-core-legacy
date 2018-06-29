@@ -29,7 +29,7 @@ if False:  # flake8: noqa
     )
     from .base import ResolveInfo
     from types import TracebackType
-    from typing import Any, List, Dict, Optional, Union, Callable, Set
+    from typing import Any, List, Dict, Optional, Union, Callable, Set, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -59,9 +59,9 @@ class ExecutionContext(object):
         self,
         schema,  # type: GraphQLSchema
         document_ast,  # type: Document
-        root_value,  # type: Union[None, Data, type]
-        context_value,  # type: Optional[Context]
-        variable_values,  # type: Dict[str, int]
+        root_value,  # type: Any
+        context_value,  # type: Any
+        variable_values,  # type: Optional[Dict[str, Any]]
         operation_name,  # type: Optional[str]
         executor,  # type: Any
         middleware,  # type: Optional[Any]
@@ -71,9 +71,9 @@ class ExecutionContext(object):
         """Constructs a ExecutionContext object from the arguments passed
         to execute, which we will pass throughout the other execution
         methods."""
-        errors = []
+        errors = []  # type: List[Exception]
         operation = None
-        fragments = {}
+        fragments = {}  # type: Dict[str, FragmentDefinition]
 
         for definition in document_ast.definitions:
             if isinstance(definition, ast.OperationDefinition):
@@ -120,11 +120,11 @@ class ExecutionContext(object):
         self.variable_values = variable_values
         self.errors = errors
         self.context_value = context_value
-        self.argument_values_cache = {}
+        self.argument_values_cache = {}  # type: Dict[Tuple[GraphQLField, Field], Dict[str, Any]]
         self.executor = executor
         self.middleware = middleware
         self.allow_subscriptions = allow_subscriptions
-        self._subfields_cache = {}
+        self._subfields_cache = {}  # type: Dict[Tuple[GraphQLObjectType, Tuple[Field, ...]], DefaultOrderedDict]
 
     def get_field_resolver(self, field_resolver):
         # type: (Callable) -> Callable
@@ -144,7 +144,7 @@ class ExecutionContext(object):
         return result
 
     def report_error(self, error, traceback=None):
-        # type: (GraphQLError, Optional[TracebackType]) -> None
+        # type: (Exception, Optional[TracebackType]) -> None
         exception = format_exception(
             type(error), error, getattr(error, "stack", None) or traceback
         )
@@ -156,7 +156,7 @@ class ExecutionContext(object):
         k = return_type, tuple(field_asts)
         if k not in self._subfields_cache:
             subfield_asts = DefaultOrderedDict(list)
-            visited_fragment_names = set()
+            visited_fragment_names = set()  # type: Set[str]
             for field_ast in field_asts:
                 selection_set = field_ast.selection_set
                 if selection_set:
@@ -177,7 +177,7 @@ class SubscriberExecutionContext(object):
     def __init__(self, exe_context):
         # type: (ExecutionContext) -> None
         self.exe_context = exe_context
-        self.errors = []
+        self.errors = []  # type: List[Exception]
 
     def reset(self):
         # type: () -> None
@@ -262,7 +262,7 @@ def collect_fields(
                 continue
 
             prev_fragment_names.add(frag_name)
-            fragment = ctx.fragments.get(frag_name)
+            fragment = ctx.fragments[frag_name]
             frag_directives = fragment.directives
             if (
                 not fragment
@@ -279,7 +279,7 @@ def collect_fields(
 
 
 def should_include_node(ctx, directives):
-    # type: (ExecutionContext, List[Directive]) -> bool
+    # type: (ExecutionContext, Optional[List[Directive]]) -> bool
     """Determines if a field should be included based on the @include and
     @skip directives, where @skip has higher precidence than @include."""
     # TODO: Refactor based on latest code

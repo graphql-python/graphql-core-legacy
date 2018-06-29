@@ -8,21 +8,18 @@ if False:  # flake8: noqa
     from typing import Any, Union
 
 
-def type_from_ast(schema, input_type_ast):
+def type_from_ast(schema, type_node):
     # type: (GraphQLSchema, Union[ListType, NamedType, NonNullType]) -> Union[GraphQLList, GraphQLNonNull, GraphQLNamedType]
-    if isinstance(input_type_ast, ast.ListType):
-        inner_type = type_from_ast(schema, input_type_ast.type)
-        if inner_type:
-            return GraphQLList(inner_type)
-        else:
-            return None
+    if isinstance(type_node, ast.ListType):
+        inner_type = type_from_ast(schema, type_node.type)
+        return inner_type and GraphQLList(inner_type)
 
-    if isinstance(input_type_ast, ast.NonNullType):
-        inner_type = type_from_ast(schema, input_type_ast.type)
-        if inner_type:
-            return GraphQLNonNull(inner_type)
-        else:
-            return None
+    elif isinstance(type_node, ast.NonNullType):
+        inner_type = type_from_ast(schema, type_node.type)
+        return inner_type and GraphQLNonNull(inner_type)  # type: ignore
 
-    assert isinstance(input_type_ast, ast.NamedType), "Must be a type name."
-    return schema.get_type(input_type_ast.name.value)
+    elif isinstance(type_node, ast.NamedType):
+        schema_type = schema.get_type(type_node.name.value)
+        return schema_type  # type: ignore
+
+    raise Exception("Unexpected type kind: {type_kind}".format(type_kind=type_node))

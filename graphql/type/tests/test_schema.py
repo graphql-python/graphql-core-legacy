@@ -39,6 +39,6 @@ def test_throws_human_readable_error_if_schematypes_not_defined():
         schema.is_possible_type(interface_type, implementing_type)
 
     assert str(exci.value) == (
-        "Could not find possible implementing types for $Interface in schema. Check that "
+        "Could not find possible implementing types for Interface in schema. Check that "
         "schema.types is defined and is an array ofall possible types in the schema."
     )

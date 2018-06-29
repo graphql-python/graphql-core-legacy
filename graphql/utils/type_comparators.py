@@ -14,6 +14,7 @@ if False:  # flake8: noqa
         GraphQLObjectType,
         GraphQLUnionType,
     )
+    from ..type.typemap import GraphQLTypeMap
     from ..type.schema import GraphQLSchema
     from typing import Union
 
@@ -32,7 +33,7 @@ def is_equal_type(type_a, type_b):
 
 
 def is_type_sub_type_of(schema, maybe_subtype, super_type):
-    # type: (GraphQLSchema, GraphQLScalarType, GraphQLScalarType) -> bool
+    # type: (Union[GraphQLSchema, GraphQLTypeMap], GraphQLScalarType, GraphQLScalarType) -> bool
     if maybe_subtype is super_type:
         return True
 

@@ -16,28 +16,25 @@ from .definition import (
 )
 
 if False:  # flake8: noqa
-    from typing import Any, List, Optional, Union
+    from ..type.definition import GraphQLNamedType
+    from typing import Any, List, Optional, Union, Dict, Set, Mapping, DefaultDict
 
 
 class GraphQLTypeMap(OrderedDict):
-    def __init__(
-        self,
-        # type: Union[List[Optional[GraphQLObjectType]], List[GraphQLObjectType]]
-        types,
-    ):
-        # type: (...) -> None
+    def __init__(self, types):
+        # type: (List[GraphQLNamedType]) -> None
         super(GraphQLTypeMap, self).__init__()
-        self.update(reduce(self.reducer, types, OrderedDict()))
-        self._possible_type_map = defaultdict(set)
+        self.update(reduce(self.reducer, types, OrderedDict()))  # type: ignore
+        self._possible_type_map = defaultdict(set)  # type: DefaultDict[str, Set[str]]
 
         # Keep track of all implementations by interface name.
-        self._implementations = {}
+        self._implementations = defaultdict(
+            list
+        )  # type: DefaultDict[str, List[GraphQLObjectType]]
         for gql_type in self.values():
             if isinstance(gql_type, GraphQLObjectType):
                 for interface in gql_type.interfaces:
-                    self._implementations.setdefault(interface.name, []).append(
-                        gql_type
-                    )
+                    self._implementations[interface.name].append(gql_type)
 
         # Enforce correct interface implementations.
         for type in self.values():
@@ -45,32 +42,29 @@ class GraphQLTypeMap(OrderedDict):
                 for interface in type.interfaces:
                     self.assert_object_implements_interface(self, type, interface)
 
-    def get_possible_types(
-        self,
-        # type: Union[GraphQLInterfaceType, GraphQLUnionType]
-        abstract_type,
-    ):
-        # type: (...) -> List[GraphQLObjectType]
+    def get_possible_types(self, abstract_type):
+        # type: (Union[GraphQLInterfaceType, GraphQLUnionType]) -> List[GraphQLObjectType]
         if isinstance(abstract_type, GraphQLUnionType):
             return abstract_type.types
         assert isinstance(abstract_type, GraphQLInterfaceType)
-        return self._implementations.get(abstract_type.name, None)
+        if abstract_type.name not in self._implementations:
+            return []
+        return self._implementations[abstract_type.name]
 
     def is_possible_type(
         self,
-        # type: Union[GraphQLInterfaceType, GraphQLUnionType]
-        abstract_type,
+        abstract_type,  # type: Union[GraphQLInterfaceType, GraphQLUnionType]
         possible_type,  # type: GraphQLObjectType
     ):
         # type: (...) -> bool
         possible_types = self.get_possible_types(abstract_type)
-        assert isinstance(possible_types, Sequence), (
-            "Could not find possible implementing types for ${} in "
+        assert possible_types, (
+            "Could not find possible implementing types for {} in "
             + "schema. Check that schema.types is defined and is an array of"
             + "all possible types in the schema."
         ).format(abstract_type)
 
-        if not self._possible_type_map[abstract_type.name]:
+        if abstract_type.name not in self._possible_type_map:
             self._possible_type_map[abstract_type.name].update(
                 [p.name for p in possible_types]
             )
@@ -79,11 +73,11 @@ class GraphQLTypeMap(OrderedDict):
 
     @classmethod
     def reducer(cls, map, type):
-        # type: (OrderedDict, Any) -> OrderedDict
+        # type: (Dict, Union[GraphQLNamedType, GraphQLList, GraphQLNonNull]) -> Dict
         if not type:
             return map
 
-        if isinstance(type, GraphQLList) or isinstance(type, GraphQLNonNull):
+        if isinstance(type, (GraphQLList, GraphQLNonNull)):
             return cls.reducer(map, type.of_type)
 
         if type.name in map:
@@ -93,7 +87,7 @@ class GraphQLTypeMap(OrderedDict):
 
             return map
 
-        map[type.name] = type
+        map[type.name] = type  # type: ignore
 
         reduced_map = map
 

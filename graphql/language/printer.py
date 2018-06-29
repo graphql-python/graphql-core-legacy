@@ -55,19 +55,19 @@ class PrintingVisitor(Visitor):
     __slots__ = ()
 
     def leave_Name(self, node, *args):
-        # type: (Name, *Any) -> str
+        # type: (Any, *Any) -> str
         return node.value  # type: ignore
 
     def leave_Variable(self, node, *args):
-        # type: (Variable, *Any) -> str
+        # type: (Any, *Any) -> str
         return "$" + node.name  # type: ignore
 
     def leave_Document(self, node, *args):
-        # type: (Document, *Any) -> str
+        # type: (Any, *Any) -> str
         return join(node.definitions, "\n\n") + "\n"  # type: ignore
 
     def leave_OperationDefinition(self, node, *args):
-        # type: (OperationDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         name = node.name
         selection_set = node.selection_set
         op = node.operation
@@ -80,15 +80,15 @@ class PrintingVisitor(Visitor):
         return join([op, join([name, var_defs]), directives, selection_set], " ")
 
     def leave_VariableDefinition(self, node, *args):
-        # type: (VariableDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         return node.variable + ": " + node.type + wrap(" = ", node.default_value)
 
     def leave_SelectionSet(self, node, *args):
-        # type: (SelectionSet, *Any) -> str
+        # type: (Any, *Any) -> str
         return block(node.selections)
 
     def leave_Field(self, node, *args):
-        # type: (Field, *Any) -> str
+        # type: (Any, *Any) -> str
         return join(
             [
                 wrap("", node.alias, ": ")
@@ -101,17 +101,17 @@ class PrintingVisitor(Visitor):
         )
 
     def leave_Argument(self, node, *args):
-        # type: (Argument, *Any) -> str
+        # type: (Any, *Any) -> str
         return "{0.name}: {0.value}".format(node)
 
     # Fragments
 
     def leave_FragmentSpread(self, node, *args):
-        # type: (FragmentSpread, *Any) -> str
+        # type: (Any, *Any) -> str
         return "..." + node.name + wrap(" ", join(node.directives, " "))
 
     def leave_InlineFragment(self, node, *args):
-        # type: (InlineFragment, *Any) -> str
+        # type: (Any, *Any) -> str
         return join(
             [
                 "...",
@@ -123,7 +123,7 @@ class PrintingVisitor(Visitor):
         )
 
     def leave_FragmentDefinition(self, node, *args):
-        # type: (FragmentDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         return (
             "fragment {} on {} ".format(node.name, node.type_condition)
             + wrap("", join(node.directives, " "), " ")
@@ -133,74 +133,74 @@ class PrintingVisitor(Visitor):
     # Value
 
     def leave_IntValue(self, node, *args):
-        # type: (IntValue, *Any) -> str
+        # type: (Any, *Any) -> str
         return node.value
 
     def leave_FloatValue(self, node, *args):
         return node.value
 
     def leave_StringValue(self, node, *args):
-        # type: (StringValue, *Any) -> str
+        # type: (Any, *Any) -> str
         return json.dumps(node.value)
 
     def leave_BooleanValue(self, node, *args):
-        # type: (BooleanValue, *Any) -> str
+        # type: (Any, *Any) -> str
         return json.dumps(node.value)
 
     def leave_EnumValue(self, node, *args):
-        # type: (EnumValue, *Any) -> str
+        # type: (Any, *Any) -> str
         return node.value
 
     def leave_ListValue(self, node, *args):
-        # type: (ListValue, *Any) -> str
+        # type: (Any, *Any) -> str
         return "[" + join(node.values, ", ") + "]"
 
     def leave_ObjectValue(self, node, *args):
-        # type: (ObjectValue, *Any) -> str
+        # type: (Any, *Any) -> str
         return "{" + join(node.fields, ", ") + "}"
 
     def leave_ObjectField(self, node, *args):
-        # type: (ObjectField, *Any) -> str
+        # type: (Any, *Any) -> str
         return node.name + ": " + node.value
 
     # Directive
 
     def leave_Directive(self, node, *args):
-        # type: (Directive, *Any) -> str
+        # type: (Any, *Any) -> str
         return "@" + node.name + wrap("(", join(node.arguments, ", "), ")")
 
     # Type
 
     def leave_NamedType(self, node, *args):
-        # type: (NamedType, *Any) -> str
+        # type: (Any, *Any) -> str
         return node.name
 
     def leave_ListType(self, node, *args):
-        # type: (ListType, *Any) -> str
+        # type: (Any, *Any) -> str
         return "[" + node.type + "]"
 
     def leave_NonNullType(self, node, *args):
-        # type: (NonNullType, *Any) -> str
+        # type: (Any, *Any) -> str
         return node.type + "!"
 
     # Type Definitions:
 
     def leave_SchemaDefinition(self, node, *args):
-        # type: (SchemaDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         return join(
             ["schema", join(node.directives, " "), block(node.operation_types)], " "
         )
 
     def leave_OperationTypeDefinition(self, node, *args):
-        # type: (OperationTypeDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         return "{}: {}".format(node.operation, node.type)
 
     def leave_ScalarTypeDefinition(self, node, *args):
-        # type: (ScalarTypeDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         return "scalar " + node.name + wrap(" ", join(node.directives, " "))
 
     def leave_ObjectTypeDefinition(self, node, *args):
-        # type: (ObjectTypeDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         return join(
             [
                 "type",
@@ -213,7 +213,7 @@ class PrintingVisitor(Visitor):
         )
 
     def leave_FieldDefinition(self, node, *args):
-        # type: (FieldDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         return (
             node.name
             + wrap("(", join(node.arguments, ", "), ")")
@@ -223,7 +223,7 @@ class PrintingVisitor(Visitor):
         )
 
     def leave_InputValueDefinition(self, node, *args):
-        # type: (InputValueDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         return (
             node.name
             + ": "
@@ -233,7 +233,7 @@ class PrintingVisitor(Visitor):
         )
 
     def leave_InterfaceTypeDefinition(self, node, *args):
-        # type: (InterfaceTypeDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         return (
             "interface "
             + node.name
@@ -243,7 +243,7 @@ class PrintingVisitor(Visitor):
         )
 
     def leave_UnionTypeDefinition(self, node, *args):
-        # type: (UnionTypeDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         return (
             "union "
             + node.name
@@ -253,7 +253,7 @@ class PrintingVisitor(Visitor):
         )
 
     def leave_EnumTypeDefinition(self, node, *args):
-        # type: (EnumTypeDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         return (
             "enum "
             + node.name
@@ -263,11 +263,11 @@ class PrintingVisitor(Visitor):
         )
 
     def leave_EnumValueDefinition(self, node, *args):
-        # type: (EnumValueDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         return node.name + wrap(" ", join(node.directives, " "))
 
     def leave_InputObjectTypeDefinition(self, node, *args):
-        # type: (InputObjectTypeDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         return (
             "input "
             + node.name
@@ -277,11 +277,11 @@ class PrintingVisitor(Visitor):
         )
 
     def leave_TypeExtensionDefinition(self, node, *args):
-        # type: (TypeExtensionDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         return "extend " + node.definition
 
     def leave_DirectiveDefinition(self, node, *args):
-        # type: (DirectiveDefinition, *Any) -> str
+        # type: (Any, *Any) -> str
         return "directive @{}{} on {}".format(
             node.name,
             wrap("(", join(node.arguments, ", "), ")"),
@@ -290,7 +290,7 @@ class PrintingVisitor(Visitor):
 
 
 def join(maybe_list, separator=""):
-    # type: (Optional[List[Optional[str]]], str) -> str
+    # type: (Optional[List[str]], str) -> str
     if maybe_list:
         return separator.join(filter(None, maybe_list))
     return ""

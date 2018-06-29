@@ -6,13 +6,13 @@ from promise import Promise
 
 if False:  # flake8: noqa
     from asyncio.unix_events import _UnixSelectorEventLoop
-    from typing import Optional, Any, Callable
+    from typing import Optional, Any, Callable, List
 
 try:
     from asyncio import ensure_future
 except ImportError:
     # ensure_future is only implemented in Python 3.4.4+
-    def ensure_future(coro_or_future, loop=None):
+    def ensure_future(coro_or_future, loop=None):  # type: ignore
         """Wrap a coroutine or an awaitable in a future.
 
         If the argument is a Future, it is returned directly.
@@ -39,7 +39,7 @@ except Exception:
     def isasyncgen(obj):
         False
 
-    def asyncgen_to_observable(asyncgen):
+    def asyncgen_to_observable(asyncgen, loop=None):
         pass
 
 
@@ -49,7 +49,7 @@ class AsyncioExecutor(object):
         if loop is None:
             loop = get_event_loop()
         self.loop = loop
-        self.futures = []
+        self.futures = []  # type: List[Future]
 
     def wait_until_finished(self):
         # type: () -> None

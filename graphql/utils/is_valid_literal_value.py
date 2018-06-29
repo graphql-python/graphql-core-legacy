@@ -17,13 +17,13 @@ _empty_list = []  # type: List
 
 
 def is_valid_literal_value(type, value_ast):
-    # type: (Union[GraphQLInputObjectType, GraphQLScalarType, GraphQLNonNull], Any) -> List
+    # type: (Union[GraphQLInputObjectType, GraphQLScalarType, GraphQLNonNull, GraphQLList], Any) -> List
     if isinstance(type, GraphQLNonNull):
         of_type = type.of_type
         if not value_ast:
             return [u'Expected "{}", found null.'.format(type)]
 
-        return is_valid_literal_value(of_type, value_ast)
+        return is_valid_literal_value(of_type, value_ast)  # type: ignore
 
     if not value_ast:
         return _empty_list

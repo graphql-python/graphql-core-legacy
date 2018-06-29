@@ -623,7 +623,7 @@ def _get_referenced_fields_and_fragment_names(
         context.get_schema(), fragment.type_condition
     )
 
-    return _get_fields_and_fragments_names(
+    return _get_fields_and_fragments_names(  # type: ignore
         context, cached_fields_and_fragment_names, fragment_type, fragment.selection_set
     )
 
@@ -661,9 +661,9 @@ def _collect_fields_and_fragment_names(
                     context.get_schema(), selection.type_condition
                 )
             else:
-                inline_fragment_type = parent_type
+                inline_fragment_type = parent_type  # type: ignore
 
-            _collect_fields_and_fragment_names(
+            _collect_fields_and_fragment_names(  # type: ignore
                 context,
                 inline_fragment_type,
                 selection.selection_set,
@@ -681,11 +681,11 @@ def _subfield_conflicts(
     # type: (...) -> Optional[Tuple[Tuple[str, str], List[Node], List[Node]]]
     """Given a series of Conflicts which occurred between two sub-fields, generate a single Conflict."""
     if conflicts:
-        return (
+        return (  # type: ignore
             (response_name, [conflict[0] for conflict in conflicts]),
             tuple(itertools.chain([ast1], *[conflict[1] for conflict in conflicts])),
             tuple(itertools.chain([ast2], *[conflict[2] for conflict in conflicts])),
-        )  # type: ignore
+        )
     return None
 
 

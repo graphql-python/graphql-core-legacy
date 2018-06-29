@@ -3,7 +3,7 @@ from sys import exc_info
 if False:  # flake8: noqa
     from ..base import ResolveInfo
     from promise import Promise
-    from typing import Callable, Dict, Tuple, Union
+    from typing import Callable, Dict, Tuple, Union, Any
 
 
 def process(
@@ -18,5 +18,5 @@ def process(
         p.do_resolve(val)
     except Exception as e:
         traceback = exc_info()[2]
-        e.stack = traceback
+        e.stack = traceback  # type: ignore
         p.do_reject(e, traceback=traceback)
