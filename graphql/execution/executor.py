@@ -66,7 +66,7 @@ def execute(
     allow_subscriptions=False,  # type: bool
     **options  # type: Any
 ):
-    # type: (...) -> ExecutionResult
+    # type: (...) -> Union[ExecutionResult, Promise[ExecutionResult]]
 
     if root is None and "root_value" in options:
         warnings.warn(
@@ -120,16 +120,16 @@ def execute(
     )
 
     def promise_executor(v):
-        # type: (Optional[Any]) -> Union[OrderedDict, Promise, Observable]
+        # type: (Optional[Any]) -> Union[Dict, Promise[Dict], Observable]
         return execute_operation(exe_context, exe_context.operation, root)
 
     def on_rejected(error):
-        # type: (Exception) -> Optional[Any]
+        # type: (Exception) -> None
         exe_context.errors.append(error)
         return None
 
     def on_resolve(data):
-        # type: (Union[None, OrderedDict, Observable]) -> Union[ExecutionResult, Observable]
+        # type: (Union[None, Dict, Observable]) -> Union[ExecutionResult, Observable]
         if isinstance(data, Observable):
             return data
 
@@ -158,7 +158,7 @@ def execute_operation(
     operation,  # type: OperationDefinition
     root_value,  # type: Any
 ):
-    # type: (...) -> Union[OrderedDict, Promise]
+    # type: (...) -> Union[Dict, Promise[Dict]]
     type = get_operation_root_type(exe_context.schema, operation)
     fields = collect_fields(
         exe_context, type, operation.selection_set, DefaultOrderedDict(list), set()
@@ -188,7 +188,7 @@ def execute_fields_serially(
 ):
     # type: (...) -> Promise
     def execute_field_callback(results, response_name):
-        # type: (OrderedDict, str) -> Union[OrderedDict, Promise]
+        # type: (Dict, str) -> Union[Dict, Promise[Dict]]
         field_asts = fields[response_name]
         result = resolve_field(
             exe_context,
@@ -204,7 +204,7 @@ def execute_fields_serially(
         if is_thenable(result):
 
             def collect_result(resolved_result):
-                # type: (OrderedDict) -> OrderedDict
+                # type: (Dict) -> Dict
                 results[response_name] = resolved_result
                 return results
 
@@ -232,7 +232,7 @@ def execute_fields(
     path,  # type: List[Union[int, str]]
     info,  # type: Optional[ResolveInfo]
 ):
-    # type: (...) -> Union[OrderedDict, Promise]
+    # type: (...) -> Union[Dict, Promise[Dict]]
     contains_promise = False
 
     final_results = OrderedDict()
@@ -271,10 +271,8 @@ def subscribe_fields(
     def on_error(error):
         subscriber_exe_context.report_error(error)
 
-    def map_result(
-        data  # type: Union[Dict[str, None], Dict[str, OrderedDict], Dict[str, str]]
-    ):
-        # type: (...) -> ExecutionResult
+    def map_result(data):
+        # type: (Dict[str, Any]) -> ExecutionResult
         if subscriber_exe_context.errors:
             result = ExecutionResult(data=data, errors=subscriber_exe_context.errors)
         else:

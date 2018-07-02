@@ -5,6 +5,7 @@ from promise import promisify
 
 # Necessary for static type checking
 if False:  # flake8: noqa
+    from promise import Promise
     from rx import Observable
     from typing import Any, Union, Optional
     from .language.ast import Document
@@ -35,7 +36,7 @@ if False:  # flake8: noqa
 
 
 def graphql(*args, **kwargs):
-    # type: (*Any, **Any) -> Union[ExecutionResult, Observable]
+    # type: (*Any, **Any) -> Union[ExecutionResult, Observable, Promise[ExecutionResult]]
     return_promise = kwargs.get("return_promise", False)
     if return_promise:
         return execute_graphql_as_promise(*args, **kwargs)
@@ -54,7 +55,7 @@ def execute_graphql(
     backend=None,  # type: Optional[Any]
     **execute_options  # type: Any
 ):
-    # type: (...) -> Union[ExecutionResult, Observable]
+    # type: (...) -> Union[ExecutionResult, Observable, Promise[ExecutionResult]]
     try:
         if backend is None:
             backend = get_default_backend()
