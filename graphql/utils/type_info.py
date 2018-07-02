@@ -11,6 +11,7 @@ from ..type.definition import (
 from .get_field_def import get_field_def
 from .type_from_ast import type_from_ast
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ..type.schema import GraphQLSchema
     from ..type.definition import (

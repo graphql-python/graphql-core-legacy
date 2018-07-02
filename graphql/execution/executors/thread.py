@@ -4,6 +4,7 @@ from threading import Thread
 from promise import Promise
 from .utils import process
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from typing import Any, Callable, List
 

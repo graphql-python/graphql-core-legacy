@@ -3,6 +3,7 @@ from .backend import get_default_backend
 
 from promise import promisify
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from rx import Observable
     from typing import Any, Union, Optional

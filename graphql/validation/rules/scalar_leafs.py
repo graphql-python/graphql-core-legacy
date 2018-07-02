@@ -2,6 +2,7 @@ from ...error import GraphQLError
 from ...type.definition import get_named_type, is_leaf_type
 from .base import ValidationRule
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ...language.ast import Field, InlineFragment
     from typing import Any, List, Union

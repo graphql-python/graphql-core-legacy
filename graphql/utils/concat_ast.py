@@ -2,6 +2,7 @@ import itertools
 
 from ..language.ast import Document
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from typing import Iterable
 

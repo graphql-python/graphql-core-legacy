@@ -4,6 +4,7 @@ from ..type import GraphQLSchema
 from ..utils.type_info import TypeInfo
 from .rules import specified_rules
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from typing import List, Union, Optional, Dict, Set, Any, Type
     from ..language.ast import Document, OperationDefinition, SelectionSet, Node

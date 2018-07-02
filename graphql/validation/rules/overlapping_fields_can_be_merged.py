@@ -17,6 +17,7 @@ from ...utils.type_comparators import is_equal_type
 from ...utils.type_from_ast import type_from_ast
 from .base import ValidationRule
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ..validation import ValidationContext
     from ...language.ast import (

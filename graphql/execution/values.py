@@ -18,6 +18,7 @@ from ..utils.is_valid_value import is_valid_value
 from ..utils.type_from_ast import type_from_ast
 from ..utils.value_from_ast import value_from_ast
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ..language.ast import VariableDefinition, Argument
     from ..type.schema import GraphQLSchema

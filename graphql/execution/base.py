@@ -12,6 +12,7 @@ from .utils import (
 )
 from ..error.format_error import format_error as default_format_error
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from typing import Any, Optional, Dict, List, Union
     from ..language.ast import Field, OperationDefinition

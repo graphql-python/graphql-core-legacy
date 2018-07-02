@@ -1,6 +1,7 @@
 from ..language.location import get_location
 from .base import GraphQLError
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ..language.source import Source
     from ..language.location import SourceLocation

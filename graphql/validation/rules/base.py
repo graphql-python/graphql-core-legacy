@@ -1,5 +1,6 @@
 from ...language.visitor import Visitor
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ..validation import ValidationContext
 

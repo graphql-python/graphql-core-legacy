@@ -5,6 +5,7 @@ from .directives import GraphQLDirective, specified_directives
 from .introspection import IntrospectionSchema
 from .typemap import GraphQLTypeMap
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from .definition import (
         GraphQLNamedType,

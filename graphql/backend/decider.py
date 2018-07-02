@@ -1,5 +1,6 @@
 from .base import GraphQLBackend, GraphQLDocument
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from typing import List, Union, Any, Optional
     from ..type.schema import GraphQLSchema

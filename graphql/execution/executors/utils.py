@@ -1,5 +1,6 @@
 from sys import exc_info
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ..base import ResolveInfo
     from promise import Promise

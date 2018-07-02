@@ -1,5 +1,6 @@
 from ..language import ast
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ..language.ast import Document, OperationDefinition
     from typing import Optional

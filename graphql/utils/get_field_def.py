@@ -5,6 +5,7 @@ from ..type.introspection import (
     TypeNameMetaFieldDef,
 )
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ..language.ast import Field
     from ..type.definition import GraphQLField, GraphQLInterfaceType, GraphQLObjectType

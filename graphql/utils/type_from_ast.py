@@ -1,6 +1,7 @@
 from ..language import ast
 from ..type.definition import GraphQLList, GraphQLNonNull
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ..language.ast import ListType, NamedType, NonNullType
     from ..type.definition import GraphQLNamedType

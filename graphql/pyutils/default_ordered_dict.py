@@ -1,6 +1,7 @@
 import copy
 from collections import OrderedDict
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from typing import Any, List
 
@@ -18,7 +19,7 @@ class DefaultOrderedDict(OrderedDict):
         self.default_factory = default_factory
 
     def __missing__(self, key):
-        # type: (str) -> List
+        # type: (str) -> Any
         if self.default_factory is None:
             raise KeyError(key)
         self[key] = value = self.default_factory()

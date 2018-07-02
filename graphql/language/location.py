@@ -1,3 +1,4 @@
+# Necessary for static type checking
 if False:  # flake8: noqa
     from .source import Source
     from typing import Any

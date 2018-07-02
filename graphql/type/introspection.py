@@ -18,6 +18,7 @@ from .definition import (
 from .directives import DirectiveLocation
 from .scalars import GraphQLBoolean, GraphQLString
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ..execution.base import ResolveInfo
     from .definition import GraphQLInputObjectField

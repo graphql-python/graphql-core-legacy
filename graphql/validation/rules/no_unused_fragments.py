@@ -1,6 +1,7 @@
 from ...error import GraphQLError
 from .base import ValidationRule
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ..validation import ValidationContext
     from ...language.ast import Document, OperationDefinition, FragmentDefinition

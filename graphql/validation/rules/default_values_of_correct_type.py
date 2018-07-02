@@ -4,6 +4,7 @@ from ...type.definition import GraphQLNonNull
 from ...utils.is_valid_literal_value import is_valid_literal_value
 from .base import ValidationRule
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ...language.ast import Document, OperationDefinition, SelectionSet
     from typing import List, Union

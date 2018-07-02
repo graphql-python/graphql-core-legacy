@@ -7,6 +7,7 @@ from ..type.definition import (
     is_abstract_type,
 )
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ..type.definition import (
         GraphQLScalarType,

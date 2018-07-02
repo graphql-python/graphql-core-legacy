@@ -4,6 +4,7 @@ from ...utils.type_comparators import is_type_sub_type_of
 from ...utils.type_from_ast import type_from_ast
 from .base import ValidationRule
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ..validation import ValidationContext
     from ...language.ast import Document, OperationDefinition, VariableDefinition

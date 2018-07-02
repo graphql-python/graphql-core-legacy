@@ -15,6 +15,7 @@ from graphql import (
     subscribe,
 )
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from graphql.execution.base import ResolveInfo
     from rx import Observable

@@ -4,6 +4,7 @@ from itertools import chain
 
 from promise import Promise, promisify
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from .base import ResolveInfo
     from typing import Any, Callable, Iterator, Tuple, Union, List, Dict, Iterable

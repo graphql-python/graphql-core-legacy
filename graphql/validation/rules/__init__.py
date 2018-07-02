@@ -23,6 +23,7 @@ from .unique_variable_names import UniqueVariableNames
 from .variables_are_input_types import VariablesAreInputTypes
 from .variables_in_allowed_position import VariablesInAllowedPosition
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from typing import List, Type
     from .base import ValidationRule

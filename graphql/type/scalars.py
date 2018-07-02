@@ -3,6 +3,7 @@ from six import string_types, text_type
 from ..language.ast import BooleanValue, FloatValue, IntValue, StringValue
 from .definition import GraphQLScalarType
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from typing import Any, Optional, Union
 

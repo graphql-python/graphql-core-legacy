@@ -1,6 +1,7 @@
 from ..language.ast import Node
 from ..language.parser import Loc
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from typing import Any
 

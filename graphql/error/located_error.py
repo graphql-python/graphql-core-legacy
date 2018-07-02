@@ -2,6 +2,7 @@ import sys
 
 from .base import GraphQLError
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from ..language.ast import Field
     from typing import List, Union

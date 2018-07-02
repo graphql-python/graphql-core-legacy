@@ -5,6 +5,7 @@ from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import GraphQLField, GraphQLObjectType, GraphQLSchema, GraphQLString
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from graphql.execution.base import ResolveInfo
     from typing import Any

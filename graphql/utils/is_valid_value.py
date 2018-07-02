@@ -15,6 +15,7 @@ from ..type import (
     GraphQLScalarType,
 )
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from typing import Any, List
 

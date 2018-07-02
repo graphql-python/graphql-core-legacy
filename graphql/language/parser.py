@@ -5,6 +5,7 @@ from ..error import GraphQLSyntaxError
 from .lexer import Lexer, TokenKind, get_token_desc, get_token_kind_desc
 from .source import Source
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from typing import Dict, Union, Any, Optional, Callable, List
     from ..error.syntax_error import GraphQLSyntaxError

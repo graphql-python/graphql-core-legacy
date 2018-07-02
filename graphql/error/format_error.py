@@ -2,6 +2,7 @@ from six import text_type
 
 from .base import GraphQLError
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from .base import GraphQLError
     from .located_error import GraphQLLocatedError

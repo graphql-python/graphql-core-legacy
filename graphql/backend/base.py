@@ -4,6 +4,7 @@ from ..language import ast
 from abc import ABCMeta, abstractmethod
 import six
 
+# Necessary for static type checking
 if False:  # flake8: noqa
     from typing import Dict, Optional, Union, Callable
     from ..language.ast import Document
