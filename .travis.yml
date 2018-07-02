@@ -3,20 +3,6 @@ sudo: false
 python:
 - 2.7
 # - "pypy-5.3.1"
-before_install:
-- |
-  if [ "$TRAVIS_PYTHON_VERSION" = "pypy" ]; then
-    export PYENV_ROOT="$HOME/.pyenv"
-    if [ -f "$PYENV_ROOT/bin/pyenv" ]; then
-      cd "$PYENV_ROOT" && git pull
-    else
-      rm -rf "$PYENV_ROOT" && git clone --depth 1 https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
-    fi
-    export PYPY_VERSION="4.0.1"
-    "$PYENV_ROOT/bin/pyenv" install "pypy-$PYPY_VERSION"
-    virtualenv --python="$PYENV_ROOT/versions/pypy-$PYPY_VERSION/bin/python" "$HOME/virtualenvs/pypy-$PYPY_VERSION"
-    source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
-  fi
 install:
 - pip install -e .[test]
 - pip install flake8
@@ -33,10 +19,12 @@ matrix:
     script:
     - py.test --cov=graphql graphql tests tests_py35
   - python: '3.6'
-    after_install:
-    - pip install pytest-asyncio
+    install:
+    - pip install -e .[test]
+    - pip install pytest-asyncio mypy
     script:
     - py.test --cov=graphql graphql tests tests_py35
+    - mypy graphql --ignore-missing-imports
   - python: '2.7'
 
 deploy:
