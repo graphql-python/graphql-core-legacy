@@ -7,7 +7,6 @@ from .utils import process
 
 
 class GeventExecutor(object):
-
     def __init__(self):
         self.jobs = []
 

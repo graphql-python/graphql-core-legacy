@@ -24,10 +24,10 @@ from .middleware import middlewares, MiddlewareManager
 
 
 __all__ = [
-    'execute',
-    'subscribe',
-    'ExecutionResult',
-    'ResolveInfo',
-    'MiddlewareManager',
-    'middlewares'
+    "execute",
+    "subscribe",
+    "ExecutionResult",
+    "ResolveInfo",
+    "MiddlewareManager",
+    "middlewares",
 ]

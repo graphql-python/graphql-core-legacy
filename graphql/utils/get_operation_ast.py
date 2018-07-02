@@ -1,7 +1,13 @@
 from ..language import ast
 
+# Necessary for static type checking
+if False:  # flake8: noqa
+    from ..language.ast import Document, OperationDefinition
+    from typing import Optional
+
 
 def get_operation_ast(document_ast, operation_name=None):
+    # type: (Document, Optional[str]) -> Optional[OperationDefinition]
     operation = None
 
     for definition in document_ast.definitions:

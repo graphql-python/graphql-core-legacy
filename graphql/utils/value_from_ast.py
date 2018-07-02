@@ -1,9 +1,21 @@
 from ..language import ast
-from ..type import (GraphQLEnumType, GraphQLInputObjectType, GraphQLList,
-                    GraphQLNonNull, GraphQLScalarType)
+from ..type import (
+    GraphQLEnumType,
+    GraphQLInputObjectType,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLScalarType,
+)
+
+# Necessary for static type checking
+if False:  # flake8: noqa
+    from ..language.ast import Node
+    from ..type.definition import GraphQLType
+    from typing import Any, Dict, Union, Optional, List
 
 
 def value_from_ast(value_ast, type, variables=None):
+    # type: (Optional[Node], GraphQLType, Optional[Dict[str, Union[List, Dict, int, float, bool, str, None]]]) -> Union[List, Dict, int, float, bool, str, None]
     """Given a type and a value AST node known to match this type, build a
     runtime value."""
     if isinstance(type, GraphQLNonNull):
@@ -26,8 +38,10 @@ def value_from_ast(value_ast, type, variables=None):
     if isinstance(type, GraphQLList):
         item_type = type.of_type
         if isinstance(value_ast, ast.ListValue):
-            return [value_from_ast(item_ast, item_type, variables)
-                    for item_ast in value_ast.values]
+            return [
+                value_from_ast(item_ast, item_type, variables)
+                for item_ast in value_ast.values
+            ]
 
         else:
             return [value_from_ast(value_ast, item_type, variables)]
@@ -39,8 +53,8 @@ def value_from_ast(value_ast, type, variables=None):
 
         field_asts = {}
 
-        for field in value_ast.fields:
-            field_asts[field.name.value] = field
+        for field_ast in value_ast.fields:
+            field_asts[field_ast.name.value] = field_ast
 
         obj = {}
         for field_name, field in fields.items():
@@ -52,11 +66,9 @@ def value_from_ast(value_ast, type, variables=None):
 
                 continue
 
-            field_ast = field_asts.get(field_name)
+            field_ast = field_asts[field_name]
             field_value_ast = field_ast.value
-            field_value = value_from_ast(
-                field_value_ast, field.type, variables
-            )
+            field_value = value_from_ast(field_value_ast, field.type, variables)
 
             # We use out_name as the output name for the
             # dict if exists
@@ -64,7 +76,6 @@ def value_from_ast(value_ast, type, variables=None):
 
         return type.create_container(obj)
 
-    assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), \
-        'Must be input type'
+    assert isinstance(type, (GraphQLScalarType, GraphQLEnumType)), "Must be input type"
 
     return type.parse_literal(value_ast)

@@ -11,6 +11,7 @@ from .schema import schema
 
 
 def test_cached_backend():
+    # type: () -> None
     cached_backend = GraphQLCachedBackend(GraphQLCoreBackend())
     document1 = cached_backend.document_from_string(schema, "{ hello }")
     document2 = cached_backend.document_from_string(schema, "{ hello }")
@@ -18,7 +19,10 @@ def test_cached_backend():
 
 
 def test_cached_backend_with_use_consistent_hash():
-    cached_backend = GraphQLCachedBackend(GraphQLCoreBackend(), use_consistent_hash=True)
+    # type: () -> None
+    cached_backend = GraphQLCachedBackend(
+        GraphQLCoreBackend(), use_consistent_hash=True
+    )
     document1 = cached_backend.document_from_string(schema, "{ hello }")
     document2 = cached_backend.document_from_string(schema, "{ hello }")
     assert document1 == document2
