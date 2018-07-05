@@ -11,7 +11,9 @@ from ..cache import GraphQLCachedBackend
 from ..decider import GraphQLDeciderBackend
 
 from .schema import schema
-from typing import Any
+
+if False:
+    from typing import Any
 
 
 class FakeBackend(GraphQLBackend):
