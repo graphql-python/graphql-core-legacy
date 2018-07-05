@@ -35,6 +35,9 @@ def execute_and_validate(
 
 
 class GraphQLCoreBackend(GraphQLBackend):
+    """GraphQLCoreBackend will return a document using the default
+    graphql executor"""
+
     def __init__(self, executor=None):
         # type: (Optional[Any]) -> None
         self.execute_params = {"executor": executor}

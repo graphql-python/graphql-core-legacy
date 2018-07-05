@@ -8,7 +8,9 @@ from graphql.execution.executors.sync import SyncExecutor
 from ..base import GraphQLBackend, GraphQLDocument
 from ..core import GraphQLCoreBackend
 from .schema import schema
-from typing import Any
+
+if False:
+    from typing import Any
 
 
 def test_core_backend():
