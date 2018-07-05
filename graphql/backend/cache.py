@@ -39,6 +39,9 @@ def get_unique_document_id(query_str):
 
 
 class GraphQLCachedBackend(GraphQLBackend):
+    """GraphQLCachedBackend will cache the document response from the backend
+    given a key for that document"""
+
     def __init__(
         self,
         backend,  # type: GraphQLBackend
