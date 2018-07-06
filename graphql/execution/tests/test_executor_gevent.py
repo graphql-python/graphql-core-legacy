@@ -19,6 +19,7 @@ from .test_mutations import assert_evaluate_mutations_serially
 
 
 def test_gevent_executor():
+
     def resolver(context, *_):
         gevent.sleep(0.001)
         return "hey"

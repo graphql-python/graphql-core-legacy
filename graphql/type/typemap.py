@@ -22,6 +22,7 @@ if False:  # flake8: noqa
 
 
 class GraphQLTypeMap(OrderedDict):
+
     def __init__(self, types):
         # type: (List[GraphQLNamedType]) -> None
         super(GraphQLTypeMap, self).__init__()

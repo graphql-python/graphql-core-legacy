@@ -92,6 +92,7 @@ def schema_with_field_type(t):
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_ASchemaMustHaveObjectRootTypes:
+
     def test_accepts_a_schema_whose_query_type_is_an_object_type(self):
         assert GraphQLSchema(query=SomeObjectType)
 
@@ -155,6 +156,7 @@ class TestTypeSystem_ASchemaMustHaveObjectRootTypes:
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_ASchemaMustContainUniquelyNamedTypes:
+
     def test_it_rejects_a_schema_which_defines_a_builtin_type(self):
         FakeString = GraphQLScalarType(name="String", serialize=_none)
 
@@ -213,6 +215,7 @@ class TestTypeSystem_ASchemaMustContainUniquelyNamedTypes:
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_ObjectsMustHaveFields:
+
     def test_accepts_an_object_type_with_fields_object(self):
         assert schema_with_field_type(
             GraphQLObjectType(
@@ -316,6 +319,7 @@ class TestTypeSystem_ObjectsMustHaveFields:
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_FieldArgsMustBeProperlyNamed:
+
     def test_accepts_field_args_with_valid_names(self):
         assert schema_with_field_type(
             GraphQLObjectType(
@@ -352,6 +356,7 @@ class TestTypeSystem_FieldArgsMustBeProperlyNamed:
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_FieldArgsMustBeObjects:
+
     def test_accepts_an_object_with_field_args(self):
         assert schema_with_field_type(
             GraphQLObjectType(
@@ -406,6 +411,7 @@ class TestTypeSystem_FieldArgsMustBeObjects:
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_ObjectInterfacesMustBeArray:
+
     def test_accepts_an_object_type_with_array_interface(self):
         AnotherInterfaceType = GraphQLInterfaceType(
             name="AnotherInterface",
@@ -475,6 +481,7 @@ class TestTypeSystem_ObjectInterfacesMustBeArray:
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_UnionTypesMustBeArray:
+
     def test_accepts_a_union_type_with_aray_types(self):
         assert schema_with_field_type(
             GraphQLUnionType(
@@ -513,6 +520,7 @@ class TestTypeSystem_UnionTypesMustBeArray:
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_UnionTypesMustBeCallableThatReturnsArray:
+
     def test_accepts_a_union_type_with_aray_types(self):
         assert schema_with_field_type(
             GraphQLUnionType(
@@ -556,6 +564,7 @@ def schema_with_input_object(input_object_type):
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_InputObjectsMustHaveFields:
+
     def test_accepts_an_input_object_type_with_fields(self):
         assert schema_with_input_object(
             GraphQLInputObjectType(
@@ -671,6 +680,7 @@ class TestTypeSystem_InputObjectsMustHaveFields:
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_ObjectTypesMustBeAssertable:
+
     def test_accepts_an_object_type_with_an_is_type_of_function(self):
         assert schema_with_field_type(
             GraphQLObjectType(
@@ -698,6 +708,7 @@ class TestTypeSystem_ObjectTypesMustBeAssertable:
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_InterfaceTypesMustBeResolvable:
+
     def test_accepts_an_interface_type_defining_resolve_type(self):
         AnotherInterfaceType = GraphQLInterfaceType(
             name="AnotherInterface",
@@ -783,6 +794,7 @@ class TestTypeSystem_InterfaceTypesMustBeResolvable:
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_UnionTypesMustBeResolvable:
+
     def test_accepts_a_union_type_defining_resolve_type(self):
         assert schema_with_field_type(
             GraphQLUnionType(
@@ -834,6 +846,7 @@ class TestTypeSystem_UnionTypesMustBeResolvable:
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_ScalarTypesMustBeSerializable:
+
     def test_accepts_a_scalar_type_defining_serialize(self):
         assert schema_with_field_type(
             GraphQLScalarType(name="SomeScalar", serialize=_none)
@@ -913,6 +926,7 @@ class TestTypeSystem_ScalarTypesMustBeSerializable:
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_EnumTypesMustBeWellDefined:
+
     def test_accepts_a_well_defined_enum_type_with_empty_value_definition(self):
         assert GraphQLEnumType(
             name="SomeEnum",
@@ -988,6 +1002,7 @@ def repr_type_as_syntax_safe_fn(_type):
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_ObjectFieldsMustHaveOutputTypes:
+
     def accepts(self, type):
         assert schema_with_object_field_of_type(type)
 
@@ -1042,6 +1057,7 @@ not_interface_types = with_modifiers(
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_ObjectsCanOnlyImplementInterfaces:
+
     def test_accepts_an_object_implementing_an_interface(self):
         AnotherInterfaceType = GraphQLInterfaceType(
             name="AnotherInterface",
@@ -1089,6 +1105,7 @@ def schema_with_union_of_type(type):
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_UnionMustRepresentObjectTypes:
+
     def test_accepts_a_union_of_an_object_type(self):
         assert schema_with_union_of_type(SomeObjectType)
 
@@ -1121,6 +1138,7 @@ def schema_with_interface_field_of_type(field_type):
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_InterfaceFieldsMustHaveOutputTypes:
+
     def accepts(self, type):
         assert schema_with_interface_field_of_type(type)
 
@@ -1170,6 +1188,7 @@ def schema_with_arg_of_type(arg_type):
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_FieldArgumentsMustHaveInputTypes:
+
     def accepts(self, type):
         assert schema_with_arg_of_type(type)
 
@@ -1224,6 +1243,7 @@ def schema_with_input_field_of_type(input_field_type):
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_InputObjectFieldsMustHaveInputTypes:
+
     def accepts(self, type):
         assert schema_with_input_field_of_type(type)
 
@@ -1273,6 +1293,7 @@ not_types = [{}, str, None, object(), set(), (), []]
 
 
 class TestTypeSystem_ListMustAcceptGraphQLTypes:
+
     def accepts(self, type):
         assert GraphQLList(type)
 
@@ -1314,6 +1335,7 @@ not_nullable_types = [GraphQLNonNull(GraphQLString), {}, str, None, []]
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_NonNullMustAcceptGraphQLTypes:
+
     def accepts(self, type):
         assert GraphQLNonNull(type)
 
@@ -1346,6 +1368,7 @@ class TestTypeSystem_NonNullMustAcceptGraphQLTypes:
 
 # noinspection PyMethodMayBeStatic,PyPep8Naming
 class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
+
     def test_accepts_an_object_which_implements_an_interface(self):
         AnotherInterface = GraphQLInterfaceType(
             name="AnotherInterface",

@@ -6,6 +6,7 @@ from .base import ValidationRule
 
 
 class VariablesAreInputTypes(ValidationRule):
+
     def enter_VariableDefinition(self, node, key, parent, path, ancestors):
         type = type_from_ast(self.context.get_schema(), node.type)
 

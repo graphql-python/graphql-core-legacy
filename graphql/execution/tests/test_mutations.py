@@ -17,12 +17,14 @@ from graphql.type import (
 
 
 class NumberHolder(object):
+
     def __init__(self, n):
         # type: (int) -> None
         self.theNumber = n
 
 
 class Root(object):
+
     def __init__(self, n):
         # type: (int) -> None
         self.numberHolder = NumberHolder(n)

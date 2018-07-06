@@ -76,6 +76,7 @@ def test_executes_using_a_schema():
     BlogSchema = GraphQLSchema(BlogQuery)
 
     class Article(object):
+
         def __init__(self, id):
             # type: (int) -> None
             self.id = id
@@ -100,6 +101,7 @@ def test_executes_using_a_schema():
             return Article(1)
 
     class Pic(object):
+
         def __init__(self, uid, width, height):
             # type: (int, int, int) -> None
             self.url = "cdn://{}".format(uid)

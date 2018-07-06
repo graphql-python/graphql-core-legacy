@@ -20,6 +20,7 @@ ast = parse("{ nest { test } }")
 
 
 def check(test_data, expected):
+
     def run_check(self):
         # type: (Any) -> None
         test_type = self.type

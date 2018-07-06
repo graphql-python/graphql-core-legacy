@@ -175,6 +175,7 @@ def test_synchronous_error_nulls_out_error_subtrees():
     )
 
     class Data:
+
         def sync(self):
             # type: () -> str
             return "sync"

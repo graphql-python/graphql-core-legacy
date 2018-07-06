@@ -24,6 +24,7 @@ non_null_promise_error = Exception("nonNullPromise")
 
 
 class ThrowingData(object):
+
     def sync(self):
         # type: () -> None
         raise sync_error
@@ -58,6 +59,7 @@ class ThrowingData(object):
 
 
 class NullingData(object):
+
     def sync(self):
         # type: () -> Optional[Any]
         return None

@@ -31,6 +31,7 @@ def _unknown_directive_arg_message(arg_name, directive_name, suggested_args):
 
 
 class KnownArgumentNames(ValidationRule):
+
     def enter_Argument(
         self,
         node,  # type: Argument

@@ -11,6 +11,7 @@ from graphql.type.definition import (
 
 
 class Dog(object):
+
     def __init__(self, name, woofs):
         # type: (str, bool) -> None
         self.name = name
@@ -18,6 +19,7 @@ class Dog(object):
 
 
 class Cat(object):
+
     def __init__(self, name, meows):
         # type: (str, bool) -> None
         self.name = name
@@ -25,6 +27,7 @@ class Cat(object):
 
 
 class Human(object):
+
     def __init__(self, name):
         # type: (str) -> None
         self.name = name

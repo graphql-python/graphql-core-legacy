@@ -4,6 +4,7 @@ if False:  # flake8: noqa
 
 
 class SyncExecutor(object):
+
     def wait_until_finished(self):
         # type: () -> None
         pass

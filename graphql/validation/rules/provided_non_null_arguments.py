@@ -9,6 +9,7 @@ if False:  # flake8: noqa
 
 
 class ProvidedNonNullArguments(ValidationRule):
+
     def leave_Field(
         self,
         node,  # type: Field

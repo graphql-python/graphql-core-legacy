@@ -114,6 +114,7 @@ email_schema = email_schema_with_resolvers()
 
 
 class MyObserver(Observer):
+
     def on_next(self, value):
         self.has_on_next = value
 
@@ -132,6 +133,7 @@ def create_subscription(
 ):
     # type: (...) -> Tuple[Callable, Union[ExecutionResult, Observable]]
     class Root(object):
+
         class inbox(object):
             emails = [
                 Email(

@@ -10,6 +10,7 @@ if False:  # flake8: noqa
 
 
 class ArgumentsOfCorrectType(ValidationRule):
+
     def enter_Argument(
         self,
         node,  # type: Argument

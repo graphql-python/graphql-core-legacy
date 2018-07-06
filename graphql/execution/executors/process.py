@@ -11,6 +11,7 @@ def queue_process(q):
 
 
 class ProcessExecutor(object):
+
     def __init__(self):
         self.processes = []
         self.q = Queue()

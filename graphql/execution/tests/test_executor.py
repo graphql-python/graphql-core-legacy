@@ -257,6 +257,7 @@ def test_nulls_out_error_subtrees():
     }"""
 
     class Data(object):
+
         def ok(self):
             # type: () -> str
             return "ok"
@@ -498,11 +499,13 @@ def test_does_not_include_arguments_that_were_not_set():
 def test_fails_when_an_is_type_of_check_is_not_met():
     # type: () -> None
     class Special(object):
+
         def __init__(self, value):
             # type: (str) -> None
             self.value = value
 
     class NotSpecial(object):
+
         def __init__(self, value):
             # type: (str) -> None
             self.value = value
@@ -594,6 +597,7 @@ def test_middleware():
     }"""
 
     class Data(object):
+
         def ok(self):
             # type: () -> str
             return "ok"
@@ -627,6 +631,7 @@ def test_middleware_class():
     }"""
 
     class Data(object):
+
         def ok(self):
             # type: () -> str
             return "ok"
@@ -643,6 +648,7 @@ def test_middleware_class():
     )
 
     class MyMiddleware(object):
+
         def resolve(self, next, *args, **kwargs):
             # type: (Callable, *Any, **Any) -> Promise
             p = next(*args, **kwargs)
@@ -661,6 +667,7 @@ def test_middleware_skip_promise_wrap():
     }"""
 
     class Data(object):
+
         def ok(self):
             # type: () -> str
             return "ok"
@@ -677,11 +684,13 @@ def test_middleware_skip_promise_wrap():
     )
 
     class MyPromiseMiddleware(object):
+
         def resolve(self, next, *args, **kwargs):
             # type: (Callable, *Any, **Any) -> Promise
             return Promise.resolve(next(*args, **kwargs))
 
     class MyEmptyMiddleware(object):
+
         def resolve(self, next, *args, **kwargs):
             # type: (Callable, *Any, **Any) -> str
             return next(*args, **kwargs)
@@ -768,6 +777,7 @@ def test_executor_properly_propogates_path_data(mocker):
     BlogSchema = GraphQLSchema(BlogQuery)
 
     class Article(object):
+
         def __init__(self, id):
             # type: (int) -> None
             self.id = id
@@ -790,12 +800,14 @@ def test_executor_properly_propogates_path_data(mocker):
             return Article(1)
 
     class Pic(object):
+
         def __init__(self, uid, width, height):
             self.url = "cdn://{}".format(uid)
             self.width = str(width)
             self.height = str(height)
 
     class PathCollectorMiddleware(object):
+
         def __init__(self):
             # type: () -> None
             self.paths = []

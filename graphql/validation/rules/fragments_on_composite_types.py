@@ -10,6 +10,7 @@ if False:  # flake8: noqa
 
 
 class FragmentsOnCompositeTypes(ValidationRule):
+
     def enter_InlineFragment(
         self,
         node,  # type: InlineFragment

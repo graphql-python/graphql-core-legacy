@@ -48,6 +48,7 @@ AST_KIND_TO_TYPE = {c.__name__: c for c in QUERY_DOCUMENT_KEYS.keys()}
 
 
 class VisitorMeta(type):
+
     def __new__(cls, name, bases, attrs):
         enter_handlers = {}
         leave_handlers = {}

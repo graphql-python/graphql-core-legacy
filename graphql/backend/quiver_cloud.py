@@ -32,6 +32,7 @@ mutation($schemaDsl: String!, $query: String!, $pythonOptions: PythonOptions) {
 
 
 class GraphQLQuiverCloudBackend(GraphQLBackend):
+
     def __init__(self, dsn, python_options=None, **options):
         super(GraphQLQuiverCloudBackend, self).__init__(**options)
         try:

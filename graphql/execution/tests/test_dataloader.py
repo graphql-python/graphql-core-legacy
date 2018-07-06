@@ -64,6 +64,7 @@ def test_batches_correctly(executor):
     load_calls = []
 
     class BusinessDataLoader(DataLoader):
+
         def batch_load_fn(self, keys):
             # type: (List[str]) -> Promise
             load_calls.append(keys)
@@ -144,6 +145,7 @@ def test_batches_multiple_together(executor):
     business_load_calls = []
 
     class BusinessDataLoader(DataLoader):
+
         def batch_load_fn(self, keys):
             # type: (List[str]) -> Promise
             business_load_calls.append(keys)
@@ -152,6 +154,7 @@ def test_batches_multiple_together(executor):
     location_load_calls = []
 
     class LocationDataLoader(DataLoader):
+
         def batch_load_fn(self, keys):
             # type: (List[str]) -> Promise
             location_load_calls.append(keys)
