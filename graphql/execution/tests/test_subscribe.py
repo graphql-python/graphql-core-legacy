@@ -1,9 +1,5 @@
 # type: ignore
 from collections import OrderedDict, namedtuple
-
-from graphql import (GraphQLBoolean, GraphQLField, GraphQLInt, GraphQLList,
-                     GraphQLObjectType, GraphQLSchema, GraphQLString, graphql,
-                     parse, subscribe)
 from rx import Observable, Observer
 from rx.subjects import Subject
 from graphql import (

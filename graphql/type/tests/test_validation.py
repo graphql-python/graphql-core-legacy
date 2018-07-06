@@ -19,8 +19,6 @@ from graphql.type import (
 )
 from graphql.type.definition import GraphQLArgument
 
-from pytest import raises
-
 _none = lambda *args: None
 _true = lambda *args: True
 _false = lambda *args: False

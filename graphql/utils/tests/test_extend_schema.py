@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+from pytest import raises
+
 from graphql import parse
 from graphql.execution import execute
 from graphql.type import (
@@ -18,8 +20,6 @@ from graphql.type import (
 )
 from graphql.utils.extend_schema import extend_schema
 from graphql.utils.schema_printer import print_schema
-
-from pytest import raises
 
 # Test schema.
 SomeInterfaceType = GraphQLInterfaceType(

@@ -1,10 +1,10 @@
+from pytest import raises
+
 from graphql import Source, parse
 from graphql.error import GraphQLSyntaxError
 from graphql.language import ast
 from graphql.language.parser import Loc
 from typing import Callable
-
-from pytest import raises
 
 
 def create_loc_fn(body):

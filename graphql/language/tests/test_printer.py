@@ -1,10 +1,10 @@
 import copy
 
+from pytest import raises
+
 from graphql.language.ast import Field, Name
 from graphql.language.parser import parse
 from graphql.language.printer import print_ast
-
-from pytest import raises
 
 from .fixtures import KITCHEN_SINK
 

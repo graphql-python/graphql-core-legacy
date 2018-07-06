@@ -1,9 +1,9 @@
 import copy
 import pickle
 
-from graphql.pyutils.default_ordered_dict import DefaultOrderedDict
-
 from pytest import raises
+
+from graphql.pyutils.default_ordered_dict import DefaultOrderedDict
 
 
 def test_will_missing_will_set_value_from_factory():

@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+from pytest import raises
+
 from graphql import parse
 from graphql.language import ast
 from graphql.language.printer import print_ast

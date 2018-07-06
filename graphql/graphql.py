@@ -1,8 +1,7 @@
-from promise import promisify
-
-from .backend import get_default_backend
 from .execution import ExecutionResult
+from .backend import get_default_backend
 
+from promise import promisify
 
 # Necessary for static type checking
 if False:  # flake8: noqa

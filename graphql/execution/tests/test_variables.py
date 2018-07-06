@@ -2,6 +2,7 @@
 import json
 from collections import OrderedDict
 
+from pytest import raises
 from graphql.error import GraphQLError, format_error
 from graphql.execution import execute
 from graphql.language.parser import parse
@@ -24,8 +25,6 @@ from graphql.type import (
 # from typing import Optional
 # from typing import Dict
 # from typing import Union
-
-from pytest import raises
 
 TestComplexScalar = GraphQLScalarType(
     name="ComplexScalar",

@@ -2,8 +2,6 @@ import pytest
 
 from graphql.type import GraphQLBoolean, GraphQLFloat, GraphQLInt, GraphQLString
 
-import pytest
-
 
 def test_serializes_output_int():
     assert GraphQLInt.serialize(1) == 1
