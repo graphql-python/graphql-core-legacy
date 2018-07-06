@@ -11,17 +11,15 @@ from ..utils.schema_printer import print_schema
 from .base import GraphQLBackend
 from .compiled import GraphQLCompiledDocument
 
-from six import urlparse
+from six.moves.urllib.parse import urlparse
 
 GRAPHQL_QUERY = """
-mutation($schemaDsl: String!, $query: String!) {
+mutation($schemaDsl: String!, $query: String!, $pythonOptions: PythonOptions) {
   generateCode(
     schemaDsl: $schemaDsl
     query: $query,
     language: PYTHON,
-    pythonOptions: {
-      asyncFramework: PROMISE
-    }
+    pythonOptions: $pythonOptions
   ) {
     code
     compilationTime
@@ -51,12 +49,12 @@ class GraphQLQuiverCloudBackend(GraphQLBackend):
         else:
             path = ""
 
-        self.api_url = "%s://%s%s" % (url.scheme.rsplit("+", 1)[-1], netloc, path)
+        self.api_url = "{}://{}{}".format(url.scheme.rsplit("+", 1)[-1], netloc, path)
         self.public_key = url.username
         self.secret_key = url.password
         self.extra_namespace = {}
         if python_options is None:
-            python_options = {}
+            python_options = {"asyncFramework": "PROMISE"}
         wait_for_promises = python_options.pop("wait_for_promises", None)
         if wait_for_promises:
             assert callable(wait_for_promises), "wait_for_promises must be callable."
@@ -70,7 +68,11 @@ class GraphQLQuiverCloudBackend(GraphQLBackend):
         return response.json()
 
     def generate_source(self, schema, query):
-        variables = {"schemaDsl": print_schema(schema), "query": query}
+        variables = {
+            "schemaDsl": print_schema(schema),
+            "query": query,
+            "pythonOptions": self.python_options,
+        }
 
         json_response = self.make_post_request(
             "{}/graphql".format(self.api_url),
@@ -78,9 +80,9 @@ class GraphQLQuiverCloudBackend(GraphQLBackend):
             json_payload={"query": GRAPHQL_QUERY, "variables": variables},
         )
 
-        errors = json_response.get('errors')
+        errors = json_response.get("errors")
         if errors:
-            raise Exception(errors[0].get('message'))
+            raise Exception(errors[0].get("message"))
         data = json_response.get("data", {})
         code_generation = data.get("generateCode", {})
         code = code_generation.get("code")

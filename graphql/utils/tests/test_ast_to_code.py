@@ -11,7 +11,8 @@ def test_ast_to_code_using_kitchen_sink():
     code_ast = ast_to_code(doc)
     source = Source(fixtures.KITCHEN_SINK)
 
-    def loc(start, end): return Loc(start, end, source)
+    def loc(start, end):
+        return Loc(start, end, source)
 
-    parsed_code_ast = eval(code_ast, {}, {'ast': ast, 'loc': loc})
+    parsed_code_ast = eval(code_ast, {}, {"ast": ast, "loc": loc})
     assert doc == parsed_code_ast

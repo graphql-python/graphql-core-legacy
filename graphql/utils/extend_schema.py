@@ -3,17 +3,37 @@ from collections import defaultdict
 from ..error import GraphQLError
 from ..language import ast
 from ..pyutils.ordereddict import OrderedDict
-from ..type.definition import (GraphQLArgument, GraphQLEnumType,
-                               GraphQLEnumValue, GraphQLField,
-                               GraphQLInputObjectField, GraphQLInputObjectType,
-                               GraphQLInterfaceType, GraphQLList,
-                               GraphQLNonNull, GraphQLObjectType,
-                               GraphQLScalarType, GraphQLUnionType)
-from ..type.introspection import (__Directive, __DirectiveLocation,
-                                  __EnumValue, __Field, __InputValue, __Schema,
-                                  __Type, __TypeKind)
-from ..type.scalars import (GraphQLBoolean, GraphQLFloat, GraphQLID,
-                            GraphQLInt, GraphQLString)
+from ..type.definition import (
+    GraphQLArgument,
+    GraphQLEnumType,
+    GraphQLEnumValue,
+    GraphQLField,
+    GraphQLInputObjectField,
+    GraphQLInputObjectType,
+    GraphQLInterfaceType,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLObjectType,
+    GraphQLScalarType,
+    GraphQLUnionType,
+)
+from ..type.introspection import (
+    __Directive,
+    __DirectiveLocation,
+    __EnumValue,
+    __Field,
+    __InputValue,
+    __Schema,
+    __Type,
+    __TypeKind,
+)
+from ..type.scalars import (
+    GraphQLBoolean,
+    GraphQLFloat,
+    GraphQLID,
+    GraphQLInt,
+    GraphQLString,
+)
 from ..type.schema import GraphQLSchema
 from .value_from_ast import value_from_ast
 
@@ -30,32 +50,37 @@ def extend_schema(schema, documentAST=None):
     This algorithm copies the provided schema, applying extensions while
     producing the copy. The original schema remains unaltered."""
 
-    assert isinstance(
-        schema, GraphQLSchema), 'Must provide valid GraphQLSchema'
+    assert isinstance(schema, GraphQLSchema), "Must provide valid GraphQLSchema"
     assert documentAST and isinstance(
-        documentAST, ast.Document), 'Must provide valid Document AST'
+        documentAST, ast.Document
+    ), "Must provide valid Document AST"
 
     # Collect the type definitions and extensions found in the document.
     type_definition_map = {}
     type_extensions_map = defaultdict(list)
 
     for _def in documentAST.definitions:
-        if isinstance(_def, (
-            ast.ObjectTypeDefinition,
-            ast.InterfaceTypeDefinition,
-            ast.EnumTypeDefinition,
-            ast.UnionTypeDefinition,
-            ast.ScalarTypeDefinition,
-            ast.InputObjectTypeDefinition,
-        )):
+        if isinstance(
+            _def,
+            (
+                ast.ObjectTypeDefinition,
+                ast.InterfaceTypeDefinition,
+                ast.EnumTypeDefinition,
+                ast.UnionTypeDefinition,
+                ast.ScalarTypeDefinition,
+                ast.InputObjectTypeDefinition,
+            ),
+        ):
             # Sanity check that none of the defined types conflict with the
             # schema's existing types.
             type_name = _def.name.value
             if schema.get_type(type_name):
                 raise GraphQLError(
-                    ('Type "{}" already exists in the schema. It cannot also ' +
-                     'be defined in this type definition.').format(type_name),
-                    [_def]
+                    (
+                        'Type "{}" already exists in the schema. It cannot also '
+                        + "be defined in this type definition."
+                    ).format(type_name),
+                    [_def],
                 )
 
             type_definition_map[type_name] = _def
@@ -66,15 +91,16 @@ def extend_schema(schema, documentAST=None):
             existing_type = schema.get_type(extended_type_name)
             if not existing_type:
                 raise GraphQLError(
-                    ('Cannot extend type "{}" because it does not ' +
-                     'exist in the existing schema.').format(extended_type_name),
-                    [_def.definition]
+                    (
+                        'Cannot extend type "{}" because it does not '
+                        + "exist in the existing schema."
+                    ).format(extended_type_name),
+                    [_def.definition],
                 )
             if not isinstance(existing_type, GraphQLObjectType):
                 raise GraphQLError(
-                    'Cannot extend non-object type "{}".'.format(
-                        extended_type_name),
-                    [_def.definition]
+                    'Cannot extend non-object type "{}".'.format(extended_type_name),
+                    [_def.definition],
                 )
 
             type_extensions_map[extended_type_name].append(_def)
@@ -84,17 +110,18 @@ def extend_schema(schema, documentAST=None):
 
     def get_type_from_def(type_def):
         type = _get_named_type(type_def.name)
-        assert type, 'Invalid schema'
+        assert type, "Invalid schema"
         return type
 
     def get_type_from_AST(astNode):
         type = _get_named_type(astNode.name.value)
         if not type:
             raise GraphQLError(
-                ('Unknown type: "{}". Ensure that this type exists ' +
-                 'either in the original schema, or is added in a type definition.').format(
-                    astNode.name.value),
-                [astNode]
+                (
+                    'Unknown type: "{}". Ensure that this type exists '
+                    + "either in the original schema, or is added in a type definition."
+                ).format(astNode.name.value),
+                [astNode],
             )
         return type
 
@@ -162,10 +189,11 @@ def extend_schema(schema, documentAST=None):
                 interface_name = namedType.name.value
                 if any([_def.name == interface_name for _def in interfaces]):
                     raise GraphQLError(
-                        ('Type "{}" already implements "{}". ' +
-                         'It cannot also be implemented in this type extension.').format(
-                            type.name, interface_name),
-                        [namedType]
+                        (
+                            'Type "{}" already implements "{}". '
+                            + "It cannot also be implemented in this type extension."
+                        ).format(type.name, interface_name),
+                        [namedType],
                     )
                 interfaces.append(get_type_from_AST(namedType))
 
@@ -190,10 +218,11 @@ def extend_schema(schema, documentAST=None):
                 field_name = field.name.value
                 if field_name in old_field_map:
                     raise GraphQLError(
-                        ('Field "{}.{}" already exists in the ' +
-                         'schema. It cannot also be defined in this type extension.').format(
-                            type.name, field_name),
-                        [field]
+                        (
+                            'Field "{}.{}" already exists in the '
+                            + "schema. It cannot also be defined in this type extension."
+                        ).format(type.name, field_name),
+                        [field],
                     )
                 new_field_map[field_name] = GraphQLField(
                     build_field_type(field.type),
@@ -217,7 +246,7 @@ def extend_schema(schema, documentAST=None):
             ast.UnionTypeDefinition: build_union_type,
             ast.ScalarTypeDefinition: build_scalar_type,
             ast.EnumTypeDefinition: build_enum_type,
-            ast.InputObjectTypeDefinition: build_input_object_type
+            ast.InputObjectTypeDefinition: build_input_object_type,
         }
         func = _type_build.get(type(type_ast))
         if func:
@@ -265,8 +294,7 @@ def extend_schema(schema, documentAST=None):
     def build_input_object_type(type_ast):
         return GraphQLInputObjectType(
             type_ast.name.value,
-            fields=lambda: build_input_values(
-                type_ast.fields, GraphQLInputObjectField),
+            fields=lambda: build_input_values(type_ast.fields, GraphQLInputObjectField),
         )
 
     def build_implemented_interfaces(type_ast):
@@ -278,7 +306,8 @@ def extend_schema(schema, documentAST=None):
                 build_field_type(field.type),
                 args=build_input_values(field.arguments),
                 resolver=cannot_execute_client_schema,
-            ) for field in type_ast.fields
+            )
+            for field in type_ast.fields
         }
 
     def build_input_values(values, input_type=GraphQLArgument):
@@ -286,8 +315,7 @@ def extend_schema(schema, documentAST=None):
         for value in values:
             type = build_field_type(value.type)
             input_values[value.name.value] = input_type(
-                type,
-                default_value=value_from_ast(value.default_value, type)
+                type, default_value=value_from_ast(value.default_value, type)
             )
         return input_values
 
@@ -309,31 +337,35 @@ def extend_schema(schema, documentAST=None):
     # of the closure.
 
     type_def_cache = {
-        'String': GraphQLString,
-        'Int': GraphQLInt,
-        'Float': GraphQLFloat,
-        'Boolean': GraphQLBoolean,
-        'ID': GraphQLID,
-        '__Schema': __Schema,
-        '__Directive': __Directive,
-        '__DirectiveLocation': __DirectiveLocation,
-        '__Type': __Type,
-        '__Field': __Field,
-        '__InputValue': __InputValue,
-        '__EnumValue': __EnumValue,
-        '__TypeKind': __TypeKind,
+        "String": GraphQLString,
+        "Int": GraphQLInt,
+        "Float": GraphQLFloat,
+        "Boolean": GraphQLBoolean,
+        "ID": GraphQLID,
+        "__Schema": __Schema,
+        "__Directive": __Directive,
+        "__DirectiveLocation": __DirectiveLocation,
+        "__Type": __Type,
+        "__Field": __Field,
+        "__InputValue": __InputValue,
+        "__EnumValue": __EnumValue,
+        "__TypeKind": __TypeKind,
     }
 
     # Get the root Query, Mutation, and Subscription types.
     query_type = get_type_from_def(schema.get_query_type())
 
     existing_mutation_type = schema.get_mutation_type()
-    mutationType = existing_mutation_type and get_type_from_def(
-        existing_mutation_type) or None
+    mutationType = (
+        existing_mutation_type and get_type_from_def(existing_mutation_type) or None
+    )
 
     existing_subscription_type = schema.get_subscription_type()
-    subscription_type = existing_subscription_type and get_type_from_def(
-        existing_subscription_type) or None
+    subscription_type = (
+        existing_subscription_type
+        and get_type_from_def(existing_subscription_type)
+        or None
+    )
 
     # Iterate through all types, getting the type definition for each, ensuring
     # that any type not directly referenced by a field will get created.
@@ -349,9 +381,9 @@ def extend_schema(schema, documentAST=None):
         subscription=subscription_type,
         # Copy directives.
         directives=schema.get_directives(),
-        types=types
+        types=types,
     )
 
 
 def cannot_execute_client_schema(*args, **kwargs):
-    raise Exception('Client Schema cannot be used for execution.')
+    raise Exception("Client Schema cannot be used for execution.")

@@ -23,6 +23,12 @@ from .unique_variable_names import UniqueVariableNames
 from .variables_are_input_types import VariablesAreInputTypes
 from .variables_in_allowed_position import VariablesInAllowedPosition
 
+# Necessary for static type checking
+if False:  # flake8: noqa
+    from typing import List, Type
+    from .base import ValidationRule
+
+
 specified_rules = [
     UniqueOperationNames,
     LoneAnonymousOperation,
@@ -47,33 +53,33 @@ specified_rules = [
     VariablesInAllowedPosition,
     OverlappingFieldsCanBeMerged,
     UniqueInputFieldNames,
-    UniqueVariableNames
-]
+    UniqueVariableNames,
+]  # type: List[Type[ValidationRule]]
 
 __all__ = [
-    'ArgumentsOfCorrectType',
-    'DefaultValuesOfCorrectType',
-    'FieldsOnCorrectType',
-    'FragmentsOnCompositeTypes',
-    'KnownArgumentNames',
-    'KnownDirectives',
-    'KnownFragmentNames',
-    'KnownTypeNames',
-    'LoneAnonymousOperation',
-    'NoFragmentCycles',
-    'UniqueVariableNames',
-    'NoUndefinedVariables',
-    'NoUnusedFragments',
-    'NoUnusedVariables',
-    'OverlappingFieldsCanBeMerged',
-    'PossibleFragmentSpreads',
-    'ProvidedNonNullArguments',
-    'ScalarLeafs',
-    'UniqueArgumentNames',
-    'UniqueFragmentNames',
-    'UniqueInputFieldNames',
-    'UniqueOperationNames',
-    'VariablesAreInputTypes',
-    'VariablesInAllowedPosition',
-    'specified_rules'
+    "ArgumentsOfCorrectType",
+    "DefaultValuesOfCorrectType",
+    "FieldsOnCorrectType",
+    "FragmentsOnCompositeTypes",
+    "KnownArgumentNames",
+    "KnownDirectives",
+    "KnownFragmentNames",
+    "KnownTypeNames",
+    "LoneAnonymousOperation",
+    "NoFragmentCycles",
+    "UniqueVariableNames",
+    "NoUndefinedVariables",
+    "NoUnusedFragments",
+    "NoUnusedVariables",
+    "OverlappingFieldsCanBeMerged",
+    "PossibleFragmentSpreads",
+    "ProvidedNonNullArguments",
+    "ScalarLeafs",
+    "UniqueArgumentNames",
+    "UniqueFragmentNames",
+    "UniqueInputFieldNames",
+    "UniqueOperationNames",
+    "VariablesAreInputTypes",
+    "VariablesInAllowedPosition",
+    "specified_rules",
 ]

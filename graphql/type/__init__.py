@@ -19,21 +19,18 @@ from .definition import (  # no import order
     is_leaf_type,
     is_type,
     get_nullable_type,
-    is_output_type
+    is_output_type,
 )
 from .directives import (
     # "Enum" of Directive locations
     DirectiveLocation,
-
     # Directive definition
     GraphQLDirective,
-
     # Built-in directives defined by the Spec
     specified_directives,
     GraphQLSkipDirective,
     GraphQLIncludeDirective,
     GraphQLDeprecatedDirective,
-
     # Constant Deprecation Reason
     DEFAULT_DEPRECATION_REASON,
 )
@@ -49,7 +46,6 @@ from .schema import GraphQLSchema
 from .introspection import (
     # "Enum" of Type Kinds
     TypeKind,
-
     # GraphQL Types for introspection.
     __Schema,
     __Directive,
@@ -59,9 +55,8 @@ from .introspection import (
     __InputValue,
     __EnumValue,
     __TypeKind,
-
     # Meta-field definitions.
     SchemaMetaFieldDef,
     TypeMetaFieldDef,
-    TypeNameMetaFieldDef
+    TypeNameMetaFieldDef,
 )
