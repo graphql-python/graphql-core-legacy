@@ -3,7 +3,6 @@ import json
 from collections import OrderedDict
 
 from pytest import raises
-
 from graphql.error import GraphQLError, format_error
 from graphql.execution import execute
 from graphql.language.parser import parse

@@ -207,7 +207,7 @@ def _find_conflicts_within_selection_set(
         # selection set to collect conflicts within fragments spread together.
         # This compares each item in the list of fragment names to every other item
         # in that same list (except for itself).
-        for other_fragment_name in fragment_names[i + 1 :]:
+        for other_fragment_name in fragment_names[i + 1:]:
             _collect_conflicts_between_fragments(
                 context,
                 conflicts,
@@ -444,7 +444,7 @@ def _collect_conflicts_within(
         # (except to itself). If the list only has one item, nothing needs to
         # be compared.
         for i, field in enumerate(fields):
-            for other_field in fields[i + 1 :]:
+            for other_field in fields[i + 1:]:
                 # within one collection is never mutually exclusive
                 conflict = _find_conflict(
                     context,

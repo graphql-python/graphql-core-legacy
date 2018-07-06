@@ -1,4 +1,5 @@
 from hashlib import sha1
+
 from six import string_types
 from ..type import GraphQLSchema
 

@@ -240,4 +240,3 @@ def check_threads():
                 '(Enable the "enable-threads" flag).'
             )
         )
-

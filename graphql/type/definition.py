@@ -626,17 +626,17 @@ class GraphQLInputObjectType(GraphQLNamedType):
     """
 
     def __init__(self,
-            name, # type: str
-            fields, # type: Union[Callable[[], Dict[str, GraphQLInputObjectField]], Dict[str, GraphQLInputObjectField]]
-            description=None, # type: Optional[str]
-            container_type=None, # type: Type[Dict[str, Any]]
-        ):
+            name,  # type: str
+            fields,  # type: Union[Callable[[], Dict[str, GraphQLInputObjectField]], Dict[str, GraphQLInputObjectField]]
+            description=None,  # type: Optional[str]
+            container_type=None,  # type: Type[Dict[str, Any]]
+                 ):
         # type: (...) -> None
         assert name, "Type must be named."
         self.name = name
         self.description = description
         if container_type is None:
-            container_type = dict # type: ignore
+            container_type = dict  # type: ignore
         assert callable(container_type), "container_type must be callable"
         self.container_type = container_type
         self._fields = fields
@@ -755,7 +755,7 @@ class GraphQLNonNull(GraphQLType):
 
     def __init__(
         self,
-        type, # type: Union[GraphQLList, GraphQLObjectType, GraphQLScalarType, GraphQLInputObjectType, GraphQLInterfaceType]
+        type,  # type: Union[GraphQLList, GraphQLObjectType, GraphQLScalarType, GraphQLInputObjectType, GraphQLInterfaceType]
     ):
         # type: (...) -> None
         assert is_type(type) and not isinstance(
