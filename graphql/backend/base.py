@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
-
+from ..pyutils.cached_property import cached_property
 import six
+from ..language import ast
 
 # Necessary for static type checking
 if False:  # flake8: noqa

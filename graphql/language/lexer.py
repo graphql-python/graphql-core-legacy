@@ -372,7 +372,7 @@ def read_string(source, start):
 
         position += 1
         if code == 92:  # \
-            append(body[chunk_start : position - 1])
+            append(body[chunk_start: position - 1])
 
             code = char_code_at(body, position)
             escaped = ESCAPED_CHAR_CODES.get(code)  # type: ignore
@@ -392,7 +392,7 @@ def read_string(source, start):
                         source,
                         position,
                         u"Invalid character escape sequence: \\u{}.".format(
-                            body[position + 1 : position + 5]
+                            body[position + 1: position + 5]
                         ),
                     )
 
