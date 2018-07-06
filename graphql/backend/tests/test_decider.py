@@ -10,7 +10,7 @@ from ..decider import GraphQLDeciderBackend
 from .schema import schema
 
 if False:
-    from typing import Any  # noqa: F401
+    from typing import Any
 
 
 class FakeBackend(GraphQLBackend):

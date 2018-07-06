@@ -20,15 +20,9 @@ from graphql.utils.type_info import TypeInfo
 
 from ...validation.tests.utils import test_schema
 from .fixtures import KITCHEN_SINK
-from graphql.language.ast import Document
-from graphql.language.ast import OperationDefinition
-from graphql.language.ast import SelectionSet
 from typing import Any
 from typing import Optional
 from typing import Union
-from graphql.language.ast import Field
-from graphql.language.ast import Name
-from graphql.language.visitor import _Falsey
 from typing import List
 from graphql.language.ast import Argument
 from graphql.language.ast import IntValue
