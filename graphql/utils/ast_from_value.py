@@ -5,8 +5,12 @@ import sys
 from six import string_types
 
 from ..language import ast
-from ..type.definition import (GraphQLEnumType, GraphQLInputObjectType,
-                               GraphQLList, GraphQLNonNull)
+from ..type.definition import (
+    GraphQLEnumType,
+    GraphQLInputObjectType,
+    GraphQLList,
+    GraphQLNonNull,
+)
 from ..type.scalars import GraphQLFloat
 
 
@@ -41,7 +45,9 @@ def ast_from_value(value, type=None):
         return ast.FloatValue(string_num)
 
     if isinstance(value, string_types):
-        if isinstance(type, GraphQLEnumType) and re.match(r'^[_a-zA-Z][_a-zA-Z0-9]*$', value):
+        if isinstance(type, GraphQLEnumType) and re.match(
+            r"^[_a-zA-Z][_a-zA-Z0-9]*$", value
+        ):
             return ast.EnumValue(value)
 
         return ast.StringValue(json.dumps(value)[1:-1])
@@ -59,9 +65,6 @@ def ast_from_value(value, type=None):
 
         field_value = ast_from_value(field_value, field_type)
         if field_value:
-            fields.append(ast.ObjectField(
-                ast.Name(field_name),
-                field_value
-            ))
+            fields.append(ast.ObjectField(ast.Name(field_name), field_value))
 
     return ast.ObjectValue(fields)

@@ -10,15 +10,15 @@ from .fixtures import SCHEMA_KITCHEN_SINK
 
 
 def test_prints_minimal_ast():
-    node = ast.ScalarTypeDefinition(
-        name=ast.Name('foo')
-    )
+    # type: () -> None
+    node = ast.ScalarTypeDefinition(name=ast.Name("foo"))
 
-    assert print_ast(node) == 'scalar foo'
+    assert print_ast(node) == "scalar foo"
 
 
 def test_print_produces_helpful_error_messages():
-    bad_ast = {'random': 'Data'}
+    # type: () -> None
+    bad_ast = {"random": "Data"}
     with raises(AssertionError) as excinfo:
         print_ast(bad_ast)
 
@@ -26,6 +26,7 @@ def test_print_produces_helpful_error_messages():
 
 
 def test_does_not_alter_ast():
+    # type: () -> None
     ast = parse(SCHEMA_KITCHEN_SINK)
     ast_copy = deepcopy(ast)
     print_ast(ast)
@@ -33,10 +34,11 @@ def test_does_not_alter_ast():
 
 
 def test_prints_kitchen_sink():
+    # type: () -> None
     ast = parse(SCHEMA_KITCHEN_SINK)
     printed = print_ast(ast)
 
-    expected = '''schema {
+    expected = """schema {
   query: QueryType
   mutation: MutationType
 }
@@ -101,6 +103,6 @@ type NoFields {}
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-'''
+"""
 
     assert printed == expected

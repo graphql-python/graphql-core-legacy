@@ -4,6 +4,14 @@ from .backend import get_default_backend
 from .execution import ExecutionResult
 
 
+# Necessary for static type checking
+if False:  # flake8: noqa
+    from promise import Promise
+    from rx import Observable
+    from typing import Any, Union, Optional
+    from .language.ast import Document
+    from .type.schema import GraphQLSchema
+
 # This is the primary entry point function for fulfilling GraphQL operations
 # by parsing, validating, and executing a GraphQL document along side a
 # GraphQL schema.
@@ -29,16 +37,26 @@ from .execution import ExecutionResult
 
 
 def graphql(*args, **kwargs):
-    return_promise = kwargs.get('return_promise', False)
+    # type: (*Any, **Any) -> Union[ExecutionResult, Observable, Promise[ExecutionResult]]
+    return_promise = kwargs.get("return_promise", False)
     if return_promise:
         return execute_graphql_as_promise(*args, **kwargs)
     else:
         return execute_graphql(*args, **kwargs)
 
 
-def execute_graphql(schema, request_string='', root=None, context=None,
-                    variables=None, operation_name=None,
-                    middleware=None, backend=None, **execute_options):
+def execute_graphql(
+    schema,  # type: GraphQLSchema
+    request_string="",  # type: Union[Document, str]
+    root=None,  # type: Any
+    context=None,  # type: Optional[Any]
+    variables=None,  # type: Optional[Any]
+    operation_name=None,  # type: Optional[Any]
+    middleware=None,  # type: Optional[Any]
+    backend=None,  # type: Optional[Any]
+    **execute_options  # type: Any
+):
+    # type: (...) -> Union[ExecutionResult, Observable, Promise[ExecutionResult]]
     try:
         if backend is None:
             backend = get_default_backend()
@@ -53,10 +71,7 @@ def execute_graphql(schema, request_string='', root=None, context=None,
             **execute_options
         )
     except Exception as e:
-        return ExecutionResult(
-            errors=[e],
-            invalid=True,
-        )
+        return ExecutionResult(errors=[e], invalid=True)
 
 
 @promisify

@@ -1,3 +1,4 @@
+from inspect import isasyncgen  # type: ignore
 from asyncio import ensure_future, wait, CancelledError
 from inspect import isasyncgen
 
