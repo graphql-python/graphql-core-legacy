@@ -1,6 +1,8 @@
 # type: ignore
 import json
 
+from pytest import raises
+
 from graphql.error import GraphQLError
 from graphql.execution import MiddlewareManager, execute
 from graphql.language.parser import parse
@@ -17,8 +19,6 @@ from graphql.type import (
     GraphQLID,
 )
 from promise import Promise
-
-from pytest import raises
 
 
 def test_executes_arbitary_code():

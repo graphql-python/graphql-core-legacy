@@ -3,10 +3,10 @@ import functools
 import logging
 import sys
 import warnings
-
-from promise import Promise, is_thenable, promise_for_dict
 from rx import Observable
+
 from six import string_types
+from promise import Promise, promise_for_dict, is_thenable
 
 from ..error import GraphQLError, GraphQLLocatedError
 from ..pyutils.default_ordered_dict import DefaultOrderedDict

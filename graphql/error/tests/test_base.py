@@ -1,3 +1,4 @@
+import pytest
 import traceback
 
 from graphql.execution import execute
@@ -9,8 +10,6 @@ if False:  # flake8: noqa
     from graphql.execution.base import ResolveInfo
     from typing import Any
     from typing import Optional
-
-import pytest
 
 
 def test_raise():

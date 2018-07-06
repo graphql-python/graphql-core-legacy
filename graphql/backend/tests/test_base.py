@@ -1,6 +1,5 @@
 import pytest
-
-from .. import GraphQLCoreBackend, get_default_backend, set_default_backend
+from .. import get_default_backend, set_default_backend, GraphQLCoreBackend
 
 
 def test_get_default_backend_returns_core_by_default():

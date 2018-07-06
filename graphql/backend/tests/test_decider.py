@@ -6,9 +6,10 @@ import pytest
 from threading import Event
 
 from ..base import GraphQLBackend, GraphQLDocument
-from ..cache import GraphQLCachedBackend
 from ..core import GraphQLCoreBackend
+from ..cache import GraphQLCachedBackend
 from ..decider import GraphQLDeciderBackend
+
 from .schema import schema
 
 if False:
