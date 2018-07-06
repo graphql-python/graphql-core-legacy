@@ -4,12 +4,10 @@ from rx import AnonymousObservable
 
 
 def asyncgen_to_observable(asyncgen, loop=None):
-
     def emit(observer):
         task = ensure_future(iterate_asyncgen(asyncgen, observer), loop=loop)
 
         def dispose():
-
             async def await_task():
                 await task
 

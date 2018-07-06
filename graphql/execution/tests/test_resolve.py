@@ -26,7 +26,6 @@ from promise import Promise
 
 
 class CustomPromise(Promise):
-
     @classmethod
     def fulfilled(cls, x):
         # type: (str) -> CustomPromise

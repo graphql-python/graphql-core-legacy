@@ -10,7 +10,6 @@ __all__ = ["GraphQLSyntaxError"]
 
 
 class GraphQLSyntaxError(GraphQLError):
-
     def __init__(self, source, position, description):
         # type: (Source, int, str) -> None
         location = get_location(source, position)

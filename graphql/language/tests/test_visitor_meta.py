@@ -5,7 +5,6 @@ from graphql.language.visitor import Visitor
 def test_visitor_meta_creates_enter_and_leave_handlers():
     # type: () -> None
     class MyVisitor(Visitor):
-
         def enter_OperationDefinition(self):
             pass
 
@@ -19,7 +18,6 @@ def test_visitor_meta_creates_enter_and_leave_handlers():
 def test_visitor_inherits_parent_definitions():
     # type: () -> None
     class MyVisitor(Visitor):
-
         def enter_OperationDefinition(self):
             pass
 
@@ -30,7 +28,6 @@ def test_visitor_inherits_parent_definitions():
     assert MyVisitor._get_leave_handler(ast.OperationDefinition)
 
     class MyVisitorSubclassed(MyVisitor):
-
         def enter_FragmentDefinition(self):
             pass
 

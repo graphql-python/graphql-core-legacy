@@ -753,7 +753,6 @@ def test_does_not_allow_unknown_types_to_be_used_as_values():
 
 # noinspection PyMethodMayBeStatic
 class TestUsesArgumentDefaultValues:
-
     def test_when_no_argument_provided(self):
         # type: () -> None
         check(

@@ -25,7 +25,6 @@ def remap_type(typename):
 
 
 class Printer(object):
-
     def __init__(self):
         self._current_union = None
         self._parent_types = {}

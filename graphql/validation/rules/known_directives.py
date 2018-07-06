@@ -5,7 +5,6 @@ from .base import ValidationRule
 
 
 class KnownDirectives(ValidationRule):
-
     def enter_Directive(self, node, key, parent, path, ancestors):
         directive_def = next(
             (

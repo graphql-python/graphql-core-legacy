@@ -11,7 +11,6 @@ if False:  # flake8: noqa
 
 
 class DefaultValuesOfCorrectType(ValidationRule):
-
     def enter_VariableDefinition(self, node, key, parent, path, ancestors):
         name = node.variable.name.value
         default_value = node.default_value

@@ -11,7 +11,6 @@ __all__ = ["GraphQLLocatedError"]
 
 
 class GraphQLLocatedError(GraphQLError):
-
     def __init__(
         self,
         nodes,  # type: List[Field]

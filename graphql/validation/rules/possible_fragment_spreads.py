@@ -10,7 +10,6 @@ if False:  # flake8: noqa
 
 
 class PossibleFragmentSpreads(ValidationRule):
-
     def enter_InlineFragment(
         self,
         node,  # type: InlineFragment

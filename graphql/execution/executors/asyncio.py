@@ -45,7 +45,6 @@ except Exception:
 
 
 class AsyncioExecutor(object):
-
     def __init__(self, loop=None):
         # type: (Optional[_UnixSelectorEventLoop]) -> None
         if loop is None:

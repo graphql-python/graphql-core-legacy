@@ -17,7 +17,6 @@ if False:
 
 
 class FakeBackend(GraphQLBackend):
-
     def __init__(self, name, raises=False):
         # type: (str, bool) -> None
         self.raises = raises

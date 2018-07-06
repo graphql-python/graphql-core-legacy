@@ -15,7 +15,6 @@ if False:  # flake8: noqa
 
 
 class _Falsey(object):
-
     def __nonzero__(self):
         return False
 

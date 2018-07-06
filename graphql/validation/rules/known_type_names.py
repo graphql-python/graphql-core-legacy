@@ -18,7 +18,6 @@ def _unknown_type_message(type, suggested_types):
 
 
 class KnownTypeNames(ValidationRule):
-
     def enter_ObjectTypeDefinition(self, node, *args):
         return False
 

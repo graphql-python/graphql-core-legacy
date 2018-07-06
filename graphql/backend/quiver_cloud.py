@@ -32,7 +32,6 @@ mutation($schemaDsl: String!, $query: String!, $pythonOptions: PythonOptions) {
 
 
 class GraphQLQuiverCloudBackend(GraphQLBackend):
-
     def __init__(self, dsn, python_options=None, **options):
         super(GraphQLQuiverCloudBackend, self).__init__(**options)
         try:
@@ -50,7 +49,7 @@ class GraphQLQuiverCloudBackend(GraphQLBackend):
         else:
             path = ""
 
-        self.api_url = "%s://%s%s" % (url.scheme.rsplit("+", 1)[-1], netloc, path)
+        self.api_url = "{}://{}{}".format(url.scheme.rsplit("+", 1)[-1], netloc, path)
         self.public_key = url.username
         self.secret_key = url.password
         self.extra_namespace = {}

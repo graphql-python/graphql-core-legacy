@@ -3,7 +3,6 @@ from .base import ValidationRule
 
 
 class KnownFragmentNames(ValidationRule):
-
     def enter_FragmentSpread(self, node, key, parent, path, ancestors):
         fragment_name = node.name.value
         fragment = self.context.get_fragment(fragment_name)

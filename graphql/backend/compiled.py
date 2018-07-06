@@ -8,7 +8,6 @@ if False:  # flake8: noqa
 
 
 class GraphQLCompiledDocument(GraphQLDocument):
-
     @classmethod
     def from_code(
         cls,

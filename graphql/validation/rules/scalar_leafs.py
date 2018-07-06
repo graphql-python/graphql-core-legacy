@@ -9,7 +9,6 @@ if False:  # flake8: noqa
 
 
 class ScalarLeafs(ValidationRule):
-
     def enter_Field(
         self,
         node,  # type: Field
