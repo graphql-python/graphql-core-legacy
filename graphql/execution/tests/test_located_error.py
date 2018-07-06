@@ -1,8 +1,14 @@
 # type: ignore
 # coding: utf-8
 
-from graphql import (GraphQLField, GraphQLObjectType, GraphQLSchema,
-                     GraphQLString, execute, parse)
+from graphql import (
+    GraphQLField,
+    GraphQLObjectType,
+    GraphQLSchema,
+    GraphQLString,
+    execute,
+    parse,
+)
 from graphql.error import GraphQLLocatedError
 
 

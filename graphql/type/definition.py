@@ -625,12 +625,13 @@ class GraphQLInputObjectType(GraphQLNamedType):
             }
     """
 
-    def __init__(self,
-            name,  # type: str
-            fields,  # type: Union[Callable[[], Dict[str, GraphQLInputObjectField]], Dict[str, GraphQLInputObjectField]]
-            description=None,  # type: Optional[str]
-            container_type=None,  # type: Type[Dict[str, Any]]
-                 ):
+    def __init__(
+        self,
+        name,  # type: str
+        fields,  # type: Union[Callable[[], Dict[str, GraphQLInputObjectField]], Dict[str, GraphQLInputObjectField]]
+        description=None,  # type: Optional[str]
+        container_type=None,  # type: Type[Dict[str, Any]]
+    ):
         # type: (...) -> None
         assert name, "Type must be named."
         self.name = name

@@ -5,25 +5,21 @@ from .starwars_schema import StarWarsSchema
 
 
 def test_hero_name_query():
-    query = '''
+    query = """
         query HeroNameQuery {
           hero {
             name
           }
         }
-    '''
-    expected = {
-        'hero': {
-            'name': 'R2-D2'
-        }
-    }
+    """
+    expected = {"hero": {"name": "R2-D2"}}
     result = graphql(StarWarsSchema, query)
     assert not result.errors
     assert result.data == expected
 
 
 def test_hero_name_and_friends_query():
-    query = '''
+    query = """
         query HeroNameAndFriendsQuery {
           hero {
             id
@@ -33,16 +29,16 @@ def test_hero_name_and_friends_query():
             }
           }
         }
-    '''
+    """
     expected = {
-        'hero': {
-            'id': '2001',
-            'name': 'R2-D2',
-            'friends': [
-                {'name': 'Luke Skywalker'},
-                {'name': 'Han Solo'},
-                {'name': 'Leia Organa'},
-            ]
+        "hero": {
+            "id": "2001",
+            "name": "R2-D2",
+            "friends": [
+                {"name": "Luke Skywalker"},
+                {"name": "Han Solo"},
+                {"name": "Leia Organa"},
+            ],
         }
     }
     result = graphql(StarWarsSchema, query)
@@ -51,7 +47,7 @@ def test_hero_name_and_friends_query():
 
 
 def test_nested_query():
-    query = '''
+    query = """
         query NestedQuery {
           hero {
             name
@@ -64,63 +60,41 @@ def test_nested_query():
             }
           }
         }
-    '''
+    """
     expected = {
-        'hero': {
-            'name': 'R2-D2',
-            'friends': [
+        "hero": {
+            "name": "R2-D2",
+            "friends": [
                 {
-                    'name': 'Luke Skywalker',
-                    'appearsIn': ['NEWHOPE', 'EMPIRE', 'JEDI'],
-                    'friends': [
-                        {
-                            'name': 'Han Solo',
-                        },
-                        {
-                            'name': 'Leia Organa',
-                        },
-                        {
-                            'name': 'C-3PO',
-                        },
-                        {
-                            'name': 'R2-D2',
-                        },
-                    ]
+                    "name": "Luke Skywalker",
+                    "appearsIn": ["NEWHOPE", "EMPIRE", "JEDI"],
+                    "friends": [
+                        {"name": "Han Solo"},
+                        {"name": "Leia Organa"},
+                        {"name": "C-3PO"},
+                        {"name": "R2-D2"},
+                    ],
                 },
                 {
-                    'name': 'Han Solo',
-                    'appearsIn': ['NEWHOPE', 'EMPIRE', 'JEDI'],
-                    'friends': [
-                        {
-                            'name': 'Luke Skywalker',
-                        },
-                        {
-                            'name': 'Leia Organa',
-                        },
-                        {
-                            'name': 'R2-D2',
-                        },
-                    ]
+                    "name": "Han Solo",
+                    "appearsIn": ["NEWHOPE", "EMPIRE", "JEDI"],
+                    "friends": [
+                        {"name": "Luke Skywalker"},
+                        {"name": "Leia Organa"},
+                        {"name": "R2-D2"},
+                    ],
                 },
                 {
-                    'name': 'Leia Organa',
-                    'appearsIn': ['NEWHOPE', 'EMPIRE', 'JEDI'],
-                    'friends': [
-                        {
-                            'name': 'Luke Skywalker',
-                        },
-                        {
-                            'name': 'Han Solo',
-                        },
-                        {
-                            'name': 'C-3PO',
-                        },
-                        {
-                            'name': 'R2-D2',
-                        },
-                    ]
+                    "name": "Leia Organa",
+                    "appearsIn": ["NEWHOPE", "EMPIRE", "JEDI"],
+                    "friends": [
+                        {"name": "Luke Skywalker"},
+                        {"name": "Han Solo"},
+                        {"name": "C-3PO"},
+                        {"name": "R2-D2"},
+                    ],
                 },
-            ]
+            ],
         }
     }
     result = graphql(StarWarsSchema, query)
@@ -129,104 +103,80 @@ def test_nested_query():
 
 
 def test_fetch_luke_query():
-    query = '''
+    query = """
         query FetchLukeQuery {
           human(id: "1000") {
             name
           }
         }
-    '''
-    expected = {
-        'human': {
-            'name': 'Luke Skywalker',
-        }
-    }
+    """
+    expected = {"human": {"name": "Luke Skywalker"}}
     result = graphql(StarWarsSchema, query)
     assert not result.errors
     assert result.data == expected
 
 
 def test_fetch_some_id_query():
-    query = '''
+    query = """
         query FetchSomeIDQuery($someId: String!) {
           human(id: $someId) {
             name
           }
         }
-    '''
-    params = {
-        'someId': '1000',
-    }
-    expected = {
-        'human': {
-            'name': 'Luke Skywalker',
-        }
-    }
+    """
+    params = {"someId": "1000"}
+    expected = {"human": {"name": "Luke Skywalker"}}
     result = graphql(StarWarsSchema, query, variable_values=params)
     assert not result.errors
     assert result.data == expected
 
 
 def test_fetch_some_id_query2():
-    query = '''
+    query = """
         query FetchSomeIDQuery($someId: String!) {
           human(id: $someId) {
             name
           }
         }
-    '''
-    params = {
-        'someId': '1002',
-    }
-    expected = {
-        'human': {
-            'name': 'Han Solo',
-        }
-    }
+    """
+    params = {"someId": "1002"}
+    expected = {"human": {"name": "Han Solo"}}
     result = graphql(StarWarsSchema, query, variable_values=params)
     assert not result.errors
     assert result.data == expected
 
 
 def test_invalid_id_query():
-    query = '''
+    query = """
         query humanQuery($id: String!) {
           human(id: $id) {
             name
           }
         }
-    '''
-    params = {
-        'id': 'not a valid id',
-    }
-    expected = {
-        'human': None
-    }
+    """
+    params = {"id": "not a valid id"}
+    expected = {"human": None}
     result = graphql(StarWarsSchema, query, variable_values=params)
     assert not result.errors
     assert result.data == expected
 
 
 def test_fetch_luke_aliased():
-    query = '''
+    query = """
         query FetchLukeAliased {
           luke: human(id: "1000") {
             name
           }
         }
-    '''
-    expected = {
-        'luke': {
-            'name': 'Luke Skywalker',
-        }
-    }
+    """
+    expected = {"luke": {"name": "Luke Skywalker"}}
     result = graphql(StarWarsSchema, query)
     assert not result.errors
     assert result.data == expected
 
 
 def test_fetch_luke_and_leia_aliased():
-    query = '''
+    query = """
         query FetchLukeAndLeiaAliased {
           luke: human(id: "1000") {
             name
@@ -235,22 +185,15 @@ def test_fetch_luke_and_leia_aliased():
             name
           }
         }
-    '''
-    expected = {
-        'luke': {
-            'name': 'Luke Skywalker',
-        },
-        'leia': {
-            'name': 'Leia Organa',
-        }
-    }
+    """
+    expected = {"luke": {"name": "Luke Skywalker"}, "leia": {"name": "Leia Organa"}}
     result = graphql(StarWarsSchema, query)
     assert not result.errors
     assert result.data == expected
 
 
 def test_duplicate_fields():
-    query = '''
+    query = """
         query DuplicateFields {
           luke: human(id: "1000") {
             name
@@ -261,16 +204,10 @@ def test_duplicate_fields():
             homePlanet
           }
         }
-    '''
+    """
     expected = {
-        'luke': {
-            'name': 'Luke Skywalker',
-            'homePlanet': 'Tatooine',
-        },
-        'leia': {
-            'name': 'Leia Organa',
-            'homePlanet': 'Alderaan',
-        }
+        "luke": {"name": "Luke Skywalker", "homePlanet": "Tatooine"},
+        "leia": {"name": "Leia Organa", "homePlanet": "Alderaan"},
     }
     result = graphql(StarWarsSchema, query)
     assert not result.errors
@@ -278,7 +215,7 @@ def test_duplicate_fields():
 
 
 def test_use_fragment():
-    query = '''
+    query = """
         query UseFragment {
           luke: human(id: "1000") {
             ...HumanFragment
@@ -291,16 +228,10 @@ def test_use_fragment():
           name
           homePlanet
         }
-    '''
+    """
     expected = {
-        'luke': {
-            'name': 'Luke Skywalker',
-            'homePlanet': 'Tatooine',
-        },
-        'leia': {
-            'name': 'Leia Organa',
-            'homePlanet': 'Alderaan',
-        }
+        "luke": {"name": "Luke Skywalker", "homePlanet": "Tatooine"},
+        "leia": {"name": "Leia Organa", "homePlanet": "Alderaan"},
     }
     result = graphql(StarWarsSchema, query)
     assert not result.errors
@@ -308,52 +239,45 @@ def test_use_fragment():
 
 
 def test_check_type_of_r2():
-    query = '''
+    query = """
         query CheckTypeOfR2 {
           hero {
             __typename
             name
           }
         }
-    '''
-    expected = {
-        'hero': {
-            '__typename': 'Droid',
-            'name': 'R2-D2',
-        }
-    }
+    """
+    expected = {"hero": {"__typename": "Droid", "name": "R2-D2"}}
     result = graphql(StarWarsSchema, query)
     assert not result.errors
     assert result.data == expected
 
 
 def test_check_type_of_luke():
-    query = '''
+    query = """
         query CheckTypeOfLuke {
           hero(episode: EMPIRE) {
             __typename
             name
           }
         }
-    '''
-    expected = {
-        'hero': {
-            '__typename': 'Human',
-            'name': 'Luke Skywalker',
-        }
-    }
+    """
+    expected = {"hero": {"__typename": "Human", "name": "Luke Skywalker"}}
     result = graphql(StarWarsSchema, query)
     assert not result.errors
     assert result.data == expected
 
 
 def test_parse_error():
-    query = '''
+    query = """
         qeury
-    '''
+    """
     result = graphql(StarWarsSchema, query)
     assert result.invalid
     formatted_error = format_error(result.errors[0])
-    assert formatted_error['locations'] == [{'column': 9, 'line': 2}]
-    assert 'Syntax Error GraphQL (2:9) Unexpected Name "qeury"' in formatted_error['message']
+    assert formatted_error["locations"] == [{"column": 9, "line": 2}]
+    assert (
+        'Syntax Error GraphQL (2:9) Unexpected Name "qeury"'
+        in formatted_error["message"]
+    )
     assert result.data is None

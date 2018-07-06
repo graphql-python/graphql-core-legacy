@@ -49,7 +49,7 @@ class GraphQLQuiverCloudBackend(GraphQLBackend):
         else:
             path = ""
 
-        self.api_url = "%s://%s%s" % (url.scheme.rsplit("+", 1)[-1], netloc, path)
+        self.api_url = "{}://{}{}".format(url.scheme.rsplit("+", 1)[-1], netloc, path)
         self.public_key = url.username
         self.secret_key = url.password
         self.extra_namespace = {}
