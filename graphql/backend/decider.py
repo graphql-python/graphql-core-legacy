@@ -66,7 +66,7 @@ class AsyncWorker(object):
                 # add or remove items
                 size = self._queue.qsize()
 
-                print("Sentry is attempting to send %i pending error messages" % size)
+                print("GraphQL is attempting to retrieve %i pending documents" % size)
                 print("Waiting up to %s seconds" % timeout)
 
                 if os.name == "nt":
