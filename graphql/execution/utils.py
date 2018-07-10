@@ -136,13 +136,12 @@ class ExecutionContext(object):
     def get_argument_values(self, field_def, field_ast):
         # type: (GraphQLField, Field) -> Dict[str, Any]
         k = field_def, field_ast
-        result = self.argument_values_cache.get(k)
-        if not result:
-            result = self.argument_values_cache[k] = get_argument_values(
+        if k not in self.argument_values_cache:
+            self.argument_values_cache[k] = get_argument_values(
                 field_def.args, field_ast.arguments, self.variable_values
             )
 
-        return result
+        return self.argument_values_cache[k]
 
     def report_error(self, error, traceback=None):
         # type: (Exception, Optional[TracebackType]) -> None
