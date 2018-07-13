@@ -143,7 +143,7 @@ def test_middleware_skip_promise_wrap():
 
 
 def test_middleware_chain(capsys):
-    # type: () -> None
+    # type: (Any) -> None
     class CharPrintingMiddleware(object):
         def __init__(self, char):
             # type: (str) -> None
