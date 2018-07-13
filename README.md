@@ -17,13 +17,13 @@ For questions, ask [Stack Overflow](http://stackoverflow.com/questions/tagged/gr
 
 ## Getting Started
 
-An overview of the GraphQL language is available in the 
+An overview of the GraphQL language is available in the
 [README](https://github.com/facebook/graphql/blob/master/README.md) for the
-[Specification for GraphQL](https://github.com/facebook/graphql). 
+[Specification for GraphQL](https://github.com/facebook/graphql).
 
 The overview describes a simple set of GraphQL examples that exist as [tests](https://github.com/graphql-python/graphql-core/tree/master/tests/)
 in this repository. A good way to get started is to walk through that README and the corresponding tests
-in parallel. 
+in parallel.
 
 ### Using graphql-core
 
@@ -114,19 +114,36 @@ from graphql.execution.execute import execute
 execute(schema, ast, executor=SyncExecutor())
 ```
 
-### Development
+### Contributing
 
-Install development and test dependencies:
+After cloning this repo, create a [virtualenv](https://virtualenv.pypa.io/en/stable/) and ensure dependencies are installed by running:
 
 ```sh
+virtualenv venv
+source venv/bin/activate
 pip install -e ".[test]"
 ```
 
-Run test suite:
+Well-written tests and maintaining good test coverage is important to this project. While developing, run new and existing tests with:
 
 ```sh
-pytest
+py.test PATH/TO/MY/DIR/test_test.py # Single file
+py.test PATH/TO/MY/DIR/ # All tests in directory
 ```
+
+Add the `-s` flag if you have introduced breakpoints into the code for debugging.
+Add the `-v` ("verbose") flag to get more detailed test output. For even more detailed output, use `-vv`.
+Check out the [pytest documentation](https://docs.pytest.org/en/latest/) for more options and test running controls.  
+
+GraphQL-core supports several versions of Python. To make sure that changes do not break compatibility with any of those versions, we use `tox` to create virtualenvs for each python version and run tests with that version. To run against all python versions defined in the `tox.ini` config file, just run:
+```sh
+tox
+```
+If you wish to run against a specific version defined in the `tox.ini` file:
+```sh
+tox -e py36
+```
+Tox can only use whatever versions of python are installed on your system. When you create a pull request, Travis will also be running the same tests and report the results, so there is no need for potential contributors to try to install every single version of python on their own system ahead of time. We appreciate opening issues and pull requests to make GraphQL-core even more stable & useful!
 
 ## Main Contributors
 

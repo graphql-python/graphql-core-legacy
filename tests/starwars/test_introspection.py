@@ -6,7 +6,7 @@ from .starwars_schema import StarWarsSchema
 
 
 def test_allows_querying_the_schema_for_types():
-    query = '''
+    query = """
         query IntrospectionTypeQuery {
           __schema {
             types {
@@ -14,55 +14,25 @@ def test_allows_querying_the_schema_for_types():
             }
           }
         }
-    '''
+    """
     expected = {
         "__schema": {
             "types": [
-                {
-                    "name": 'Query'
-                },
-                {
-                    "name": 'Episode'
-                },
-                {
-                    "name": 'Character'
-                },
-                {
-                    "name": 'String'
-                },
-                {
-                    "name": 'Human'
-                },
-                {
-                    "name": 'Droid'
-                },
-                {
-                    "name": '__Schema'
-                },
-                {
-                    "name": '__Type'
-                },
-                {
-                    "name": '__TypeKind'
-                },
-                {
-                    "name": 'Boolean'
-                },
-                {
-                    "name": '__Field'
-                },
-                {
-                    "name": '__InputValue'
-                },
-                {
-                    "name": '__EnumValue'
-                },
-                {
-                    "name": '__Directive'
-                },
-                {
-                    "name": '__DirectiveLocation'
-                }
+                {"name": "Query"},
+                {"name": "Episode"},
+                {"name": "Character"},
+                {"name": "String"},
+                {"name": "Human"},
+                {"name": "Droid"},
+                {"name": "__Schema"},
+                {"name": "__Type"},
+                {"name": "__TypeKind"},
+                {"name": "Boolean"},
+                {"name": "__Field"},
+                {"name": "__InputValue"},
+                {"name": "__EnumValue"},
+                {"name": "__Directive"},
+                {"name": "__DirectiveLocation"},
             ]
         }
     }
@@ -73,7 +43,7 @@ def test_allows_querying_the_schema_for_types():
 
 
 def test_allows_querying_the_schema_for_query_type():
-    query = '''
+    query = """
       query IntrospectionQueryTypeQuery {
         __schema {
           queryType {
@@ -81,82 +51,62 @@ def test_allows_querying_the_schema_for_query_type():
           }
         }
       }
-    '''
+    """
 
-    expected = {
-        '__schema': {
-            'queryType': {
-                'name': 'Query'
-            },
-        }
-    }
+    expected = {"__schema": {"queryType": {"name": "Query"}}}
     result = graphql(StarWarsSchema, query)
     assert not result.errors
     assert contain_subset(result.data, expected)
 
 
 def test_allows_querying_the_schema_for_a_specific_type():
-    query = '''
+    query = """
       query IntrospectionDroidTypeQuery {
         __type(name: "Droid") {
           name
         }
       }
-    '''
+    """
 
-    expected = {
-        '__type': {
-            'name': 'Droid'
-        }
-    }
+    expected = {"__type": {"name": "Droid"}}
     result = graphql(StarWarsSchema, query)
     assert not result.errors
     assert contain_subset(result.data, expected)
 
 
 def test_allows_querying_the_schema_for_an_object_kind():
-    query = '''
+    query = """
       query IntrospectionDroidKindQuery {
         __type(name: "Droid") {
           name
           kind
         }
       }
-    '''
+    """
 
-    expected = {
-        '__type': {
-            'name': 'Droid',
-            'kind': 'OBJECT'
-        }
-    }
+    expected = {"__type": {"name": "Droid", "kind": "OBJECT"}}
     result = graphql(StarWarsSchema, query)
     assert not result.errors
     assert contain_subset(result.data, expected)
 
 
 def test_allows_querying_the_schema_for_an_interface_kind():
-    query = '''
+    query = """
       query IntrospectionCharacterKindQuery {
         __type(name: "Character") {
           name
           kind
         }
       }
-    '''
-    expected = {
-        '__type': {
-            'name': 'Character',
-            'kind': 'INTERFACE'
-        }
-    }
+    """
+    expected = {"__type": {"name": "Character", "kind": "INTERFACE"}}
     result = graphql(StarWarsSchema, query)
     assert not result.errors
     assert contain_subset(result.data, expected)
 
 
 def test_allows_querying_the_schema_for_object_fields():
-    query = '''
+    query = """
       query IntrospectionDroidFieldsQuery {
         __type(name: "Droid") {
           name
@@ -169,48 +119,21 @@ def test_allows_querying_the_schema_for_object_fields():
           }
         }
       }
-    '''
+    """
 
     expected = {
-        '__type': {
-            'name': 'Droid',
-            'fields': [
+        "__type": {
+            "name": "Droid",
+            "fields": [
+                {"name": "id", "type": {"name": None, "kind": "NON_NULL"}},
+                {"name": "name", "type": {"name": "String", "kind": "SCALAR"}},
+                {"name": "friends", "type": {"name": None, "kind": "LIST"}},
+                {"name": "appearsIn", "type": {"name": None, "kind": "LIST"}},
                 {
-                    'name': 'id',
-                    'type': {
-                        'name': None,
-                        'kind': 'NON_NULL'
-                    }
+                    "name": "primaryFunction",
+                    "type": {"name": "String", "kind": "SCALAR"},
                 },
-                {
-                    'name': 'name',
-                    'type': {
-                        'name': 'String',
-                        'kind': 'SCALAR'
-                    }
-                },
-                {
-                    'name': 'friends',
-                    'type': {
-                        'name': None,
-                        'kind': 'LIST'
-                    }
-                },
-                {
-                    'name': 'appearsIn',
-                    'type': {
-                        'name': None,
-                        'kind': 'LIST'
-                    }
-                },
-                {
-                    'name': 'primaryFunction',
-                    'type': {
-                        'name': 'String',
-                        'kind': 'SCALAR'
-                    }
-                }
-            ]
+            ],
         }
     }
 
@@ -220,7 +143,7 @@ def test_allows_querying_the_schema_for_object_fields():
 
 
 def test_allows_querying_the_schema_for_nested_object_fields():
-    query = '''
+    query = """
       query IntrospectionDroidNestedFieldsQuery {
         __type(name: "Droid") {
           name
@@ -237,62 +160,45 @@ def test_allows_querying_the_schema_for_nested_object_fields():
           }
         }
       }
-    '''
+    """
 
     expected = {
-        '__type': {
-            'name': 'Droid',
-            'fields': [
+        "__type": {
+            "name": "Droid",
+            "fields": [
                 {
-                    'name': 'id',
-                    'type': {
-                        'name': None,
-                        'kind': 'NON_NULL',
-                        'ofType': {
-                            'name': 'String',
-                            'kind': 'SCALAR'
-                        }
-                    }
+                    "name": "id",
+                    "type": {
+                        "name": None,
+                        "kind": "NON_NULL",
+                        "ofType": {"name": "String", "kind": "SCALAR"},
+                    },
                 },
                 {
-                    'name': 'name',
-                    'type': {
-                        'name': 'String',
-                        'kind': 'SCALAR',
-                        'ofType': None
-                    }
+                    "name": "name",
+                    "type": {"name": "String", "kind": "SCALAR", "ofType": None},
                 },
                 {
-                    'name': 'friends',
-                    'type': {
-                        'name': None,
-                        'kind': 'LIST',
-                        'ofType': {
-                            'name': 'Character',
-                            'kind': 'INTERFACE'
-                        }
-                    }
+                    "name": "friends",
+                    "type": {
+                        "name": None,
+                        "kind": "LIST",
+                        "ofType": {"name": "Character", "kind": "INTERFACE"},
+                    },
                 },
                 {
-                    'name': 'appearsIn',
-                    'type': {
-                        'name': None,
-                        'kind': 'LIST',
-                        'ofType': {
-                            'name': 'Episode',
-                            'kind': 'ENUM'
-                        }
-                    }
+                    "name": "appearsIn",
+                    "type": {
+                        "name": None,
+                        "kind": "LIST",
+                        "ofType": {"name": "Episode", "kind": "ENUM"},
+                    },
                 },
                 {
-                    'name': 'primaryFunction',
-                    'type': {
-                        'name': 'String',
-                        'kind': 'SCALAR',
-                        'ofType': None
-                    }
-                }
-            ]
+                    "name": "primaryFunction",
+                    "type": {"name": "String", "kind": "SCALAR", "ofType": None},
+                },
+            ],
         }
     }
     result = graphql(StarWarsSchema, query)
@@ -301,7 +207,7 @@ def test_allows_querying_the_schema_for_nested_object_fields():
 
 
 def test_allows_querying_the_schema_for_field_args():
-    query = '''
+    query = """
       query IntrospectionQueryTypeQuery {
         __schema {
           queryType {
@@ -324,65 +230,59 @@ def test_allows_querying_the_schema_for_field_args():
           }
         }
       }
-    '''
+    """
 
     expected = {
-        '__schema': {
-            'queryType': {
-                'fields': [
+        "__schema": {
+            "queryType": {
+                "fields": [
                     {
-                        'name': 'hero',
-                        'args': [
+                        "name": "hero",
+                        "args": [
                             {
-                                'defaultValue': None,
-                                'description': 'If omitted, returns the hero of the whole ' +
-                                'saga. If provided, returns the hero of ' +
-                                'that particular episode.',
-                                'name': 'episode',
-                                'type': {
-                                    'kind': 'ENUM',
-                                    'name': 'Episode',
-                                    'ofType': None
-                                }
+                                "defaultValue": None,
+                                "description": "If omitted, returns the hero of the whole "
+                                + "saga. If provided, returns the hero of "
+                                + "that particular episode.",
+                                "name": "episode",
+                                "type": {
+                                    "kind": "ENUM",
+                                    "name": "Episode",
+                                    "ofType": None,
+                                },
                             }
-                        ]
+                        ],
                     },
                     {
-                        'name': 'human',
-                        'args': [
+                        "name": "human",
+                        "args": [
                             {
-                                'name': 'id',
-                                'description': 'id of the human',
-                                'type': {
-                                    'kind': 'NON_NULL',
-                                    'name': None,
-                                    'ofType': {
-                                        'kind': 'SCALAR',
-                                        'name': 'String'
-                                    }
+                                "name": "id",
+                                "description": "id of the human",
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": None,
+                                    "ofType": {"kind": "SCALAR", "name": "String"},
                                 },
-                                'defaultValue': None
+                                "defaultValue": None,
                             }
-                        ]
+                        ],
                     },
                     {
-                        'name': 'droid',
-                        'args': [
+                        "name": "droid",
+                        "args": [
                             {
-                                'name': 'id',
-                                'description': 'id of the droid',
-                                'type': {
-                                    'kind': 'NON_NULL',
-                                    'name': None,
-                                    'ofType': {
-                                        'kind': 'SCALAR',
-                                        'name': 'String'
-                                    }
+                                "name": "id",
+                                "description": "id of the droid",
+                                "type": {
+                                    "kind": "NON_NULL",
+                                    "name": None,
+                                    "ofType": {"kind": "SCALAR", "name": "String"},
                                 },
-                                'defaultValue': None
+                                "defaultValue": None,
                             }
-                        ]
-                    }
+                        ],
+                    },
                 ]
             }
         }
@@ -394,19 +294,19 @@ def test_allows_querying_the_schema_for_field_args():
 
 
 def test_allows_querying_the_schema_for_documentation():
-    query = '''
+    query = """
       query IntrospectionDroidDescriptionQuery {
         __type(name: "Droid") {
           name
           description
         }
       }
-    '''
+    """
 
     expected = {
-        '__type': {
-            'name': 'Droid',
-            'description': 'A mechanical creature in the Star Wars universe.'
+        "__type": {
+            "name": "Droid",
+            "description": "A mechanical creature in the Star Wars universe.",
         }
     }
     result = graphql(StarWarsSchema, query)

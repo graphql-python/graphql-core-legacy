@@ -1,10 +1,15 @@
-from .execution import ExecutionResult, execute
-from .language.ast import Document
-from .language.parser import parse
-from .language.source import Source
-from .validation import validate
+from .execution import ExecutionResult
+from .backend import get_default_backend
 
 from promise import promisify
+
+# Necessary for static type checking
+if False:  # flake8: noqa
+    from promise import Promise
+    from rx import Observable
+    from typing import Any, Union, Optional
+    from .language.ast import Document
+    from .type.schema import GraphQLSchema
 
 # This is the primary entry point function for fulfilling GraphQL operations
 # by parsing, validating, and executing a GraphQL document along side a
@@ -31,45 +36,41 @@ from promise import promisify
 
 
 def graphql(*args, **kwargs):
-    return_promise = kwargs.get('return_promise', False)
+    # type: (*Any, **Any) -> Union[ExecutionResult, Observable, Promise[ExecutionResult]]
+    return_promise = kwargs.get("return_promise", False)
     if return_promise:
         return execute_graphql_as_promise(*args, **kwargs)
     else:
         return execute_graphql(*args, **kwargs)
 
 
-def execute_graphql(schema, request_string='', root_value=None, context_value=None,
-                    variable_values=None, operation_name=None, executor=None,
-                    return_promise=False, middleware=None, allow_subscriptions=False):
+def execute_graphql(
+    schema,  # type: GraphQLSchema
+    request_string="",  # type: Union[Document, str]
+    root=None,  # type: Any
+    context=None,  # type: Optional[Any]
+    variables=None,  # type: Optional[Any]
+    operation_name=None,  # type: Optional[Any]
+    middleware=None,  # type: Optional[Any]
+    backend=None,  # type: Optional[Any]
+    **execute_options  # type: Any
+):
+    # type: (...) -> Union[ExecutionResult, Observable, Promise[ExecutionResult]]
     try:
-        if isinstance(request_string, Document):
-            ast = request_string
-        else:
-            source = Source(request_string, 'GraphQL request')
-            ast = parse(source)
-        validation_errors = validate(schema, ast)
-        if validation_errors:
-            return ExecutionResult(
-                errors=validation_errors,
-                invalid=True,
-            )
-        return execute(
-            schema,
-            ast,
-            root_value,
-            context_value,
+        if backend is None:
+            backend = get_default_backend()
+
+        document = backend.document_from_string(schema, request_string)
+        return document.execute(
+            root=root,
+            context=context,
             operation_name=operation_name,
-            variable_values=variable_values or {},
-            executor=executor,
+            variables=variables,
             middleware=middleware,
-            return_promise=return_promise,
-            allow_subscriptions=allow_subscriptions,
+            **execute_options
         )
     except Exception as e:
-        return ExecutionResult(
-            errors=[e],
-            invalid=True,
-        )
+        return ExecutionResult(errors=[e], invalid=True)
 
 
 @promisify

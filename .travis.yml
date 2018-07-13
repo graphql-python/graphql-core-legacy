@@ -1,44 +1,26 @@
 language: python
-sudo: false
-python:
-- 2.7
-# - "pypy-5.3.1"
-before_install:
-- |
-  if [ "$TRAVIS_PYTHON_VERSION" = "pypy" ]; then
-    export PYENV_ROOT="$HOME/.pyenv"
-    if [ -f "$PYENV_ROOT/bin/pyenv" ]; then
-      cd "$PYENV_ROOT" && git pull
-    else
-      rm -rf "$PYENV_ROOT" && git clone --depth 1 https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
-    fi
-    export PYPY_VERSION="4.0.1"
-    "$PYENV_ROOT/bin/pyenv" install "pypy-$PYPY_VERSION"
-    virtualenv --python="$PYENV_ROOT/versions/pypy-$PYPY_VERSION/bin/python" "$HOME/virtualenvs/pypy-$PYPY_VERSION"
-    source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
-  fi
-install:
-- pip install -e .[test]
-- pip install flake8
-script:
-- flake8
-- py.test --cov=graphql graphql tests
-after_success:
-- coveralls
 matrix:
   include:
-  - python: '3.5'
-    after_install:
-    - pip install pytest-asyncio
-    script:
-    - py.test --cov=graphql graphql tests tests_py35
-  - python: '3.6'
-    after_install:
-    - pip install pytest-asyncio
-    script:
-    - py.test --cov=graphql graphql tests tests_py35
-  - python: '2.7'
-
+    -  env: TOXENV=py27
+    -  env: TOXENV=py34
+       python: 3.4
+    -  env: TOXENV=py35
+       python: 3.5
+    -  env: TOXENV=py36
+       python: 3.6
+    -  env: TOXENV=pypy
+       python: pypy-5.7.1
+    -  env: TOXENV=pre-commit
+       python: 3.6
+    -  env: TOXENV=mypy
+       python: 3.6
+install: pip install coveralls tox
+script: tox
+after_success: coveralls
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $HOME/.cache/pre-commit
 deploy:
   provider: pypi
   user: syrusakbary

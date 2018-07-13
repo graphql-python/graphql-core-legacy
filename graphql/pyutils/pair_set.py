@@ -1,8 +1,14 @@
+# Necessary for static type checking
+if False:  # flake8: noqa
+    from typing import Dict, Any
+
+
 class PairSet(object):
-    __slots__ = '_data',
+    __slots__ = ("_data",)
 
     def __init__(self):
-        self._data = {}
+        # type: () -> None
+        self._data = {}  # type: Dict[str, Any]
 
     def __contains__(self, item):
         return self.has(item[0], item[1], item[2])

@@ -5,6 +5,16 @@ from .directives import GraphQLDirective, specified_directives
 from .introspection import IntrospectionSchema
 from .typemap import GraphQLTypeMap
 
+# Necessary for static type checking
+if False:  # flake8: noqa
+    from .definition import (
+        GraphQLNamedType,
+        GraphQLInterfaceType,
+        GraphQLUnionType,
+        GraphQLType,
+    )
+    from typing import Dict, Union, Any, List, Optional
+
 
 class GraphQLSchema(object):
     """Schema Definition
@@ -30,21 +40,45 @@ class GraphQLSchema(object):
           directives=specified_directives.extend([MyCustomerDirective]),
       )
     """
-    __slots__ = '_query', '_mutation', '_subscription', '_type_map', '_directives', '_implementations', '_possible_type_map'
 
-    def __init__(self, query, mutation=None, subscription=None, directives=None, types=None):
-        assert isinstance(query, GraphQLObjectType), 'Schema query must be Object Type but got: {}.'.format(query)
+    __slots__ = (
+        "_query",
+        "_mutation",
+        "_subscription",
+        "_type_map",
+        "_directives",
+        "_implementations",
+        "_possible_type_map",
+    )
+
+    def __init__(
+        self,
+        query,  # type: GraphQLObjectType
+        mutation=None,  # type: Optional[GraphQLObjectType]
+        subscription=None,  # type: Optional[GraphQLObjectType]
+        directives=None,  # type: Optional[List[GraphQLDirective]]
+        types=None,  # type: Optional[List[GraphQLNamedType]]
+    ):
+        # type: (...) -> None
+        assert isinstance(
+            query, GraphQLObjectType
+        ), "Schema query must be Object Type but got: {}.".format(query)
         if mutation:
-            assert isinstance(mutation, GraphQLObjectType), \
-                'Schema mutation must be Object Type but got: {}.'.format(mutation)
+            assert isinstance(
+                mutation, GraphQLObjectType
+            ), "Schema mutation must be Object Type but got: {}.".format(mutation)
 
         if subscription:
-            assert isinstance(subscription, GraphQLObjectType), \
-                'Schema subscription must be Object Type but got: {}.'.format(subscription)
+            assert isinstance(
+                subscription, GraphQLObjectType
+            ), "Schema subscription must be Object Type but got: {}.".format(
+                subscription
+            )
 
         if types:
-            assert isinstance(types, Iterable), \
-                'Schema types must be iterable if provided but got: {}.'.format(types)
+            assert isinstance(
+                types, Iterable
+            ), "Schema types must be iterable if provided but got: {}.".format(types)
 
         self._query = query
         self._mutation = mutation
@@ -52,41 +86,47 @@ class GraphQLSchema(object):
         if directives is None:
             directives = specified_directives
 
-        assert all(isinstance(d, GraphQLDirective) for d in directives), \
-            'Schema directives must be List[GraphQLDirective] if provided but got: {}.'.format(
-                directives
+        assert all(
+            isinstance(d, GraphQLDirective) for d in directives
+        ), "Schema directives must be List[GraphQLDirective] if provided but got: {}.".format(
+            directives
         )
         self._directives = directives
 
-        initial_types = [
-            query,
-            mutation,
-            subscription,
-            IntrospectionSchema
-        ]
+        initial_types = list(
+            filter(None, [query, mutation, subscription, IntrospectionSchema])
+        )  # type: List[GraphQLNamedType]
         if types:
             initial_types += types
-        self._type_map = GraphQLTypeMap(initial_types)
+        self._type_map = GraphQLTypeMap(initial_types)  # type: GraphQLTypeMap
 
     def get_query_type(self):
+        # type: () -> GraphQLObjectType
         return self._query
 
     def get_mutation_type(self):
+        # type: () -> Optional[GraphQLObjectType]
         return self._mutation
 
     def get_subscription_type(self):
+        # type: () -> Optional[GraphQLObjectType]
         return self._subscription
 
     def get_type_map(self):
+        # type: () -> Dict[str, GraphQLType]
         return self._type_map
 
     def get_type(self, name):
+        # type: (str) -> Optional[GraphQLNamedType]
         return self._type_map.get(name)
+        # raise Exception("Type {name} not found in schema.".format(name=name))
 
     def get_directives(self):
+        # type: () -> List[GraphQLDirective]
         return self._directives
 
     def get_directive(self, name):
+        # type: (str) -> Optional[GraphQLDirective]
         for directive in self.get_directives():
             if directive.name == name:
                 return directive
@@ -94,7 +134,13 @@ class GraphQLSchema(object):
         return None
 
     def get_possible_types(self, abstract_type):
+        # type: (Union[GraphQLInterfaceType, GraphQLUnionType]) -> List[GraphQLObjectType]
         return self._type_map.get_possible_types(abstract_type)
 
-    def is_possible_type(self, abstract_type, possible_type):
+    def is_possible_type(
+        self,
+        abstract_type,  # type: Union[GraphQLInterfaceType, GraphQLUnionType]
+        possible_type,  # type: GraphQLObjectType
+    ):
+        # type: (...) -> bool
         return self._type_map.is_possible_type(abstract_type, possible_type)

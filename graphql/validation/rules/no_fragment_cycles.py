@@ -1,18 +1,34 @@
 from ...error import GraphQLError
 from .base import ValidationRule
 
+# Necessary for static type checking
+if False:  # flake8: noqa
+    from ..validation import ValidationContext
+    from ...language.ast import Document, OperationDefinition, FragmentSpread
+    from ...error import GraphQLError
+    from typing import List, Union, Dict, Set
+
 
 class NoFragmentCycles(ValidationRule):
-    __slots__ = 'errors', 'visited_frags', 'spread_path', 'spread_path_index_by_name'
+    __slots__ = "errors", "visited_frags", "spread_path", "spread_path_index_by_name"
 
     def __init__(self, context):
+        # type: (ValidationContext) -> None
         super(NoFragmentCycles, self).__init__(context)
-        self.errors = []
-        self.visited_frags = set()
-        self.spread_path = []
-        self.spread_path_index_by_name = {}
+        self.errors = []  # type: List[GraphQLError]
+        self.visited_frags = set()  # type: Set[str]
+        self.spread_path = []  # type: List[FragmentSpread]
+        self.spread_path_index_by_name = {}  # type: Dict[str, int]
 
-    def enter_OperationDefinition(self, node, key, parent, path, ancestors):
+    def enter_OperationDefinition(
+        self,
+        node,  # type: OperationDefinition
+        key,  # type: int
+        parent,  # type: List[OperationDefinition]
+        path,  # type: List[Union[int, str]]
+        ancestors,  # type: List[Document]
+    ):
+        # type: (...) -> bool
         return False
 
     def enter_FragmentDefinition(self, node, key, parent, path, ancestors):
@@ -43,17 +59,18 @@ class NoFragmentCycles(ValidationRule):
                 self.spread_path.pop()
             else:
                 cycle_path = self.spread_path[cycle_index:]
-                self.context.report_error(GraphQLError(
-                    self.cycle_error_message(
-                        spread_name,
-                        [s.name.value for s in cycle_path]
-                    ),
-                    cycle_path + [spread_node]
-                ))
+                self.context.report_error(
+                    GraphQLError(
+                        self.cycle_error_message(
+                            spread_name, [s.name.value for s in cycle_path]
+                        ),
+                        cycle_path + [spread_node],
+                    )
+                )
 
         self.spread_path_index_by_name[fragment_name] = None
 
     @staticmethod
     def cycle_error_message(fragment_name, spread_names):
-        via = ' via {}'.format(', '.join(spread_names)) if spread_names else ''
+        via = " via {}".format(", ".join(spread_names)) if spread_names else ""
         return 'Cannot spread fragment "{}" within itself{}.'.format(fragment_name, via)
