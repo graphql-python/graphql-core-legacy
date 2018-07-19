@@ -27,7 +27,7 @@ import types
 try:
     from enum import Enum
 except ImportError:
-    from .enum import Enum
+    from .enum import Enum  # type: ignore
 
 if False:
     from typing import Callable

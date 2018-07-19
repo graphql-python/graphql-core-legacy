@@ -516,7 +516,7 @@ class GraphQLEnumType(GraphQLNamedType):
         return self._name_lookup.get(name)
 
     def serialize(self, value):
-        # type: (str) -> Optional[str]
+        # type: (Union[str, PyEnum]) -> Optional[str]
         if isinstance(value, PyEnum):
             # We handle PyEnum values
             value = value.value
