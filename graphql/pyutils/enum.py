@@ -182,7 +182,7 @@ class EnumMeta(type):
         )
         # save enum items into separate mapping so they don't get baked into
         # the new class
-        members = dict((k, classdict[k]) for k in classdict._member_names)
+        members = {k: classdict[k] for k in classdict._member_names}
         for name in classdict._member_names:
             del classdict[name]
 
@@ -209,15 +209,15 @@ class EnumMeta(type):
                 _order_ += aliases
 
         # check for illegal enum names (any others?)
-        invalid_names = set(members) & set(["mro"])
+        invalid_names = set(members) & {"mro"}
         if invalid_names:
             raise ValueError(
-                "Invalid enum member name(s): %s" % (", ".join(invalid_names),)
+                "Invalid enum member name(s): {}".format(", ".join(invalid_names))
             )
 
         # save attributes from super classes so we know if we can take
         # the shortcut of storing members in the class dict
-        base_attributes = set([a for b in bases for a in b.__dict__])
+        base_attributes = {a for b in bases for a in b.__dict__}
         # create our new Enum type
         enum_class = super(EnumMeta, metacls).__new__(metacls, cls, bases, classdict)
         enum_class._member_names_ = []  # names in random order
@@ -686,7 +686,7 @@ def __new__(cls, value):
         for member in cls._member_map_.values():
             if member.value == value:
                 return member
-    raise ValueError("%s is not a valid %s" % (value, cls.__name__))
+    raise ValueError("{} is not a valid {}".format(value, cls.__name__))
 
 
 temp_enum_dict["__new__"] = __new__  # type: ignore
@@ -694,7 +694,7 @@ del __new__
 
 
 def __repr__(self):
-    return "<%s.%s: %r>" % (self.__class__.__name__, self._name_, self._value_)
+    return "<{}.{}: {!r}>".format(self.__class__.__name__, self._name_, self._value_)
 
 
 temp_enum_dict["__repr__"] = __repr__  # type: ignore
@@ -702,7 +702,7 @@ del __repr__
 
 
 def __str__(self):
-    return "%s.%s" % (self.__class__.__name__, self._name_)
+    return "{}.{}".format(self.__class__.__name__, self._name_)
 
 
 temp_enum_dict["__str__"] = __str__  # type: ignore
@@ -877,7 +877,7 @@ def _convert(cls, name, module, filter, source=None):
         source = vars(source)
     else:
         source = module_globals
-    members = dict((name, value) for name, value in source.items() if filter(name))
+    members = {name: value for name, value in source.items() if filter(name)}
     cls = cls(name, members, module=module)
     cls.__reduce_ex__ = _reduce_ex_by_name
     module_globals.update(cls.__members__)
@@ -885,7 +885,7 @@ def _convert(cls, name, module, filter, source=None):
     return cls
 
 
-temp_enum_dict["_convert"] = _convert # type: ignore
+temp_enum_dict["_convert"] = _convert  # type: ignore
 del _convert
 
 Enum = EnumMeta("Enum", (object,), temp_enum_dict)
@@ -895,7 +895,7 @@ del temp_enum_dict
 ###########################
 
 
-class IntEnum(int, Enum): # type: ignore
+class IntEnum(int, Enum):  # type: ignore
     """Enum where members are also (and must be) ints"""
 
 
@@ -911,9 +911,9 @@ def unique(enumeration):
             duplicates.append((name, member.name))
     if duplicates:
         duplicate_names = ", ".join(
-            ["%s -> %s" % (alias, name) for (alias, name) in duplicates]
+            ["{} -> {}".format(alias, name) for (alias, name) in duplicates]
         )
         raise ValueError(
-            "duplicate names found in %r: %s" % (enumeration, duplicate_names)
+            "duplicate names found in {!r}: {}".format(enumeration, duplicate_names)
         )
     return enumeration
