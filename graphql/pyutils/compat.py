@@ -24,6 +24,11 @@ import operator
 import sys
 import types
 
+try:
+    from enum import Enum
+except ImportError:
+    from .enum import Enum
+
 if False:
     from typing import Callable
 
