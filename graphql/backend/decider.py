@@ -11,7 +11,7 @@ from ..pyutils.compat import Queue, check_threads
 
 # Necessary for static type checking
 if False:  # flake8: noqa
-    from typing import List, Union, Any, Optional, Hashable, Dict, Tuple
+    from typing import List, Union, Any, Optional, Hashable, Dict, Tuple, Type
     from ..type.schema import GraphQLSchema
 
 
@@ -165,6 +165,7 @@ class GraphQLDeciderBackend(GraphQLCachedBackend):
         fallback_backend=None,  # type: Optional[GraphQLBackend]
         cache_map=None,  # type: Optional[Dict[Hashable, GraphQLDocument]]
         use_consistent_hash=False,  # type: bool
+        worker_class=AsyncWorker,  # type: Type[AsyncWorker]
     ):
         # type: (...) -> None
         if not backend:
@@ -180,6 +181,7 @@ class GraphQLDeciderBackend(GraphQLCachedBackend):
                 raise Exception("Need to provide a fallback backend")
 
         self.fallback_backend = fallback_backend  # type: ignore
+        self.worker_class = worker_class
         super(GraphQLDeciderBackend, self).__init__(
             backend, cache_map=cache_map, use_consistent_hash=use_consistent_hash
         )
@@ -191,7 +193,7 @@ class GraphQLDeciderBackend(GraphQLCachedBackend):
     def get_worker(self):
         # type: () -> AsyncWorker
         if self._worker is None or not self._worker.is_alive():
-            self._worker = AsyncWorker()
+            self._worker = self.worker_class()
         return self._worker
 
     def document_from_string(self, schema, request_string):
