@@ -166,7 +166,7 @@ def test_synchronous_error_nulls_out_error_subtrees():
         syncError
         syncReturnError
         syncReturnErrorList
-        async
+        asyncBasic
         asyncReject
         asyncEmptyReject
         asyncReturnError
@@ -196,7 +196,7 @@ def test_synchronous_error_nulls_out_error_subtrees():
                 Exception("Error getting syncReturnErrorList3"),
             ]
 
-        def async(self):
+        def asyncBasic(self):
             # type: () -> Promise
             return resolved("async")
 
@@ -220,7 +220,7 @@ def test_synchronous_error_nulls_out_error_subtrees():
                 "syncError": GraphQLField(GraphQLString),
                 "syncReturnError": GraphQLField(GraphQLString),
                 "syncReturnErrorList": GraphQLField(GraphQLList(GraphQLString)),
-                "async": GraphQLField(GraphQLString),
+                "asyncBasic": GraphQLField(GraphQLString),
                 "asyncReject": GraphQLField(GraphQLString),
                 "asyncEmptyReject": GraphQLField(GraphQLString),
                 "asyncReturnError": GraphQLField(GraphQLString),
@@ -236,7 +236,7 @@ def test_synchronous_error_nulls_out_error_subtrees():
     def handle_results(result):
         # type: (ExecutionResult) -> None
         assert result.data == {
-            "async": "async",
+            "asyncBasic": "async",
             "asyncEmptyReject": None,
             "asyncReject": None,
             "asyncReturnError": None,
