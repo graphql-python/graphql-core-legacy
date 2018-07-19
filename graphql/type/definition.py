@@ -551,7 +551,10 @@ class GraphQLEnumType(GraphQLNamedType):
     @cached_property
     def _value_lookup(self):
         # type: () -> Dict[str, GraphQLEnumValue]
-        return {value.value: value for value in self.values}
+        return {
+            value.value.value if isinstance(value.value, PyEnum) else value.value: value
+            for value in self.values
+        }
 
     @cached_property
     def _name_lookup(self):

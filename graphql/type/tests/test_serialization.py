@@ -81,3 +81,24 @@ def test_serializes_enum():
     assert enum_type.serialize(Color.RED.value) == "RED"
     assert enum_type.serialize(Color.EXTRA) is None
     assert enum_type.serialize(Color.EXTRA.value) is None
+
+
+def test_serialize_enum_pyenum():
+    class Color(Enum):
+        RED = 1
+        GREEN = 2
+        BLUE = 3
+        EXTRA = 4
+
+    enum_type = GraphQLEnumType(
+        "Color",
+        values={
+            "RED": GraphQLEnumValue(Color.RED),
+            "GREEN": GraphQLEnumValue(Color.GREEN),
+            "BLUE": GraphQLEnumValue(Color.BLUE),
+        },
+    )
+    assert enum_type.serialize(Color.RED) == "RED"
+    assert enum_type.serialize(Color.RED.value) == "RED"
+    assert enum_type.serialize(Color.EXTRA) is None
+    assert enum_type.serialize(Color.EXTRA.value) is None
