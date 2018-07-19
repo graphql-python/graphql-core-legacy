@@ -19,44 +19,44 @@ def print_ast(lang_module, input_file):
 
     while line:
         line = line.strip()
-        if line.startswith('#') or not line:
+        if line.startswith("#") or not line:
             line = input_file.readline()
             continue
 
         code, rest = line.split(None, 1)
 
-        if code[0] == 'T':
+        if code[0] == "T":
             lang_module.start_type(rest)
             field_line = input_file.readline().strip()
             while field_line:
-                if field_line.startswith('#'):
+                if field_line.startswith("#"):
                     field_line = input_file.readline().strip()
                     continue
 
                 field_kind, field_type, field_name = field_line.split()
-                nullable = len(field_kind) > 1 and field_kind[1] == '?'
+                nullable = len(field_kind) > 1 and field_kind[1] == "?"
 
-                if field_kind[0] == 'S':
+                if field_kind[0] == "S":
                     plural = False
 
-                elif field_kind[0] == 'P':
+                elif field_kind[0] == "P":
                     plural = True
 
                 else:
-                    raise Exception('Unknown field kind: ' + field_kind)
+                    raise Exception("Unknown field kind: " + field_kind)
 
                 lang_module.field(field_type, field_name, nullable, plural)
                 field_line = input_file.readline().strip()
 
             lang_module.end_type(rest)
 
-        elif code[0] == 'U':
+        elif code[0] == "U":
             lang_module.start_union(rest)
             field_line = input_file.readline().strip()
             while field_line:
                 option_code, option_type = field_line.split()
-                if option_code != 'O':
-                    raise Exception('Unknown code in union: ' + option_code)
+                if option_code != "O":
+                    raise Exception("Unknown code in union: " + option_code)
 
                 lang_module.union_option(option_type)
                 field_line = input_file.readline().strip()
@@ -68,7 +68,7 @@ def print_ast(lang_module, input_file):
     lang_module.end_file()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
 
     lang = sys.argv[1]
@@ -76,4 +76,4 @@ if __name__ == '__main__':
 
     lang_module = load_lang(lang)
 
-    print_ast(lang_module, open(filename, 'r'))
+    print_ast(lang_module, open(filename, "r"))

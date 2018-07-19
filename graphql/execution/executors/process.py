@@ -11,16 +11,20 @@ def queue_process(q):
 
 
 class ProcessExecutor(object):
-
     def __init__(self):
         self.processes = []
         self.q = Queue()
 
     def wait_until_finished(self):
-        for _process in self.processes:
-            _process.join()
+        while self.processes:
+            processes = self.processes
+            self.processes = []
+            [_process.join() for _process in processes]
         self.q.close()
         self.q.join_thread()
+
+    def clean(self):
+        self.processes = []
 
     def execute(self, fn, *args, **kwargs):
         promise = Promise()

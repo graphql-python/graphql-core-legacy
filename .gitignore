@@ -46,6 +46,7 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *,cover
+.pytest_cache/
 
 # Translations
 *.mo
@@ -66,3 +67,7 @@ target/
 
 # OS X
 .DS_Store
+/.mypy_cache
+.pyre
+/.vscode
+/type_info.json

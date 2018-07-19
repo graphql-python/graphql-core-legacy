@@ -7,13 +7,17 @@ from .utils import process
 
 
 class GeventExecutor(object):
-
     def __init__(self):
         self.jobs = []
 
     def wait_until_finished(self):
-        [j.join() for j in self.jobs]
         # gevent.joinall(self.jobs)
+        while self.jobs:
+            jobs = self.jobs
+            self.jobs = []
+            [j.join() for j in jobs]
+
+    def clean(self):
         self.jobs = []
 
     def execute(self, fn, *args, **kwargs):

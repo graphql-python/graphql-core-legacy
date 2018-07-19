@@ -1,4 +1,4 @@
-introspection_query = '''
+introspection_query = """
   query IntrospectionQuery {
     __schema {
       queryType { name }
@@ -87,4 +87,4 @@ introspection_query = '''
       }
     }
   }
-'''
+"""

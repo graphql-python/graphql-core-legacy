@@ -1,6 +1,6 @@
 # Mini-language for AST definition.
 # All AST nodes extend AstNode.
-# All AST nodes are visitible.
+# All AST nodes are visible.
 # All AST fields have a getter and a setter and are a constructor argument.
 # We have concrete types (code T) and unions (code U).
 # S for singular field, P for plural, ? for nullable.
@@ -117,7 +117,7 @@ S Type type
 T NonNullType
 # JS version prohibits nesting nonnull in nonnull, we can't because we
 # can't support multiple unions. Fix?
-S Type type  
+S Type type
 
 T Name
 S string value

@@ -6,13 +6,13 @@ from .starwars_schema import StarWarsSchema
 
 
 def validation_errors(query):
-    source = Source(query, 'StarWars.graphql')
+    source = Source(query, "StarWars.graphql")
     ast = parse(source)
     return validate(StarWarsSchema, ast)
 
 
 def test_nested_query_with_fragment():
-    query = '''
+    query = """
         query NestedQueryWithFragment {
           hero {
             ...NameAndAppearances
@@ -28,32 +28,32 @@ def test_nested_query_with_fragment():
           name
           appearsIn
         }
-    '''
+    """
     assert not validation_errors(query)
 
 
 def test_non_existent_fields():
-    query = '''
+    query = """
         query HeroSpaceshipQuery {
           hero {
             favoriteSpaceship
           }
         }
-    '''
+    """
     assert validation_errors(query)
 
 
 def test_require_fields_on_object():
-    query = '''
+    query = """
         query HeroNoFieldsQuery {
           hero
         }
-    '''
+    """
     assert validation_errors(query)
 
 
 def test_disallows_fields_on_scalars():
-    query = '''
+    query = """
         query HeroFieldsOnScalarQuery {
           hero {
             name {
@@ -61,24 +61,24 @@ def test_disallows_fields_on_scalars():
             }
           }
         }
-    '''
+    """
     assert validation_errors(query)
 
 
 def test_disallows_object_fields_on_interfaces():
-    query = '''
+    query = """
         query DroidFieldOnCharacter {
           hero {
             name
             primaryFunction
           }
         }
-    '''
+    """
     assert validation_errors(query)
 
 
 def test_allows_object_fields_in_fragments():
-    query = '''
+    query = """
         query DroidFieldInFragment {
           hero {
             name
@@ -88,12 +88,12 @@ def test_allows_object_fields_in_fragments():
         fragment DroidFields on Droid {
           primaryFunction
         }
-    '''
+    """
     assert not validation_errors(query)
 
 
 def test_allows_object_fields_in_inline_fragments():
-    query = '''
+    query = """
         query DroidFieldInFragment {
           hero {
             name
@@ -104,5 +104,5 @@ def test_allows_object_fields_in_inline_fragments():
         fragment DroidFields on Droid {
             primaryFunction
         }
-    '''
+    """
     assert not validation_errors(query)
