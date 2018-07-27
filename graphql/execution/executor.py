@@ -84,7 +84,7 @@ def execute(
         context = options["context_value"]
     if variables is None and "variable_values" in options:
         warnings.warn(
-            "variable_values has been deprecated. Please use values=... instead.",
+            "variable_values has been deprecated. Please use variables=... instead.",
             category=DeprecationWarning,
             stacklevel=2,
         )
