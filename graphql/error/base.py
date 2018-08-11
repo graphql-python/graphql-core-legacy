@@ -6,7 +6,7 @@ if False:  # flake8: noqa
     from ..language.source import Source
     from ..language.location import SourceLocation
     from types import TracebackType
-    from typing import Optional, List, Any, Union
+    from typing import Optional, List, Any, Union, Dict
 
 
 class GraphQLError(Exception):
@@ -30,6 +30,7 @@ class GraphQLError(Exception):
         positions=None,  # type: Optional[Any]
         locations=None,  # type: Optional[Any]
         path=None,  # type: Union[List[Union[int, str]], List[str], None]
+        extensions=None # type: Optional[Dict[str, Any]]
     ):
         # type: (...) -> None
         super(GraphQLError, self).__init__(message)
@@ -40,6 +41,7 @@ class GraphQLError(Exception):
         self._positions = positions
         self._locations = locations
         self.path = path
+        self.extensions = extensions
         return None
 
     @property
