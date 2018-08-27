@@ -136,7 +136,9 @@ def execute(
         if not exe_context.errors:
             return ExecutionResult(data=data)
 
-        return ExecutionResult(data=data, errors=exe_context.errors, extensions=exe_context.extensions)
+        return ExecutionResult(
+            data=data, errors=exe_context.errors, extensions=exe_context.extensions
+        )
 
     promise = (
         Promise.resolve(None).then(promise_executor).catch(on_rejected).then(on_resolve)
@@ -409,7 +411,7 @@ def subscribe_field(
         variable_values=exe_context.variable_values,
         context=context,
         path=path,
-        extensions=exe_context.extensions
+        extensions=exe_context.extensions,
     )
 
     executor = exe_context.executor
@@ -464,7 +466,7 @@ def complete_value_catching_error(
     info,  # type: ResolveInfo
     path,  # type: List[Union[int, str]]
     result,  # type: Any
-): 
+):
     # type: (...) -> Any
     # If the field type is non-nullable, then it is resolved without any
     # protection from errors.
@@ -534,15 +536,15 @@ def complete_value(
         )
 
     if isinstance(result, ExecutionResult):
-        data = getattr(result, 'data', None)
-        extensions = getattr(result, 'extensions', None)
-        errors = getattr(result, 'errors', None)
+        data = getattr(result, "data", None)
+        extensions = getattr(result, "extensions", None)
+        errors = getattr(result, "errors", None)
 
         if extensions:
             exe_context.update_extensions(extensions)
         if errors:
             for error in errors:
-                exe_context.report_error(error) 
+                exe_context.report_error(error)
 
         return complete_value(exe_context, return_type, field_ast, info, path, data)
 
