@@ -133,10 +133,16 @@ def execute(
         if isinstance(data, Observable):
             return data
 
-        if not exe_context.errors:
-            return ExecutionResult(data=data)
+        errors = exe_context.errors or []
+        extensions = None
 
-        return ExecutionResult(data=data, errors=exe_context.errors)
+        if isinstance(data, ExecutionResult):
+            extensions = getattr(data, 'extensions', None)
+            data_errors = getattr(data, 'errors', None) or []
+            data = getattr(data, 'data', None)
+            errors = errors + data_errors
+
+        return ExecutionResult(data=data, errors=errors or None, extensions=extensions)
 
     promise = (
         Promise.resolve(None).then(promise_executor).catch(on_rejected).then(on_resolve)
