@@ -133,16 +133,10 @@ def execute(
         if isinstance(data, Observable):
             return data
 
-        errors = exe_context.errors or []
-        extensions = None
+        if not exe_context.errors:
+            return ExecutionResult(data=data)
 
-        if isinstance(data, ExecutionResult):
-            extensions = getattr(data, 'extensions', None)
-            data_errors = getattr(data, 'errors', None) or []
-            data = getattr(data, 'data', None)
-            errors = errors + data_errors
-
-        return ExecutionResult(data=data, errors=errors or None, extensions=extensions)
+        return ExecutionResult(data=data, errors=exe_context.errors, extensions=exe_context.extensions)
 
     promise = (
         Promise.resolve(None).then(promise_executor).catch(on_rejected).then(on_resolve)
@@ -360,6 +354,7 @@ def resolve_field(
         variable_values=exe_context.variable_values,
         context=context,
         path=field_path,
+        extensions=exe_context.extensions,
     )
 
     executor = exe_context.executor
@@ -414,6 +409,7 @@ def subscribe_field(
         variable_values=exe_context.variable_values,
         context=context,
         path=path,
+        extensions=exe_context.extensions
     )
 
     executor = exe_context.executor
@@ -468,7 +464,7 @@ def complete_value_catching_error(
     info,  # type: ResolveInfo
     path,  # type: List[Union[int, str]]
     result,  # type: Any
-):
+): 
     # type: (...) -> Any
     # If the field type is non-nullable, then it is resolved without any
     # protection from errors.
@@ -537,6 +533,18 @@ def complete_value(
             ),
         )
 
+    if isinstance(result, ExecutionResult):
+        data = getattr(result, 'data', None)
+        extensions = getattr(result, 'extensions', None)
+        errors = getattr(result, 'errors', None)
+
+        if extensions:
+            exe_context.update_extensions(extensions)
+        if errors:
+            exe_context.report_error(error) for error in errors
+
+        return complete_value(exe_context, return_type, field_ast, info, path, data)
+        
     # print return_type, type(result)
     if isinstance(result, Exception):
         raise GraphQLLocatedError(field_asts, original_error=result, path=path)

@@ -76,6 +76,7 @@ class ResolveInfo(object):
         "variable_values",
         "context",
         "path",
+        "extensions",
     )
 
     def __init__(
@@ -91,6 +92,7 @@ class ResolveInfo(object):
         variable_values,  # type: Dict
         context,  # type: Optional[Any]
         path=None,  # type: Union[List[Union[int, str]], List[str]]
+        extensions=None,  # type: Dict
     ):
         # type: (...) -> None
         self.field_name = field_name
@@ -104,6 +106,7 @@ class ResolveInfo(object):
         self.variable_values = variable_values
         self.context = context
         self.path = path
+        self.extensions = extensions
 
 
 __all__ = [
