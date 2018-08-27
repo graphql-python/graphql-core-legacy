@@ -156,6 +156,7 @@ class ExecutionContext(object):
         self.errors.append(error)
 
     def update_extensions(self, extensions):
+        # type: Dict
         self.extensions = deepcopy(extensions) if self.extensions else {}
         self.extensions.update(extensions)
 
