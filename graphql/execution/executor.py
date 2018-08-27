@@ -541,10 +541,11 @@ def complete_value(
         if extensions:
             exe_context.update_extensions(extensions)
         if errors:
-            exe_context.report_error(error) for error in errors
+            for error in errors:
+                exe_context.report_error(error) 
 
         return complete_value(exe_context, return_type, field_ast, info, path, data)
-        
+
     # print return_type, type(result)
     if isinstance(result, Exception):
         raise GraphQLLocatedError(field_asts, original_error=result, path=path)
