@@ -546,7 +546,7 @@ def complete_value(
             for error in errors:
                 exe_context.report_error(error)
 
-        return complete_value(exe_context, return_type, field_ast, info, path, data)
+        return complete_value(exe_context, return_type, field_asts, info, path, data)
 
     # print return_type, type(result)
     if isinstance(result, Exception):
