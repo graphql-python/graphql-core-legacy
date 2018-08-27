@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from copy import deepcopy
 import logging
 from traceback import format_exception
 
@@ -155,7 +156,7 @@ class ExecutionContext(object):
         self.errors.append(error)
 
     def update_extensions(self, extensions):
-        self.extensions = extensions.copy() if self.extensions else {}
+        self.extensions = deepcopy(extensions) if self.extensions else {}
         self.extensions.update(extensions)
 
     def get_sub_fields(self, return_type, field_asts):
