@@ -539,6 +539,7 @@ def complete_value(
             ),
         )
 
+    # If result is ExecutionResult, update exe_context and complete for data field
     if isinstance(result, ExecutionResult):
         data = getattr(result, "data", None)
         extensions = getattr(result, "extensions", None)
