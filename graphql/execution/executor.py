@@ -133,15 +133,16 @@ def execute(
         if isinstance(data, Observable):
             return data
 
-        kwargs = {}
-
-        if exe_context.errors:
-            kwargs["errors"] = exe_context.errors
-
-        if exe_context.extensions:
-            kwargs["extensions"] = exe_context.extensions
-
-        return ExecutionResult(data=data, **kwargs)
+        if exe_context.errors and exe_context.extensions:
+            return ExecutionResult(
+                data=data, errors=exe_context.errors, extensions=exe_context.extensions
+            )
+        elif exe_context.errors:
+            return ExecutionResult(data=data, errors=exe_context.errors)
+        elif exe_context.extensions:
+            return ExecutionResult(data=data, extensions=exe_context.extensions)
+        else:
+            return ExecutionResult(data=data)
 
     promise = (
         Promise.resolve(None).then(promise_executor).catch(on_rejected).then(on_resolve)
