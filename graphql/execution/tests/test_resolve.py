@@ -15,6 +15,7 @@ from graphql.type import (
     GraphQLSchema,
     GraphQLString,
 )
+from graphql.execution import ExecutionResult
 from promise import Promise
 
 # from graphql.execution.base import ResolveInfo
@@ -112,6 +113,40 @@ def test_uses_provided_resolve_function():
     ]
 
 
+def test_handles_resolved_extensions_with_data():
+    # type: () -> None
+    def resolver(source, info, **args):
+        # type: (Optional[str], ResolveInfo, **Any) -> ExecutionResult
+        extensions = info.extensions or {}
+        extensions["test_extensions"] = extensions.get("test_extensions", {})
+        extensions["test_extensions"].update({"foo": "bar"})
+        return ExecutionResult(data="foobar", extensions=extensions)
+
+    schema = _test_schema(GraphQLField(GraphQLString, resolver=resolver))
+
+    result = graphql(schema, "{ test }", None)
+    assert not result.errors
+    assert result.data == {"test": "foobar"}
+    assert result.extensions == {"test_extensions": {"foo": "bar"}}
+
+
+def test_handles_resolved_extensions_with_errors():
+    # type: () -> None
+    def resolver(source, info, **args):
+        # type: (Optional[str], ResolveInfo, **Any) -> ExecutionResult
+        extensions = info.extensions or {}
+        extensions["errors"] = extensions.get("errors", {})
+        extensions["errors"].update({"test": {"foo": "bar"}})
+        return ExecutionResult(errors=[Exception()], extensions=extensions)
+
+    schema = _test_schema(GraphQLField(GraphQLString, resolver=resolver))
+
+    result = graphql(schema, "{ test }", None)
+    assert len(result.errors) == 1
+    assert result.data == {"test": None}
+    assert result.extensions == {"errors": {"test": {"foo": "bar"}}}
+
+
 def test_handles_resolved_promises():
     # type: () -> None
     def resolver(source, info, **args):
@@ -123,6 +158,23 @@ def test_handles_resolved_promises():
     result = graphql(schema, "{ test }", None)
     assert not result.errors
     assert result.data == {"test": "foo"}
+
+
+def test_handles_resolved_promises_extensions():
+    # type: () -> None
+    def resolver(source, info, **args):
+        # type: (Optional[Any], ResolveInfo, **Any) -> Promise
+        extensions = info.extensions or {}
+        extensions["test_extensions"] = extensions.get("test_extensions", {})
+        extensions["test_extensions"].update({"foo": "bar"})
+        return Promise.resolve(ExecutionResult(data="foobar", extensions=extensions))
+
+    schema = _test_schema(GraphQLField(GraphQLString, resolver=resolver))
+
+    result = graphql(schema, "{ test }", None)
+    assert not result.errors
+    assert result.data == {"test": "foobar"}
+    assert result.extensions == {"test_extensions": {"foo": "bar"}}
 
 
 def test_handles_resolved_custom_promises():
