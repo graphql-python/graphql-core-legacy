@@ -60,6 +60,9 @@ class ExecutionResult(object):
         if not self.invalid:
             response["data"] = self.data
 
+        if self.extensions:
+            response["extensions"] = self.extensions
+
         return response
 
 
