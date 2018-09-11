@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from copy import deepcopy
 import logging
 from traceback import format_exception
 
@@ -54,6 +55,7 @@ class ExecutionContext(object):
         "middleware",
         "allow_subscriptions",
         "_subfields_cache",
+        "extensions",
     )
 
     def __init__(
@@ -67,6 +69,7 @@ class ExecutionContext(object):
         executor,  # type: Any
         middleware,  # type: Optional[Any]
         allow_subscriptions,  # type: bool
+        extensions=None,  # type: Dict
     ):
         # type: (...) -> None
         """Constructs a ExecutionContext object from the arguments passed
@@ -126,6 +129,7 @@ class ExecutionContext(object):
         self.middleware = middleware
         self.allow_subscriptions = allow_subscriptions
         self._subfields_cache = {}  # type: Dict[Tuple[GraphQLObjectType, Tuple[Field, ...]], DefaultOrderedDict]
+        self.extensions = extensions
 
     def get_field_resolver(self, field_resolver):
         # type: (Callable) -> Callable
@@ -150,6 +154,12 @@ class ExecutionContext(object):
         )
         logger.error("".join(exception))
         self.errors.append(error)
+
+    def update_extensions(self, extensions):
+        # type: (Dict[str, Any]) -> None
+        if extensions:
+            self.extensions = self.extensions or {}
+            self.extensions.update(extensions)
 
     def get_sub_fields(self, return_type, field_asts):
         # type: (GraphQLObjectType, List[Field]) -> DefaultOrderedDict

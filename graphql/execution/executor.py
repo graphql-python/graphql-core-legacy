@@ -133,10 +133,16 @@ def execute(
         if isinstance(data, Observable):
             return data
 
-        if not exe_context.errors:
+        if exe_context.errors and exe_context.extensions:
+            return ExecutionResult(
+                data=data, errors=exe_context.errors, extensions=exe_context.extensions
+            )
+        elif exe_context.errors:
+            return ExecutionResult(data=data, errors=exe_context.errors)
+        elif exe_context.extensions:
+            return ExecutionResult(data=data, extensions=exe_context.extensions)
+        else:
             return ExecutionResult(data=data)
-
-        return ExecutionResult(data=data, errors=exe_context.errors)
 
     promise = (
         Promise.resolve(None).then(promise_executor).catch(on_rejected).then(on_resolve)
@@ -354,6 +360,7 @@ def resolve_field(
         variable_values=exe_context.variable_values,
         context=context,
         path=field_path,
+        extensions=exe_context.extensions,
     )
 
     executor = exe_context.executor
@@ -408,6 +415,7 @@ def subscribe_field(
         variable_values=exe_context.variable_values,
         context=context,
         path=path,
+        extensions=exe_context.extensions,
     )
 
     executor = exe_context.executor
@@ -530,6 +538,20 @@ def complete_value(
                 GraphQLLocatedError(field_asts, original_error=error, path=path)
             ),
         )
+
+    # If result is ExecutionResult, update exe_context and complete for data field
+    if isinstance(result, ExecutionResult):
+        data = getattr(result, "data", None)
+        extensions = getattr(result, "extensions", None)
+        errors = getattr(result, "errors", None)
+
+        if extensions:
+            exe_context.update_extensions(extensions)
+        if errors:
+            for error in errors:
+                exe_context.report_error(error)
+
+        return complete_value(exe_context, return_type, field_asts, info, path, data)
 
     # print return_type, type(result)
     if isinstance(result, Exception):
