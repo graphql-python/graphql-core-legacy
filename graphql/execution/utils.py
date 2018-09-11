@@ -157,8 +157,9 @@ class ExecutionContext(object):
 
     def update_extensions(self, extensions):
         # type: (Dict[str, Any]) -> None
-        self.extensions = deepcopy(extensions) if self.extensions else {}
-        self.extensions.update(extensions)
+        if extensions:
+            self.extensions = self.extensions or {}
+            self.extensions.update(extensions)
 
     def get_sub_fields(self, return_type, field_asts):
         # type: (GraphQLObjectType, List[Field]) -> DefaultOrderedDict
