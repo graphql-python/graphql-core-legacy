@@ -8,9 +8,8 @@ class Source:
 
     __slots__ = "body", "name", "location_offset"
 
-    def __init__(
-        self, body: str, name: str = None, location_offset: SourceLocation = None
-    ) -> None:
+    def __init__(self, body, name=None, location_offset=None):
+        # type: (str, str, SourceLocation) -> None
         """Initialize source input.
 
 
@@ -39,7 +38,8 @@ class Source:
             )
         self.location_offset = location_offset
 
-    def get_location(self, position: int) -> SourceLocation:
+    def get_location(self, position):
+        # type: (int) -> SourceLocation
         lines = self.body[:position].splitlines()
         if lines:
             line = len(lines)

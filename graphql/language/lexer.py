@@ -1,10 +1,12 @@
 from copy import copy
 from enum import Enum
-from typing import List, Optional
 
 from ..error import GraphQLSyntaxError
 from .source import Source
 from .block_string_value import block_string_value
+
+if False:  # pragma: no cover
+    from typing import List, Optional
 
 __all__ = ["Lexer", "TokenKind", "Token"]
 
@@ -41,20 +43,21 @@ class Token:
 
     def __init__(
         self,
-        kind: TokenKind,
-        start: int,
-        end: int,
-        line: int,
-        column: int,
-        prev: "Token" = None,
-        value: str = None,
-    ) -> None:
+        kind,  # type: TokenKind
+        start,  # type: int
+        end,  # type: int
+        line,  # type: int
+        column,  # type: int
+        prev=None,  # type: Token
+        value=None,  # type: str
+    ):
+        # type: (...) -> None
         self.kind = kind
         self.start, self.end = start, end
         self.line, self.column = line, column
-        self.prev: Optional[Token] = prev or None
-        self.next: Optional[Token] = None
-        self.value: Optional[str] = value or None
+        self.prev = prev or None  # type: Optional[Token]
+        self.next = None  # type: Optional[Token]
+        self.value = value or None  # type: Optional[str]
 
     def __repr__(self):
         return "<Token {} at {}-{} ({}/{})>".format(
@@ -92,10 +95,11 @@ class Token:
         return copy(self)
 
     @property
-    def desc(self) -> str:
+    def desc(self):
+        # type: () -> str
         """A helper property to describe a token as a string for debugging"""
         kind, value = self.kind.value, self.value
-        return f"{kind} {value!r}" if value else kind
+        return "{} {!r}".format(kind, value) if value else kind
 
 
 def char_at(s, pos):
@@ -139,11 +143,12 @@ class Lexer:
 
     def __init__(
         self,
-        source: Source,
+        source,  # type: Source
         no_location=False,
         experimental_fragment_variables=False,
         experimental_variable_definition_directives=False,
-    ) -> None:
+    ):
+        # type: (...) -> None
         """Given a Source object, this returns a Lexer for that source."""
         self.source = source
         self.token = self.last_token = Token(TokenKind.SOF, 0, 0, 0, 0)
@@ -170,7 +175,8 @@ class Lexer:
                     break
         return token
 
-    def read_token(self, prev: Token) -> Token:
+    def read_token(self, prev):
+        # type: (Token) -> Token
         """Get the next token from the source starting at the given position.
 
         This skips over whitespace and comments until it finds the next
@@ -210,7 +216,8 @@ class Lexer:
 
         raise GraphQLSyntaxError(source, pos, unexpected_character_message(char))
 
-    def position_after_whitespace(self, body, start_position: int) -> int:
+    def position_after_whitespace(self, body, start_position):
+        # type: (str, int) -> int
         """Go to next position after a whitespace.
 
         Reads from body starting at startPosition until it finds a
@@ -242,16 +249,17 @@ class Lexer:
 
 def unexpected_character_message(char):
     if char < " " and char not in "\t\n\r":
-        return f"Cannot contain the invalid character {print_char(char)}."
+        return "Cannot contain the invalid character {}.".format(print_char(char))
     if char == "'":
         return (
             "Unexpected single quote character ('),"
             ' did you mean to use a double quote (")?'
         )
-    return f"Cannot parse the unexpected character {print_char(char)}."
+    return "Cannot parse the unexpected character {}.".format(print_char(char))
 
 
-def read_comment(source: Source, start, line, col, prev) -> Token:
+def read_comment(source, start, line, col, prev):
+    # type: (Source, int, int, int, Optional[Token]) -> Token
     """Read a comment token from the source file."""
     body = source.body
     position = start
@@ -265,7 +273,8 @@ def read_comment(source: Source, start, line, col, prev) -> Token:
     )
 
 
-def read_number(source: Source, start, char, line, col, prev) -> Token:
+def read_number(source, start, char, line, col, prev):
+    # type: (Source, int, int, int, int, Optional[Token]) -> Token
     """Reads a number token from the source file.
 
     Either a float or an int depending on whether a decimal point appears.
@@ -284,7 +293,8 @@ def read_number(source: Source, start, char, line, col, prev) -> Token:
             raise GraphQLSyntaxError(
                 source,
                 position,
-                "Invalid number," f" unexpected digit after 0: {print_char(char)}.",
+                "Invalid number,"
+                " unexpected digit after 0: {}.".format(print_char(char)),
             )
     else:
         position = read_digits(source, position, char)
@@ -314,7 +324,8 @@ def read_number(source: Source, start, char, line, col, prev) -> Token:
     )
 
 
-def read_digits(source: Source, start, char) -> int:
+def read_digits(source, start, char):
+    # type: (Source, int, str) -> int
     """Return the new position in the source after reading digits."""
     body = source.body
     position = start
@@ -325,7 +336,7 @@ def read_digits(source: Source, start, char) -> int:
         raise GraphQLSyntaxError(
             source,
             position,
-            f"Invalid number, expected digit but got: {print_char(char)}.",
+            "Invalid number, expected digit but got: {}.".format(print_char(char)),
         )
     return position
 
@@ -342,12 +353,13 @@ _ESCAPED_CHARS = {
 }
 
 
-def read_string(source: Source, start, line, col, prev) -> Token:
+def read_string(source, start, line, col, prev):
+    # type: (Source, int, int, int, Optional[Token]) -> Token
     """Read a string token from the source file."""
     body = source.body
     position = start + 1
     chunk_start = position
-    value: List[str] = []
+    value = []  # type: List[str]
     append = value.append
 
     while position < len(body):
@@ -363,7 +375,7 @@ def read_string(source: Source, start, line, col, prev) -> Token:
             raise GraphQLSyntaxError(
                 source,
                 position,
-                f"Invalid character within String: {print_char(char)}.",
+                "Invalid character within String: {}.".format(print_char(char)),
             )
         position += 1
         if char == "\\":
@@ -385,7 +397,7 @@ def read_string(source: Source, start, line, col, prev) -> Token:
                     raise GraphQLSyntaxError(
                         source,
                         position,
-                        f"Invalid character escape sequence: {escape}.",
+                        "Invalid character escape sequence: {}.".format(escape),
                     )
                 append(chr(code))
                 position += 4
@@ -393,7 +405,9 @@ def read_string(source: Source, start, line, col, prev) -> Token:
                 escape = repr(char)
                 escape = escape[:1] + "\\" + escape[1:]
                 raise GraphQLSyntaxError(
-                    source, position, f"Invalid character escape sequence: {escape}."
+                    source,
+                    position,
+                    "Invalid character escape sequence: {}.".format(escape),
                 )
             position += 1
             chunk_start = position
@@ -401,7 +415,8 @@ def read_string(source: Source, start, line, col, prev) -> Token:
     raise GraphQLSyntaxError(source, position, "Unterminated string.")
 
 
-def read_block_string(source: Source, start, line, col, prev) -> Token:
+def read_block_string(source, start, line, col, prev):
+    # type: (Source, int, int, int, Optional[Token]) -> Token
     body = source.body
     position = start + 3
     chunk_start = position
@@ -430,7 +445,7 @@ def read_block_string(source: Source, start, line, col, prev) -> Token:
             raise GraphQLSyntaxError(
                 source,
                 position,
-                f"Invalid character within String: {print_char(char)}.",
+                "Invalid character within String: {}.".format(print_char(char)),
             )
         if (
             char == "\\"
@@ -481,7 +496,8 @@ def char2hex(a):
     return -1
 
 
-def read_name(source: Source, start, line, col, prev) -> Token:
+def read_name(source, start, line, col, prev):
+    # type: (Source, int, int, int, Optional[Token]) -> Token
     """Read an alphanumeric + underscore name from the source."""
     body = source.body
     body_length = len(body)

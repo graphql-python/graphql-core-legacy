@@ -1,19 +1,23 @@
-from typing import NamedTuple, TYPE_CHECKING
+from collections import namedtuple
 
-if TYPE_CHECKING:  # pragma: no cover
+if False:  # pragma: no cover
     from .source import Source  # noqa: F401
 
 __all__ = ["get_location", "SourceLocation"]
 
+SourceLocation = namedtuple("SourceLocation", "line,column")
 
-class SourceLocation(NamedTuple):
-    """Represents a location in a Source."""
+# class SourceLocation(namedtuple("SourceLocation", "line,column")):
+#     """Represents a location in a Source."""
 
-    line: int
-    column: int
+#     def __init__(self, line, column):
+#         # type: (int, int) -> None
+#         self.line = line
+#         self.column = column
 
 
-def get_location(source: "Source", position: int) -> SourceLocation:
+def get_location(source, position):
+    # type: (Source, int) -> SourceLocation
     """Get the line and column for a character position in the source.
 
     Takes a Source and a UTF-8 character offset, and returns the corresponding

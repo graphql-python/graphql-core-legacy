@@ -1,7 +1,8 @@
 __all__ = ["block_string_value"]
 
 
-def block_string_value(raw_string: str) -> str:
+def block_string_value(raw_string):
+    # type: (str) -> str
     """Produce the value of a block string from its parsed raw value.
 
     Similar to CoffeeScript's block string, Python's docstring trim or
@@ -33,6 +34,7 @@ def block_string_value(raw_string: str) -> str:
 
 
 def leading_whitespace(s):
+    # type: (str) -> int
     i = 0
     n = len(s)
     while i < n and s[i] in " \t":

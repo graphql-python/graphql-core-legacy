@@ -1,14 +1,17 @@
 from functools import wraps
 from json import dumps
-from typing import Optional, Sequence
 
 from .ast import Node, OperationType
 from .visitor import visit, Visitor
 
 __all__ = ["print_ast"]
 
+if False:  # pragma: no cover
+    from typing import Optional, Sequence
 
-def print_ast(ast: Node):
+
+def print_ast(ast):
+    # type: (Node) -> str
     """Convert an AST into a string.
 
     The conversion is done using a set of reasonable formatting rules.
@@ -32,7 +35,7 @@ class PrintAstVisitor(Visitor):
         return node.value
 
     def leave_variable(self, node, *_args):
-        return f"${node.name}"
+        return "${}".format(node.name)
 
     # Document
 
@@ -52,10 +55,11 @@ class PrintAstVisitor(Visitor):
         )
 
     def leave_variable_definition(self, node, *_args):
-        return (
-            f"{node.variable}: {node.type}"
-            f"{wrap(' = ', node.default_value)}"
-            f"{wrap(' ', join(node.directives, ' '))}"
+        return "{}: {}{}{}".format(
+            node.variable,
+            node.type,
+            wrap(" = ", node.default_value),
+            wrap(" ", join(node.directives, " ")),
         )
 
     def leave_selection_set(self, node, *_args):
@@ -74,12 +78,12 @@ class PrintAstVisitor(Visitor):
         )
 
     def leave_argument(self, node, *_args):
-        return f"{node.name}: {node.value}"
+        return "{}: {}".format(node.name, node.value)
 
     # Fragments
 
     def leave_fragment_spread(self, node, *_args):
-        return f"...{node.name}{wrap(' ', join(node.directives, ' '))}"
+        return "...{}{}".format(node.name, wrap(" ", join(node.directives, " ")))
 
     def leave_inline_fragment(self, node, *_args):
         return join(
@@ -95,12 +99,12 @@ class PrintAstVisitor(Visitor):
     def leave_fragment_definition(self, node, *_args):
         # Note: fragment variable definitions are experimental and may b
         # changed or removed in the future.
-        return (
-            f"fragment {node.name}"
-            f"{wrap('(', join(node.variable_definitions, ', '), ')')}"
-            f" on {node.type_condition}"
-            f" {wrap('', join(node.directives, ' '), ' ')}"
-            f"{node.selection_set}"
+        return "fragment {}{} on {} {}{}".format(
+            node.name,
+            wrap("(", join(node.variable_definitions, ", "), ")"),
+            node.type_condition,
+            wrap("", join(node.directives, " "), " "),
+            node.selection_set,
         )
 
     # Value
@@ -126,18 +130,18 @@ class PrintAstVisitor(Visitor):
         return node.value
 
     def leave_list_value(self, node, *_args):
-        return f"[{join(node.values, ', ')}]"
+        return "[{}]".format(join(node.values, ", "))
 
     def leave_object_value(self, node, *_args):
-        return f"{{{join(node.fields, ', ')}}}"
+        return "{{{}}}".format(join(node.fields, ", "))
 
     def leave_object_field(self, node, *_args):
-        return f"{node.name}: {node.value}"
+        return "{}: {}".format(node.name, node.value)
 
     # Directive
 
     def leave_directive(self, node, *_args):
-        return f"@{node.name}{wrap('(', join(node.arguments, ', '), ')')}"
+        return "@{}{}".format(node.name, wrap("(", join(node.arguments, ", "), ")"))
 
     # Type
 
@@ -145,10 +149,10 @@ class PrintAstVisitor(Visitor):
         return node.name
 
     def leave_list_type(self, node, *_args):
-        return f"[{node.type}]"
+        return "[{}]".format(node.type)
 
     def leave_non_null_type(self, node, *_args):
-        return f"{node.type}!"
+        return "{}!".format(node.type)
 
     # Type System Definitions
 
@@ -158,7 +162,7 @@ class PrintAstVisitor(Visitor):
         )
 
     def leave_operation_type_definition(self, node, *_args):
-        return f"{node.operation.value}: {node.type}"
+        return "{}: {}".format(node.operation.value, node.type)
 
     @add_description
     def leave_scalar_type_definition(self, node, *_args):
@@ -186,13 +190,13 @@ class PrintAstVisitor(Visitor):
             else wrap("(", join(args, ", "), ")")
         )
         directives = wrap(" ", join(node.directives, " "))
-        return f"{node.name}{args}: {node.type}{directives}"
+        return "{}{}: {}{}".format(node.name, args, node.type, directives)
 
     @add_description
     def leave_input_value_definition(self, node, *_args):
         return join(
             [
-                f"{node.name}: {node.type}",
+                "{}: {}".format(node.name, node.type),
                 wrap("= ", node.default_value),
                 join(node.directives, " "),
             ],
@@ -243,7 +247,7 @@ class PrintAstVisitor(Visitor):
             else wrap("(", join(args, ", "), ")")
         )
         locations = join(node.locations, " | ")
-        return f"directive @{node.name}{args} on {locations}"
+        return "directive @{}{} on {}".format(node.name, args, locations)
 
     def leave_schema_extension(self, node, *_args):
         return join(
@@ -301,7 +305,8 @@ class PrintAstVisitor(Visitor):
         )
 
 
-def print_block_string(value: str, is_description: bool = False) -> str:
+def print_block_string(value, is_description=False):
+    # type: (str, bool) -> str
     """Print a block string.
 
     Prints a block string in the indented block form by adding a leading and
@@ -312,14 +317,15 @@ def print_block_string(value: str, is_description: bool = False) -> str:
     if value.startswith((" ", "\t")) and "\n" not in value:
         if escaped.endswith('"'):
             escaped += "\n"
-        return f'"""{escaped}"""'
+        return '"""{}"""'.format(escaped)
     else:
         if not is_description:
             escaped = indent(escaped)
-        return f'"""\n{escaped}\n"""'
+        return '"""\n{}\n"""'.format(escaped)
 
 
-def join(strings: Optional[Sequence[str]], separator: str = "") -> str:
+def join(strings, separator=""):
+    # type: (Optional[Sequence[str]], str) -> str
     """Join strings in a given sequence.
 
     Return an empty string if it is None or empty, otherwise
@@ -328,7 +334,8 @@ def join(strings: Optional[Sequence[str]], separator: str = "") -> str:
     return separator.join(s for s in strings if s) if strings else ""
 
 
-def block(strings: Sequence[str]) -> str:
+def block(strings):
+    # type: (Sequence[str]) -> str
     """Return strings inside a block.
 
     Given a sequence of strings, return a string with each item on its own
@@ -337,13 +344,14 @@ def block(strings: Sequence[str]) -> str:
     return "{\n" + indent(join(strings, "\n")) + "\n}" if strings else ""
 
 
-def wrap(start: str, string: str, end: str = "") -> str:
+def wrap(start, string, end=""):
+    # type: (str, str, str) -> str
     """Wrap string inside other strings at start and end.
 
     If the string is not None or empty, then wrap with start and end,
     otherwise return an empty string.
     """
-    return f"{start}{string}{end}" if string else ""
+    return "{}{}{}".format(start, string, end) if string else ""
 
 
 def indent(string):
