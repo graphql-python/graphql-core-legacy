@@ -107,7 +107,9 @@ def test_allows_null_value():
 
 
 def test_parses_null_value_to_null():
-    result = parse('{ fieldWithObjectInput(input: {a: null, b: null, c: "C", d: null}) }')
+    result = parse(
+        '{ fieldWithObjectInput(input: {a: null, b: null, c: "C", d: null}) }'
+    )
     values = result.definitions[0].selection_set.selections[0].arguments[0].value.fields
     expected = (
         (u"a", ast.NullValue()),
@@ -124,7 +126,10 @@ def test_parses_null_value_in_list():
     assert result == ast.Document(
         definitions=[
             ast.OperationDefinition(
-                operation="query", name=None, variable_definitions=None, directives=[],
+                operation="query",
+                name=None,
+                variable_definitions=None,
+                directives=[],
                 selection_set=ast.SelectionSet(
                     selections=[
                         ast.Field(
@@ -144,7 +149,7 @@ def test_parses_null_value_in_list():
                                                         ast.StringValue(value=u"A"),
                                                         ast.NullValue(),
                                                         ast.StringValue(value=u"C"),
-                                                    ],
+                                                    ]
                                                 ),
                                             ),
                                             ast.ObjectField(
@@ -153,20 +158,23 @@ def test_parses_null_value_in_list():
                                             ),
                                         ]
                                     ),
-                                ),
+                                )
                             ],
-                        ),
-                    ],
+                        )
+                    ]
                 ),
-            ),
-        ],
+            )
+        ]
     )
 
 
 def test_null_as_name():
     result = parse('{ thingy(null: "stringcheese") }')
     assert result.definitions[0].selection_set.selections[0].name.value == "thingy"
-    assert result.definitions[0].selection_set.selections[0].arguments[0].name.value == "null"
+    assert (
+        result.definitions[0].selection_set.selections[0].arguments[0].name.value
+        == "null"
+    )
 
 
 def test_parses_multi_byte_characters():

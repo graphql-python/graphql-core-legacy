@@ -115,13 +115,16 @@ class TestValidValues(object):
         )
 
     def test_null_nullable_int_value(self):
-        expect_passes_rule(ArgumentsOfCorrectType, """
+        expect_passes_rule(
+            ArgumentsOfCorrectType,
+            """
         {
             complicatedArgs {
                 intArgField(intArg: null)
             }
         }
-        """)
+        """,
+        )
 
 
 # noinspection PyMethodMayBeStatic
@@ -247,15 +250,17 @@ class TestInvalidIntValues(object):
         )
 
     def test_null_into_non_null_int(self):
-        expect_fails_rule(ArgumentsOfCorrectType, """
+        expect_fails_rule(
+            ArgumentsOfCorrectType,
+            """
         {
             complicatedArgs {
                 nonNullIntArgField(nonNullIntArg: null)
             }
         }
-        """, [
-            bad_value("nonNullIntArg", "Int!", "null", 4, 51)
-        ])
+        """,
+            [bad_value("nonNullIntArg", "Int!", "null", 4, 51)],
+        )
 
 
 # noinspection PyMethodMayBeStatic

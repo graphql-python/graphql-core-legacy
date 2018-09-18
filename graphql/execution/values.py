@@ -40,7 +40,7 @@ def get_variable_values(
     if inputs is None:
         inputs = {}
 
-    values = {}
+    values = {}  # type: Dict[str, Any]
     for def_ast in definition_asts:
         var_name = def_ast.variable.name.value
         var_type = type_from_ast(schema, def_ast.type)

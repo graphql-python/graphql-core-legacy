@@ -295,8 +295,7 @@ def expect_invalid(schema, rules, query, expected_errors, sort_list=True):
         ]
 
     errors = list(map(format_error, errors))
-    msg = ("\nexpected errors: %s"
-           "\n     got errors: %s" % (expected_errors, errors))
+    msg = "\nexpected errors: {}\n     got errors: {}".format(expected_errors, errors)
     if sort_list:
         sorted_errors = sort_lists(list(map(format_error, errors)))
         expected_errors = map(format_message, expected_errors)

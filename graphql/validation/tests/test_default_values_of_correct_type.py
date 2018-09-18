@@ -104,7 +104,7 @@ def test_variables_with_invalid_default_values():
                 ['Expected "ComplexInput", found not an object.'],
             ),
             bad_value("d", "Int!", "null", 6, 20),
-            default_for_non_null_arg("d", "Int!", "Int", 6, 20)
+            default_for_non_null_arg("d", "Int!", "Int", 6, 20),
         ],
     )
 

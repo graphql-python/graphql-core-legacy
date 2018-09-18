@@ -83,7 +83,12 @@ class PrintingVisitor(Visitor):
 
     def leave_VariableDefinition(self, node, *args):
         # type: (Any, *Any) -> str
-        return node.variable + ": " + node.type + wrap(" = ", node.default_value, is_default_value=True)
+        return (
+            node.variable
+            + ": "
+            + node.type
+            + wrap(" = ", node.default_value, is_default_value=True)
+        )
 
     def leave_SelectionSet(self, node, *args):
         # type: (Any, *Any) -> str

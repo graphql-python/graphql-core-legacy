@@ -15,5 +15,7 @@ def test_ast_to_code_using_kitchen_sink():
     def loc(start, end):
         return Loc(start, end, source)
 
-    parsed_code_ast = eval(code_ast, {}, {"ast": ast, "loc": loc, "Undefined": Undefined})
+    parsed_code_ast = eval(
+        code_ast, {}, {"ast": ast, "loc": loc, "Undefined": Undefined}
+    )
     assert doc == parsed_code_ast
