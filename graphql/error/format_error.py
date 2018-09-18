@@ -3,7 +3,7 @@ if False:  # pragma: no cover
     from .graphql_error import GraphQLError  # noqa: F401
 
 
-__all__ = ['format_error']
+__all__ = ["format_error"]
 
 
 def format_error(error):
@@ -14,10 +14,12 @@ def format_error(error):
     Response Format, Errors section of the GraphQL Specification.
     """
     if not error:
-        raise ValueError('Received null or undefined error.')
+        raise ValueError("Received null or undefined error.")
     formatted = dict(  # noqa: E701 (pycqa/flake8#394)
-        message=error.message or 'An unknown error occurred.',
-        locations=error.locations, path=error.path) # type: Dict[str, Any]
+        message=error.message or "An unknown error occurred.",
+        locations=error.locations,
+        path=error.path,
+    )  # type: Dict[str, Any]
     if error.extensions:
         formatted.update(extensions=error.extensions)
     return formatted
