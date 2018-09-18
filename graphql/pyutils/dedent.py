@@ -3,7 +3,8 @@ from textwrap import dedent as _dedent
 __all__ = ["dedent"]
 
 
-def dedent(text: str) -> str:
+def dedent(text):
+    # type: (str) -> str
     """Fix indentation of given text by removing leading spaces and tabs.
 
     Also removes leading newlines and trailing spaces and tabs,

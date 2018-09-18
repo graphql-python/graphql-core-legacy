@@ -1,4 +1,5 @@
-from typing import Optional, Sequence
+if False:  # pragma: no cover
+    from typing import Optional, Sequence
 
 __all__ = ["or_list"]
 
@@ -6,7 +7,8 @@ __all__ = ["or_list"]
 MAX_LENGTH = 5
 
 
-def or_list(items: Sequence[str]) -> Optional[str]:
+def or_list(items):
+    # type: Sequence[str] -> Optional[str]
     """Given [A, B, C] return 'A, B, or C'."""
     if not items:
         raise TypeError("List must not be empty")

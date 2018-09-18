@@ -2,9 +2,13 @@ from typing import Any
 
 from ..error import INVALID
 
+if False:  # pragma: no cover
+    from typing import Any
+
 __all__ = ["is_nullish"]
 
 
-def is_nullish(value: Any) -> bool:
+def is_nullish(value):
+    # type: (Any) -> bool
     """Return true if a value is null, undefined, or NaN."""
     return value is None or value is INVALID or value != value

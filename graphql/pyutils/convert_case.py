@@ -9,11 +9,13 @@ _re_snake_to_camel = re.compile(r"(_)([a-z\d])")
 
 
 def camel_to_snake(s):
+    # type: (str) -> str
     """Convert from CamelCase to snake_case"""
     return _re_camel_to_snake.sub(r"\1_", s).lower()
 
 
 def snake_to_camel(s, upper=True):
+    # type: (str, bool) -> str
     """Convert from snake_case to CamelCase
 
     If upper is set, then convert to upper CamelCase,

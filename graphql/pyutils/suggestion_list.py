@@ -1,9 +1,11 @@
-from typing import Collection
+if False:  # pragma: no cover
+    from typing import Collection
 
 __all__ = ["suggestion_list"]
 
 
-def suggestion_list(input_: str, options: Collection[str]):
+def suggestion_list(input_: str, options):
+    # type: (str, Collection[str]) -> Collection[str]
     """Get list with suggestions for a given input.
 
     Given an invalid input string and list of valid options, returns a filtered
@@ -21,7 +23,8 @@ def suggestion_list(input_: str, options: Collection[str]):
     return sorted(options_by_distance, key=options_by_distance.get)
 
 
-def lexical_distance(a_str: str, b_str: str) -> int:
+def lexical_distance(a_str, b_str) -> int:
+    # type: (str, str) -> int
     """Computes the lexical distance between strings A and B.
 
     The "distance" between two strings is given by counting the minimum number
