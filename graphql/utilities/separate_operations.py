@@ -16,7 +16,7 @@ __all__ = ["separate_operations"]
 DepGraph = Dict[str, Set[str]]
 
 
-def separate_operations(document_ast: DocumentNode) -> Dict[str, DocumentNode]:
+def separate_operations(document_ast):
     """Separate operations in a given AST document.
 
     separate_operations accepts a single AST document which may contain many
@@ -38,12 +38,12 @@ def separate_operations(document_ast: DocumentNode) -> Dict[str, DocumentNode]:
     separated_document_asts = {}
     for operation in operations:
         operation_name = op_name(operation)
-        dependencies: Set[str] = set()
+        dependencies = set()
         collect_transitive_dependencies(dependencies, dep_graph, operation_name)
 
         # The list of definition nodes to be included for this operation,
         # sorted to retain the same order as the original document.
-        definitions: List[ExecutableDefinitionNode] = [operation]
+        definitions = [operation]
         for name in dependencies:
             definitions.append(fragments[name])
             definitions.sort(key=lambda n: positions.get(n, 0))
@@ -56,11 +56,11 @@ def separate_operations(document_ast: DocumentNode) -> Dict[str, DocumentNode]:
 class SeparateOperations(Visitor):
     def __init__(self):
         super().__init__()
-        self.operations: List[OperationDefinitionNode] = []
-        self.fragments: Dict[str, FragmentDefinitionNode] = {}
-        self.positions: Dict[ExecutableDefinitionNode, int] = {}
-        self.dep_graph: DepGraph = defaultdict(set)
-        self.from_name: str = None
+        self.operations = []
+        self.fragments = {}
+        self.positions = {}
+        self.dep_graph = defaultdict(set)
+        self.from_name = None
         self.idx = 0
 
     def enter_operation_definition(self, node, *_args):
@@ -80,14 +80,14 @@ class SeparateOperations(Visitor):
         self.dep_graph[self.from_name].add(to_name)
 
 
-def op_name(operation: OperationDefinitionNode) -> str:
+def op_name(operation):
     """Provide the empty string for anonymous operations."""
     return operation.name.value if operation.name else ""
 
 
 def collect_transitive_dependencies(
-    collected: Set[str], dep_graph: DepGraph, from_name: str
-) -> None:
+    collected, dep_graph, from_name
+):
     """Collect transitive dependencies.
 
     From a dependency graph, collects a list of transitive dependencies by

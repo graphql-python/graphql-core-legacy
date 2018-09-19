@@ -8,8 +8,8 @@ from . import ValidationRule
 __all__ = ["KnownTypeNamesRule", "unknown_type_message"]
 
 
-def unknown_type_message(type_name: str, suggested_types: List[str]) -> str:
-    message = f"Unknown type '{type_name}'."
+def unknown_type_message(type_name, suggested_types):
+    message = "Unknown type '{}'.".format(type_name)
     if suggested_types:
         message += " Perhaps you meant {quoted_or_list(suggested_types)}?"
     return message
@@ -34,7 +34,7 @@ class KnownTypeNamesRule(ValidationRule):
     def enter_input_object_type_definition(self, *_args):
         return self.SKIP
 
-    def enter_named_type(self, node: NamedTypeNode, *_args):
+    def enter_named_type(self, node, *_args):
         schema = self.context.schema
         type_name = node.name.value
         if not schema.get_type(type_name):

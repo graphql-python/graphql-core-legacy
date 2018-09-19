@@ -14,24 +14,23 @@ from . import ValidationContext, ValidationRule
 __all__ = ["VariablesInAllowedPositionRule", "bad_var_pos_message"]
 
 
-def bad_var_pos_message(var_name: str, var_type: str, expected_type: str) -> str:
+def bad_var_pos_message(var_name, var_type, expected_type):
     return (
-        f"Variable '${var_name}' of type '{var_type}' used"
-        f" in position expecting type '{expected_type}'."
-    )
+        "Variable '${}' of type '{}' used" " in position expecting type '{}'."
+    ).format(var_name, var_type, expected_type)
 
 
 class VariablesInAllowedPositionRule(ValidationRule):
     """Variables passed to field arguments conform to type"""
 
-    def __init__(self, context: ValidationContext) -> None:
+    def __init__(self, context):
         super().__init__(context)
-        self.var_def_map: Dict[str, Any] = {}
+        self.var_def_map = {}
 
     def enter_operation_definition(self, *_args):
         self.var_def_map.clear()
 
-    def leave_operation_definition(self, operation: OperationDefinitionNode, *_args):
+    def leave_operation_definition(self, operation, *_args):
         var_def_map = self.var_def_map
         usages = self.context.get_recursive_variable_usages(operation)
 
@@ -59,17 +58,13 @@ class VariablesInAllowedPositionRule(ValidationRule):
                         )
                     )
 
-    def enter_variable_definition(self, node: VariableDefinitionNode, *_args):
+    def enter_variable_definition(self, node, *_args):
         self.var_def_map[node.variable.name.value] = node
 
 
 def allowed_variable_usage(
-    schema: GraphQLSchema,
-    var_type: GraphQLType,
-    var_default_value: Optional[ValueNode],
-    location_type: GraphQLType,
-    location_default_value: Any,
-) -> bool:
+    schema, var_type, var_default_value, location_type, location_default_value
+):
     """Check for allowed variable usage.
 
     Returns True if the variable is allowed in the location it was found,

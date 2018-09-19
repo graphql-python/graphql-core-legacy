@@ -12,4 +12,4 @@ def quoted_or_list(items):
 
     Note: We use single quotes here, since these are also used by repr().
     """
-    return or_list([f"'{item}'" for item in items])
+    return or_list(["'{}'".format(item) for item in items])

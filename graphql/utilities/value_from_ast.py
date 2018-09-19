@@ -28,10 +28,10 @@ __all__ = ["value_from_ast"]
 
 
 def value_from_ast(
-    value_node: Optional[ValueNode],
-    type_: GraphQLInputType,
-    variables: Dict[str, Any] = None,
-) -> Any:
+    value_node,
+    type_,
+    variables = None,
+):
     """Produce a Python value given a GraphQL Value AST.
 
     A GraphQL type must be provided, which will be used to interpret different
@@ -83,7 +83,7 @@ def value_from_ast(
         type_ = cast(GraphQLList, type_)
         item_type = type_.of_type
         if isinstance(value_node, ListValueNode):
-            coerced_values: List[Any] = []
+            coerced_values = []
             append_value = coerced_values.append
             for item_node in value_node.values:
                 if is_missing_variable(item_node, variables):
@@ -108,7 +108,7 @@ def value_from_ast(
         if not isinstance(value_node, ObjectValueNode):
             return INVALID
         type_ = cast(GraphQLInputObjectType, type_)
-        coerced_obj: Dict[str, Any] = {}
+        coerced_obj = {}
         fields = type_.fields
         field_nodes = {field.name.value: field for field in value_node.fields}
         for field_name, field in fields.items():
@@ -152,8 +152,8 @@ def value_from_ast(
 
 
 def is_missing_variable(
-    value_node: ValueNode, variables: Dict[str, Any] = None
-) -> bool:
+    value_node, variables = None
+):
     """Check if value_node is a variable not defined in the variables dict."""
     return isinstance(value_node, VariableNode) and (
         not variables or is_invalid(variables.get(value_node.name.value, INVALID))

@@ -7,8 +7,8 @@ from . import ASTValidationContext, ASTValidationRule
 __all__ = ["UniqueInputFieldNamesRule", "duplicate_input_field_message"]
 
 
-def duplicate_input_field_message(field_name: str) -> str:
-    return f"There can only be one input field named '{field_name}'."
+def duplicate_input_field_message(field_name):
+    return "There can only be one input field named '{}'.".format(field_name)
 
 
 class UniqueInputFieldNamesRule(ASTValidationRule):
@@ -18,10 +18,10 @@ class UniqueInputFieldNamesRule(ASTValidationRule):
     uniquely named.
     """
 
-    def __init__(self, context: ASTValidationContext) -> None:
+    def __init__(self, context):
         super().__init__(context)
-        self.known_names_stack: List[Dict[str, NameNode]] = []
-        self.known_names: Dict[str, NameNode] = {}
+        self.known_names_stack = []
+        self.known_names = {}
 
     def enter_object_value(self, *_args):
         self.known_names_stack.append(self.known_names)
@@ -30,7 +30,7 @@ class UniqueInputFieldNamesRule(ASTValidationRule):
     def leave_object_value(self, *_args):
         self.known_names = self.known_names_stack.pop()
 
-    def enter_object_field(self, node: ObjectFieldNode, *_args):
+    def enter_object_field(self, node, *_args):
         known_names = self.known_names
         field_name = node.name.value
         if field_name in known_names:

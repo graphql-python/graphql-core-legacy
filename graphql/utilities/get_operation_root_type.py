@@ -12,9 +12,9 @@ __all__ = ["get_operation_root_type"]
 
 
 def get_operation_root_type(
-    schema: GraphQLSchema,
-    operation: Union[OperationDefinitionNode, OperationTypeDefinitionNode],
-) -> GraphQLObjectType:
+    schema,
+    operation,
+):
     """Extract the root type of the operation from the schema."""
     operation_type = operation.operation
     if operation_type == OperationType.QUERY:

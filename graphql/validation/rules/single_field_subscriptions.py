@@ -7,9 +7,9 @@ from . import ASTValidationRule
 __all__ = ["SingleFieldSubscriptionsRule", "single_field_only_message"]
 
 
-def single_field_only_message(name: Optional[str]) -> str:
+def single_field_only_message(name):
     return (
-        f"Subscription '{name}'" if name else "Anonymous Subscription"
+        "Subscription '{}'".format(name) if name else "Anonymous Subscription"
     ) + " must select only one top level field."
 
 
@@ -19,7 +19,7 @@ class SingleFieldSubscriptionsRule(ASTValidationRule):
     A GraphQL subscription is valid only if it contains a single root
     """
 
-    def enter_operation_definition(self, node: OperationDefinitionNode, *_args):
+    def enter_operation_definition(self, node, *_args):
         if node.operation == OperationType.SUBSCRIPTION:
             if len(node.selection_set.selections) != 1:
                 self.report_error(

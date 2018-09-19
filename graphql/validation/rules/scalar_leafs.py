@@ -10,19 +10,18 @@ __all__ = [
 ]
 
 
-def no_subselection_allowed_message(field_name: str, type_: str) -> str:
+def no_subselection_allowed_message(field_name, type_):
     return (
-        f"Field '{field_name}' must not have a sub selection"
-        f" since type '{type_}' has no subfields."
-    )
+        "Field '{}' must not have a sub selection" " since type '{}' has no subfields."
+    ).format(field_name, type_)
 
 
-def required_subselection_message(field_name: str, type_: str) -> str:
+def required_subselection_message(field_name, type_):
     return (
-        f"Field '{field_name}' of type '{type_}' must have a"
+        "Field '{}' of type '{}' must have a"
         " sub selection of subfields."
-        f" Did you mean '{field_name} {{ ... }}'?"
-    )
+        " Did you mean '{} {{ ... }}'?"
+    ).format(field_name, type_, field_name)
 
 
 class ScalarLeafsRule(ValidationRule):
@@ -32,7 +31,7 @@ class ScalarLeafsRule(ValidationRule):
     sub selections) are of scalar or enum types.
     """
 
-    def enter_field(self, node: FieldNode, *_args):
+    def enter_field(self, node, *_args):
         type_ = self.context.get_type()
         if type_:
             selection_set = node.selection_set

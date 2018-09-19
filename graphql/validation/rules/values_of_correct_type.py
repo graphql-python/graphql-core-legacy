@@ -38,24 +38,21 @@ __all__ = [
 ]
 
 
-def bad_value_message(type_name: str, value_name: str, message: str = None) -> str:
-    return f"Expected type {type_name}, found {value_name}" + (
-        f"; {message}" if message else "."
+def bad_value_message(type_name, value_name, message=None):
+    return "Expected type {}, found {}".format(type_name, value_name) + (
+        "; {}".format(message) if message else "."
     )
 
 
-def required_field_message(
-    type_name: str, field_name: str, field_type_name: str
-) -> str:
-    return (
-        f"Field {type_name}.{field_name} of required type"
-        f" {field_type_name} was not provided."
+def required_field_message(type_name, field_name, field_type_name):
+    return ("Field {}.{} of required type" " {} was not provided.").format(
+        type_name, field_name, field_type_name
     )
 
 
-def unknown_field_message(type_name: str, field_name: str, message: str = None) -> str:
-    return f"Field {field_name} is not defined by type {type_name}" + (
-        f"; {message}" if message else "."
+def unknown_field_message(type_name, field_name, message=None):
+    return "Field {} is not defined by type {}".format(field_name, type_name) + (
+        "; {}".format(message) if message else "."
     )
 
 
@@ -66,14 +63,14 @@ class ValuesOfCorrectTypeRule(ValidationRule):
     expected at their position.
     """
 
-    def enter_null_value(self, node: NullValueNode, *_args):
+    def enter_null_value(self, node, *_args):
         type_ = self.context.get_input_type()
         if is_non_null_type(type_):
             self.report_error(
                 GraphQLError(bad_value_message(type_, print_ast(node)), node)
             )
 
-    def enter_list_value(self, node: ListValueNode, *_args):
+    def enter_list_value(self, node, *_args):
         # Note: TypeInfo will traverse into a list's item type, so look to the
         # parent input type to check if it is a list.
         type_ = get_nullable_type(self.context.get_parent_input_type())
@@ -81,7 +78,7 @@ class ValuesOfCorrectTypeRule(ValidationRule):
             self.is_valid_scalar(node)
             return self.SKIP  # Don't traverse further.
 
-    def enter_object_value(self, node: ObjectValueNode, *_args):
+    def enter_object_value(self, node, *_args):
         type_ = get_named_type(self.context.get_input_type())
         if not is_input_object_type(type_):
             self.is_valid_scalar(node)
@@ -100,13 +97,13 @@ class ValuesOfCorrectTypeRule(ValidationRule):
                     )
                 )
 
-    def enter_object_field(self, node: ObjectFieldNode, *_args):
+    def enter_object_field(self, node, *_args):
         parent_type = get_named_type(self.context.get_parent_input_type())
         field_type = self.context.get_input_type()
         if not field_type and is_input_object_type(parent_type):
             suggestions = suggestion_list(node.name.value, list(parent_type.fields))
             did_you_mean = (
-                f"Did you mean {or_list(suggestions)}?" if suggestions else None
+                "Did you mean {}?".format(or_list(suggestions)) if suggestions else None
             )
             self.report_error(
                 GraphQLError(
@@ -117,7 +114,7 @@ class ValuesOfCorrectTypeRule(ValidationRule):
                 )
             )
 
-    def enter_enum_value(self, node: EnumValueNode, *_args):
+    def enter_enum_value(self, node, *_args):
         type_ = get_named_type(self.context.get_input_type())
         if not is_enum_type(type_):
             self.is_valid_scalar(node)
@@ -131,19 +128,19 @@ class ValuesOfCorrectTypeRule(ValidationRule):
                 )
             )
 
-    def enter_int_value(self, node: IntValueNode, *_args):
+    def enter_int_value(self, node, *_args):
         self.is_valid_scalar(node)
 
-    def enter_float_value(self, node: FloatValueNode, *_args):
+    def enter_float_value(self, node, *_args):
         self.is_valid_scalar(node)
 
-    def enter_string_value(self, node: StringValueNode, *_args):
+    def enter_string_value(self, node, *_args):
         self.is_valid_scalar(node)
 
-    def enter_boolean_value(self, node: BooleanValueNode, *_args):
+    def enter_boolean_value(self, node, *_args):
         self.is_valid_scalar(node)
 
-    def is_valid_scalar(self, node: ValueNode) -> None:
+    def is_valid_scalar(self, node):
         """Check whether this is a valid scalar.
 
         Any value literal may be a valid representation of a Scalar, depending
@@ -191,10 +188,10 @@ class ValuesOfCorrectTypeRule(ValidationRule):
             )
 
 
-def enum_type_suggestion(type_: GraphQLType, node: ValueNode) -> Optional[str]:
+def enum_type_suggestion(type_, node):
     if is_enum_type(type_):
         type_ = cast(GraphQLEnumType, type_)
         suggestions = suggestion_list(print_ast(node), list(type_.values))
         if suggestions:
-            return f"Did you mean the enum value {or_list(suggestions)}?"
+            return "Did you mean the enum value {}?".format(or_list(suggestions))
     return None

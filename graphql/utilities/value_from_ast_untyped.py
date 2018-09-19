@@ -8,8 +8,8 @@ __all__ = ["value_from_ast_untyped"]
 
 
 def value_from_ast_untyped(
-    value_node: ValueNode, variables: Dict[str, Any] = None
-) -> Any:
+    value_node, variables = None
+):
     """Produce a Python value given a GraphQL Value AST.
 
     Unlike `value_from_ast()`, no type is provided. The resulting Python
@@ -28,7 +28,7 @@ def value_from_ast_untyped(
     func = _value_from_kind_functions.get(value_node.kind)
     if func:
         return func(value_node, variables)
-    raise TypeError(f"Unexpected value kind: {value_node.kind}")
+    raise TypeError("Unexpected value kind: {}".format(value_node.kind))
 
 
 def value_from_null(_value_node, _variables):

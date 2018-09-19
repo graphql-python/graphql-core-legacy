@@ -20,19 +20,14 @@ class MiddlewareManager:
 
     __slots__ = "middlewares", "_middleware_resolvers", "_cached_resolvers"
 
-    _cached_resolvers: Dict[GraphQLFieldResolver, GraphQLFieldResolver]
-    _middleware_resolvers: Optional[Iterator[Callable]]
-
-    def __init__(self, *middlewares: Any) -> None:
+    def __init__(self, *middlewares):
         self.middlewares = middlewares
         self._middleware_resolvers = (
             get_middleware_resolvers(middlewares) if middlewares else None
         )
         self._cached_resolvers = {}
 
-    def get_field_resolver(
-        self, field_resolver: GraphQLFieldResolver
-    ) -> GraphQLFieldResolver:
+    def get_field_resolver(self, field_resolver):
         """Wrap the provided resolver with the middleware.
 
         Returns a function that chains the middleware functions with the
@@ -47,7 +42,7 @@ class MiddlewareManager:
         return self._cached_resolvers[field_resolver]
 
 
-def get_middleware_resolvers(middlewares: Tuple[Any, ...]) -> Iterator[Callable]:
+def get_middleware_resolvers(middlewares):
     """Get a list of resolver functions from a list of classes or functions."""
     for middleware in middlewares:
         if isfunction(middleware):
@@ -58,9 +53,7 @@ def get_middleware_resolvers(middlewares: Tuple[Any, ...]) -> Iterator[Callable]
                 yield resolver_func
 
 
-def middleware_chain(
-    func: GraphQLFieldResolver, middlewares: Iterable[Callable]
-) -> GraphQLFieldResolver:
+def middleware_chain(func, middlewares):
     """Chain the given function with the provided middlewares.
 
     Returns a new resolver function that is the chain of both.
@@ -68,7 +61,7 @@ def middleware_chain(
     if not middlewares:
         return func
     middlewares = chain((func,), middlewares)
-    last_func: Optional[GraphQLFieldResolver] = None
+    last_func = None
     for middleware in middlewares:
         last_func = partial(middleware, last_func) if last_func else middleware
     return cast(GraphQLFieldResolver, last_func)

@@ -35,14 +35,14 @@ __all__ = [
 ]
 
 
-def print_value(value: Any, type_: GraphQLInputType) -> str:
+def print_value(value, type_):
     # Since print_value needs graphql.type, it can only be imported later
     from ..utilities.schema_printer import print_value
 
     return print_value(value, type_)
 
 
-__Schema: GraphQLObjectType = GraphQLObjectType(
+__Schema = GraphQLObjectType(
     name="__Schema",
     description="A GraphQL Schema defines the capabilities of a GraphQL"
     " server. It exposes all available types and directives"
@@ -80,7 +80,7 @@ __Schema: GraphQLObjectType = GraphQLObjectType(
 )
 
 
-__Directive: GraphQLObjectType = GraphQLObjectType(
+__Directive = GraphQLObjectType(
     name="__Directive",
     description="A Directive provides a way to describe alternate runtime"
     " execution and type validation behavior in a GraphQL"
@@ -109,7 +109,7 @@ __Directive: GraphQLObjectType = GraphQLObjectType(
 )
 
 
-__DirectiveLocation: GraphQLEnumType = GraphQLEnumType(
+__DirectiveLocation = GraphQLEnumType(
     name="__DirectiveLocation",
     description="A Directive can be adjacent to many parts of the GraphQL"
     " language, a __DirectiveLocation describes one such possible"
@@ -194,7 +194,7 @@ __DirectiveLocation: GraphQLEnumType = GraphQLEnumType(
 )
 
 
-__Type: GraphQLObjectType = GraphQLObjectType(
+__Type = GraphQLObjectType(
     name="__Type",
     description="The fundamental unit of any GraphQL Schema is the type."
     " There are many kinds of types in GraphQL as represented"
@@ -267,7 +267,7 @@ class TypeFieldResolvers:
             return TypeKind.LIST
         if is_non_null_type(type_):
             return TypeKind.NON_NULL
-        raise TypeError(f"Unknown kind of type: {type_}")
+        raise TypeError("Unknown kind of type: {}".format(type_))
 
     @staticmethod
     def name(type_, _info):
@@ -315,7 +315,7 @@ class TypeFieldResolvers:
         return getattr(type_, "of_type", None)
 
 
-__Field: GraphQLObjectType = GraphQLObjectType(
+__Field = GraphQLObjectType(
     name="__Field",
     description="Object and Interface types are described by a list of Fields,"
     " each of which has a name, potentially a list of arguments,"
@@ -345,7 +345,7 @@ __Field: GraphQLObjectType = GraphQLObjectType(
 )
 
 
-__InputValue: GraphQLObjectType = GraphQLObjectType(
+__InputValue = GraphQLObjectType(
     name="__InputValue",
     description="Arguments provided to Fields or Directives and the input"
     " fields of an InputObject are represented as Input Values"
@@ -372,7 +372,7 @@ __InputValue: GraphQLObjectType = GraphQLObjectType(
 )
 
 
-__EnumValue: GraphQLObjectType = GraphQLObjectType(
+__EnumValue = GraphQLObjectType(
     name="__EnumValue",
     description="One possible value for a given Enum. Enum values are unique"
     " values, not a placeholder for a string or numeric value."
@@ -407,7 +407,7 @@ class TypeKind(Enum):
     NON_NULL = "non-null"
 
 
-__TypeKind: GraphQLEnumType = GraphQLEnumType(
+__TypeKind = GraphQLEnumType(
     name="__TypeKind",
     description="An enum describing what kind of type a given `__Type` is.",
     values={
@@ -490,5 +490,5 @@ introspection_types = {
 }
 
 
-def is_introspection_type(type_: Any) -> bool:
+def is_introspection_type(type_):
     return is_named_type(type_) and type_.name in introspection_types

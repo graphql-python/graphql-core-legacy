@@ -18,18 +18,15 @@ __all__ = ["FieldsOnCorrectTypeRule", "undefined_field_message"]
 
 
 def undefined_field_message(
-    field_name: str,
-    type_: str,
-    suggested_type_names: List[str],
-    suggested_field_names: List[str],
-) -> str:
-    message = f"Cannot query field '{field_name}' on type '{type_}'."
+    field_name, type_, suggested_type_names, suggested_field_names
+):
+    message = "Cannot query field '{}' on type '{}'.".format(field_name, type_)
     if suggested_type_names:
         suggestions = quoted_or_list(suggested_type_names)
-        message += f" Did you mean to use an inline fragment on {suggestions}?"
+        message += " Did you mean to use an inline fragment on {}?".format(suggestions)
     elif suggested_field_names:
         suggestions = quoted_or_list(suggested_field_names)
-        message += f" Did you mean {suggestions}?"
+        message += " Did you mean {}?".format(suggestions)
     return message
 
 
@@ -40,7 +37,7 @@ class FieldsOnCorrectTypeRule(ValidationRule):
     parent type, or are an allowed meta field such as __typename.
     """
 
-    def enter_field(self, node: FieldNode, *_args):
+    def enter_field(self, node, *_args):
         type_ = self.context.get_parent_type()
         if not type_:
             return
@@ -68,9 +65,7 @@ class FieldsOnCorrectTypeRule(ValidationRule):
         )
 
 
-def get_suggested_type_names(
-    schema: GraphQLSchema, type_: GraphQLOutputType, field_name: str
-) -> List[str]:
+def get_suggested_type_names(schema, type_, field_name):
     """
     Get a list of suggested type names.
 
@@ -82,7 +77,7 @@ def get_suggested_type_names(
     if is_abstract_type(type_):
         type_ = cast(GraphQLAbstractType, type_)
         suggested_object_types = []
-        interface_usage_count: Dict[str, int] = defaultdict(int)
+        interface_usage_count = defaultdict(int)
         for possible_type in schema.get_possible_types(type_):
             if field_name not in possible_type.fields:
                 continue
@@ -106,7 +101,7 @@ def get_suggested_type_names(
     return []
 
 
-def get_suggested_field_names(type_: GraphQLOutputType, field_name: str) -> List[str]:
+def get_suggested_field_names(type_, field_name):
     """Get a list of suggested field names.
 
     For the field name provided, determine if there are any similar field names

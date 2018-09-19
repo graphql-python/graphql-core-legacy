@@ -7,8 +7,8 @@ from . import ValidationContext, ValidationRule
 __all__ = ["NoUnusedFragmentsRule", "unused_fragment_message"]
 
 
-def unused_fragment_message(frag_name: str) -> str:
-    return f"Fragment '{frag_name}' is never used."
+def unused_fragment_message(frag_name):
+    return "Fragment '{}' is never used.".format(frag_name)
 
 
 class NoUnusedFragmentsRule(ValidationRule):
@@ -19,16 +19,16 @@ class NoUnusedFragmentsRule(ValidationRule):
     within operations.
     """
 
-    def __init__(self, context: ValidationContext) -> None:
+    def __init__(self, context):
         super().__init__(context)
-        self.operation_defs: List[OperationDefinitionNode] = []
-        self.fragment_defs: List[FragmentDefinitionNode] = []
+        self.operation_defs = []
+        self.fragment_defs = []
 
-    def enter_operation_definition(self, node: OperationDefinitionNode, *_args):
+    def enter_operation_definition(self, node, *_args):
         self.operation_defs.append(node)
         return False
 
-    def enter_fragment_definition(self, node: FragmentDefinitionNode, *_args):
+    def enter_fragment_definition(self, node, *_args):
         self.fragment_defs.append(node)
         return False
 

@@ -17,7 +17,7 @@ __all__ = [
 ]
 
 
-def is_directive(directive: Any) -> bool:
+def is_directive(directive):
     """Test if the given value is a GraphQL directive."""
     return isinstance(directive, GraphQLDirective)
 
@@ -29,20 +29,13 @@ class GraphQLDirective:
     behavior. Type system creators will usually not create these directly.
     """
 
-    def __init__(
-        self,
-        name: str,
-        locations: Sequence[DirectiveLocation],
-        args: Dict[str, GraphQLArgument] = None,
-        description: str = None,
-        ast_node: ast.DirectiveDefinitionNode = None,
-    ) -> None:
+    def __init__(self, name, locations, args=None, description=None, ast_node=None):
         if not name:
             raise TypeError("Directive must be named.")
         elif not isinstance(name, str):
             raise TypeError("The directive name must be a string.")
         if not isinstance(locations, (list, tuple)):
-            raise TypeError(f"{name} locations must be a list/tuple.")
+            raise TypeError("{} locations must be a list/tuple.".format(name))
         if not all(isinstance(value, DirectiveLocation) for value in locations):
             try:
                 locations = [
@@ -52,19 +45,23 @@ class GraphQLDirective:
                     for value in locations
                 ]
             except (KeyError, TypeError):
-                raise TypeError(f"{name} locations must be DirectiveLocation objects.")
+                raise TypeError(
+                    "{} locations must be DirectiveLocation objects.".format(name)
+                )
         if args is None:
             args = {}
         elif not isinstance(args, dict) or not all(
             isinstance(key, str) for key in args
         ):
-            raise TypeError(f"{name} args must be a dict with argument names as keys.")
+            raise TypeError(
+                "{} args must be a dict with argument names as keys.".format(name)
+            )
         elif not all(
             isinstance(value, GraphQLArgument) or is_input_type(value)
             for value in args.values()
         ):
             raise TypeError(
-                f"{name} args must be GraphQLArgument or input type objects."
+                "{} args must be GraphQLArgument or input type objects.".format(name)
             )
         else:
             args = {
@@ -74,9 +71,11 @@ class GraphQLDirective:
                 for name, value in args.items()
             }
         if description is not None and not isinstance(description, str):
-            raise TypeError(f"{name} description must be a string.")
+            raise TypeError("{} description must be a string.".format(name))
         if ast_node and not isinstance(ast_node, ast.DirectiveDefinitionNode):
-            raise TypeError(f"{name} AST node must be a DirectiveDefinitionNode.")
+            raise TypeError(
+                "{} AST node must be a DirectiveDefinitionNode.".format(name)
+            )
         self.name = name
         self.locations = locations
         self.args = args
@@ -84,10 +83,10 @@ class GraphQLDirective:
         self.ast_node = ast_node
 
     def __str__(self):
-        return f"@{self.name}"
+        return "@{}".format(self.name)
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}({self})>"
+        return "<{}({})>".format(self.__class__.__name__, self)
 
 
 # Used to conditionally include fields or fragments.
@@ -156,7 +155,7 @@ specified_directives = (
 )
 
 
-def is_specified_directive(directive: GraphQLDirective):
+def is_specified_directive(directive):
     """Check whether the given directive is one of the specified directives."""
     return any(
         specified_directive.name == directive.name

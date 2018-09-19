@@ -35,25 +35,25 @@ from .ast_from_value import ast_from_value
 __all__ = ["print_schema", "print_introspection_schema", "print_type", "print_value"]
 
 
-def print_schema(schema: GraphQLSchema) -> str:
+def print_schema(schema):
     return print_filtered_schema(
         schema, lambda n: not is_specified_directive(n), is_defined_type
     )
 
 
-def print_introspection_schema(schema: GraphQLSchema) -> str:
+def print_introspection_schema(schema):
     return print_filtered_schema(schema, is_specified_directive, is_introspection_type)
 
 
-def is_defined_type(type_: GraphQLNamedType) -> bool:
+def is_defined_type(type_):
     return not is_specified_scalar_type(type_) and not is_introspection_type(type_)
 
 
 def print_filtered_schema(
-    schema: GraphQLSchema,
-    directive_filter: Callable[[GraphQLDirective], bool],
-    type_filter: Callable[[GraphQLNamedType], bool],
-) -> str:
+    schema,
+    directive_filter,
+    type_filter,
+):
     directives = filter(directive_filter, schema.directives)
     type_map = schema.type_map
     types = filter(type_filter, map(type_map.get, sorted(type_map)))  # type: ignore
@@ -70,7 +70,7 @@ def print_filtered_schema(
     )  # type: ignore
 
 
-def print_schema_definition(schema: GraphQLSchema) -> Optional[str]:
+def print_schema_definition(schema):
     if is_schema_of_common_names(schema):
         return None
 
@@ -78,20 +78,20 @@ def print_schema_definition(schema: GraphQLSchema) -> Optional[str]:
 
     query_type = schema.query_type
     if query_type:
-        operation_types.append(f"  query: {query_type.name}")
+        operation_types.append("  query: {}".format(query_type.name))
 
     mutation_type = schema.mutation_type
     if mutation_type:
-        operation_types.append(f"  mutation: {mutation_type.name}")
+        operation_types.append("  mutation: {}".format(mutation_type.name))
 
     subscription_type = schema.subscription_type
     if subscription_type:
-        operation_types.append(f"  subscription: {subscription_type.name}")
+        operation_types.append("  subscription: {}".format(subscription_type.name))
 
     return "schema {\n" + "\n".join(operation_types) + "\n}"
 
 
-def is_schema_of_common_names(schema: GraphQLSchema) -> bool:
+def is_schema_of_common_names(schema):
     """Check whether this schema uses the common naming convention.
 
     GraphQL schema define root types for each type of operation. These types
@@ -120,7 +120,7 @@ def is_schema_of_common_names(schema: GraphQLSchema) -> bool:
     return True
 
 
-def print_type(type_: GraphQLNamedType) -> str:
+def print_type(type_):
     if is_scalar_type(type_):
         type_ = cast(GraphQLScalarType, type_)
         return print_scalar(type_)
@@ -139,67 +139,67 @@ def print_type(type_: GraphQLNamedType) -> str:
     if is_input_object_type(type_):
         type_ = cast(GraphQLInputObjectType, type_)
         return print_input_object(type_)
-    raise TypeError(f"Unknown type: {type_!r}")
+    raise TypeError("Unknown type: {!r}".format(type_))
 
 
-def print_scalar(type_: GraphQLScalarType) -> str:
-    return print_description(type_) + f"scalar {type_.name}"
+def print_scalar(type_):
+    return print_description(type_) + "scalar {}".format(type_.name)
 
 
-def print_object(type_: GraphQLObjectType) -> str:
+def print_object(type_):
     interfaces = type_.interfaces
     implemented_interfaces = (
         (" implements " + " & ".join(i.name for i in interfaces)) if interfaces else ""
     )
     return (
         print_description(type_)
-        + f"type {type_.name}{implemented_interfaces} "
+        + "type {}{} ".format(type_.name, implemented_interfaces)
         + "{\n"
         + print_fields(type_)
         + "\n}"
     )
 
 
-def print_interface(type_: GraphQLInterfaceType) -> str:
+def print_interface(type_):
     return (
         print_description(type_)
-        + f"interface {type_.name} "
+        + "interface {} ".format(type_.name)
         + "{\n"
         + print_fields(type_)
         + "\n}"
     )
 
 
-def print_union(type_: GraphQLUnionType) -> str:
+def print_union(type_):
     return (
         print_description(type_)
-        + f"union {type_.name} = "
+        + "union {} = ".format(type_.name)
         + " | ".join(t.name for t in type_.types)
     )
 
 
-def print_enum(type_: GraphQLEnumType) -> str:
+def print_enum(type_):
     return (
         print_description(type_)
-        + f"enum {type_.name} "
+        + "enum {} ".format(type_.name)
         + "{\n"
         + print_enum_values(type_.values)
         + "\n}"
     )
 
 
-def print_enum_values(values: Dict[str, GraphQLEnumValue]) -> str:
+def print_enum_values(values):
     return "\n".join(
-        print_description(value, "  ", not i) + f"  {name}" + print_deprecated(value)
+        print_description(value, "  ", not i) + "  {}".format(name) + print_deprecated(value)
         for i, (name, value) in enumerate(values.items())
     )
 
 
-def print_input_object(type_: GraphQLInputObjectType) -> str:
+def print_input_object(type_):
     fields = type_.fields.items()
     return (
         print_description(type_)
-        + f"input {type_.name} "
+        + "input {} ".format(type_.name)
         + "{\n"
         + "\n".join(
             print_description(field, "  ", not i)
@@ -211,19 +211,19 @@ def print_input_object(type_: GraphQLInputObjectType) -> str:
     )
 
 
-def print_fields(type_: Union[GraphQLObjectType, GraphQLInterfaceType]) -> str:
+def print_fields(type_):
     fields = type_.fields.items()
     return "\n".join(
         print_description(field, "  ", not i)
-        + f"  {name}"
+        + "  {}".format(name)
         + print_args(field.args, "  ")
-        + f": {field.type}"
+        + ": {}".format(field.type)
         + print_deprecated(field)
         for i, (name, field) in enumerate(fields)
     )
 
 
-def print_args(args: Dict[str, GraphQLArgument], indentation="") -> str:
+def print_args(args, indentation=""):
     if not args:
         return ""
 
@@ -238,47 +238,47 @@ def print_args(args: Dict[str, GraphQLArgument], indentation="") -> str:
     return (
         "(\n"
         + "\n".join(
-            print_description(arg, f"  {indentation}", not i)
-            + f"  {indentation}"
+            print_description(arg, "  {}".format(indentation), not i)
+            + "  {}".format(indentation)
             + print_input_value(name, arg)
             for i, (name, arg) in enumerate(args.items())
         )
-        + f"\n{indentation})"
+        + "\n{})".format(indentation)
     )
 
 
-def print_input_value(name: str, arg: GraphQLArgument) -> str:
-    arg_decl = f"{name}: {arg.type}"
+def print_input_value(name, arg):
+    arg_decl = "{}: {}".format(name, arg.type)
     if not is_invalid(arg.default_value):
-        arg_decl += f" = {print_value(arg.default_value, arg.type)}"
+        arg_decl += " = {}".format(print_value(arg.default_value, arg.type))
     return arg_decl
 
 
-def print_directive(directive: GraphQLDirective) -> str:
+def print_directive(directive):
     return (
         print_description(directive)
-        + f"directive @{directive.name}"
+        + "directive @{}".format(directive.name)
         + print_args(directive.args)
         + " on "
         + " | ".join(location.name for location in directive.locations)
     )
 
 
-def print_deprecated(field_or_enum_value: Union[GraphQLField, GraphQLEnumValue]) -> str:
+def print_deprecated(field_or_enum_value):
     if not field_or_enum_value.is_deprecated:
         return ""
     reason = field_or_enum_value.deprecation_reason
     if is_nullish(reason) or reason == "" or reason == DEFAULT_DEPRECATION_REASON:
         return " @deprecated"
     else:
-        return f" @deprecated(reason: {print_value(reason, GraphQLString)})"
+        return " @deprecated(reason: {})".format(print_value(reason, GraphQLString))
 
 
 def print_description(
-    type_: Union[GraphQLArgument, GraphQLDirective, GraphQLEnumValue, GraphQLNamedType],
+    type_,
     indentation="",
     first_in_block=True,
-) -> str:
+):
     if not type_.description:
         return ""
     lines = description_lines(type_.description, 120 - len(indentation))
@@ -305,12 +305,12 @@ def print_description(
     return "".join(description)
 
 
-def escape_quote(line: str) -> str:
+def escape_quote(line):
     return line.replace('"""', '\\"""')
 
 
-def description_lines(description: str, max_len: int) -> List[str]:
-    lines: List[str] = []
+def description_lines(description, max_len):
+    lines = []
     append_line, extend_lines = lines.append, lines.extend
     raw_lines = description.splitlines()
     for raw_line in raw_lines:
@@ -323,10 +323,10 @@ def description_lines(description: str, max_len: int) -> List[str]:
     return lines
 
 
-def break_line(line: str, max_len: int) -> List[str]:
+def break_line(line, max_len):
     if len(line) < max_len + 5:
         return [line]
-    parts = re.split(f"((?: |^).{{15,{max_len - 40}}}(?= |$))", line)
+    parts = re.split("((?: |^).{{15,{}}}(?= |$))".format(max_len - 40), line)
     if len(parts) < 4:
         return [line]
     sublines = [parts[0] + parts[1] + parts[2]]
@@ -336,6 +336,6 @@ def break_line(line: str, max_len: int) -> List[str]:
     return sublines
 
 
-def print_value(value: Any, type_: GraphQLInputType) -> str:
+def print_value(value, type_):
     """Convenience function for printing a Python value"""
     return print_ast(ast_from_value(value, type_))  # type: ignore

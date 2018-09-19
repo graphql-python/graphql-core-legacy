@@ -23,7 +23,7 @@ class LoneSchemaDefinitionRule(SDLValidationRule):
     A GraphQL document is only valid if it contains only one schema definition.
     """
 
-    def __init__(self, context: SDLValidationContext) -> None:
+    def __init__(self, context):
         super().__init__(context)
         old_schema = context.schema
         self.already_defined = old_schema and (
@@ -34,7 +34,7 @@ class LoneSchemaDefinitionRule(SDLValidationRule):
         )
         self.schema_definitions_count = 0
 
-    def enter_schema_definition(self, node: SchemaDefinitionNode, *_args):
+    def enter_schema_definition(self, node, *_args):
         if self.already_defined:
             self.report_error(
                 GraphQLError(cannot_define_schema_within_extension_message(), node)

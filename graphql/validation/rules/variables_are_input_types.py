@@ -7,8 +7,10 @@ from . import ValidationRule
 __all__ = ["VariablesAreInputTypesRule", "non_input_type_on_var_message"]
 
 
-def non_input_type_on_var_message(variable_name: str, type_name: str) -> str:
-    return f"Variable '${variable_name}'" f" cannot be non-input type '{type_name}'."
+def non_input_type_on_var_message(variable_name, type_name):
+    return ("Variable '${}'" " cannot be non-input type '{}'.").format(
+        variable_name, type_name
+    )
 
 
 class VariablesAreInputTypesRule(ValidationRule):
@@ -18,7 +20,7 @@ class VariablesAreInputTypesRule(ValidationRule):
     input types (scalar, enum, or input object).
     """
 
-    def enter_variable_definition(self, node: VariableDefinitionNode, *_args):
+    def enter_variable_definition(self, node, *_args):
         type_ = type_from_ast(self.context.schema, node.type)
 
         # If the variable type is not an input type, return an error.

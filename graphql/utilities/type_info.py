@@ -62,10 +62,10 @@ class TypeInfo:
 
     def __init__(
         self,
-        schema: GraphQLSchema,
-        get_field_def_fn: GetFieldDefType = None,
-        initial_type: GraphQLType = None,
-    ) -> None:
+        schema,
+        get_field_def_fn = None,
+        initial_type = None,
+    ):
         """Initialize the TypeInfo for the given GraphQL schema.
 
         The experimental optional second parameter is only needed in order to
@@ -76,14 +76,14 @@ class TypeInfo:
         beginning somewhere other than documents.
         """
         self._schema = schema
-        self._type_stack: List[Optional[GraphQLOutputType]] = []
-        self._parent_type_stack: List[Optional[GraphQLCompositeType]] = []
-        self._input_type_stack: List[Optional[GraphQLInputType]] = []
-        self._field_def_stack: List[Optional[GraphQLField]] = []
-        self._default_value_stack: List[Any] = []
-        self._directive: Optional[GraphQLDirective] = None
-        self._argument: Optional[GraphQLArgument] = None
-        self._enum_value: Optional[GraphQLEnumValue] = None
+        self._type_stack = []
+        self._parent_type_stack = []
+        self._input_type_stack = []
+        self._field_def_stack = []
+        self._default_value_stack = []
+        self._directive = None
+        self._argument = None
+        self._enum_value = None
         self._get_field_def = get_field_def_fn or get_field_def
         if initial_type:
             if is_input_type(initial_type):
@@ -126,24 +126,24 @@ class TypeInfo:
     def get_enum_value(self):
         return self._enum_value
 
-    def enter(self, node: Node):
+    def enter(self, node):
         method = getattr(self, "enter_" + node.kind, None)
         if method:
             return method(node)
 
-    def leave(self, node: Node):
+    def leave(self, node):
         method = getattr(self, "leave_" + node.kind, None)
         if method:
             return method()
 
     # noinspection PyUnusedLocal
-    def enter_selection_set(self, node: SelectionSetNode):
+    def enter_selection_set(self, node):
         named_type = get_named_type(self.get_type())
         self._parent_type_stack.append(
             named_type if is_composite_type(named_type) else None
         )
 
-    def enter_field(self, node: FieldNode):
+    def enter_field(self, node):
         parent_type = self.get_parent_type()
         if parent_type:
             field_def = self._get_field_def(self._schema, parent_type, node)
@@ -153,10 +153,10 @@ class TypeInfo:
         self._field_def_stack.append(field_def)
         self._type_stack.append(field_type if is_output_type(field_type) else None)
 
-    def enter_directive(self, node: DirectiveNode):
+    def enter_directive(self, node):
         self._directive = self._schema.get_directive(node.name.value)
 
-    def enter_operation_definition(self, node: OperationDefinitionNode):
+    def enter_operation_definition(self, node):
         if node.operation == OperationType.QUERY:
             type_ = self._schema.query_type
         elif node.operation == OperationType.MUTATION:
@@ -167,7 +167,7 @@ class TypeInfo:
             type_ = None
         self._type_stack.append(type_ if is_object_type(type_) else None)
 
-    def enter_inline_fragment(self, node: InlineFragmentNode):
+    def enter_inline_fragment(self, node):
         type_condition_ast = node.type_condition
         output_type = (
             type_from_ast(self._schema, type_condition_ast)
@@ -182,13 +182,13 @@ class TypeInfo:
 
     enter_fragment_definition = enter_inline_fragment
 
-    def enter_variable_definition(self, node: VariableDefinitionNode):
+    def enter_variable_definition(self, node):
         input_type = type_from_ast(self._schema, node.type)
         self._input_type_stack.append(
             cast(GraphQLInputType, input_type) if is_input_type(input_type) else None
         )
 
-    def enter_argument(self, node: ArgumentNode):
+    def enter_argument(self, node):
         field_or_directive = self.get_directive() or self.get_field_def()
         if field_or_directive:
             arg_def = field_or_directive.args.get(node.name.value)
@@ -200,14 +200,14 @@ class TypeInfo:
         self._input_type_stack.append(arg_type if is_input_type(arg_type) else None)
 
     # noinspection PyUnusedLocal
-    def enter_list_value(self, node: ListValueNode):
+    def enter_list_value(self, node):
         list_type = get_nullable_type(self.get_input_type())
         item_type = list_type.of_type if is_list_type(list_type) else list_type
         # List positions never have a default value.
         self._default_value_stack.append(INVALID)
         self._input_type_stack.append(item_type if is_input_type(item_type) else None)
 
-    def enter_object_field(self, node: ObjectFieldNode):
+    def enter_object_field(self, node):
         object_type = get_named_type(self.get_input_type())
         if is_input_object_type(object_type):
             input_field = object_type.fields.get(node.name.value)
@@ -221,7 +221,7 @@ class TypeInfo:
             input_field_type if is_input_type(input_field_type) else None
         )
 
-    def enter_enum_value(self, node: EnumValueNode):
+    def enter_enum_value(self, node):
         enum_type = get_named_type(self.get_input_type())
         if is_enum_type(enum_type):
             enum_value = enum_type.values.get(node.value)
@@ -264,8 +264,8 @@ class TypeInfo:
 
 
 def get_field_def(
-    schema: GraphQLSchema, parent_type: GraphQLType, field_node: FieldNode
-) -> Optional[GraphQLField]:
+    schema, parent_type, field_node
+):
     """Get field definition.
 
     Not exactly the same as the executor's definition of getFieldDef, in this

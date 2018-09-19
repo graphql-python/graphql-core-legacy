@@ -33,7 +33,7 @@ __all__ = ["ast_from_value"]
 _re_integer_string = re.compile("^-?(0|[1-9][0-9]*)$")
 
 
-def ast_from_value(value: Any, type_: GraphQLInputType) -> Optional[ValueNode]:
+def ast_from_value(value, type_):
     """Produce a GraphQL Value AST given a Python value.
 
     A GraphQL type must be provided, which will be used to interpret different
@@ -83,7 +83,7 @@ def ast_from_value(value: Any, type_: GraphQLInputType) -> Optional[ValueNode]:
         if value is None or not isinstance(value, Mapping):
             return None
         type_ = cast(GraphQLInputObjectType, type_)
-        field_nodes: List[ObjectFieldNode] = []
+        field_nodes = []
         append_node = field_nodes.append
         for field_name, field in type_.fields.items():
             if field_name in value:
@@ -109,9 +109,9 @@ def ast_from_value(value: Any, type_: GraphQLInputType) -> Optional[ValueNode]:
 
         # Python ints and floats correspond nicely to Int and Float values.
         if isinstance(serialized, int):
-            return IntValueNode(value=f"{serialized:d}")
+            return IntValueNode(value="{:d}".format(serialized))
         if isinstance(serialized, float):
-            return FloatValueNode(value=f"{serialized:g}")
+            return FloatValueNode(value="{:g}".format(serialized))
 
         if isinstance(serialized, str):
             # Enum types use Enum literals.
@@ -124,6 +124,6 @@ def ast_from_value(value: Any, type_: GraphQLInputType) -> Optional[ValueNode]:
 
             return StringValueNode(value=serialized)
 
-        raise TypeError(f"Cannot convert value to AST: {serialized!r}")
+        raise TypeError("Cannot convert value to AST: {!r}".format(serialized))
 
-    raise TypeError(f"Unknown type: {type_!r}.")
+    raise TypeError("Unknown type: {!r}.".format(type_))

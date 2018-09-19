@@ -5,8 +5,8 @@ from . import ValidationRule
 __all__ = ["KnownFragmentNamesRule", "unknown_fragment_message"]
 
 
-def unknown_fragment_message(fragment_name: str) -> str:
-    return f"Unknown fragment '{fragment_name}'."
+def unknown_fragment_message(fragment_name):
+    return "Unknown fragment '{}'.".format(fragment_name)
 
 
 class KnownFragmentNamesRule(ValidationRule):
@@ -16,7 +16,7 @@ class KnownFragmentNamesRule(ValidationRule):
     refer to fragments defined in the same document.
     """
 
-    def enter_fragment_spread(self, node: FragmentSpreadNode, *_args):
+    def enter_fragment_spread(self, node, *_args):
         fragment_name = node.name.value
         fragment = self.context.get_fragment(fragment_name)
         if not fragment:

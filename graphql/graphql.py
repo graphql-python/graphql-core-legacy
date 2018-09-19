@@ -13,16 +13,16 @@ __all__ = ["graphql", "graphql_sync"]
 
 
 async def graphql(
-    schema: GraphQLSchema,
-    source: Union[str, Source],
-    root_value: Any = None,
-    context_value: Any = None,
-    variable_values: Dict[str, Any] = None,
-    operation_name: str = None,
-    field_resolver: Callable = None,
-    middleware: Middleware = None,
-    execution_context_class: Type[ExecutionContext] = ExecutionContext,
-) -> ExecutionResult:
+    schema,
+    source,
+    root_value = None,
+    context_value = None,
+    variable_values = None,
+    operation_name = None,
+    field_resolver = None,
+    middleware = None,
+    execution_context_class = ExecutionContext,
+):
     """Execute a GraphQL operation asynchronously.
 
     This is the primary entry point function for fulfilling GraphQL operations
@@ -84,16 +84,16 @@ async def graphql(
 
 
 def graphql_sync(
-    schema: GraphQLSchema,
-    source: Union[str, Source],
-    root_value: Any = None,
-    context_value: Any = None,
-    variable_values: Dict[str, Any] = None,
-    operation_name: str = None,
-    field_resolver: Callable = None,
-    middleware: Middleware = None,
-    execution_context_class: Type[ExecutionContext] = ExecutionContext,
-) -> ExecutionResult:
+    schema,
+    source,
+    root_value = None,
+    context_value = None,
+    variable_values = None,
+    operation_name = None,
+    field_resolver = None,
+    middleware = None,
+    execution_context_class = ExecutionContext,
+):
     """Execute a GraphQL operation synchronously.
 
     The graphql_sync function also fulfills GraphQL operations by parsing,
@@ -131,7 +131,7 @@ def graphql_impl(
     field_resolver,
     middleware,
     execution_context_class,
-) -> MaybeAwaitable[ExecutionResult]:
+):
     """Execute a query, return asynchronously only if necessary."""
     # Validate Schema
     schema_validation_errors = validate_schema(schema)

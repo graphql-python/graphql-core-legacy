@@ -4,7 +4,7 @@ if False:  # pragma: no cover
 __all__ = ["suggestion_list"]
 
 
-def suggestion_list(input_: str, options):
+def suggestion_list(input_, options):
     # type: (str, Collection[str]) -> Collection[str]
     """Get list with suggestions for a given input.
 
@@ -23,7 +23,7 @@ def suggestion_list(input_: str, options):
     return sorted(options_by_distance, key=options_by_distance.get)
 
 
-def lexical_distance(a_str, b_str) -> int:
+def lexical_distance(a_str, b_str):
     # type: (str, str) -> int
     """Computes the lexical distance between strings A and B.
 

@@ -7,8 +7,8 @@ from . import ASTValidationContext, ASTValidationRule
 __all__ = ["UniqueFragmentNamesRule", "duplicate_fragment_name_message"]
 
 
-def duplicate_fragment_name_message(frag_name: str) -> str:
-    return f"There can only be one fragment named '{frag_name}'."
+def duplicate_fragment_name_message(frag_name):
+    return "There can only be one fragment named '{}'.".format(frag_name)
 
 
 class UniqueFragmentNamesRule(ASTValidationRule):
@@ -18,14 +18,14 @@ class UniqueFragmentNamesRule(ASTValidationRule):
     names.
     """
 
-    def __init__(self, context: ASTValidationContext) -> None:
+    def __init__(self, context):
         super().__init__(context)
-        self.known_fragment_names: Dict[str, NameNode] = {}
+        self.known_fragment_names = {}
 
     def enter_operation_definition(self, *_args):
         return self.SKIP
 
-    def enter_fragment_definition(self, node: FragmentDefinitionNode, *_args):
+    def enter_fragment_definition(self, node, *_args):
         known_fragment_names = self.known_fragment_names
         fragment_name = node.name.value
         if fragment_name in known_fragment_names:

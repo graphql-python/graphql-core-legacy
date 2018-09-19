@@ -1,4 +1,5 @@
 from typing import Any, Dict, Iterable, List, NamedTuple, Optional, Union, cast
+from collections import namedtuple
 
 from ..error import GraphQLError, INVALID
 from ..language import Node
@@ -20,19 +21,13 @@ from ..type import (
 __all__ = ["coerce_value", "CoercedValue"]
 
 
-class CoercedValue(NamedTuple):
-    errors: Optional[List[GraphQLError]]
-    value: Any
+CoercedValue = namedtuple("CoercedValue", ("errors", "value"))
 
 
-class Path(NamedTuple):
-    prev: Any  # Optional['Path'] (python/mypy/issues/731)
-    key: Union[str, int]
+Path = namedtuple("CoercedValue", ("prev", "key"))
 
 
-def coerce_value(
-    value: Any, type_: GraphQLInputType, blame_node: Node = None, path: Path = None
-) -> CoercedValue:
+def coerce_value(value, type_, blame_node=None, path=None):
     """Coerce a Python value given a GraphQL Type.
 
     Returns either a value which is valid for the provided type or a list of
@@ -44,7 +39,7 @@ def coerce_value(
             return of_errors(
                 [
                     coercion_error(
-                        f"Expected non-nullable type {type_} not to be null",
+                        "Expected non-nullable type {} not to be null".format(type_),
                         blame_node,
                         path,
                     )
@@ -66,14 +61,18 @@ def coerce_value(
             parse_result = type_.parse_value(value)
             if is_invalid(parse_result):
                 return of_errors(
-                    [coercion_error(f"Expected type {type_.name}", blame_node, path)]
+                    [
+                        coercion_error(
+                            "Expected type {}".format(type_.name), blame_node, path
+                        )
+                    ]
                 )
             return of_value(parse_result)
         except (TypeError, ValueError) as error:
             return of_errors(
                 [
                     coercion_error(
-                        f"Expected type {type_.name}",
+                        "Expected type {}".format(type_.name),
                         blame_node,
                         path,
                         str(error),
@@ -90,11 +89,16 @@ def coerce_value(
             if enum_value:
                 return of_value(value if enum_value.value is None else enum_value.value)
         suggestions = suggestion_list(str(value), values)
-        did_you_mean = f"did you mean {or_list(suggestions)}?" if suggestions else None
+        did_you_mean = (
+            "did you mean {}?".format(or_list(suggestions)) if suggestions else None
+        )
         return of_errors(
             [
                 coercion_error(
-                    f"Expected type {type_.name}", blame_node, path, did_you_mean
+                    "Expected type {}".format(type_.name),
+                    blame_node,
+                    path,
+                    did_you_mean,
                 )
             ]
         )
@@ -104,7 +108,7 @@ def coerce_value(
         item_type = type_.of_type
         if isinstance(value, Iterable) and not isinstance(value, str):
             errors = None
-            coerced_value_list: List[Any] = []
+            coerced_value_list = []
             append_item = coerced_value_list.append
             for index, item_value in enumerate(value):
                 coerced_item = coerce_value(
@@ -125,12 +129,14 @@ def coerce_value(
             return of_errors(
                 [
                     coercion_error(
-                        f"Expected type {type_.name} to be a dict", blame_node, path
+                        "Expected type {} to be a dict".format(type_.name),
+                        blame_node,
+                        path,
                     )
                 ]
             )
         errors = None
-        coerced_value_dict: Dict[str, Any] = {}
+        coerced_value_dict = {}
         fields = type_.fields
 
         # Ensure every defined field is valid.
@@ -143,8 +149,9 @@ def coerce_value(
                     errors = add(
                         errors,
                         coercion_error(
-                            f"Field {print_path(at_path(path, field_name))}"
-                            f" of required type {field.type} was not provided",
+                            ("Field {}" " of required type {} was not provided").format(
+                                print_path(at_path(path, field_name)), field.type
+                            ),
                             blame_node,
                         ),
                     )
@@ -162,12 +169,16 @@ def coerce_value(
             if field_name not in fields:
                 suggestions = suggestion_list(field_name, fields)
                 did_you_mean = (
-                    f"did you mean {or_list(suggestions)}?" if suggestions else None
+                    "did you mean {}?".format(or_list(suggestions))
+                    if suggestions
+                    else None
                 )
                 errors = add(
                     errors,
                     coercion_error(
-                        f"Field '{field_name}'" f" is not defined by type {type_.name}",
+                        ("Field '{}'" " is not defined by type {}").format(
+                            field_name, type_.name
+                        ),
                         blame_node,
                         path,
                         did_you_mean,
@@ -179,49 +190,43 @@ def coerce_value(
     raise TypeError("Unexpected type: {type_}.")
 
 
-def of_value(value: Any) -> CoercedValue:
+def of_value(value):
     return CoercedValue(None, value)
 
 
-def of_errors(errors: List[GraphQLError]) -> CoercedValue:
+def of_errors(errors):
     return CoercedValue(errors, INVALID)
 
 
-def add(
-    errors: Optional[List[GraphQLError]], *more_errors: GraphQLError
-) -> List[GraphQLError]:
+def add(errors, *more_errors):
     return (errors or []) + list(more_errors)
 
 
-def at_path(prev: Optional[Path], key: Union[str, int]) -> Path:
+def at_path(prev, key):
     return Path(prev, key)
 
 
 def coercion_error(
-    message: str,
-    blame_node: Node = None,
-    path: Path = None,
-    sub_message: str = None,
-    original_error: Exception = None,
-) -> GraphQLError:
+    message, blame_node=None, path=None, sub_message=None, original_error=None
+):
     """Return a GraphQLError instance"""
     if path:
         path_str = print_path(path)
-        message += f" at {path_str}"
-    message += f"; {sub_message}" if sub_message else "."
+        message += " at {}".format(path_str)
+    message += "; {}".format(sub_message) if sub_message else "."
     # noinspection PyArgumentEqualDefault
     return GraphQLError(message, blame_node, None, None, None, original_error)
 
 
-def print_path(path: Path) -> str:
+def print_path(path):
     """Build string describing the path into the value where error was found"""
     path_str = ""
-    current_path: Optional[Path] = path
+    current_path = path
     while current_path:
         path_str = (
-            f".{current_path.key}"
+            ".{}".format(current_path.key)
             if isinstance(current_path.key, str)
-            else f"[{current_path.key}]"
+            else "[{}]".format(current_path.key)
         ) + path_str
         current_path = current_path.prev
-    return f"value{path_str}" if path_str else ""
+    return "value{}".format(path_str) if path_str else ""

@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, NamedTuple, Optional, Set, Union, cast
+from collections import namedtuple
 
 from ..error import GraphQLError
 from ..language import (
@@ -26,18 +27,13 @@ __all__ = [
 NodeWithSelectionSet = Union[OperationDefinitionNode, FragmentDefinitionNode]
 
 
-class VariableUsage(NamedTuple):
-    node: VariableNode
-    type: Optional[GraphQLInputType]
-    default_value: Any
+VariableUsage = namedtuple("VariableUsage", ("node", "type", "default_value"))
 
 
 class VariableUsageVisitor(Visitor):
     """Visitor adding all variable usages to a given list."""
 
-    usages: List[VariableUsage]
-
-    def __init__(self, type_info: TypeInfo) -> None:
+    def __init__(self, type_info):
         self.usages = []
         self._append_usage = self.usages.append
         self._type_info = type_info
@@ -61,14 +57,11 @@ class ASTValidationContext:
     from within a validation rule.
     """
 
-    document: DocumentNode
-    errors: List[GraphQLError]
-
-    def __init__(self, ast: DocumentNode) -> None:
+    def __init__(self, ast):
         self.document = ast
         self.errors = []
 
-    def report_error(self, error: GraphQLError):
+    def report_error(self, error):
         self.errors.append(error)
 
 
@@ -80,9 +73,7 @@ class SDLValidationContext(ASTValidationContext):
     from within a validation rule.
     """
 
-    schema: Optional[GraphQLSchema]
-
-    def __init__(self, ast: DocumentNode, schema: GraphQLSchema = None) -> None:
+    def __init__(self, ast, schema=None):
         super().__init__(ast)
         self.schema = schema
 
@@ -95,25 +86,17 @@ class ValidationContext(ASTValidationContext):
     from within a validation rule.
     """
 
-    schema: GraphQLSchema
-
-    def __init__(
-        self, schema: GraphQLSchema, ast: DocumentNode, type_info: TypeInfo
-    ) -> None:
+    def __init__(self, schema, ast, type_info):
         super().__init__(ast)
         self.schema = schema
         self._type_info = type_info
-        self._fragments: Optional[Dict[str, FragmentDefinitionNode]] = None
-        self._fragment_spreads: Dict[SelectionSetNode, List[FragmentSpreadNode]] = {}
-        self._recursively_referenced_fragments: Dict[
-            OperationDefinitionNode, List[FragmentDefinitionNode]
-        ] = {}
-        self._variable_usages: Dict[NodeWithSelectionSet, List[VariableUsage]] = {}
-        self._recursive_variable_usages: Dict[
-            OperationDefinitionNode, List[VariableUsage]
-        ] = {}
+        self._fragments = None
+        self._fragment_spreads = {}
+        self._recursively_referenced_fragments = {}
+        self._variable_usages = {}
+        self._recursive_variable_usages = {}
 
-    def get_fragment(self, name: str) -> Optional[FragmentDefinitionNode]:
+    def get_fragment(self, name):
         fragments = self._fragments
         if fragments is None:
             fragments = {}
@@ -123,7 +106,7 @@ class ValidationContext(ASTValidationContext):
             self._fragments = fragments
         return fragments.get(name)
 
-    def get_fragment_spreads(self, node: SelectionSetNode) -> List[FragmentSpreadNode]:
+    def get_fragment_spreads(self, node):
         spreads = self._fragment_spreads.get(node)
         if spreads is None:
             spreads = []
@@ -145,14 +128,12 @@ class ValidationContext(ASTValidationContext):
             self._fragment_spreads[node] = spreads
         return spreads
 
-    def get_recursively_referenced_fragments(
-        self, operation: OperationDefinitionNode
-    ) -> List[FragmentDefinitionNode]:
+    def get_recursively_referenced_fragments(self, operation):
         fragments = self._recursively_referenced_fragments.get(operation)
         if fragments is None:
             fragments = []
             append_fragment = fragments.append
-            collected_names: Set[str] = set()
+            collected_names = set()
             add_name = collected_names.add
             nodes_to_visit = [operation.selection_set]
             append_node = nodes_to_visit.append
@@ -172,7 +153,7 @@ class ValidationContext(ASTValidationContext):
             self._recursively_referenced_fragments[operation] = fragments
         return fragments
 
-    def get_variable_usages(self, node: NodeWithSelectionSet) -> List[VariableUsage]:
+    def get_variable_usages(self, node):
         usages = self._variable_usages.get(node)
         if usages is None:
             usage_visitor = VariableUsageVisitor(self._type_info)
@@ -181,9 +162,7 @@ class ValidationContext(ASTValidationContext):
             self._variable_usages[node] = usages
         return usages
 
-    def get_recursive_variable_usages(
-        self, operation: OperationDefinitionNode
-    ) -> List[VariableUsage]:
+    def get_recursive_variable_usages(self, operation):
         usages = self._recursive_variable_usages.get(operation)
         if usages is None:
             get_variable_usages = self.get_variable_usages

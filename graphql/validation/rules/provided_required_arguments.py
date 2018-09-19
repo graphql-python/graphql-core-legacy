@@ -21,20 +21,16 @@ __all__ = [
 ]
 
 
-def missing_field_arg_message(field_name: str, arg_name: str, type_: str) -> str:
+def missing_field_arg_message(field_name, arg_name, type_):
     return (
-        f"Field '{field_name}' argument '{arg_name}'"
-        f" of type '{type_}' is required but not provided."
-    )
+        "Field '{}' argument '{}'" " of type '{}' is required but not provided."
+    ).format(field_name, arg_name, type_)
 
 
-def missing_directive_arg_message(
-    directive_name: str, arg_name: str, type_: str
-) -> str:
+def missing_directive_arg_message(directive_name, arg_name, type_):
     return (
-        f"Directive '@{directive_name}' argument '{arg_name}'"
-        f" of type '{type_}' is required but not provided."
-    )
+        "Directive '@{}' argument '{}'" " of type '{}' is required but not provided."
+    ).format(directive_name, arg_name, type_)
 
 
 class ProvidedRequiredArgumentsOnDirectivesRule(ASTValidationRule):
@@ -44,13 +40,9 @@ class ProvidedRequiredArgumentsOnDirectivesRule(ASTValidationRule):
     default value) arguments have been provided.
     """
 
-    context: Union[ValidationContext, SDLValidationContext]
-
-    def __init__(self, context: Union[ValidationContext, SDLValidationContext]) -> None:
+    def __init__(self, context):
         super().__init__(context)
-        required_args_map: Dict[
-            str, Dict[str, Union[GraphQLArgument, InputValueDefinitionNode]]
-        ] = {}
+        required_args_map = {}
 
         schema = context.schema
         defined_directives = schema.directives if schema else specified_directives
@@ -75,7 +67,7 @@ class ProvidedRequiredArgumentsOnDirectivesRule(ASTValidationRule):
 
         self.required_args_map = required_args_map
 
-    def leave_directive(self, directive_node: DirectiveNode, *_args):
+    def leave_directive(self, directive_node, *_args):
         # Validate on leave to allow for deeper errors to appear first.
         directive_name = directive_node.name.value
         required_args = self.required_args_map.get(directive_name)
@@ -107,12 +99,10 @@ class ProvidedRequiredArgumentsRule(ProvidedRequiredArgumentsOnDirectivesRule):
     default value) field arguments have been provided.
     """
 
-    context: ValidationContext
-
-    def __init__(self, context: ValidationContext) -> None:
+    def __init__(self, context):
         super().__init__(context)
 
-    def leave_field(self, field_node: FieldNode, *_args):
+    def leave_field(self, field_node, *_args):
         # Validate on leave to allow for deeper errors to appear first.
         field_def = self.context.get_field_def()
         if not field_def:
@@ -133,5 +123,5 @@ class ProvidedRequiredArgumentsRule(ProvidedRequiredArgumentsOnDirectivesRule):
                 )
 
 
-def is_required_argument_node(arg: InputValueDefinitionNode) -> bool:
+def is_required_argument_node(arg):
     return isinstance(arg.type, NonNullTypeNode) and arg.default_value is None

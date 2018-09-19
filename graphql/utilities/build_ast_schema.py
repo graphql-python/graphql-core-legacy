@@ -63,11 +63,7 @@ __all__ = [
 ]
 
 
-def build_ast_schema(
-    document_ast: DocumentNode,
-    assume_valid: bool = False,
-    assume_valid_sdl: bool = False,
-) -> GraphQLSchema:
+def build_ast_schema(document_ast, assume_valid=False, assume_valid_sdl=False):
     """Build a GraphQL Schema from a given AST.
 
     This takes the ast of a schema document produced by the parse function in
@@ -92,11 +88,11 @@ def build_ast_schema(
 
         assert_valid_sdl(document_ast)
 
-    schema_def: Optional[SchemaDefinitionNode] = None
-    type_defs: List[TypeDefinitionNode] = []
+    schema_def = None
+    type_defs = []
     append_type_def = type_defs.append
-    node_map: TypeDefinitionsMap = {}
-    directive_defs: List[DirectiveDefinitionNode] = []
+    node_map = {}
+    directive_defs = []
     append_directive_def = directive_defs.append
     for def_ in document_ast.definitions:
         if isinstance(def_, SchemaDefinitionNode):
@@ -105,16 +101,16 @@ def build_ast_schema(
             def_ = cast(TypeDefinitionNode, def_)
             type_name = def_.name.value
             if type_name in node_map:
-                raise TypeError(f"Type '{type_name}' was defined more than once.")
+                raise TypeError(
+                    "Type '{}' was defined more than once.".format(type_name)
+                )
             append_type_def(def_)
             node_map[type_name] = def_
         elif isinstance(def_, DirectiveDefinitionNode):
             append_directive_def(def_)
 
     if schema_def:
-        operation_types: Dict[OperationType, Any] = get_operation_types(
-            schema_def, node_map
-        )
+        operation_types = get_operation_types(schema_def, node_map)
     else:
         operation_types = {
             OperationType.QUERY: node_map.get("Query"),
@@ -122,8 +118,8 @@ def build_ast_schema(
             OperationType.SUBSCRIPTION: node_map.get("Subscription"),
         }
 
-    def resolve_type(type_ref: NamedTypeNode):
-        raise TypeError(f"Type {type_ref.name.value!r} not found in document.")
+    def resolve_type(type_ref):
+        raise TypeError("Type {!r} not found in document.".format(type_ref.name.value))
 
     definition_builder = ASTDefinitionBuilder(
         node_map, assume_valid=assume_valid, resolve_type=resolve_type
@@ -167,48 +163,44 @@ def build_ast_schema(
     )
 
 
-def get_operation_types(
-    schema: SchemaDefinitionNode, node_map: TypeDefinitionsMap
-) -> Dict[OperationType, NamedTypeNode]:
-    op_types: Dict[OperationType, NamedTypeNode] = {}
+def get_operation_types(schema, node_map):
+    op_types = {}
     for operation_type in schema.operation_types:
         type_name = operation_type.type.name.value
         operation = operation_type.operation
         if operation in op_types:
-            raise TypeError(f"Must provide only one {operation.value} type in schema.")
+            raise TypeError(
+                "Must provide only one {} type in schema.".format(operation.value)
+            )
         if type_name not in node_map:
             raise TypeError(
-                f"Specified {operation.value} type '{type_name}'"
-                " not found in document."
+                ("Specified {} type '{}'" " not found in document.").format(
+                    operation.value, type_name
+                )
             )
         op_types[operation] = operation_type.type
     return op_types
 
 
-def default_type_resolver(type_ref: NamedTypeNode) -> NoReturn:
+def default_type_resolver(type_ref):
     """Type resolver that always throws an error."""
-    raise TypeError(f"Type '{type_ref.name.value}' not found in document.")
+    raise TypeError("Type '{}' not found in document.".format(type_ref.name.value))
 
 
 class ASTDefinitionBuilder:
     def __init__(
         self,
-        type_definitions_map: TypeDefinitionsMap,
-        assume_valid: bool = False,
-        resolve_type: TypeResolver = default_type_resolver,
-    ) -> None:
+        type_definitions_map,
+        assume_valid=False,
+        resolve_type=default_type_resolver,
+    ):
         self._type_definitions_map = type_definitions_map
         self._assume_valid = assume_valid
         self._resolve_type = resolve_type
         # Initialize to the GraphQL built in scalars and introspection types.
-        self._cache: Dict[str, GraphQLNamedType] = {
-            **specified_scalar_types,
-            **introspection_types,
-        }
+        self._cache = {**specified_scalar_types, **introspection_types}
 
-    def build_type(
-        self, node: Union[NamedTypeNode, TypeDefinitionNode]
-    ) -> GraphQLNamedType:
+    def build_type(self, node):
         type_name = node.name.value
         cache = self._cache
         if type_name not in cache:
@@ -223,7 +215,7 @@ class ASTDefinitionBuilder:
                 cache[type_name] = self._make_schema_def(node)
         return cache[type_name]
 
-    def _build_wrapped_type(self, type_node: TypeNode) -> GraphQLType:
+    def _build_wrapped_type(self, type_node):
         if isinstance(type_node, ListTypeNode):
             return GraphQLList(self._build_wrapped_type(type_node.type))
         if isinstance(type_node, NonNullTypeNode):
@@ -233,9 +225,7 @@ class ASTDefinitionBuilder:
             )
         return self.build_type(cast(NamedTypeNode, type_node))
 
-    def build_directive(
-        self, directive_node: DirectiveDefinitionNode
-    ) -> GraphQLDirective:
+    def build_directive(self, directive_node):
         return GraphQLDirective(
             name=directive_node.name.value,
             description=directive_node.description.value
@@ -250,7 +240,7 @@ class ASTDefinitionBuilder:
             ast_node=directive_node,
         )
 
-    def build_field(self, field: FieldDefinitionNode) -> GraphQLField:
+    def build_field(self, field):
         # Note: While this could make assertions to get the correctly typed
         # value, that would throw immediately while type system validation
         # with validate_schema() will produce more actionable results.
@@ -264,7 +254,7 @@ class ASTDefinitionBuilder:
             ast_node=field,
         )
 
-    def build_input_field(self, value: InputValueDefinitionNode) -> GraphQLInputField:
+    def build_input_field(self, value):
         # Note: While this could make assertions to get the correctly typed
         # value, that would throw immediately while type system validation
         # with validate_schema() will produce more actionable results.
@@ -278,14 +268,14 @@ class ASTDefinitionBuilder:
         )
 
     @staticmethod
-    def build_enum_value(value: EnumValueDefinitionNode) -> GraphQLEnumValue:
+    def build_enum_value(value):
         return GraphQLEnumValue(
             description=value.description.value if value.description else None,
             deprecation_reason=get_deprecation_reason(value),
             ast_node=value,
         )
 
-    def _make_schema_def(self, type_def: TypeDefinitionNode) -> GraphQLNamedType:
+    def _make_schema_def(self, type_def):
         method = {
             "object_type_definition": self._make_type_def,
             "interface_type_definition": self._make_interface_def,
@@ -295,10 +285,10 @@ class ASTDefinitionBuilder:
             "input_object_type_definition": self._make_input_object_def,
         }.get(type_def.kind)
         if not method:
-            raise TypeError(f"Type kind '{type_def.kind}' not supported.")
+            raise TypeError("Type kind '{}' not supported.".format(type_def.kind))
         return method(type_def)  # type: ignore
 
-    def _make_type_def(self, type_def: ObjectTypeDefinitionNode) -> GraphQLObjectType:
+    def _make_type_def(self, type_def):
         interfaces = type_def.interfaces
         return GraphQLObjectType(
             name=type_def.name.value,
@@ -315,9 +305,7 @@ class ASTDefinitionBuilder:
             ast_node=type_def,
         )
 
-    def _make_field_def_map(
-        self, type_def: Union[ObjectTypeDefinitionNode, InterfaceTypeDefinitionNode]
-    ) -> Dict[str, GraphQLField]:
+    def _make_field_def_map(self, type_def):
         fields = type_def.fields
         return (
             {field.name.value: self.build_field(field) for field in fields}
@@ -325,7 +313,7 @@ class ASTDefinitionBuilder:
             else {}
         )
 
-    def _make_arg(self, value_node: InputValueDefinitionNode) -> GraphQLArgument:
+    def _make_arg(self, value_node):
         # Note: While this could make assertions to get the correctly typed
         # value, that would throw immediately while type system validation
         # with validate_schema will produce more actionable results.
@@ -340,19 +328,13 @@ class ASTDefinitionBuilder:
             ast_node=value_node,
         )
 
-    def _make_args(
-        self, values: List[InputValueDefinitionNode]
-    ) -> Dict[str, GraphQLArgument]:
+    def _make_args(self, values):
         return {value.name.value: self._make_arg(value) for value in values}
 
-    def _make_input_fields(
-        self, values: List[InputValueDefinitionNode]
-    ) -> Dict[str, GraphQLInputField]:
+    def _make_input_fields(self, values):
         return {value.name.value: self.build_input_field(value) for value in values}
 
-    def _make_interface_def(
-        self, type_def: InterfaceTypeDefinitionNode
-    ) -> GraphQLInterfaceType:
+    def _make_interface_def(self, type_def):
         return GraphQLInterfaceType(
             name=type_def.name.value,
             description=type_def.description.value if type_def.description else None,
@@ -360,7 +342,7 @@ class ASTDefinitionBuilder:
             ast_node=type_def,
         )
 
-    def _make_enum_def(self, type_def: EnumTypeDefinitionNode) -> GraphQLEnumType:
+    def _make_enum_def(self, type_def):
         return GraphQLEnumType(
             name=type_def.name.value,
             description=type_def.description.value if type_def.description else None,
@@ -368,9 +350,7 @@ class ASTDefinitionBuilder:
             ast_node=type_def,
         )
 
-    def _make_value_def_map(
-        self, type_def: EnumTypeDefinitionNode
-    ) -> Dict[str, GraphQLEnumValue]:
+    def _make_value_def_map(self, type_def):
         return (
             {
                 value.name.value: self.build_enum_value(value)
@@ -380,7 +360,7 @@ class ASTDefinitionBuilder:
             else {}
         )
 
-    def _make_union_def(self, type_def: UnionTypeDefinitionNode) -> GraphQLUnionType:
+    def _make_union_def(self, type_def):
         types = type_def.types
         return GraphQLUnionType(
             name=type_def.name.value,
@@ -395,7 +375,7 @@ class ASTDefinitionBuilder:
         )
 
     @staticmethod
-    def _make_scalar_def(type_def: ScalarTypeDefinitionNode) -> GraphQLScalarType:
+    def _make_scalar_def(type_def):
         return GraphQLScalarType(
             name=type_def.name.value,
             description=type_def.description.value if type_def.description else None,
@@ -403,9 +383,7 @@ class ASTDefinitionBuilder:
             serialize=lambda value: value,
         )
 
-    def _make_input_object_def(
-        self, type_def: InputObjectTypeDefinitionNode
-    ) -> GraphQLInputObjectType:
+    def _make_input_object_def(self, type_def):
         return GraphQLInputObjectType(
             name=type_def.name.value,
             description=type_def.description.value if type_def.description else None,
@@ -420,9 +398,7 @@ class ASTDefinitionBuilder:
         )
 
 
-def get_deprecation_reason(
-    node: Union[EnumValueDefinitionNode, FieldDefinitionNode]
-) -> Optional[str]:
+def get_deprecation_reason(node):
     """Given a field or enum value node, get deprecation reason as string."""
     from ..execution import get_directive_values
 
@@ -430,7 +406,7 @@ def get_deprecation_reason(
     return deprecated["reason"] if deprecated else None
 
 
-def get_description(node: Node) -> Optional[str]:
+def get_description(node):
     """@deprecated: Given an ast node, returns its string description."""
     try:
         # noinspection PyUnresolvedReferences
@@ -440,12 +416,12 @@ def get_description(node: Node) -> Optional[str]:
 
 
 def build_schema(
-    source: Union[str, Source],
+    source,
     assume_valid=False,
     assume_valid_sdl=False,
     no_location=False,
     experimental_fragment_variables=False,
-) -> GraphQLSchema:
+):
     """Build a GraphQLSchema directly from a source document."""
     return build_ast_schema(
         parse(

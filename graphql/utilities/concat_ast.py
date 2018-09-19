@@ -6,7 +6,7 @@ from ..language.ast import DocumentNode
 __all__ = ["concat_ast"]
 
 
-def concat_ast(asts: Sequence[DocumentNode]) -> DocumentNode:
+def concat_ast(asts):
     """Concat ASTs.
 
     Provided a collection of ASTs, presumably each from different files,

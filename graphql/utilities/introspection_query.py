@@ -3,10 +3,10 @@ from textwrap import dedent
 __all__ = ["get_introspection_query"]
 
 
-def get_introspection_query(descriptions=True) -> str:
+def get_introspection_query(descriptions=True):
     """Get a query for introspection, optionally without descriptions."""
     return dedent(
-        f"""
+        """
         query IntrospectionQuery {{
           __schema {{
             queryType {{ name }}
@@ -17,7 +17,7 @@ def get_introspection_query(descriptions=True) -> str:
             }}
             directives {{
               name
-              {'description' if descriptions else ''}
+              {}
               locations
               args {{
                 ...InputValue
@@ -29,10 +29,10 @@ def get_introspection_query(descriptions=True) -> str:
         fragment FullType on __Type {{
           kind
           name
-          {'description' if descriptions else ''}
+          {}
           fields(includeDeprecated: true) {{
             name
-            {'description' if descriptions else ''}
+            {}
             args {{
               ...InputValue
             }}
@@ -50,7 +50,7 @@ def get_introspection_query(descriptions=True) -> str:
           }}
           enumValues(includeDeprecated: true) {{
             name
-            {'description' if descriptions else ''}
+            {}
             isDeprecated
             deprecationReason
           }}
@@ -61,7 +61,7 @@ def get_introspection_query(descriptions=True) -> str:
 
         fragment InputValue on __InputValue {{
           name
-          {'description' if descriptions else ''}
+          {}
           type {{ ...TypeRef }}
           defaultValue
         }}
@@ -98,5 +98,5 @@ def get_introspection_query(descriptions=True) -> str:
             }}
           }}
         }}
-        """
+        """.format('description' if descriptions else '', 'description' if descriptions else '', 'description' if descriptions else '', 'description' if descriptions else '', 'description' if descriptions else '')
     )

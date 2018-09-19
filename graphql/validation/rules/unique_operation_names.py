@@ -7,8 +7,8 @@ from . import ASTValidationContext, ASTValidationRule
 __all__ = ["UniqueOperationNamesRule", "duplicate_operation_name_message"]
 
 
-def duplicate_operation_name_message(operation_name: str) -> str:
-    return f"There can only be one operation named '{operation_name}'."
+def duplicate_operation_name_message(operation_name):
+    return "There can only be one operation named '{}'.".format(operation_name)
 
 
 class UniqueOperationNamesRule(ASTValidationRule):
@@ -18,11 +18,11 @@ class UniqueOperationNamesRule(ASTValidationRule):
     names.
     """
 
-    def __init__(self, context: ASTValidationContext) -> None:
+    def __init__(self, context):
         super().__init__(context)
-        self.known_operation_names: Dict[str, NameNode] = {}
+        self.known_operation_names = {}
 
-    def enter_operation_definition(self, node: OperationDefinitionNode, *_args):
+    def enter_operation_definition(self, node, *_args):
         operation_name = node.name
         if operation_name:
             known_operation_names = self.known_operation_names

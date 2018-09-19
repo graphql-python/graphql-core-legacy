@@ -12,8 +12,8 @@ IntrospectionSchema = Dict[str, Any]
 
 
 def introspection_from_schema(
-    schema: GraphQLSchema, descriptions: bool = True
-) -> IntrospectionSchema:
+    schema, descriptions = True
+):
     """Build an IntrospectionQuery from a GraphQLSchema
 
     IntrospectionQuery is useful for utilities that care about type and field

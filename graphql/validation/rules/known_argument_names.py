@@ -14,24 +14,21 @@ __all__ = [
 ]
 
 
-def unknown_arg_message(
-    arg_name: str, field_name: str, type_name: str, suggested_args: List[str]
-) -> str:
-    message = (
-        f"Unknown argument '{arg_name}' on field '{field_name}'"
-        f" of type '{type_name}'."
+def unknown_arg_message(arg_name, field_name, type_name, suggested_args):
+    message = ("Unknown argument '{}' on field '{}'" " of type '{}'.").format(
+        arg_name, field_name, type_name
     )
     if suggested_args:
-        message += f" Did you mean {quoted_or_list(suggested_args)}?"
+        message += " Did you mean {}?".format(quoted_or_list(suggested_args))
     return message
 
 
-def unknown_directive_arg_message(
-    arg_name: str, directive_name: str, suggested_args: List[str]
-) -> str:
-    message = f"Unknown argument '{arg_name}'" f" on directive '@{directive_name}'."
+def unknown_directive_arg_message(arg_name, directive_name, suggested_args):
+    message = ("Unknown argument '{}'" " on directive '@{}'.").format(
+        arg_name, directive_name
+    )
     if suggested_args:
-        message += f" Did you mean {quoted_or_list(suggested_args)}?"
+        message += " Did you mean {}?".format(quoted_or_list(suggested_args))
     return message
 
 
@@ -41,11 +38,9 @@ class KnownArgumentNamesOnDirectivesRule(ASTValidationRule):
     A GraphQL directive is only valid if all supplied arguments are defined.
     """
 
-    context: Union[ValidationContext, SDLValidationContext]
-
-    def __init__(self, context: Union[ValidationContext, SDLValidationContext]) -> None:
+    def __init__(self, context):
         super().__init__(context)
-        directive_args: Dict[str, List[str]] = {}
+        directive_args = {}
 
         schema = context.schema
         defined_directives = schema.directives if schema else specified_directives
@@ -61,7 +56,7 @@ class KnownArgumentNamesOnDirectivesRule(ASTValidationRule):
 
         self.directive_args = directive_args
 
-    def enter_directive(self, directive_node: DirectiveNode, *_args):
+    def enter_directive(self, directive_node, *_args):
         directive_name = directive_node.name.value
         known_args = self.directive_args.get(directive_name)
         if directive_node.arguments and known_args:
@@ -87,12 +82,10 @@ class KnownArgumentNamesRule(KnownArgumentNamesOnDirectivesRule):
     that field.
     """
 
-    context: ValidationContext
-
-    def __init__(self, context: ValidationContext) -> None:
+    def __init__(self, context):
         super().__init__(context)
 
-    def enter_argument(self, arg_node: ArgumentNode, *args):
+    def enter_argument(self, arg_node, *args):
         context = self.context
         arg_def = context.get_argument()
         field_def = context.get_field_def()

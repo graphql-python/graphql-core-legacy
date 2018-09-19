@@ -32,7 +32,7 @@ MAX_INT = 2147483647
 MIN_INT = -2147483648
 
 
-def serialize_int(value: Any) -> int:
+def serialize_int(value):
     if isinstance(value, bool):
         return 1 if value else 0
     try:
@@ -51,20 +51,20 @@ def serialize_int(value: Any) -> int:
             if num != float_value:
                 raise ValueError
     except (OverflowError, ValueError, TypeError):
-        raise TypeError(f"Int cannot represent non-integer value: {value!r}")
+        raise TypeError("Int cannot represent non-integer value: {!r}".format(value))
     if not MIN_INT <= num <= MAX_INT:
         raise TypeError(
-            f"Int cannot represent non 32-bit signed integer value: {value!r}"
+            "Int cannot represent non 32-bit signed integer value: {!r}".format(value)
         )
     return num
 
 
-def coerce_int(value: Any) -> int:
+def coerce_int(value):
     if not is_integer(value):
-        raise TypeError(f"Int cannot represent non-integer value: {value!r}")
+        raise TypeError("Int cannot represent non-integer value: {!r}".format(value))
     if not MIN_INT <= value <= MAX_INT:
         raise TypeError(
-            f"Int cannot represent non 32-bit signed integer value: {value!r}"
+            "Int cannot represent non 32-bit signed integer value: {!r}".format(value)
         )
     return int(value)
 
@@ -89,7 +89,7 @@ GraphQLInt = GraphQLScalarType(
 )
 
 
-def serialize_float(value: Any) -> float:
+def serialize_float(value):
     if isinstance(value, bool):
         return 1 if value else 0
     try:
@@ -100,13 +100,13 @@ def serialize_float(value: Any) -> float:
         if not isfinite(num):
             raise ValueError
     except (ValueError, TypeError):
-        raise TypeError(f"Float cannot represent non numeric value: {value!r}")
+        raise TypeError("Float cannot represent non numeric value: {!r}".format(value))
     return num
 
 
-def coerce_float(value: Any) -> float:
+def coerce_float(value):
     if not is_finite(value):
-        raise TypeError(f"Float cannot represent non numeric value: {value!r}")
+        raise TypeError("Float cannot represent non numeric value: {!r}".format(value))
     return float(value)
 
 
@@ -129,7 +129,7 @@ GraphQLFloat = GraphQLScalarType(
 )
 
 
-def serialize_string(value: Any) -> str:
+def serialize_string(value):
     if isinstance(value, str):
         return value
     if isinstance(value, bool):
@@ -139,13 +139,13 @@ def serialize_string(value: Any) -> str:
     # do not serialize builtin types as strings,
     # but allow serialization of custom types via their __str__ method
     if type(value).__module__ == "builtins":
-        raise TypeError(f"String cannot represent value: {value!r}")
+        raise TypeError("String cannot represent value: {!r}".format(value))
     return str(value)
 
 
-def coerce_string(value: Any) -> str:
+def coerce_string(value):
     if not isinstance(value, str):
-        raise TypeError(f"String cannot represent a non string value: {value!r}")
+        raise TypeError("String cannot represent a non string value: {!r}".format(value))
     return value
 
 
@@ -168,17 +168,17 @@ GraphQLString = GraphQLScalarType(
 )
 
 
-def serialize_boolean(value: Any) -> bool:
+def serialize_boolean(value):
     if isinstance(value, bool):
         return value
     if is_finite(value):
         return bool(value)
-    raise TypeError(f"Boolean cannot represent a non boolean value: {value!r}")
+    raise TypeError("Boolean cannot represent a non boolean value: {!r}".format(value))
 
 
-def coerce_boolean(value: Any) -> bool:
+def coerce_boolean(value):
     if not isinstance(value, bool):
-        raise TypeError(f"Boolean cannot represent a non boolean value: {value!r}")
+        raise TypeError("Boolean cannot represent a non boolean value: {!r}".format(value))
     return value
 
 
@@ -198,7 +198,7 @@ GraphQLBoolean = GraphQLScalarType(
 )
 
 
-def serialize_id(value: Any) -> str:
+def serialize_id(value):
     if isinstance(value, str):
         return value
     if is_integer(value):
@@ -206,13 +206,13 @@ def serialize_id(value: Any) -> str:
     # do not serialize builtin types as IDs,
     # but allow serialization of custom types via their __str__ method
     if type(value).__module__ == "builtins":
-        raise TypeError(f"ID cannot represent value: {value!r}")
+        raise TypeError("ID cannot represent value: {!r}".format(value))
     return str(value)
 
 
-def coerce_id(value: Any) -> str:
+def coerce_id(value):
     if not isinstance(value, str) and not is_integer(value):
-        raise TypeError(f"ID cannot represent value: {value!r}")
+        raise TypeError("ID cannot represent value: {!r}".format(value))
     if isinstance(value, float):
         value = int(value)
     return str(value)
@@ -245,5 +245,5 @@ specified_scalar_types = {
 }
 
 
-def is_specified_scalar_type(type_: Any) -> bool:
+def is_specified_scalar_type(type_):
     return is_named_type(type_) and type_.name in specified_scalar_types

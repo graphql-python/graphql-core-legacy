@@ -18,12 +18,12 @@ __all__ = [
 ]
 
 
-def unknown_directive_message(directive_name: str) -> str:
-    return f"Unknown directive '{directive_name}'."
+def unknown_directive_message(directive_name):
+    return "Unknown directive '{}'.".format(directive_name)
 
 
-def misplaced_directive_message(directive_name: str, location: str) -> str:
-    return f"Directive '{directive_name}' may not be used on {location}."
+def misplaced_directive_message(directive_name, location):
+    return "Directive '{}' may not be used on {}.".format(directive_name, location)
 
 
 class KnownDirectivesRule(ASTValidationRule):
@@ -33,11 +33,9 @@ class KnownDirectivesRule(ASTValidationRule):
     schema and legally positioned.
     """
 
-    context: Union[ValidationContext, SDLValidationContext]
-
-    def __init__(self, context: Union[ValidationContext, SDLValidationContext]) -> None:
+    def __init__(self, context):
         super().__init__(context)
-        locations_map: Dict[str, List[DirectiveLocation]] = {}
+        locations_map = {}
 
         schema = context.schema
         defined_directives = (
@@ -53,7 +51,7 @@ class KnownDirectivesRule(ASTValidationRule):
                 ]
         self.locations_map = locations_map
 
-    def enter_directive(self, node: DirectiveNode, _key, _parent, _path, ancestors):
+    def enter_directive(self, node, _key, _parent, _path, ancestors):
         name = node.name.value
         locations = self.locations_map.get(name)
         if locations:

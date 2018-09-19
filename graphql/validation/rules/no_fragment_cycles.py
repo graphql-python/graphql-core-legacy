@@ -7,32 +7,32 @@ from . import ValidationContext, ValidationRule
 __all__ = ["NoFragmentCyclesRule", "cycle_error_message"]
 
 
-def cycle_error_message(frag_name: str, spread_names: List[str]) -> str:
-    via = f" via {', '.join(spread_names)}" if spread_names else ""
-    return f"Cannot spread fragment '{frag_name}' within itself{via}."
+def cycle_error_message(frag_name, spread_names):
+    via = " via {}".format(", ".join(spread_names)) if spread_names else ""
+    return "Cannot spread fragment '{}' within itself{}.".format(frag_name, via)
 
 
 class NoFragmentCyclesRule(ValidationRule):
     """No fragment cycles"""
 
-    def __init__(self, context: ValidationContext) -> None:
+    def __init__(self, context):
         super().__init__(context)
         # Tracks already visited fragments to maintain O(N) and to ensure that
         # cycles are not redundantly reported.
-        self.visited_frags: Set[str] = set()
+        self.visited_frags = set()
         # List of AST nodes used to produce meaningful errors
-        self.spread_path: List[FragmentSpreadNode] = []
+        self.spread_path = []
         # Position in the spread path
-        self.spread_path_index_by_name: Dict[str, int] = {}
+        self.spread_path_index_by_name = {}
 
     def enter_operation_definition(self, *_args):
         return self.SKIP
 
-    def enter_fragment_definition(self, node: FragmentDefinitionNode, *_args):
+    def enter_fragment_definition(self, node, *_args):
         self.detect_cycle_recursive(node)
         return self.SKIP
 
-    def detect_cycle_recursive(self, fragment: FragmentDefinitionNode):
+    def detect_cycle_recursive(self, fragment):
         # This does a straight-forward DFS to find cycles.
         # It does not terminate when a cycle was found but continues to explore
         # the graph to find all possible cycles.

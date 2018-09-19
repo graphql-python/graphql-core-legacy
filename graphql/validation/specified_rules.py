@@ -93,7 +93,7 @@ __all__ = ["specified_rules", "specified_sdl_rules"]
 # The order of the rules in this list has been adjusted to lead to the
 # most clear output when encountering multiple validation errors.
 
-specified_rules: List[RuleType] = [
+specified_rules = [
     ExecutableDefinitionsRule,
     UniqueOperationNamesRule,
     LoneAnonymousOperationRule,
@@ -122,7 +122,7 @@ specified_rules: List[RuleType] = [
     UniqueInputFieldNamesRule,
 ]
 
-specified_sdl_rules: List[RuleType] = [
+specified_sdl_rules = [
     LoneSchemaDefinitionRule,
     KnownDirectivesRule,
     UniqueDirectivesPerLocationRule,

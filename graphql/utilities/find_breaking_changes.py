@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Dict, List, NamedTuple, Union, cast
+from collections import namedtuple
 
 from ..error import INVALID
 from ..language import DirectiveLocation
@@ -82,24 +83,14 @@ class DangerousChangeType(Enum):
     OPTIONAL_ARG_ADDED = 53
 
 
-class BreakingChange(NamedTuple):
-    type: BreakingChangeType
-    description: str
+BreakingChange = namedtuple("BreakingChange", ("type", "description"))
+DangerousChange = namedtuple("DangerousChange", ("type", "description"))
+BreakingAndDangerousChanges = namedtuple(
+    "BreakingAndDangerousChanges", ("breaking_changes", "dangerous_changes")
+)
 
 
-class DangerousChange(NamedTuple):
-    type: DangerousChangeType
-    description: str
-
-
-class BreakingAndDangerousChanges(NamedTuple):
-    breaking_changes: List[BreakingChange]
-    dangerous_changes: List[DangerousChange]
-
-
-def find_breaking_changes(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> List[BreakingChange]:
+def find_breaking_changes(old_schema, new_schema):
     """Find breaking changes.
 
     Given two schemas, returns a list containing descriptions of all the
@@ -125,9 +116,7 @@ def find_breaking_changes(
     )
 
 
-def find_dangerous_changes(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> List[DangerousChange]:
+def find_dangerous_changes(old_schema, new_schema):
     """Find dangerous changes.
 
     Given two schemas, returns a list containing descriptions of all the types
@@ -144,9 +133,7 @@ def find_dangerous_changes(
     )
 
 
-def find_removed_types(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> List[BreakingChange]:
+def find_removed_types(old_schema, new_schema):
     """Find removed types.
 
     Given two schemas, returns a list containing descriptions of any breaking
@@ -160,15 +147,13 @@ def find_removed_types(
         if type_name not in new_type_map:
             breaking_changes.append(
                 BreakingChange(
-                    BreakingChangeType.TYPE_REMOVED, f"{type_name} was removed."
+                    BreakingChangeType.TYPE_REMOVED, "{} was removed.".format(type_name)
                 )
             )
     return breaking_changes
 
 
-def find_types_that_changed_kind(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> List[BreakingChange]:
+def find_types_that_changed_kind(old_schema, new_schema):
     """Find types that changed kind
 
     Given two schemas, returns a list containing descriptions of any breaking
@@ -187,16 +172,15 @@ def find_types_that_changed_kind(
             breaking_changes.append(
                 BreakingChange(
                     BreakingChangeType.TYPE_CHANGED_KIND,
-                    f"{type_name} changed from {type_kind_name(old_type)}"
-                    f" to {type_kind_name(new_type)}.",
+                    ("{} changed from {}" " to {}.").format(
+                        type_name, type_kind_name(old_type), type_kind_name(new_type)
+                    ),
                 )
             )
     return breaking_changes
 
 
-def find_arg_changes(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> BreakingAndDangerousChanges:
+def find_arg_changes(old_schema, new_schema):
     """Find argument changes.
 
     Given two schemas, returns a list containing descriptions of any
@@ -207,8 +191,8 @@ def find_arg_changes(
     old_type_map = old_schema.type_map
     new_type_map = new_schema.type_map
 
-    breaking_changes: List[BreakingChange] = []
-    dangerous_changes: List[DangerousChange] = []
+    breaking_changes = []
+    dangerous_changes = []
 
     for type_name, old_type in old_type_map.items():
         new_type = new_type_map.get(type_name)
@@ -236,8 +220,9 @@ def find_arg_changes(
                     breaking_changes.append(
                         BreakingChange(
                             BreakingChangeType.ARG_REMOVED,
-                            f"{old_type.name}.{field_name} arg"
-                            f" {arg_name} was removed",
+                            ("{}.{} arg" " {} was removed").format(
+                                old_type.name, field_name, arg_name
+                            ),
                         )
                     )
                     continue
@@ -248,9 +233,15 @@ def find_arg_changes(
                     breaking_changes.append(
                         BreakingChange(
                             BreakingChangeType.ARG_CHANGED_KIND,
-                            f"{old_type.name}.{field_name} arg"
-                            f" {arg_name} has changed type from"
-                            f" {old_arg.type} to {new_arg.type}",
+                            (
+                                "{}.{} arg" " {} has changed type from" " {} to {}"
+                            ).format(
+                                old_type.name,
+                                field_name,
+                                arg_name,
+                                old_arg.type,
+                                new_arg.type,
+                            ),
                         )
                     )
                 elif (
@@ -260,8 +251,9 @@ def find_arg_changes(
                     dangerous_changes.append(
                         DangerousChange(
                             DangerousChangeType.ARG_DEFAULT_VALUE_CHANGE,
-                            f"{old_type.name}.{field_name} arg"
-                            f" {arg_name} has changed defaultValue",
+                            ("{}.{} arg" " {} has changed defaultValue").format(
+                                old_type.name, field_name, arg_name
+                            ),
                         )
                     )
 
@@ -273,23 +265,28 @@ def find_arg_changes(
                         breaking_changes.append(
                             BreakingChange(
                                 BreakingChangeType.REQUIRED_ARG_ADDED,
-                                f"A required arg {arg_name} on"
-                                f" {type_name}.{field_name} was added",
+                                ("A required arg {} on" " {}.{} was added").format(
+                                    arg_name, type_name, field_name
+                                ),
                             )
                         )
                     else:
                         dangerous_changes.append(
                             DangerousChange(
                                 DangerousChangeType.OPTIONAL_ARG_ADDED,
-                                f"An optional arg {arg_name} on"
-                                f" {type_name}.{field_name} was added",
+                                (
+                                    "An optional arg {} on"
+                                    " {}.{} was added".format(
+                                        arg_name, type_name, field_name
+                                    )
+                                ),
                             )
                         )
 
     return BreakingAndDangerousChanges(breaking_changes, dangerous_changes)
 
 
-def type_kind_name(type_: GraphQLNamedType) -> str:
+def type_kind_name(type_):
     if is_scalar_type(type_):
         return "a Scalar type"
     if is_object_type(type_):
@@ -302,12 +299,10 @@ def type_kind_name(type_: GraphQLNamedType) -> str:
         return "an Enum type"
     if is_input_object_type(type_):
         return "an Input type"
-    raise TypeError(f"Unknown type {type_.__class__.__name__}")
+    raise TypeError("Unknown type {}".format(type_.__class__.__name__))
 
 
-def find_fields_that_changed_type_on_object_or_interface_types(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> List[BreakingChange]:
+def find_fields_that_changed_type_on_object_or_interface_types(old_schema, new_schema):
     old_type_map = old_schema.type_map
     new_type_map = new_schema.type_map
 
@@ -331,7 +326,7 @@ def find_fields_that_changed_type_on_object_or_interface_types(
                 breaking_changes.append(
                     BreakingChange(
                         BreakingChangeType.FIELD_REMOVED,
-                        f"{type_name}.{field_name} was removed.",
+                        "{}.{} was removed.".format(type_name, field_name),
                     )
                 )
             else:
@@ -354,18 +349,19 @@ def find_fields_that_changed_type_on_object_or_interface_types(
                     breaking_changes.append(
                         BreakingChange(
                             BreakingChangeType.FIELD_CHANGED_KIND,
-                            f"{type_name}.{field_name} changed type"
-                            f" from {old_field_type_string}"
-                            f" to {new_field_type_string}.",
+                            ("{}.{} changed type" " from {}" " to {}.").format(
+                                type_name,
+                                field_name,
+                                old_field_type_string,
+                                new_field_type_string,
+                            ),
                         )
                     )
 
     return breaking_changes
 
 
-def find_fields_that_changed_type_on_input_object_types(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> BreakingAndDangerousChanges:
+def find_fields_that_changed_type_on_input_object_types(old_schema, new_schema):
     old_type_map = old_schema.type_map
     new_type_map = new_schema.type_map
 
@@ -386,7 +382,7 @@ def find_fields_that_changed_type_on_input_object_types(
                 breaking_changes.append(
                     BreakingChange(
                         BreakingChangeType.FIELD_REMOVED,
-                        f"{type_name}.{field_name} was removed.",
+                        "{}.{} was removed.".format(type_name, field_name),
                     )
                 )
             else:
@@ -410,9 +406,12 @@ def find_fields_that_changed_type_on_input_object_types(
                     breaking_changes.append(
                         BreakingChange(
                             BreakingChangeType.FIELD_CHANGED_KIND,
-                            f"{type_name}.{field_name} changed type"
-                            f" from {old_field_type_string}"
-                            f" to {new_field_type_string}.",
+                            ("{}.{} changed type" " from {}" " to {}.").format(
+                                type_name,
+                                field_name,
+                                old_field_type_string,
+                                new_field_type_string,
+                            ),
                         )
                     )
 
@@ -423,25 +422,25 @@ def find_fields_that_changed_type_on_input_object_types(
                     breaking_changes.append(
                         BreakingChange(
                             BreakingChangeType.REQUIRED_INPUT_FIELD_ADDED,
-                            f"A required field {field_name} on"
-                            f" input type {type_name} was added.",
+                            (
+                                "A required field {} on" " input type {} was added."
+                            ).format(field_name, type_name),
                         )
                     )
                 else:
                     dangerous_changes.append(
                         DangerousChange(
                             DangerousChangeType.OPTIONAL_INPUT_FIELD_ADDED,
-                            f"An optional field {field_name} on"
-                            f" input type {type_name} was added.",
+                            (
+                                "An optional field {} on" " input type {} was added."
+                            ).format(field_name, type_name),
                         )
                     )
 
     return BreakingAndDangerousChanges(breaking_changes, dangerous_changes)
 
 
-def is_change_safe_for_object_or_interface_field(
-    old_type: GraphQLType, new_type: GraphQLType
-) -> bool:
+def is_change_safe_for_object_or_interface_field(old_type, new_type):
     if is_named_type(old_type):
         return (
             # if they're both named types, see if their names are equivalent
@@ -490,9 +489,7 @@ def is_change_safe_for_object_or_interface_field(
         return False
 
 
-def is_change_safe_for_input_object_field_or_field_arg(
-    old_type: GraphQLType, new_type: GraphQLType
-) -> bool:
+def is_change_safe_for_input_object_field_or_field_arg(old_type, new_type):
     if is_named_type(old_type):
         # if they're both named types, see if their names are equivalent
         return (
@@ -531,9 +528,7 @@ def is_change_safe_for_input_object_field_or_field_arg(
         return False
 
 
-def find_types_removed_from_unions(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> List[BreakingChange]:
+def find_types_removed_from_unions(old_schema, new_schema):
     """Find types removed from unions.
 
     Given two schemas, returns a list containing descriptions of any breaking
@@ -556,15 +551,15 @@ def find_types_removed_from_unions(
                 types_removed_from_union.append(
                     BreakingChange(
                         BreakingChangeType.TYPE_REMOVED_FROM_UNION,
-                        f"{type_name} was removed" f" from union type {old_type_name}.",
+                        ("{} was removed" " from union type {}.").format(
+                            type_name, old_type_name
+                        ),
                     )
                 )
     return types_removed_from_union
 
 
-def find_types_added_to_unions(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> List[DangerousChange]:
+def find_types_added_to_unions(old_schema, new_schema):
     """Find types added to union.
 
     Given two schemas, returns a list containing descriptions of any dangerous
@@ -587,15 +582,15 @@ def find_types_added_to_unions(
                 types_added_to_union.append(
                     DangerousChange(
                         DangerousChangeType.TYPE_ADDED_TO_UNION,
-                        f"{type_name} was added to union type {new_type_name}.",
+                        "{} was added to union type {}.".format(
+                            type_name, new_type_name
+                        ),
                     )
                 )
     return types_added_to_union
 
 
-def find_values_removed_from_enums(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> List[BreakingChange]:
+def find_values_removed_from_enums(old_schema, new_schema):
     """Find values removed from enums.
 
     Given two schemas, returns a list containing descriptions of any breaking
@@ -617,15 +612,15 @@ def find_values_removed_from_enums(
                 values_removed_from_enums.append(
                     BreakingChange(
                         BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
-                        f"{value_name} was removed from enum type {type_name}.",
+                        "{} was removed from enum type {}.".format(
+                            value_name, type_name
+                        ),
                     )
                 )
     return values_removed_from_enums
 
 
-def find_values_added_to_enums(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> List[DangerousChange]:
+def find_values_added_to_enums(old_schema, new_schema):
     """Find values added to enums.
 
     Given two schemas, returns a list containing descriptions of any dangerous
@@ -647,15 +642,13 @@ def find_values_added_to_enums(
                 values_added_to_enums.append(
                     DangerousChange(
                         DangerousChangeType.VALUE_ADDED_TO_ENUM,
-                        f"{value_name} was added to enum type {type_name}.",
+                        "{} was added to enum type {}.".format(value_name, type_name),
                     )
                 )
     return values_added_to_enums
 
 
-def find_interfaces_removed_from_object_types(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> List[BreakingChange]:
+def find_interfaces_removed_from_object_types(old_schema, new_schema):
     old_type_map = old_schema.type_map
     new_type_map = new_schema.type_map
     breaking_changes = []
@@ -676,17 +669,16 @@ def find_interfaces_removed_from_object_types(
                 breaking_changes.append(
                     BreakingChange(
                         BreakingChangeType.INTERFACE_REMOVED_FROM_OBJECT,
-                        f"{type_name} no longer implements interface"
-                        f" {old_interface.name}.",
+                        ("{} no longer implements interface" " {}.").format(
+                            type_name, old_interface.name
+                        ),
                     )
                 )
 
     return breaking_changes
 
 
-def find_interfaces_added_to_object_types(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> List[DangerousChange]:
+def find_interfaces_added_to_object_types(old_schema, new_schema):
     old_type_map = old_schema.type_map
     new_type_map = new_schema.type_map
     interfaces_added_to_object_types = []
@@ -707,17 +699,16 @@ def find_interfaces_added_to_object_types(
                 interfaces_added_to_object_types.append(
                     DangerousChange(
                         DangerousChangeType.INTERFACE_ADDED_TO_OBJECT,
-                        f"{new_interface.name} added to interfaces implemented"
-                        f" by {type_name}.",
+                        ("{} added to interfaces implemented" " by {}.").format(
+                            new_interface.name, type_name
+                        ),
                     )
                 )
 
     return interfaces_added_to_object_types
 
 
-def find_removed_directives(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> List[BreakingChange]:
+def find_removed_directives(old_schema, new_schema):
     removed_directives = []
 
     new_schema_directive_map = get_directive_map_for_schema(new_schema)
@@ -726,23 +717,19 @@ def find_removed_directives(
             removed_directives.append(
                 BreakingChange(
                     BreakingChangeType.DIRECTIVE_REMOVED,
-                    f"{directive.name} was removed",
+                    "{} was removed".format(directive.name),
                 )
             )
 
     return removed_directives
 
 
-def find_removed_args_for_directive(
-    old_directive: GraphQLDirective, new_directive: GraphQLDirective
-) -> List[str]:
+def find_removed_args_for_directive(old_directive, new_directive):
     new_arg_map = new_directive.args
     return [arg_name for arg_name in old_directive.args if arg_name not in new_arg_map]
 
 
-def find_removed_directive_args(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> List[BreakingChange]:
+def find_removed_directive_args(old_schema, new_schema):
     removed_directive_args = []
     old_schema_directive_map = get_directive_map_for_schema(old_schema)
 
@@ -755,16 +742,14 @@ def find_removed_directive_args(
             removed_directive_args.append(
                 BreakingChange(
                     BreakingChangeType.DIRECTIVE_ARG_REMOVED,
-                    f"{arg_name} was removed from {new_directive.name}",
+                    "{} was removed from {}".format(arg_name, new_directive.name),
                 )
             )
 
     return removed_directive_args
 
 
-def find_added_args_for_directive(
-    old_directive: GraphQLDirective, new_directive: GraphQLDirective
-) -> Dict[str, GraphQLArgument]:
+def find_added_args_for_directive(old_directive, new_directive):
     old_arg_map = old_directive.args
     return {
         arg_name: arg
@@ -773,9 +758,7 @@ def find_added_args_for_directive(
     }
 
 
-def find_added_non_null_directive_args(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> List[BreakingChange]:
+def find_added_non_null_directive_args(old_schema, new_schema):
     added_non_nullable_args = []
     old_schema_directive_map = get_directive_map_for_schema(old_schema)
 
@@ -791,17 +774,16 @@ def find_added_non_null_directive_args(
                 added_non_nullable_args.append(
                     BreakingChange(
                         BreakingChangeType.REQUIRED_DIRECTIVE_ARG_ADDED,
-                        f"A required arg {arg_name} on directive"
-                        f" {new_directive.name} was added",
+                        ("A required arg {} on directive" " {} was added").format(
+                            arg_name, new_directive.name
+                        ),
                     )
                 )
 
     return added_non_nullable_args
 
 
-def find_removed_locations_for_directive(
-    old_directive: GraphQLDirective, new_directive: GraphQLDirective
-) -> List[DirectiveLocation]:
+def find_removed_locations_for_directive(old_directive, new_directive):
     new_location_set = set(new_directive.locations)
     return [
         old_location
@@ -810,9 +792,7 @@ def find_removed_locations_for_directive(
     ]
 
 
-def find_removed_directive_locations(
-    old_schema: GraphQLSchema, new_schema: GraphQLSchema
-) -> List[BreakingChange]:
+def find_removed_directive_locations(old_schema, new_schema):
     removed_locations = []
     old_schema_directive_map = get_directive_map_for_schema(old_schema)
 
@@ -827,12 +807,12 @@ def find_removed_directive_locations(
             removed_locations.append(
                 BreakingChange(
                     BreakingChangeType.DIRECTIVE_LOCATION_REMOVED,
-                    f"{location.name} was removed from {new_directive.name}",
+                    "{} was removed from {}".format(location.name, new_directive.name),
                 )
             )
 
     return removed_locations
 
 
-def get_directive_map_for_schema(schema: GraphQLSchema) -> Dict[str, GraphQLDirective]:
+def get_directive_map_for_schema(schema):
     return {directive.name: directive for directive in schema.directives}

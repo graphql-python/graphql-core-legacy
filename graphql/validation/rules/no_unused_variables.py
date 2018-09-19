@@ -7,11 +7,11 @@ from . import ValidationContext, ValidationRule
 __all__ = ["NoUnusedVariablesRule", "unused_variable_message"]
 
 
-def unused_variable_message(var_name: str, op_name: str = None) -> str:
+def unused_variable_message(var_name, op_name=None):
     return (
-        f"Variable '${var_name}' is never used in operation '{op_name}'."
+        "Variable '${}' is never used in operation '{}'.".format(var_name, op_name)
         if op_name
-        else f"Variable '${var_name}' is never used."
+        else "Variable '${}' is never used.".format(var_name)
     )
 
 
@@ -22,15 +22,15 @@ class NoUnusedVariablesRule(ValidationRule):
     are used, either directly or within a spread fragment.
     """
 
-    def __init__(self, context: ValidationContext) -> None:
+    def __init__(self, context):
         super().__init__(context)
-        self.variable_defs: List[VariableDefinitionNode] = []
+        self.variable_defs = []
 
     def enter_operation_definition(self, *_args):
         self.variable_defs.clear()
 
-    def leave_operation_definition(self, operation: OperationDefinitionNode, *_args):
-        variable_name_used: Set[str] = set()
+    def leave_operation_definition(self, operation, *_args):
+        variable_name_used = set()
         usages = self.context.get_recursive_variable_usages(operation)
         op_name = operation.name.value if operation.name else None
 
@@ -46,5 +46,5 @@ class NoUnusedVariablesRule(ValidationRule):
                     )
                 )
 
-    def enter_variable_definition(self, definition: VariableDefinitionNode, *_args):
+    def enter_variable_definition(self, definition, *_args):
         self.variable_defs.append(definition)

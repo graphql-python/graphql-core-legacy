@@ -37,7 +37,7 @@ from .schema import GraphQLSchema, is_schema
 __all__ = ["validate_schema", "assert_valid_schema"]
 
 
-def validate_schema(schema: GraphQLSchema) -> List[GraphQLError]:
+def validate_schema(schema):
     """Validate a GraphQL schema.
 
     Implements the "Type Validation" sub-sections of the specification's
@@ -48,7 +48,7 @@ def validate_schema(schema: GraphQLSchema) -> List[GraphQLError]:
     """
     # First check to ensure the provided value is in fact a GraphQLSchema.
     if not is_schema(schema):
-        raise TypeError(f"Expected {schema!r} to be a GraphQL schema.")
+        raise TypeError("Expected {!r} to be a GraphQL schema.".format(schema))
 
     # If this Schema has already been validated, return the previous results.
     # noinspection PyProtectedMember
@@ -69,7 +69,7 @@ def validate_schema(schema: GraphQLSchema) -> List[GraphQLError]:
     return errors
 
 
-def assert_valid_schema(schema: GraphQLSchema):
+def assert_valid_schema(schema):
     """Utility function which asserts a schema is valid.
 
     Throws a TypeError if the schema is invalid.
@@ -82,18 +82,11 @@ def assert_valid_schema(schema: GraphQLSchema):
 class SchemaValidationContext:
     """Utility class providing a context for schema validation."""
 
-    errors: List[GraphQLError]
-    schema: GraphQLSchema
-
-    def __init__(self, schema: GraphQLSchema) -> None:
+    def __init__(self, schema):
         self.errors = []
         self.schema = schema
 
-    def report_error(
-        self,
-        message: str,
-        nodes: Union[Optional[Node], Sequence[Optional[Node]]] = None,
-    ):
+    def report_error(self, message, nodes=None):
         if isinstance(nodes, Node):
             nodes = [nodes]
         if nodes:
@@ -101,7 +94,7 @@ class SchemaValidationContext:
         nodes = cast(Optional[Sequence[Node]], nodes)
         self.add_error(GraphQLError(message, nodes))
 
-    def add_error(self, error: GraphQLError):
+    def add_error(self, error):
         self.errors.append(error)
 
     def validate_root_types(self):
@@ -112,7 +105,8 @@ class SchemaValidationContext:
             self.report_error("Query root type must be provided.", schema.ast_node)
         elif not is_object_type(query_type):
             self.report_error(
-                "Query root type must be Object type," f" it cannot be {query_type}.",
+                "Query root type must be Object type,"
+                " it cannot be {}.".format(query_type),
                 get_operation_type_node(schema, query_type, OperationType.QUERY),
             )
 
@@ -120,7 +114,7 @@ class SchemaValidationContext:
         if mutation_type and not is_object_type(mutation_type):
             self.report_error(
                 "Mutation root type must be Object type if provided,"
-                f" it cannot be {mutation_type}.",
+                " it cannot be {}.".format(mutation_type),
                 get_operation_type_node(schema, mutation_type, OperationType.MUTATION),
             )
 
@@ -128,7 +122,7 @@ class SchemaValidationContext:
         if subscription_type and not is_object_type(subscription_type):
             self.report_error(
                 "Subscription root type must be Object type if provided,"
-                f" it cannot be {subscription_type}.",
+                " it cannot be {}.".format(subscription_type),
                 get_operation_type_node(
                     schema, subscription_type, OperationType.SUBSCRIPTION
                 ),
@@ -140,7 +134,7 @@ class SchemaValidationContext:
             # Ensure all directives are in fact GraphQL directives.
             if not is_directive(directive):
                 self.report_error(
-                    f"Expected directive but got: {directive!r}.",
+                    "Expected directive but got: {!r}.".format(directive),
                     getattr(directive, "ast_node", None),
                 )
                 continue
@@ -157,8 +151,9 @@ class SchemaValidationContext:
                 # Ensure they are unique per directive.
                 if arg_name in arg_names:
                     self.report_error(
-                        f"Argument @{directive.name}({arg_name}:)"
-                        " can only be defined once.",
+                        ("Argument @{}({}:)" " can only be defined once.").format(
+                            directive.name, arg_name
+                        ),
                         get_all_directive_arg_nodes(directive, arg_name),
                     )
                     continue
@@ -167,12 +162,13 @@ class SchemaValidationContext:
                 # Ensure the type is an input type.
                 if not is_input_type(arg.type):
                     self.report_error(
-                        f"The type of @{directive.name}({arg_name}:)"
-                        f" must be Input Type but got: {arg.type!r}.",
+                        (
+                            "The type of @{}({}:)" " must be Input Type but got: {!r}."
+                        ).format(directive.name, arg_name, arg.type),
                         get_directive_arg_type_node(directive, arg_name),
                     )
 
-    def validate_name(self, node: Any, name: str = None):
+    def validate_name(self, node, name=None):
         # Ensure names are valid, however introspection types opt out.
         try:
             if not name:
@@ -192,7 +188,7 @@ class SchemaValidationContext:
             # Ensure all provided types are in fact GraphQL type.
             if not is_named_type(type_):
                 self.report_error(
-                    f"Expected GraphQL named type but got: {type_!r}.",
+                    "Expected GraphQL named type but got: {!r}.".format(type_),
                     type_.ast_node if type_ else None,
                 )
                 continue
@@ -225,13 +221,13 @@ class SchemaValidationContext:
                 # Ensure Input Object fields are valid.
                 self.validate_input_fields(type_)
 
-    def validate_fields(self, type_: Union[GraphQLObjectType, GraphQLInterfaceType]):
+    def validate_fields(self, type_):
         fields = type_.fields
 
         # Objects and Interfaces both must define one or more fields.
         if not fields:
             self.report_error(
-                f"Type {type_.name} must define one or more fields.",
+                "Type {} must define one or more fields.".format(type_.name),
                 get_all_nodes(type_),
             )
 
@@ -244,7 +240,9 @@ class SchemaValidationContext:
             field_nodes = get_all_field_nodes(type_, field_name)
             if len(field_nodes) > 1:
                 self.report_error(
-                    f"Field {type_.name}.{field_name}" " can only be defined once.",
+                    ("Field {}.{}" " can only be defined once.").format(
+                        type_.name, field_name
+                    ),
                     field_nodes,
                 )
                 continue
@@ -252,13 +250,14 @@ class SchemaValidationContext:
             # Ensure the type is an output type
             if not is_output_type(field.type):
                 self.report_error(
-                    f"The type of {type_.name}.{field_name}"
-                    " must be Output Type but got: {field.type!r}.",
+                    ("The type of {}.{}" " must be Output Type but got: {!r}.").format(
+                        type_.name, field_name, field.type
+                    ),
                     get_field_type_node(type_, field_name),
                 )
 
             # Ensure the arguments are valid.
-            arg_names: Set[str] = set()
+            arg_names = set()
             for arg_name, arg in field.args.items():
                 # Ensure they are named correctly.
                 self.validate_name(arg, arg_name)
@@ -266,9 +265,9 @@ class SchemaValidationContext:
                 # Ensure they are unique per field.
                 if arg_name in arg_names:
                     self.report_error(
-                        "Field argument"
-                        f" {type_.name}.{field_name}({arg_name}:)"
-                        " can only be defined once.",
+                        (
+                            "Field argument" " {}.{}({}:)" " can only be defined once."
+                        ).format(type_.name, field_name, arg_name),
                         get_all_field_arg_nodes(type_, field_name, arg_name),
                     )
                     break
@@ -277,34 +276,36 @@ class SchemaValidationContext:
                 # Ensure the type is an input type.
                 if not is_input_type(arg.type):
                     self.report_error(
-                        "Field argument"
-                        f" {type_.name}.{field_name}({arg_name}:)"
-                        f" must be Input Type but got: {arg.type!r}.",
+                        (
+                            "Field argument"
+                            " {}.{}({}:)"
+                            " must be Input Type but got: {!r}."
+                        ).format(type_.name, field_name, arg_name, arg.type),
                         get_field_arg_type_node(type_, field_name, arg_name),
                     )
 
-    def validate_object_interfaces(self, obj: GraphQLObjectType):
-        implemented_type_names: Set[str] = set()
+    def validate_object_interfaces(self, obj):
+        implemented_type_names = set()
         for iface in obj.interfaces:
             if not is_interface_type(iface):
                 self.report_error(
-                    f"Type {obj.name} must only implement Interface"
-                    f" types, it cannot implement {iface!r}.",
+                    (
+                        "Type {} must only implement Interface"
+                        " types, it cannot implement {!r}."
+                    ).format(obj.name, iface),
                     get_implements_interface_node(obj, iface),
                 )
                 continue
             if iface.name in implemented_type_names:
                 self.report_error(
-                    f"Type {obj.name} can only implement {iface.name} once.",
+                    "Type {} can only implement {} once.".format(obj.name, iface.name),
                     get_all_implements_interface_nodes(obj, iface),
                 )
                 continue
             implemented_type_names.add(iface.name)
             self.validate_object_implements_interface(obj, iface)
 
-    def validate_object_implements_interface(
-        self, obj: GraphQLObjectType, iface: GraphQLInterfaceType
-    ):
+    def validate_object_implements_interface(self, obj, iface):
         obj_fields, iface_fields = obj.fields, iface.fields
 
         # Assert each interface field is implemented.
@@ -314,8 +315,9 @@ class SchemaValidationContext:
             # Assert interface field exists on object.
             if not obj_field:
                 self.report_error(
-                    f"Interface field {iface.name}.{field_name}"
-                    f" expected but {obj.name} does not provide it.",
+                    (
+                        "Interface field {}.{}" " expected but {} does not provide it."
+                    ).format(iface.name, field_name, obj.name),
                     [get_field_node(iface, field_name)]
                     + cast(List[Optional[FieldDefinitionNode]], get_all_nodes(obj)),
                 )
@@ -325,10 +327,19 @@ class SchemaValidationContext:
             # by being a valid subtype. (covariant)
             if not is_type_sub_type_of(self.schema, obj_field.type, iface_field.type):
                 self.report_error(
-                    f"Interface field {iface.name}.{field_name}"
-                    f" expects type {iface_field.type}"
-                    f" but {obj.name}.{field_name}"
-                    f" is type {obj_field.type}.",
+                    (
+                        "Interface field {}.{}"
+                        " expects type {}"
+                        " but {}.{}"
+                        " is type {}."
+                    ).format(
+                        iface.name,
+                        field_name,
+                        iface_field.type,
+                        obj.name,
+                        field_name,
+                        obj_field.type,
+                    ),
                     [
                         get_field_type_node(iface, field_name),
                         get_field_type_node(obj, field_name),
@@ -342,10 +353,14 @@ class SchemaValidationContext:
                 # Assert interface field arg exists on object field.
                 if not obj_arg:
                     self.report_error(
-                        "Interface field argument"
-                        f" {iface.name}.{field_name}({arg_name}:)"
-                        f" expected but {obj.name}.{field_name}"
-                        " does not provide it.",
+                        (
+                            "Interface field argument"
+                            " {}.{}({}:)"
+                            " expected but {}.{}"
+                            " does not provide it."
+                        ).format(
+                            iface.name, field_name, arg_name, obj.name, field_name
+                        ),
                         [
                             get_field_arg_node(iface, field_name, arg_name),
                             get_field_node(obj, field_name),
@@ -357,11 +372,22 @@ class SchemaValidationContext:
                 # (invariant).
                 if not is_equal_type(iface_arg.type, obj_arg.type):
                     self.report_error(
-                        "Interface field argument"
-                        f" {iface.name}.{field_name}({arg_name}:)"
-                        f" expects type {iface_arg.type}"
-                        f" but {obj.name}.{field_name}({arg_name}:)"
-                        f" is type {obj_arg.type}.",
+                        (
+                            "Interface field argument"
+                            " {}.{}({}:)"
+                            " expects type {}"
+                            " but {}.{}({}:)"
+                            " is type {}."
+                        ).format(
+                            iface.name,
+                            field_name,
+                            arg_name,
+                            iface_arg.type,
+                            obj.name,
+                            field_name,
+                            arg_name,
+                            obj_arg.type,
+                        ),
                         [
                             get_field_arg_type_node(iface, field_name, arg_name),
                             get_field_arg_type_node(obj, field_name, arg_name),
@@ -373,41 +399,48 @@ class SchemaValidationContext:
                 iface_arg = iface_field.args.get(arg_name)
                 if not iface_arg and is_required_argument(obj_arg):
                     self.report_error(
-                        f"Object field {obj.name}.{field_name} includes"
-                        f" required argument {arg_name} that is missing from"
-                        f" the Interface field {iface.name}.{field_name}.",
+                        (
+                            "Object field {}.{} includes"
+                            " required argument {} that is missing from"
+                            " the Interface field {}.{}."
+                        ).format(
+                            obj.name, field_name, arg_name, iface.name, field_name
+                        ),
                         [
                             get_field_arg_node(obj, field_name, arg_name),
                             get_field_node(iface, field_name),
                         ],
                     )
 
-    def validate_union_members(self, union: GraphQLUnionType):
+    def validate_union_members(self, union):
         member_types = union.types
 
         if not member_types:
             self.report_error(
-                f"Union type {union.name}" " must define one or more member types.",
+                ("Union type {}" " must define one or more member types.").format(
+                    union.name
+                ),
                 get_all_nodes(union),
             )
 
-        included_type_names: Set[str] = set()
+        included_type_names = set()
         for member_type in member_types:
             if member_type.name in included_type_names:
                 self.report_error(
-                    f"Union type {union.name} can only include type"
-                    f" {member_type.name} once.",
+                    ("Union type {} can only include type" " {} once.").format(
+                        union.name, member_type.name
+                    ),
                     get_union_member_type_nodes(union, member_type.name),
                 )
                 continue
             included_type_names.add(member_type.name)
 
-    def validate_enum_values(self, enum_type: GraphQLEnumType):
+    def validate_enum_values(self, enum_type):
         enum_values = enum_type.values
 
         if not enum_values:
             self.report_error(
-                f"Enum type {enum_type.name} must define one or more values.",
+                "Enum type {} must define one or more values.".format(enum_type.name),
                 get_all_nodes(enum_type),
             )
 
@@ -416,8 +449,9 @@ class SchemaValidationContext:
             all_nodes = get_enum_value_nodes(enum_type, value_name)
             if all_nodes and len(all_nodes) > 1:
                 self.report_error(
-                    f"Enum type {enum_type.name}"
-                    f" can include value {value_name} only once.",
+                    ("Enum type {}" " can include value {} only once.").format(
+                        enum_type.name, value_name
+                    ),
                     all_nodes,
                 )
 
@@ -425,18 +459,20 @@ class SchemaValidationContext:
             self.validate_name(enum_value, value_name)
             if value_name in ("true", "false", "null"):
                 self.report_error(
-                    f"Enum type {enum_type.name} cannot include value:"
-                    f" {value_name}.",
+                    ("Enum type {} cannot include value:" " {}.").format(
+                        enum_type.name, value_name
+                    ),
                     enum_value.ast_node,
                 )
 
-    def validate_input_fields(self, input_obj: GraphQLInputObjectType):
+    def validate_input_fields(self, input_obj):
         fields = input_obj.fields
 
         if not fields:
             self.report_error(
-                f"Input Object type {input_obj.name}"
-                " must define one or more fields.",
+                ("Input Object type {}" " must define one or more fields.").format(
+                    input_obj.name
+                ),
                 get_all_nodes(input_obj),
             )
 
@@ -449,15 +485,14 @@ class SchemaValidationContext:
             # Ensure the type is an input type.
             if not is_input_type(field.type):
                 self.report_error(
-                    f"The type of {input_obj.name}.{field_name}"
-                    f" must be Input Type but got: {field.type!r}.",
+                    ("The type of {}.{}" " must be Input Type but got: {!r}.").format(
+                        input_obj.name, field_name, field.type
+                    ),
                     field.ast_node.type if field.ast_node else None,
                 )
 
 
-def get_operation_type_node(
-    schema: GraphQLSchema, type_: GraphQLObjectType, operation: OperationType
-) -> Optional[Node]:
+def get_operation_type_node(schema, type_, operation):
     operation_nodes = cast(
         List[OperationTypeDefinitionNode],
         get_all_sub_nodes(schema, attrgetter("operation_types")),
@@ -479,19 +514,17 @@ SDLDefinedObject = Union[
 ]
 
 
-def get_all_nodes(obj: SDLDefinedObject) -> List[Node]:
+def get_all_nodes(obj):
     node = obj.ast_node
-    nodes: List[Node] = [node] if node else []
+    nodes = [node] if node else []
     extension_nodes = getattr(obj, "extension_ast_nodes", None)
     if extension_nodes:
         nodes.extend(extension_nodes)
     return nodes
 
 
-def get_all_sub_nodes(
-    obj: SDLDefinedObject, getter: Callable[[Node], List[Node]]
-) -> List[Node]:
-    result: List[Node] = []
+def get_all_sub_nodes(obj, getter):
+    result = []
     for ast_node in get_all_nodes(obj):
         if ast_node:
             sub_nodes = getter(ast_node)
@@ -500,16 +533,12 @@ def get_all_sub_nodes(
     return result
 
 
-def get_implements_interface_node(
-    type_: GraphQLObjectType, iface: GraphQLInterfaceType
-) -> Optional[NamedTypeNode]:
+def get_implements_interface_node(type_, iface):
     nodes = get_all_implements_interface_nodes(type_, iface)
     return nodes[0] if nodes else None
 
 
-def get_all_implements_interface_nodes(
-    type_: GraphQLObjectType, iface: GraphQLInterfaceType
-) -> List[NamedTypeNode]:
+def get_all_implements_interface_nodes(type_, iface):
     implements_nodes = cast(
         List[NamedTypeNode], get_all_sub_nodes(type_, attrgetter("interfaces"))
     )
@@ -520,16 +549,12 @@ def get_all_implements_interface_nodes(
     ]
 
 
-def get_field_node(
-    type_: Union[GraphQLObjectType, GraphQLInterfaceType], field_name: str
-) -> Optional[FieldDefinitionNode]:
+def get_field_node(type_, field_name):
     nodes = get_all_field_nodes(type_, field_name)
     return nodes[0] if nodes else None
 
 
-def get_all_field_nodes(
-    type_: Union[GraphQLObjectType, GraphQLInterfaceType], field_name: str
-) -> List[FieldDefinitionNode]:
+def get_all_field_nodes(type_, field_name):
     field_nodes = cast(
         List[FieldDefinitionNode], get_all_sub_nodes(type_, attrgetter("fields"))
     )
@@ -538,27 +563,17 @@ def get_all_field_nodes(
     ]
 
 
-def get_field_type_node(
-    type_: Union[GraphQLObjectType, GraphQLInterfaceType], field_name: str
-) -> Optional[TypeNode]:
+def get_field_type_node(type_, field_name):
     field_node = get_field_node(type_, field_name)
     return field_node.type if field_node else None
 
 
-def get_field_arg_node(
-    type_: Union[GraphQLObjectType, GraphQLInterfaceType],
-    field_name: str,
-    arg_name: str,
-) -> Optional[InputValueDefinitionNode]:
+def get_field_arg_node(type_, field_name, arg_name):
     nodes = get_all_field_arg_nodes(type_, field_name, arg_name)
     return nodes[0] if nodes else None
 
 
-def get_all_field_arg_nodes(
-    type_: Union[GraphQLObjectType, GraphQLInterfaceType],
-    field_name: str,
-    arg_name: str,
-) -> List[InputValueDefinitionNode]:
+def get_all_field_arg_nodes(type_, field_name, arg_name):
     arg_nodes = []
     field_node = get_field_node(type_, field_name)
     if field_node and field_node.arguments:
@@ -568,18 +583,12 @@ def get_all_field_arg_nodes(
     return arg_nodes
 
 
-def get_field_arg_type_node(
-    type_: Union[GraphQLObjectType, GraphQLInterfaceType],
-    field_name: str,
-    arg_name: str,
-) -> Optional[TypeNode]:
+def get_field_arg_type_node(type_, field_name, arg_name):
     field_arg_node = get_field_arg_node(type_, field_name, arg_name)
     return field_arg_node.type if field_arg_node else None
 
 
-def get_all_directive_arg_nodes(
-    directive: GraphQLDirective, arg_name: str
-) -> List[InputValueDefinitionNode]:
+def get_all_directive_arg_nodes(directive, arg_name):
     arg_nodes = cast(
         List[InputValueDefinitionNode],
         get_all_sub_nodes(directive, attrgetter("arguments")),
@@ -587,17 +596,13 @@ def get_all_directive_arg_nodes(
     return [arg_node for arg_node in arg_nodes if arg_node.name.value == arg_name]
 
 
-def get_directive_arg_type_node(
-    directive: GraphQLDirective, arg_name: str
-) -> Optional[TypeNode]:
+def get_directive_arg_type_node(directive, arg_name):
     arg_nodes = get_all_directive_arg_nodes(directive, arg_name)
     arg_node = arg_nodes[0] if arg_nodes else None
     return arg_node.type if arg_node else None
 
 
-def get_union_member_type_nodes(
-    union: GraphQLUnionType, type_name: str
-) -> Optional[List[NamedTypeNode]]:
+def get_union_member_type_nodes(union, type_name):
     union_nodes = cast(
         List[NamedTypeNode], get_all_sub_nodes(union, attrgetter("types"))
     )
@@ -606,9 +611,7 @@ def get_union_member_type_nodes(
     ]
 
 
-def get_enum_value_nodes(
-    enum_type: GraphQLEnumType, value_name: str
-) -> Optional[List[EnumValueDefinitionNode]]:
+def get_enum_value_nodes(enum_type, value_name):
     enum_nodes = cast(
         List[EnumValueDefinitionNode],
         get_all_sub_nodes(enum_type, attrgetter("values")),

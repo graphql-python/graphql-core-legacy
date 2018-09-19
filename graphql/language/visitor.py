@@ -9,6 +9,8 @@ from typing import (
     Tuple,
     Union,
 )
+from collections import namedtuple
+
 
 from ..pyutils import snake_to_camel
 from . import ast
@@ -170,29 +172,22 @@ class Visitor:
                         if not issubclass(node_cls, Node):
                             raise AttributeError
                     except AttributeError:
-                        raise AttributeError(f"Invalid AST node kind: {kind}")
+                        raise AttributeError("Invalid AST node kind: {}".format(kind))
 
     @classmethod
-    def get_visit_fn(cls, kind, is_leaving=False) -> Callable:
+    def get_visit_fn(cls, kind, is_leaving=False):
         """Get the visit function for the given node kind and direction."""
         method = "leave" if is_leaving else "enter"
-        visit_fn = getattr(cls, f"{method}_{kind}", None)
+        visit_fn = getattr(cls, "{}_{}".format(method, kind), None)
         if not visit_fn:
             visit_fn = getattr(cls, method, None)
         return visit_fn
 
 
-class Stack(NamedTuple):
-    """A stack for the visit function."""
-
-    in_array: bool
-    idx: int
-    keys: Tuple[Node, ...]
-    edits: List[Tuple[Union[int, str], Node]]
-    prev: Any  # 'Stack' (python/mypy/issues/731)
+Stack = namedtuple("Stack", ("in_array", "idx", "keys", "edits", "prev"))
 
 
-def visit(root: Node, visitor: Visitor, visitor_keys=None) -> Node:
+def visit(root, visitor, visitor_keys=None):
     """Visit each node in an AST.
 
     visit() will walk through an AST using a depth first traversal, calling
@@ -213,21 +208,21 @@ def visit(root: Node, visitor: Visitor, visitor_keys=None) -> Node:
     a dictionary visitor_keys mapping node kinds to node attributes.
     """
     if not isinstance(root, Node):
-        raise TypeError(f"Not an AST Node: {root!r}")
+        raise TypeError("Not an AST Node: {!r}".format(root))
     if not isinstance(visitor, Visitor):
-        raise TypeError(f"Not an AST Visitor class: {visitor!r}")
+        raise TypeError("Not an AST Visitor class: {!r}".format(visitor))
     if visitor_keys is None:
         visitor_keys = QUERY_DOCUMENT_KEYS
-    stack: Any = None
+    stack = None
     in_array = isinstance(root, list)
-    keys: Tuple[Node, ...] = (root,)
+    keys = (root,)
     idx = -1
-    edits: List[Any] = []
-    parent: Any = None
-    path: List[Any] = []
+    edits = []
+    parent = None
+    path = []
     path_append = path.append
     path_pop = path.pop
-    ancestors: List[Any] = []
+    ancestors = []
     ancestors_append = ancestors.append
     ancestors_pop = ancestors.pop
     new_root = root
@@ -238,7 +233,7 @@ def visit(root: Node, visitor: Visitor, visitor_keys=None) -> Node:
         is_edited = is_leaving and edits
         if is_leaving:
             key = path[-1] if ancestors else None
-            node: Any = parent
+            node = parent
             parent = ancestors_pop() if ancestors else None
             if is_edited:
                 if in_array:
@@ -283,7 +278,7 @@ def visit(root: Node, visitor: Visitor, visitor_keys=None) -> Node:
             result = None
         else:
             if not isinstance(node, Node):
-                raise TypeError(f"Not an AST Node: {node!r}")
+                raise TypeError("Not an AST Node: {!r}".format(node))
             visit_fn = visitor.get_visit_fn(node.kind, is_leaving)
             if visit_fn:
                 result = visit_fn(visitor, node, key, parent, path, ancestors)
@@ -340,10 +335,10 @@ class ParallelVisitor(Visitor):
     If a prior visitor edits a node, no following visitors will see that node.
     """
 
-    def __init__(self, visitors: Sequence[Visitor]) -> None:
+    def __init__(self, visitors):
         """Create a new visitor from the given list of parallel visitors."""
         self.visitors = visitors
-        self.skipping: List[Any] = [None] * len(visitors)
+        self.skipping = [None] * len(visitors)
 
     def enter(self, node, *args):
         skipping = self.skipping
@@ -377,7 +372,7 @@ class ParallelVisitor(Visitor):
 class TypeInfoVisitor(Visitor):
     """A visitor which maintains a provided TypeInfo."""
 
-    def __init__(self, type_info: "TypeInfo", visitor: Visitor) -> None:
+    def __init__(self, type_info, visitor):
         self.type_info = type_info
         self.visitor = visitor
 

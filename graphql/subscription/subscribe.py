@@ -20,15 +20,15 @@ __all__ = ["subscribe", "create_source_event_stream"]
 
 
 async def subscribe(
-    schema: GraphQLSchema,
-    document: DocumentNode,
-    root_value: Any = None,
-    context_value: Any = None,
-    variable_values: Dict[str, Any] = None,
-    operation_name: str = None,
-    field_resolver: GraphQLFieldResolver = None,
-    subscribe_field_resolver: GraphQLFieldResolver = None,
-) -> Union[AsyncIterator[ExecutionResult], ExecutionResult]:
+    schema,
+    document,
+    root_value = None,
+    context_value = None,
+    variable_values = None,
+    operation_name = None,
+    field_resolver = None,
+    subscribe_field_resolver = None,
+):
     """Create a GraphQL subscription.
 
     Implements the "Subscribe" algorithm described in the GraphQL spec.
@@ -88,14 +88,14 @@ async def subscribe(
 
 
 async def create_source_event_stream(
-    schema: GraphQLSchema,
-    document: DocumentNode,
-    root_value: Any = None,
-    context_value: Any = None,
-    variable_values: Dict[str, Any] = None,
-    operation_name: str = None,
-    field_resolver: GraphQLFieldResolver = None,
-) -> Union[AsyncIterable[Any], ExecutionResult]:
+    schema,
+    document,
+    root_value = None,
+    context_value = None,
+    variable_values = None,
+    operation_name = None,
+    field_resolver = None,
+):
     """Create source even stream
 
     Implements the "CreateSourceEventStream" algorithm described in the
@@ -146,7 +146,7 @@ async def create_source_event_stream(
 
     if not field_def:
         raise GraphQLError(
-            f"The subscription field '{field_name}' is not defined.", field_nodes
+            "The subscription field '{}' is not defined.".format(field_name), field_nodes
         )
 
     # Call the `subscribe()` resolver or the default resolver to produce an
@@ -173,5 +173,5 @@ async def create_source_event_stream(
     if isinstance(event_stream, AsyncIterable):
         return cast(AsyncIterable, event_stream)
     raise TypeError(
-        "Subscription field must return AsyncIterable." f" Received: {event_stream!r}"
+        "Subscription field must return AsyncIterable." " Received: {!r}".format(event_stream)
     )

@@ -19,10 +19,10 @@ class MapAsyncIterator:
 
     def __init__(
         self,
-        iterable: AsyncIterable,
-        callback: Callable,
-        reject_callback: Callable = None,
-    ) -> None:
+        iterable,
+        callback,
+        reject_callback = None,
+    ):
         self.iterator = iterable.__aiter__()
         self.callback = callback
         self.reject_callback = reject_callback
@@ -88,11 +88,11 @@ class MapAsyncIterator:
             self.is_closed = True
 
     @property
-    def is_closed(self) -> bool:
+    def is_closed(self):
         return self._close_event.is_set()
 
     @is_closed.setter
-    def is_closed(self, value: bool) -> None:
+    def is_closed(self, value):
         if value:
             self._close_event.set()
         else:

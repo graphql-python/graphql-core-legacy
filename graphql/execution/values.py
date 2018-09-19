@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, NamedTuple, Optional, Union, cast
+from collections import namedtuple
 
 from ..error import GraphQLError, INVALID
 from ..language import (
@@ -28,24 +29,18 @@ from ..utilities import coerce_value, type_from_ast, value_from_ast
 __all__ = ["get_variable_values", "get_argument_values", "get_directive_values"]
 
 
-class CoercedVariableValues(NamedTuple):
-    errors: Optional[List[GraphQLError]]
-    coerced: Optional[Dict[str, Any]]
+CoercedVariableValues = namedtuple("CoercedVariableValues", ("errors", "coerced"))
 
 
-def get_variable_values(
-    schema: GraphQLSchema,
-    var_def_nodes: List[VariableDefinitionNode],
-    inputs: Dict[str, Any],
-) -> CoercedVariableValues:
+def get_variable_values(schema, var_def_nodes, inputs):
     """Get coerced variable values based on provided definitions.
 
     Prepares a dict of variable values of the correct type based on the
     provided variable definitions and arbitrary input. If the input cannot be
     parsed to match the variable definitions, a GraphQLError will be thrown.
     """
-    errors: List[GraphQLError] = []
-    coerced_values: Dict[str, Any] = {}
+    errors = []
+    coerced_values = {}
     for var_def_node in var_def_nodes:
         var_name = var_def_node.variable.name.value
         var_type = type_from_ast(schema, var_def_node.type)
@@ -54,9 +49,11 @@ def get_variable_values(
             # validation, however is checked again here for safety.
             errors.append(
                 GraphQLError(
-                    f"Variable '${var_name}' expected value of type"
-                    f" '{print_ast(var_def_node.type)}'"
-                    " which cannot be used as an input type.",
+                    (
+                        "Variable '${}' expected value of type"
+                        " '{}'"
+                        " which cannot be used as an input type."
+                    ).format(var_name, print_ast(var_def_node.type)),
                     [var_def_node.type],
                 )
             )
@@ -73,11 +70,13 @@ def get_variable_values(
             elif (not has_value or value is None) and is_non_null_type(var_type):
                 errors.append(
                     GraphQLError(
-                        f"Variable '${var_name}' of non-null type"
-                        f" '{var_type}' must not be null."
-                        if has_value
-                        else f"Variable '${var_name}' of required type"
-                        f" '{var_type}' was not provided.",
+                        (
+                            "Variable '${var_name}' of non-null type"
+                            " '{var_type}' must not be null."
+                            if has_value
+                            else "Variable '${var_name}' of required type"
+                            " '{var_type}' was not provided."
+                        ).format(var_name=var_name, var_type=var_type),
                         [var_def_node],
                     )
                 )
@@ -94,9 +93,8 @@ def get_variable_values(
                     if coercion_errors:
                         for error in coercion_errors:
                             error.message = (
-                                f"Variable '${var_name}' got invalid"
-                                f" value {value!r}; {error.message}"
-                            )
+                                "Variable '${}' got invalid" " value {!r}; {}"
+                            ).format(var_name, value, error.message)
                         errors.extend(coercion_errors)
                     else:
                         coerced_values[var_name] = coerced.value
@@ -107,17 +105,13 @@ def get_variable_values(
     )
 
 
-def get_argument_values(
-    type_def: Union[GraphQLField, GraphQLDirective],
-    node: Union[FieldNode, DirectiveNode],
-    variable_values: Dict[str, Any] = None,
-) -> Dict[str, Any]:
+def get_argument_values(type_def, node, variable_values=None):
     """Get coerced argument values based on provided definitions and nodes.
 
     Prepares an dict of argument values given a list of argument definitions
     and list of argument AST nodes.
     """
-    coerced_values: Dict[str, Any] = {}
+    coerced_values = {}
     arg_defs = type_def.args
     arg_nodes = node.arguments
     if not arg_defs or arg_nodes is None:
@@ -143,22 +137,26 @@ def get_argument_values(
             # non-null type (required), produce a field error.
             if is_null:
                 raise GraphQLError(
-                    f"Argument '{name}' of non-null type"
-                    f" '{arg_type}' must not be null.",
+                    ("Argument '{}' of non-null type" " '{}' must not be null.").format(
+                        name, arg_type
+                    ),
                     [argument_node.value],
                 )
             elif argument_node and isinstance(argument_node.value, VariableNode):
                 raise GraphQLError(
-                    f"Argument '{name}' of required type"
-                    f" '{arg_type}' was provided the variable"
-                    f" '${variable_name}'"
-                    " which was not provided a runtime value.",
+                    (
+                        "Argument '{}' of required type"
+                        " '{}' was provided the variable"
+                        " '${}'"
+                        " which was not provided a runtime value."
+                    ).format(name, arg_type, variable_name),
                     [argument_node.value],
                 )
             else:
                 raise GraphQLError(
-                    f"Argument '{name}' of required type '{arg_type}'"
-                    " was not provided.",
+                    ("Argument '{}' of required type '{}'" " was not provided.").format(
+                        name, arg_type
+                    ),
                     [node],
                 )
         elif has_value:
@@ -181,8 +179,9 @@ def get_argument_values(
                     # ensure execution does not continue with an invalid
                     # argument value.
                     raise GraphQLError(
-                        f"Argument '{name}'"
-                        f" has invalid value {print_ast(value_node)}.",
+                        ("Argument '{}'" " has invalid value {}.").format(
+                            name, print_ast(value_node)
+                        ),
                         [argument_node.value],
                     )
                 coerced_values[name] = coerced_value
@@ -198,11 +197,7 @@ NodeWithDirective = Union[
 ]
 
 
-def get_directive_values(
-    directive_def: GraphQLDirective,
-    node: NodeWithDirective,
-    variable_values: Dict[str, Any] = None,
-) -> Optional[Dict[str, Any]]:
+def get_directive_values(directive_def, node, variable_values=None):
     """Get coerced argument values based on provided nodes.
 
     Prepares a dict of argument values given a directive definition and

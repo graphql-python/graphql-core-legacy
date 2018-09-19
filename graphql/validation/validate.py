@@ -11,12 +11,7 @@ from .validation_context import SDLValidationContext, ValidationContext
 __all__ = ["assert_valid_sdl", "assert_valid_sdl_extension", "validate", "validate_sdl"]
 
 
-def validate(
-    schema: GraphQLSchema,
-    document_ast: DocumentNode,
-    rules: Sequence[RuleType] = None,
-    type_info: TypeInfo = None,
-) -> List[GraphQLError]:
+def validate(schema, document_ast, rules=None, type_info=None):
     """Implements the "Validation" section of the spec.
 
     Validation runs synchronously, returning a list of encountered errors, or
@@ -40,7 +35,7 @@ def validate(
     if type_info is None:
         type_info = TypeInfo(schema)
     elif not isinstance(type_info, TypeInfo):
-        raise TypeError(f"Not a TypeInfo object: {type_info!r}")
+        raise TypeError("Not a TypeInfo object: {!r}".format(type_info))
     if rules is None:
         rules = specified_rules
     elif not isinstance(rules, (list, tuple)):
@@ -54,11 +49,7 @@ def validate(
     return context.errors
 
 
-def validate_sdl(
-    document_ast: DocumentNode,
-    schema_to_extend: GraphQLSchema = None,
-    rules: Sequence[RuleType] = None,
-) -> List[GraphQLError]:
+def validate_sdl(document_ast, schema_to_extend=None, rules=None):
     """Validate an SDL document."""
     context = SDLValidationContext(document_ast, schema_to_extend)
     if rules is None:
@@ -68,7 +59,7 @@ def validate_sdl(
     return context.errors
 
 
-def assert_valid_sdl(document_ast: DocumentNode) -> None:
+def assert_valid_sdl(document_ast):
     """Assert document is valid SDL.
 
     Utility function which asserts a SDL document is valid by throwing an error
@@ -80,9 +71,7 @@ def assert_valid_sdl(document_ast: DocumentNode) -> None:
         raise TypeError("\n\n".join(error.message for error in errors))
 
 
-def assert_valid_sdl_extension(
-    document_ast: DocumentNode, schema: GraphQLSchema
-) -> None:
+def assert_valid_sdl_extension(document_ast, schema):
     """Assert document is a valid SDL extension.
 
     Utility function which asserts a SDL document is valid by throwing an error

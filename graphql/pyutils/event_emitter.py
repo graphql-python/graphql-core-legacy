@@ -11,11 +11,11 @@ __all__ = ["EventEmitter", "EventEmitterAsyncIterator"]
 class EventEmitter:
     """A very simple EventEmitter."""
 
-    def __init__(self, loop: Optional[AbstractEventLoop] = None) -> None:
+    def __init__(self, loop = None):
         self.loop = loop
-        self.listeners: Dict[str, List[Callable]] = defaultdict(list)
+        self.listeners = defaultdict(list)
 
-    def add_listener(self, event_name: str, listener: Callable):
+    def add_listener(self, event_name, listener):
         """Add a listener."""
         self.listeners[event_name].append(listener)
         return self
@@ -43,8 +43,8 @@ class EventEmitterAsyncIterator:
     Useful for mocking a PubSub system for tests.
     """
 
-    def __init__(self, event_emitter: EventEmitter, event_name: str) -> None:
-        self.queue: Queue = Queue(loop=cast(AbstractEventLoop, event_emitter.loop))
+    def __init__(self, event_emitter, event_name):
+        self.queue = Queue(loop=cast(AbstractEventLoop, event_emitter.loop))
         event_emitter.add_listener(event_name, self.queue.put)
         self.remove_listener = lambda: event_emitter.remove_listener(
             event_name, self.queue.put

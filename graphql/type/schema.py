@@ -4,7 +4,6 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple, ca
 from ..error import GraphQLError
 from ..language import ast
 from .definition import (
-    GraphQLAbstractType,
     GraphQLInterfaceType,
     GraphQLNamedType,
     GraphQLObjectType,
@@ -27,7 +26,7 @@ __all__ = ["GraphQLSchema", "is_schema"]
 TypeMap = Dict[str, GraphQLNamedType]
 
 
-def is_schema(schema: Any) -> bool:
+def is_schema(schema):
     """Test if the given value is a GraphQL schema."""
     return isinstance(schema, GraphQLSchema)
 
@@ -56,25 +55,17 @@ class GraphQLSchema:
           directives=specifiedDirectives + [myCustomDirective])
     """
 
-    query: Optional[GraphQLObjectType]
-    mutation: Optional[GraphQLObjectType]
-    subscription: Optional[GraphQLObjectType]
-    type_map: TypeMap
-    directives: List[GraphQLDirective]
-    ast_node: Optional[ast.SchemaDefinitionNode]
-    extension_ast_nodes: Optional[Tuple[ast.SchemaExtensionNode]]
-
     def __init__(
         self,
-        query: GraphQLObjectType = None,
-        mutation: GraphQLObjectType = None,
-        subscription: GraphQLObjectType = None,
-        types: Sequence[GraphQLNamedType] = None,
-        directives: Sequence[GraphQLDirective] = None,
-        ast_node: ast.SchemaDefinitionNode = None,
-        extension_ast_nodes: Sequence[ast.SchemaExtensionNode] = None,
-        assume_valid: bool = False,
-    ) -> None:
+        query=None,
+        mutation=None,
+        subscription=None,
+        types=None,
+        directives=None,
+        ast_node=None,
+        extension_ast_nodes=None,
+        assume_valid=False,
+    ):
         """Initialize GraphQL schema.
 
         If this schema was built from a source known to be valid, then it may
@@ -86,7 +77,7 @@ class GraphQLSchema:
             # If this schema was built from a source known to be valid,
             # then it may be marked with assume_valid to avoid an additional
             # type system validation.
-            self._validation_errors: Optional[List[GraphQLError]] = []
+            self._validation_errors = []
         else:
             # Otherwise check for common mistakes during construction to
             # produce clear and early error messages.
@@ -120,7 +111,7 @@ class GraphQLSchema:
             initial_types.extend(types)
 
         # Keep track of all types referenced within the schema.
-        type_map: TypeMap = {}
+        type_map = {}
         # First by deeply visiting all initial types.
         type_map = type_map_reduce(initial_types, type_map)
         # Then by deeply visiting all directive types.
@@ -128,10 +119,10 @@ class GraphQLSchema:
         # Storing the resulting map for reference by the schema
         self.type_map = type_map
 
-        self._possible_type_map: Dict[str, Set[str]] = {}
+        self._possible_type_map = {}
 
         # Keep track of all implementations by interface name.
-        self._implementations: Dict[str, List[GraphQLObjectType]] = {}
+        self._implementations = {}
         setdefault = self._implementations.setdefault
         for type_ in self.type_map.values():
             if is_object_type(type_):
@@ -142,21 +133,17 @@ class GraphQLSchema:
             elif is_abstract_type(type_):
                 setdefault(type_.name, [])
 
-    def get_type(self, name: str) -> Optional[GraphQLNamedType]:
+    def get_type(self, name):
         return self.type_map.get(name)
 
-    def get_possible_types(
-        self, abstract_type: GraphQLAbstractType
-    ) -> Sequence[GraphQLObjectType]:
+    def get_possible_types(self, abstract_type):
         """Get list of all possible concrete types for given abstract type."""
         if is_union_type(abstract_type):
             abstract_type = cast(GraphQLUnionType, abstract_type)
             return abstract_type.types
         return self._implementations[abstract_type.name]
 
-    def is_possible_type(
-        self, abstract_type: GraphQLAbstractType, possible_type: GraphQLObjectType
-    ) -> bool:
+    def is_possible_type(self, abstract_type, possible_type):
         """Check whether a concrete type is possible for an abstract type."""
         possible_type_map = self._possible_type_map
         try:
@@ -167,7 +154,7 @@ class GraphQLSchema:
             possible_type_map[abstract_type.name] = possible_type_names
         return possible_type.name in possible_type_names
 
-    def get_directive(self, name: str) -> Optional[GraphQLDirective]:
+    def get_directive(self, name):
         for directive in self.directives:
             if directive.name == name:
                 return directive
@@ -178,7 +165,7 @@ class GraphQLSchema:
         return self._validation_errors
 
 
-def type_map_reducer(map_: TypeMap, type_: GraphQLNamedType = None) -> TypeMap:
+def type_map_reducer(map_, type_=None):
     """Reducer function for creating the type map from given types."""
     if not type_:
         return map_
@@ -191,7 +178,7 @@ def type_map_reducer(map_: TypeMap, type_: GraphQLNamedType = None) -> TypeMap:
         if map_[name] is not type_:
             raise TypeError(
                 "Schema must contain unique named types but contains multiple"
-                f" types named {name!r}."
+                " types named {!r}.".format(name)
             )
         return map_
     map_[name] = type_
@@ -219,9 +206,7 @@ def type_map_reducer(map_: TypeMap, type_: GraphQLNamedType = None) -> TypeMap:
     return map_
 
 
-def type_map_directive_reducer(
-    map_: TypeMap, directive: GraphQLDirective = None
-) -> TypeMap:
+def type_map_directive_reducer(map_, directive=None):
     """Reducer function for creating the type map from given directives."""
     # Directives are not validated until validate_schema() is called.
     if not is_directive(directive):
@@ -234,9 +219,5 @@ def type_map_directive_reducer(
 
 
 # Reduce functions for type maps:
-type_map_reduce: Callable[  # type: ignore
-    [Sequence[Optional[GraphQLNamedType]], TypeMap], TypeMap
-] = partial(reduce, type_map_reducer)
-type_map_directive_reduce: Callable[  # type: ignore
-    [Sequence[Optional[GraphQLDirective]], TypeMap], TypeMap
-] = partial(reduce, type_map_directive_reducer)
+type_map_reduce = partial(reduce, type_map_reducer)
+type_map_directive_reduce = partial(reduce, type_map_directive_reducer)

@@ -7,9 +7,9 @@ from . import ASTValidationRule
 __all__ = ["UniqueDirectivesPerLocationRule", "duplicate_directive_message"]
 
 
-def duplicate_directive_message(directive_name: str) -> str:
-    return (
-        f"The directive '{directive_name}'" " can only be used once at this location."
+def duplicate_directive_message(directive_name):
+    return ("The directive '{}'" " can only be used once at this location.").format(
+        directive_name
     )
 
 
@@ -23,10 +23,10 @@ class UniqueDirectivesPerLocationRule(ASTValidationRule):
     # Many different AST nodes may contain directives. Rather than listing
     # them all, just listen for entering any node, and check to see if it
     # defines any directives.
-    def enter(self, node: Node, *_args):
-        directives: List[DirectiveNode] = getattr(node, "directives", None)
+    def enter(self, node, *_args):
+        directives = getattr(node, "directives", None)
         if directives:
-            known_directives: Dict[str, DirectiveNode] = {}
+            known_directives = {}
             for directive in directives:
                 directive_name = directive.name.value
                 if directive_name in known_directives:

@@ -9,9 +9,7 @@ from .type_info import TypeInfo
 __all__ = ["find_deprecated_usages"]
 
 
-def find_deprecated_usages(
-    schema: GraphQLSchema, ast: DocumentNode
-) -> List[GraphQLError]:
+def find_deprecated_usages(schema, ast):
     """Get a list of GraphQLError instances describing each deprecated use."""
 
     type_info = TypeInfo(schema)
@@ -23,10 +21,7 @@ def find_deprecated_usages(
 class FindDeprecatedUsages(Visitor):
     """A validation rule which reports deprecated usages."""
 
-    type_info: TypeInfo
-    errors: List[GraphQLError]
-
-    def __init__(self, type_info: TypeInfo) -> None:
+    def __init__(self, type_info):
         super().__init__()
         self.type_info = type_info
         self.errors = []
@@ -40,8 +35,10 @@ class FindDeprecatedUsages(Visitor):
                 reason = field_def.deprecation_reason
                 self.errors.append(
                     GraphQLError(
-                        f"The field {parent_type.name}.{field_name}"
-                        " is deprecated." + (f" {reason}" if reason else ""),
+                        ("The field {}.{}" " is deprecated.").format(
+                            parent_type.name, field_name
+                        )
+                        + (" {}".format(reason) if reason else ""),
                         [node],
                     )
                 )
@@ -55,8 +52,10 @@ class FindDeprecatedUsages(Visitor):
                 reason = enum_val.deprecation_reason
                 self.errors.append(
                     GraphQLError(
-                        f"The enum value {type_.name}.{enum_val_name}"
-                        " is deprecated." + (f" {reason}" if reason else ""),
+                        ("The enum value {}.{}" " is deprecated.").format(
+                            type_.name, enum_val_name
+                        )
+                        + (" {}".format(reason) if reason else ""),
                         [node],
                     )
                 )

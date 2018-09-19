@@ -11,20 +11,15 @@ __all__ = [
 ]
 
 
-def type_incompatible_spread_message(
-    frag_name: str, parent_type: str, frag_type: str
-) -> str:
+def type_incompatible_spread_message(frag_name, parent_type, frag_type):
     return (
-        f"Fragment '{frag_name}' cannot be spread here as objects"
-        f" of type '{parent_type}' can never be of type '{frag_type}'."
-    )
+        "Fragment '{}' cannot be spread here as objects"
+        " of type '{}' can never be of type '{}'."
+    ).format(frag_name, parent_type, frag_type)
 
 
-def type_incompatible_anon_spread_message(parent_type: str, frag_type: str) -> str:
-    return (
-        f"Fragment cannot be spread here as objects"
-        f" of type '{parent_type}' can never be of type '{frag_type}'."
-    )
+def type_incompatible_anon_spread_message(parent_type, frag_type):
+    return " of type '{}' can never be of type '{}'.".format(parent_type, frag_type)
 
 
 class PossibleFragmentSpreadsRule(ValidationRule):
@@ -35,7 +30,7 @@ class PossibleFragmentSpreadsRule(ValidationRule):
     and possible types which pass the type condition.
     """
 
-    def enter_inline_fragment(self, node: InlineFragmentNode, *_args):
+    def enter_inline_fragment(self, node, *_args):
         context = self.context
         frag_type = context.get_type()
         parent_type = context.get_parent_type()
@@ -53,7 +48,7 @@ class PossibleFragmentSpreadsRule(ValidationRule):
                 )
             )
 
-    def enter_fragment_spread(self, node: FragmentSpreadNode, *_args):
+    def enter_fragment_spread(self, node, *_args):
         context = self.context
         frag_name = node.name.value
         frag_type = self.get_fragment_type(frag_name)
@@ -72,7 +67,7 @@ class PossibleFragmentSpreadsRule(ValidationRule):
                 )
             )
 
-    def get_fragment_type(self, name: str):
+    def get_fragment_type(self, name):
         context = self.context
         frag = context.get_fragment(name)
         if frag:

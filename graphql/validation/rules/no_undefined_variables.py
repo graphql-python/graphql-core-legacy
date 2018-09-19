@@ -7,11 +7,11 @@ from . import ValidationContext, ValidationRule
 __all__ = ["NoUndefinedVariablesRule", "undefined_var_message"]
 
 
-def undefined_var_message(var_name: str, op_name: str = None) -> str:
+def undefined_var_message(var_name, op_name=None):
     return (
-        f"Variable '${var_name}' is not defined by operation '{op_name}'."
+        "Variable '${}' is not defined by operation '{}'.".format(var_name, op_name)
         if op_name
-        else f"Variable '${var_name}' is not defined."
+        else "Variable '${}' is not defined.".format(var_name)
     )
 
 
@@ -22,14 +22,14 @@ class NoUndefinedVariablesRule(ValidationRule):
     directly and via fragment spreads, are defined by that operation.
     """
 
-    def __init__(self, context: ValidationContext) -> None:
+    def __init__(self, context):
         super().__init__(context)
-        self.defined_variable_names: Set[str] = set()
+        self.defined_variable_names = set()
 
     def enter_operation_definition(self, *_args):
         self.defined_variable_names.clear()
 
-    def leave_operation_definition(self, operation: OperationDefinitionNode, *_args):
+    def leave_operation_definition(self, operation, *_args):
         usages = self.context.get_recursive_variable_usages(operation)
         defined_variables = self.defined_variable_names
         for usage in usages:
@@ -43,5 +43,5 @@ class NoUndefinedVariablesRule(ValidationRule):
                     )
                 )
 
-    def enter_variable_definition(self, node: VariableDefinitionNode, *_args):
+    def enter_variable_definition(self, node, *_args):
         self.defined_variable_names.add(node.variable.name.value)

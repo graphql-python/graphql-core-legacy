@@ -58,12 +58,7 @@ from .build_ast_schema import ASTDefinitionBuilder
 __all__ = ["extend_schema"]
 
 
-def extend_schema(
-    schema: GraphQLSchema,
-    document_ast: DocumentNode,
-    assume_valid=False,
-    assume_valid_sdl=False,
-) -> GraphQLSchema:
+def extend_schema(schema, document_ast, assume_valid=False, assume_valid_sdl=False):
     """Extend the schema with extensions from a given document.
 
     Produces a new schema given an existing schema and a document which may
@@ -95,16 +90,16 @@ def extend_schema(
         assert_valid_sdl_extension(document_ast, schema)
 
     # Collect the type definitions and extensions found in the document.
-    type_definition_map: Dict[str, Any] = {}
-    type_extensions_map: Dict[str, Any] = defaultdict(list)
+    type_definition_map = {}
+    type_extensions_map = defaultdict(list)
 
     # New directives and types are separate because a directives and types can
     # have the same name. For example, a type named "skip".
-    directive_definitions: List[DirectiveDefinitionNode] = []
+    directive_definitions = []
 
-    schema_def: Optional[SchemaDefinitionNode] = None
+    schema_def = None
     # Schema extensions are collected which may add additional operation types.
-    schema_extensions: List[SchemaExtensionNode] = []
+    schema_extensions = []
 
     for def_ in document_ast.definitions:
         if isinstance(def_, SchemaDefinitionNode):
@@ -117,8 +112,10 @@ def extend_schema(
             type_name = def_.name.value
             if schema.get_type(type_name):
                 raise GraphQLError(
-                    f"Type '{type_name}' already exists in the schema."
-                    " It cannot also be defined in this type definition.",
+                    (
+                        "Type '{}' already exists in the schema."
+                        " It cannot also be defined in this type definition."
+                    ).format(type_name),
                     [def_],
                 )
             type_definition_map[type_name] = def_
@@ -129,8 +126,10 @@ def extend_schema(
             existing_type = schema.get_type(extended_type_name)
             if not existing_type:
                 raise GraphQLError(
-                    f"Cannot extend type '{extended_type_name}'"
-                    " because it does not exist in the existing schema.",
+                    (
+                        "Cannot extend type '{}'"
+                        " because it does not exist in the existing schema."
+                    ).format(extended_type_name),
                     [def_],
                 )
             check_extension_node(existing_type, def_)
@@ -140,8 +139,10 @@ def extend_schema(
             existing_directive = schema.get_directive(directive_name)
             if existing_directive:
                 raise GraphQLError(
-                    f"Directive '{directive_name}' already exists"
-                    " in the schema. It cannot be redefined.",
+                    (
+                        "Directive '{}' already exists"
+                        " in the schema. It cannot be redefined."
+                    ).format(directive_name),
                     [def_],
                 )
             directive_definitions.append(def_)
@@ -160,7 +161,7 @@ def extend_schema(
     # Below are functions used for producing this schema that have closed over
     # this scope and have access to the schema, cache, and newly defined types.
 
-    def get_merged_directives() -> List[GraphQLDirective]:
+    def get_merged_directives():
         if not schema.directives:
             raise TypeError("schema must have default directives")
 
@@ -171,12 +172,10 @@ def extend_schema(
             )
         )
 
-    def extend_maybe_named_type(
-        type_: Optional[GraphQLNamedType]
-    ) -> Optional[GraphQLNamedType]:
+    def extend_maybe_named_type(type_):
         return extend_named_type(type_) if type_ else None
 
-    def extend_named_type(type_: GraphQLNamedType) -> GraphQLNamedType:
+    def extend_named_type(type_):
         if is_introspection_type(type_) or is_specified_scalar_type(type_):
             # Builtin types are not extended.
             return type_
@@ -204,7 +203,7 @@ def extend_schema(
 
         return extend_type_cache[name]
 
-    def extend_directive(directive: GraphQLDirective) -> GraphQLDirective:
+    def extend_directive(directive):
         return GraphQLDirective(
             directive.name,
             description=directive.description,
@@ -213,9 +212,7 @@ def extend_schema(
             ast_node=directive.ast_node,
         )
 
-    def extend_input_object_type(
-        type_: GraphQLInputObjectType
-    ) -> GraphQLInputObjectType:
+    def extend_input_object_type(type_):
         name = type_.name
         extension_ast_nodes = (
             (
@@ -234,7 +231,7 @@ def extend_schema(
             extension_ast_nodes=extension_ast_nodes,
         )
 
-    def extend_input_field_map(type_: GraphQLInputObjectType) -> GraphQLInputFieldMap:
+    def extend_input_field_map(type_):
         old_field_map = type_.fields
         new_field_map = {
             field_name: GraphQLInputField(
@@ -254,16 +251,18 @@ def extend_schema(
                     field_name = field.name.value
                     if field_name in old_field_map:
                         raise GraphQLError(
-                            f"Field '{type_.name}.{field_name}' already"
-                            " exists in the schema. It cannot also be defined"
-                            " in this type extension.",
+                            (
+                                "Field '{}.{}' already"
+                                " exists in the schema. It cannot also be defined"
+                                " in this type extension."
+                            ).format(type_.name, field_name),
                             [field],
                         )
                     new_field_map[field_name] = ast_builder.build_input_field(field)
 
         return new_field_map
 
-    def extend_enum_type(type_: GraphQLEnumType) -> GraphQLEnumType:
+    def extend_enum_type(type_):
         name = type_.name
         extension_ast_nodes = (
             (
@@ -282,7 +281,7 @@ def extend_schema(
             extension_ast_nodes=extension_ast_nodes,
         )
 
-    def extend_value_map(type_: GraphQLEnumType) -> GraphQLEnumValueMap:
+    def extend_value_map(type_):
         old_value_map = type_.values
         new_value_map = {
             value_name: GraphQLEnumValue(
@@ -302,16 +301,18 @@ def extend_schema(
                     value_name = value.name.value
                     if value_name in old_value_map:
                         raise GraphQLError(
-                            f"Enum value '{type_.name}.{value_name}' already"
-                            " exists in the schema. It cannot also be defined"
-                            " in this type extension.",
+                            (
+                                "Enum value '{}.{}' already"
+                                " exists in the schema. It cannot also be defined"
+                                " in this type extension."
+                            ).format(type_.name, value_name),
                             [value],
                         )
                     new_value_map[value_name] = ast_builder.build_enum_value(value)
 
         return new_value_map
 
-    def extend_scalar_type(type_: GraphQLScalarType) -> GraphQLScalarType:
+    def extend_scalar_type(type_):
         name = type_.name
         extension_ast_nodes = (
             (
@@ -332,7 +333,7 @@ def extend_schema(
             extension_ast_nodes=extension_ast_nodes,
         )
 
-    def extend_object_type(type_: GraphQLObjectType) -> GraphQLObjectType:
+    def extend_object_type(type_):
         name = type_.name
         extension_ast_nodes = type_.extension_ast_nodes
         try:
@@ -354,7 +355,7 @@ def extend_schema(
             is_type_of=type_.is_type_of,
         )
 
-    def extend_args(args: GraphQLArgumentMap) -> GraphQLArgumentMap:
+    def extend_args(args):
         return {
             arg_name: GraphQLArgument(
                 cast(GraphQLInputType, extend_type(arg.type)),
@@ -365,7 +366,7 @@ def extend_schema(
             for arg_name, arg in args.items()
         }
 
-    def extend_interface_type(type_: GraphQLInterfaceType) -> GraphQLInterfaceType:
+    def extend_interface_type(type_):
         name = type_.name
         extension_ast_nodes = type_.extension_ast_nodes
         try:
@@ -386,7 +387,7 @@ def extend_schema(
             resolve_type=type_.resolve_type,
         )
 
-    def extend_union_type(type_: GraphQLUnionType) -> GraphQLUnionType:
+    def extend_union_type(type_):
         name = type_.name
         extension_ast_nodes = (
             (
@@ -406,7 +407,7 @@ def extend_schema(
             extension_ast_nodes=extension_ast_nodes,
         )
 
-    def extend_possible_types(type_: GraphQLUnionType) -> List[GraphQLObjectType]:
+    def extend_possible_types(type_):
         possible_types = list(map(extend_named_type, type_.types))
 
         # If there are any extensions to the union, apply those here.
@@ -422,10 +423,8 @@ def extend_schema(
 
         return cast(List[GraphQLObjectType], possible_types)
 
-    def extend_implemented_interfaces(
-        type_: GraphQLObjectType
-    ) -> List[GraphQLInterfaceType]:
-        interfaces: List[GraphQLInterfaceType] = list(
+    def extend_implemented_interfaces(type_):
+        interfaces = list(
             map(
                 cast(
                     Callable[[GraphQLNamedType], GraphQLInterfaceType],
@@ -446,9 +445,7 @@ def extend_schema(
 
         return interfaces
 
-    def extend_field_map(
-        type_: Union[GraphQLObjectType, GraphQLInterfaceType]
-    ) -> GraphQLFieldMap:
+    def extend_field_map(type_):
         old_field_map = type_.fields
         new_field_map = {
             field_name: GraphQLField(
@@ -468,9 +465,11 @@ def extend_schema(
                 field_name = field.name.value
                 if field_name in old_field_map:
                     raise GraphQLError(
-                        f"Field '{type_.name}.{field_name}'"
-                        " already exists in the schema."
-                        " It cannot also be defined in this type extension.",
+                        (
+                            "Field '{}.{}'"
+                            " already exists in the schema."
+                            " It cannot also be defined in this type extension."
+                        ).format(type_.name, field_name),
                         [field],
                     )
                 new_field_map[field_name] = build_field(field)
@@ -478,7 +477,7 @@ def extend_schema(
         return new_field_map
 
     # noinspection PyTypeChecker,PyUnresolvedReferences
-    def extend_type(type_def: GraphQLType) -> GraphQLType:
+    def extend_type(type_def):
         if is_list_type(type_def):
             return GraphQLList(extend_type(type_def.of_type))  # type: ignore
         if is_non_null_type(type_def):
@@ -488,15 +487,17 @@ def extend_schema(
         return extend_named_type(type_def)  # type: ignore
 
     # noinspection PyShadowingNames
-    def resolve_type(type_ref: NamedTypeNode) -> GraphQLNamedType:
+    def resolve_type(type_ref):
         type_name = type_ref.name.value
         existing_type = schema.get_type(type_name)
         if existing_type:
             return extend_named_type(existing_type)
         raise GraphQLError(
-            f"Unknown type: '{type_name}'."
-            " Ensure that this type exists either in the original schema,"
-            " or is added in a type definition.",
+            (
+                "Unknown type: '{}'."
+                " Ensure that this type exists either in the original schema,"
+                " or is added in a type definition."
+            ).format(type_name),
             [type_ref],
         )
 
@@ -506,7 +507,7 @@ def extend_schema(
     build_field = ast_builder.build_field
     build_type = ast_builder.build_type
 
-    extend_type_cache: Dict[str, GraphQLNamedType] = {}
+    extend_type_cache = {}
 
     # Get the extended root operation types.
     operation_types = {
@@ -520,7 +521,7 @@ def extend_schema(
             operation = operation_type.operation
             if operation_types[operation]:
                 raise TypeError(
-                    f"Must provide only one {operation.value} type in schema."
+                    "Must provide only one {} type in schema.".format(operation.value)
                 )
             # Note: While this could make early assertions to get the
             # correctly typed values, that would throw immediately while
@@ -535,7 +536,9 @@ def extend_schema(
                 operation = operation_type.operation
                 if operation_types[operation]:
                     raise TypeError(
-                        f"Must provide only one {operation.value}" " type in schema."
+                        ("Must provide only one {}" " type in schema.").format(
+                            operation.value
+                        )
                     )
                 # Note: While this could make early assertions to get the
                 # correctly typed values, that would throw immediately while
@@ -565,23 +568,29 @@ def extend_schema(
     )
 
 
-def check_extension_node(type_: GraphQLNamedType, node: TypeExtensionNode):
+def check_extension_node(type_, node):
     if isinstance(node, ObjectTypeExtensionNode):
         if not is_object_type(type_):
-            raise GraphQLError(f"Cannot extend non-object type '{type_.name}'.", [node])
+            raise GraphQLError(
+                "Cannot extend non-object type '{}'.".format(type_.name), [node]
+            )
     elif isinstance(node, InterfaceTypeExtensionNode):
         if not is_interface_type(type_):
             raise GraphQLError(
-                f"Cannot extend non-interface type '{type_.name}'.", [node]
+                "Cannot extend non-interface type '{}'.".format(type_.name), [node]
             )
     elif isinstance(node, EnumTypeExtensionNode):
         if not is_enum_type(type_):
-            raise GraphQLError(f"Cannot extend non-enum type '{type_.name}'.", [node])
+            raise GraphQLError(
+                "Cannot extend non-enum type '{}'.".format(type_.name), [node]
+            )
     elif isinstance(node, UnionTypeExtensionNode):
         if not is_union_type(type_):
-            raise GraphQLError(f"Cannot extend non-union type '{type_.name}'.", [node])
+            raise GraphQLError(
+                "Cannot extend non-union type '{}'.".format(type_.name), [node]
+            )
     elif isinstance(node, InputObjectTypeExtensionNode):
         if not is_input_object_type(type_):
             raise GraphQLError(
-                f"Cannot extend non-input object type '{type_.name}'.", [node]
+                "Cannot extend non-input object type '{}'.".format(type_.name), [node]
             )

@@ -31,10 +31,10 @@ from ..type import (
 __all__ = ["lexicographic_sort_schema"]
 
 
-def lexicographic_sort_schema(schema: GraphQLSchema) -> GraphQLSchema:
+def lexicographic_sort_schema(schema):
     """Sort GraphQLSchema."""
 
-    cache: Dict[str, GraphQLNamedType] = {}
+    cache = {}
 
     def sort_maybe_type(maybe_type):
         return maybe_type and sort_named_type(maybe_type)
@@ -92,7 +92,7 @@ def lexicographic_sort_schema(schema: GraphQLSchema) -> GraphQLSchema:
         else:
             return sort_named_type(type_)
 
-    def sort_named_type(type_: GraphQLNamedType) -> GraphQLNamedType:
+    def sort_named_type(type_):
         if is_specified_scalar_type(type_) or is_introspection_type(type_):
             return type_
 
@@ -102,10 +102,10 @@ def lexicographic_sort_schema(schema: GraphQLSchema) -> GraphQLSchema:
             cache[type_.name] = sorted_type
         return sorted_type
 
-    def sort_types(arr: Collection[GraphQLNamedType]) -> List[GraphQLNamedType]:
+    def sort_types(arr):
         return [sort_named_type(type_) for type_ in sorted(arr, key=attrgetter("name"))]
 
-    def sort_named_type_impl(type_: GraphQLNamedType) -> GraphQLNamedType:
+    def sort_named_type_impl(type_):
         if is_scalar_type(type_):
             return type_
         elif is_object_type(type_):
@@ -164,7 +164,7 @@ def lexicographic_sort_schema(schema: GraphQLSchema) -> GraphQLSchema:
                 description=type_.description,
                 ast_node=type5.ast_node,
             )
-        raise TypeError(f"Unknown type: '{type_}'")
+        raise TypeError("Unknown type: '{}'".format(type_))
 
     return GraphQLSchema(
         types=sort_types(schema.type_map.values()),

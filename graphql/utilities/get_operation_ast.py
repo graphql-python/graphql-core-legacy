@@ -6,8 +6,8 @@ __all__ = ["get_operation_ast"]
 
 
 def get_operation_ast(
-    document_ast: DocumentNode, operation_name: Optional[str] = None
-) -> Optional[OperationDefinitionNode]:
+    document_ast, operation_name = None
+):
     """Get operation AST node.
 
     Returns an operation AST given a document AST and optionally an operation

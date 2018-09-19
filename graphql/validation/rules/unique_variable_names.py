@@ -7,8 +7,8 @@ from . import ASTValidationContext, ASTValidationRule
 __all__ = ["UniqueVariableNamesRule", "duplicate_variable_message"]
 
 
-def duplicate_variable_message(variable_name: str) -> str:
-    return f"There can be only one variable named '{variable_name}'."
+def duplicate_variable_message(variable_name):
+    return "There can be only one variable named '{}'.".format(variable_name)
 
 
 class UniqueVariableNamesRule(ASTValidationRule):
@@ -17,14 +17,14 @@ class UniqueVariableNamesRule(ASTValidationRule):
     A GraphQL operation is only valid if all its variables are uniquely named.
     """
 
-    def __init__(self, context: ASTValidationContext) -> None:
+    def __init__(self, context):
         super().__init__(context)
-        self.known_variable_names: Dict[str, NameNode] = {}
+        self.known_variable_names = {}
 
     def enter_operation_definition(self, *_args):
         self.known_variable_names.clear()
 
-    def enter_variable_definition(self, node: VariableDefinitionNode, *_args):
+    def enter_variable_definition(self, node, *_args):
         known_variable_names = self.known_variable_names
         variable_name = node.variable.name.value
         if variable_name in known_variable_names:

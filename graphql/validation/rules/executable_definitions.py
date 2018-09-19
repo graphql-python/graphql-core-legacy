@@ -14,8 +14,8 @@ from . import ASTValidationRule
 __all__ = ["ExecutableDefinitionsRule", "non_executable_definitions_message"]
 
 
-def non_executable_definitions_message(def_name: str) -> str:
-    return f"The {def_name} definition is not executable."
+def non_executable_definitions_message(def_name):
+    return "The {} definition is not executable.".format(def_name)
 
 
 class ExecutableDefinitionsRule(ASTValidationRule):
@@ -25,7 +25,7 @@ class ExecutableDefinitionsRule(ASTValidationRule):
     either operation or fragment definitions.
     """
 
-    def enter_document(self, node: DocumentNode, *_args):
+    def enter_document(self, node, *_args):
         for definition in node.definitions:
             if not isinstance(definition, ExecutableDefinitionNode):
                 self.report_error(

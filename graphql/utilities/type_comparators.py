@@ -16,7 +16,7 @@ from ..type import (
 __all__ = ["is_equal_type", "is_type_sub_type_of", "do_types_overlap"]
 
 
-def is_equal_type(type_a: GraphQLType, type_b: GraphQLType):
+def is_equal_type(type_a, type_b):
     """Check whether two types are equal.
 
     Provided two types, return true if the types are equal (invariant)."""
@@ -40,8 +40,8 @@ def is_equal_type(type_a: GraphQLType, type_b: GraphQLType):
 
 # noinspection PyUnresolvedReferences
 def is_type_sub_type_of(
-    schema: GraphQLSchema, maybe_subtype: GraphQLType, super_type: GraphQLType
-) -> bool:
+    schema, maybe_subtype, super_type
+):
     """Check whether a type is subtype of another type in a given schema.
 
     Provided a type and a super type, return true if the first type is either
