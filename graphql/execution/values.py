@@ -134,15 +134,16 @@ def get_argument_values(
             continue
 
         else:
-            value = value_from_ast(arg_ast.value, arg_type, variables)  # type: ignore
-            if value is None:
+            arg_name = arg_def.out_name or name  # type: ignore
+            arg_ast_value = arg_ast.value  # type: ignore
+            value = value_from_ast(arg_ast_value, arg_type, variables)  # type: ignore
+            if value is None and not isinstance(arg_ast_value, ast.NullValue):
                 if arg_def.default_value is not Undefined:
-                    value = arg_def.default_value
-                    result[arg_def.out_name or name] = value
+                    result[arg_name] = arg_def.default_value
+                else:
+                    result[arg_name] = None
             else:
-                # We use out_name as the output name for the
-                # dict if exists
-                result[arg_def.out_name or name] = value
+                result[arg_name] = value
 
     return result
 
