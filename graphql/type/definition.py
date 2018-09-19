@@ -16,6 +16,7 @@ from typing import (
     cast,
     overload,
 )
+from collections import namedtuple
 
 from ..error import GraphQLError, INVALID, InvalidType
 from ..language import (
@@ -124,7 +125,7 @@ __all__ = [
 ]
 
 
-class GraphQLType:
+class GraphQLType(object):
     """Base class for all GraphQL types"""
 
     # Note: We don't use slots for GraphQLType objects because memory
@@ -135,11 +136,13 @@ class GraphQLType:
 # There are predicates for each kind of GraphQL type.
 
 
-def is_type(type_: Any) -> bool:
+def is_type(type_):
+    # type: (Any) -> bool
     return isinstance(type_, GraphQLType)
 
 
-def assert_type(type_: Any) -> GraphQLType:
+def assert_type(type_):
+    # type: (Any) -> GraphQLType
     if not is_type(type_):
         raise TypeError(f"Expected {type_} to be a GraphQL type.")
     return type_
@@ -153,9 +156,10 @@ GT = TypeVar("GT", bound=GraphQLType)
 class GraphQLWrappingType(GraphQLType, Generic[GT]):
     """Base class for all GraphQL wrapping types"""
 
-    of_type: GT
+    # of_type: GT
 
-    def __init__(self, type_: GT) -> None:
+    def __init__(self, type_):
+        # type: (GT) -> None
         if not is_type(type_):
             raise TypeError(
                 "Can only create a wrapper for a GraphQLType, but got:" f" {type_}."
@@ -163,11 +167,13 @@ class GraphQLWrappingType(GraphQLType, Generic[GT]):
         self.of_type = type_
 
 
-def is_wrapping_type(type_: Any) -> bool:
+def is_wrapping_type(type_):
+    # type: (Any) -> bool
     return isinstance(type_, GraphQLWrappingType)
 
 
-def assert_wrapping_type(type_: Any) -> GraphQLWrappingType:
+def assert_wrapping_type(type_):
+    # type: (Any) -> GraphQLWrappingType
     if not is_wrapping_type(type_):
         raise TypeError(f"Expected {type_} to be a GraphQL wrapping type.")
     return type_
@@ -179,17 +185,12 @@ def assert_wrapping_type(type_: Any) -> GraphQLWrappingType:
 class GraphQLNamedType(GraphQLType):
     """Base class for all GraphQL named types"""
 
-    name: str
-    description: Optional[str]
-    ast_node: Optional[TypeDefinitionNode]
-    extension_ast_nodes: Optional[Tuple[TypeExtensionNode]]
-
     def __init__(
         self,
-        name: str,
-        description: str = None,
-        ast_node: TypeDefinitionNode = None,
-        extension_ast_nodes: Sequence[TypeExtensionNode] = None,
+        name, # type: str
+        description = None, # type: Optional[str]
+        ast_node = None, # type: Optional[TypeDefinitionNode]
+        extension_ast_nodes = None, # type: Optional[Sequence[TypeExtensionNode]]
     ) -> None:
         if not name:
             raise TypeError("Must provide name.")
@@ -222,27 +223,20 @@ class GraphQLNamedType(GraphQLType):
         return f"<{self.__class__.__name__}({self})>"
 
 
-def is_named_type(type_: Any) -> bool:
+def is_named_type(type_):
+    # type: (Any) -> bool
     return isinstance(type_, GraphQLNamedType)
 
 
-def assert_named_type(type_: Any) -> GraphQLNamedType:
+def assert_named_type(type_):
+    # type: (Any) -> GraphQLNamedType
     if not is_named_type(type_):
         raise TypeError(f"Expected {type_} to be a GraphQL named type.")
     return type_
 
 
-@overload
-def get_named_type(type_: None) -> None:
-    ...
-
-
-@overload  # noqa: F811 (pycqa/flake8#423)
-def get_named_type(type_: GraphQLType) -> GraphQLNamedType:
-    ...
-
-
 def get_named_type(type_):  # noqa: F811
+    # type: (Optional[GraphQLType]) -> Optional[GraphQLNamedType]
     """Unwrap possible wrapping type"""
     if type_:
         unwrapped_type = type_
@@ -253,7 +247,8 @@ def get_named_type(type_):  # noqa: F811
     return None
 
 
-def resolve_thunk(thunk: Any) -> Any:
+def resolve_thunk(thunk):
+    # type: (Any) -> Any
     """Resolve the given thunk.
 
     Used while defining GraphQL types to allow for circular references in
@@ -262,7 +257,8 @@ def resolve_thunk(thunk: Any) -> Any:
     return thunk() if callable(thunk) else thunk
 
 
-def default_value_parser(value: Any) -> Any:
+def default_value_parser(value):
+    # type: (Any) -> Any
     return value
 
 
@@ -293,26 +289,29 @@ class GraphQLScalarType(GraphQLNamedType):
     """
 
     # Serializes an internal value to include in a response.
-    serialize: GraphQLScalarSerializer
+    # serialize: GraphQLScalarSerializer
+    
     #  Parses an externally provided value to use as an input.
-    parseValue: GraphQLScalarValueParser
+    # parseValue: GraphQLScalarValueParser
     # Parses an externally provided literal value to use as an input.
+    
     # Takes a dictionary of variables as an optional second argument.
-    parseLiteral: GraphQLScalarLiteralParser
+    # parseLiteral: GraphQLScalarLiteralParser
 
-    ast_node: Optional[ScalarTypeDefinitionNode]
-    extension_ast_nodes: Optional[Tuple[ScalarTypeExtensionNode]]
+    # ast_node: Optional[ScalarTypeDefinitionNode]
+    # extension_ast_nodes: Optional[Tuple[ScalarTypeExtensionNode]]
 
     def __init__(
         self,
-        name: str,
-        serialize: GraphQLScalarSerializer,
-        description: str = None,
-        parse_value: GraphQLScalarValueParser = None,
-        parse_literal: GraphQLScalarLiteralParser = None,
-        ast_node: ScalarTypeDefinitionNode = None,
-        extension_ast_nodes: Sequence[ScalarTypeExtensionNode] = None,
-    ) -> None:
+        name, # type: str
+        serialize, # type: GraphQLScalarSerializer,
+        description=None, # type: Optional[str]
+        parse_value=None, # type: GraphQLScalarValueParser
+        parse_literal=None, # type: GraphQLScalarLiteralParser
+        ast_node=None, # type: Optional[ScalarTypeDefinitionNode]
+        extension_ast_nodes=None, # type: Optional[Sequence[ScalarTypeExtensionNode]]
+    ):
+        # type: (...) -> None
         super().__init__(
             name=name,
             description=description,
@@ -345,39 +344,42 @@ class GraphQLScalarType(GraphQLNamedType):
         self.parse_literal = parse_literal or value_from_ast_untyped
 
 
-def is_scalar_type(type_: Any) -> bool:
+def is_scalar_type(type_):
+    # type: (Any) -> bool
     return isinstance(type_, GraphQLScalarType)
 
 
-def assert_scalar_type(type_: Any) -> GraphQLScalarType:
+def assert_scalar_type(type_):
+    # type: (Any) -> GraphQLScalarType
     if not is_scalar_type(type_):
         raise TypeError(f"Expected {type_} to be a GraphQL Scalar type.")
     return type_
 
 
+# if False:
 GraphQLArgumentMap = Dict[str, "GraphQLArgument"]
 
 
 class GraphQLField:
     """Definition of a GraphQL field"""
 
-    type: "GraphQLOutputType"
-    args: Dict[str, "GraphQLArgument"]
-    resolve: Optional["GraphQLFieldResolver"]
-    subscribe: Optional["GraphQLFieldResolver"]
-    description: Optional[str]
-    deprecation_reason: Optional[str]
-    ast_node: Optional[FieldDefinitionNode]
+    # type: "GraphQLOutputType"
+    # args: Dict[str, "GraphQLArgument"]
+    # resolve: Optional["GraphQLFieldResolver"]
+    # subscribe: Optional["GraphQLFieldResolver"]
+    # description: Optional[str]
+    # deprecation_reason: Optional[str]
+    # ast_node: Optional[FieldDefinitionNode]
 
     def __init__(
         self,
-        type_: "GraphQLOutputType",
-        args: GraphQLArgumentMap = None,
-        resolve: "GraphQLFieldResolver" = None,
-        subscribe: "GraphQLFieldResolver" = None,
-        description: str = None,
-        deprecation_reason: str = None,
-        ast_node: FieldDefinitionNode = None,
+        type_, # type: GraphQLOutputType,
+        args=None,# type: GraphQLArgumentMap
+        resolve=None, #type: GraphQLFieldResolver,
+        subscribe = None, # type: GraphQLFieldResolver
+        description = None, # type: Optional[str]
+        deprecation_reason = None, # type: Optional[str]
+        ast_node = None, # type: FieldDefinitionNode
     ) -> None:
         if not is_output_type(type_):
             raise TypeError("Field type must be an output type.")
@@ -431,34 +433,51 @@ class GraphQLField:
         return bool(self.deprecation_reason)
 
 
-class ResponsePath(NamedTuple):
+ResponsePath = namedtuple('ResponsePath', 'prev,key')
 
-    prev: Any  # Optional['ResponsePath'] (python/mypy/issues/731))
-    key: Union[str, int]
+# class ResponsePath(object):
+
+#     def __init__(self, prev, key):
+#         # type: (Union[str, int], Optional[ResponsePath]) -> None
+#         self.prev = prev
+#         self.key = key
 
 
-class GraphQLResolveInfo(NamedTuple):
-    """Collection of information passed to the resolvers.
+# class GraphQLResolveInfo(NamedTuple):
+#     """Collection of information passed to the resolvers.
 
-    This is always passed as the first argument to the resolvers.
+#     This is always passed as the first argument to the resolvers.
 
-    Note that contrary to the JavaScript implementation, the context
-    (commonly used to represent an authenticated user, or request-specific
-    caches) is included here and not passed as an additional argument.
-    """
+#     Note that contrary to the JavaScript implementation, the context
+#     (commonly used to represent an authenticated user, or request-specific
+#     caches) is included here and not passed as an additional argument.
+#     """
 
-    field_name: str
-    field_nodes: List[FieldNode]
-    return_type: "GraphQLOutputType"
-    parent_type: "GraphQLObjectType"
-    path: ResponsePath
-    schema: "GraphQLSchema"
-    fragments: Dict[str, FragmentDefinitionNode]
-    root_value: Any
-    operation: OperationDefinitionNode
-    variable_values: Dict[str, Any]
-    context: Any
+#     field_name: str
+#     field_nodes: List[FieldNode]
+#     return_type: "GraphQLOutputType"
+#     parent_type: "GraphQLObjectType"
+#     path: ResponsePath
+#     schema: "GraphQLSchema"
+#     fragments: Dict[str, FragmentDefinitionNode]
+#     root_value: Any
+#     operation: OperationDefinitionNode
+#     variable_values: Dict[str, Any]
+#     context: Any
 
+GraphQLResolveInfo = namedtuple('GraphQLResolveInfo', (
+    'field_name',
+    'field_nodes',
+    'return_type',
+    'parent_type',
+    'path',
+    'schema',
+    'fragments',
+    'root_value',
+    'operation',
+    'variable_values',
+    'context'
+))
 
 # Note: Contrary to the Javascript implementation of GraphQLFieldResolver,
 # the context is passed as part of the GraphQLResolveInfo and any arguments
@@ -482,18 +501,19 @@ GraphQLIsTypeOfFn = Callable[[Any, GraphQLResolveInfo], MaybeAwaitable[bool]]
 class GraphQLArgument:
     """Definition of a GraphQL argument"""
 
-    type: "GraphQLInputType"
-    default_value: Any
-    description: Optional[str]
-    ast_node: Optional[InputValueDefinitionNode]
+    # type: "GraphQLInputType"
+    # default_value: Any
+    # description: Optional[str]
+    # ast_node: Optional[InputValueDefinitionNode]
 
     def __init__(
         self,
-        type_: "GraphQLInputType",
-        default_value: Any = INVALID,
-        description: str = None,
-        ast_node: InputValueDefinitionNode = None,
-    ) -> None:
+        type_, # type: GraphQLInputType
+        default_value = INVALID, # type: Any
+        description = None, # type: str
+        ast_node = None, # type: InputValueDefinitionNode
+    ):
+        # type: (...) -> None
         if not is_input_type(type_):
             raise TypeError(f"Argument type must be a GraphQL input type.")
         if description is not None and not isinstance(description, str):
@@ -1150,6 +1170,7 @@ def is_required_input_field(field: GraphQLInputField) -> bool:
 
 
 class GraphQLList(Generic[GT], GraphQLWrappingType[GT]):
+# class GraphQLList(GraphQLWrappingType):
     """List Type Wrapper
 
     A list is a wrapping type which points to another type.
@@ -1190,6 +1211,7 @@ GNT = TypeVar("GNT", bound="GraphQLNullableType")
 
 
 class GraphQLNonNull(GraphQLWrappingType[GNT], Generic[GNT]):
+# class GraphQLNonNull(GraphQLWrappingType):
     """Non-Null Type Wrapper
 
     A non-null is a wrapping type which points to another type.
