@@ -44,7 +44,7 @@ class EventEmitterAsyncIterator:
     """
 
     def __init__(self, event_emitter, event_name):
-        self.queue = Queue(loop=cast(AbstractEventLoop, event_emitter.loop))
+        self.queue = Queue(loop=event_emitter.loop)
         event_emitter.add_listener(event_name, self.queue.put)
         self.remove_listener = lambda: event_emitter.remove_listener(
             event_name, self.queue.put

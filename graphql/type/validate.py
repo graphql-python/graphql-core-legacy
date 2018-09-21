@@ -91,7 +91,7 @@ class SchemaValidationContext:
             nodes = [nodes]
         if nodes:
             nodes = [node for node in nodes if node]
-        nodes = cast(Optional[Sequence[Node]], nodes)
+        nodes = nodes
         self.add_error(GraphQLError(message, nodes))
 
     def add_error(self, error):
@@ -173,7 +173,7 @@ class SchemaValidationContext:
         try:
             if not name:
                 name = node.name
-            name = cast(str, name)
+            name = name
             ast_node = node.ast_node
         except AttributeError:
             pass
@@ -198,26 +198,26 @@ class SchemaValidationContext:
                 self.validate_name(type_)
 
             if is_object_type(type_):
-                type_ = cast(GraphQLObjectType, type_)
+                type_ = type_
                 # Ensure fields are valid
                 self.validate_fields(type_)
 
                 # Ensure objects implement the interfaces they claim to.
                 self.validate_object_interfaces(type_)
             elif is_interface_type(type_):
-                type_ = cast(GraphQLInterfaceType, type_)
+                type_ = type_
                 # Ensure fields are valid.
                 self.validate_fields(type_)
             elif is_union_type(type_):
-                type_ = cast(GraphQLUnionType, type_)
+                type_ = type_
                 # Ensure Unions include valid member types.
                 self.validate_union_members(type_)
             elif is_enum_type(type_):
-                type_ = cast(GraphQLEnumType, type_)
+                type_ = type_
                 # Ensure Enums have valid values.
                 self.validate_enum_values(type_)
             elif is_input_object_type(type_):
-                type_ = cast(GraphQLInputObjectType, type_)
+                type_ = type_
                 # Ensure Input Object fields are valid.
                 self.validate_input_fields(type_)
 
@@ -319,7 +319,7 @@ class SchemaValidationContext:
                         "Interface field {}.{}" " expected but {} does not provide it."
                     ).format(iface.name, field_name, obj.name),
                     [get_field_node(iface, field_name)]
-                    + cast(List[Optional[FieldDefinitionNode]], get_all_nodes(obj)),
+                    + get_all_nodes(obj),
                 )
                 continue
 
@@ -493,10 +493,7 @@ class SchemaValidationContext:
 
 
 def get_operation_type_node(schema, type_, operation):
-    operation_nodes = cast(
-        List[OperationTypeDefinitionNode],
-        get_all_sub_nodes(schema, attrgetter("operation_types")),
-    )
+    operation_nodes = get_all_sub_nodes(schema, attrgetter("operation_types"))
     for node in operation_nodes:
         if node.operation == operation:
             return node.type
@@ -539,9 +536,7 @@ def get_implements_interface_node(type_, iface):
 
 
 def get_all_implements_interface_nodes(type_, iface):
-    implements_nodes = cast(
-        List[NamedTypeNode], get_all_sub_nodes(type_, attrgetter("interfaces"))
-    )
+    implements_nodes = get_all_sub_nodes(type_, attrgetter("interfaces"))
     return [
         iface_node
         for iface_node in implements_nodes
@@ -555,9 +550,7 @@ def get_field_node(type_, field_name):
 
 
 def get_all_field_nodes(type_, field_name):
-    field_nodes = cast(
-        List[FieldDefinitionNode], get_all_sub_nodes(type_, attrgetter("fields"))
-    )
+    field_nodes = get_all_sub_nodes(type_, attrgetter("fields"))
     return [
         field_node for field_node in field_nodes if field_node.name.value == field_name
     ]
@@ -589,10 +582,7 @@ def get_field_arg_type_node(type_, field_name, arg_name):
 
 
 def get_all_directive_arg_nodes(directive, arg_name):
-    arg_nodes = cast(
-        List[InputValueDefinitionNode],
-        get_all_sub_nodes(directive, attrgetter("arguments")),
-    )
+    arg_nodes = get_all_sub_nodes(directive, attrgetter("arguments"))
     return [arg_node for arg_node in arg_nodes if arg_node.name.value == arg_name]
 
 
@@ -603,17 +593,12 @@ def get_directive_arg_type_node(directive, arg_name):
 
 
 def get_union_member_type_nodes(union, type_name):
-    union_nodes = cast(
-        List[NamedTypeNode], get_all_sub_nodes(union, attrgetter("types"))
-    )
+    union_nodes = get_all_sub_nodes(union, attrgetter("types"))
     return [
         union_node for union_node in union_nodes if union_node.name.value == type_name
     ]
 
 
 def get_enum_value_nodes(enum_type, value_name):
-    enum_nodes = cast(
-        List[EnumValueDefinitionNode],
-        get_all_sub_nodes(enum_type, attrgetter("values")),
-    )
+    enum_nodes = get_all_sub_nodes(enum_type, attrgetter("values"))
     return [enum_node for enum_node in enum_nodes if enum_node.name.value == value_name]

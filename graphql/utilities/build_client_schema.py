@@ -101,13 +101,13 @@ def build_client_schema(introspection, assume_valid=False):
         input_type = get_type(type_ref)
         if not is_input_type(input_type):
             raise TypeError("Introspection must provide input type for arguments.")
-        return cast(GraphQLInputType, input_type)
+        return input_type
 
     def get_output_type(type_ref):
         output_type = get_type(type_ref)
         if not is_output_type(output_type):
             raise TypeError("Introspection must provide output type for fields.")
-        return cast(GraphQLOutputType, output_type)
+        return output_type
 
     def get_object_type(type_ref):
         object_type = get_type(type_ref)
@@ -121,9 +121,9 @@ def build_client_schema(introspection, assume_valid=False):
     # GraphQLType instance.
     def build_type(type_):
         if type_ and "name" in type_ and "kind" in type_:
-            builder = type_builders.get(cast(str, type_["kind"]))
+            builder = type_builders.get(type_["kind"])
             if builder:
-                return cast(GraphQLNamedType, builder(type_))
+                return builder(type_)
         raise TypeError(
             "Invalid or incomplete introspection result."
             " Ensure that a full introspection query is used in order"
@@ -149,7 +149,7 @@ def build_client_schema(introspection, assume_valid=False):
             description=object_introspection.get("description"),
             interfaces=lambda: [
                 get_interface_type(interface)
-                for interface in cast(List[Dict], interfaces)
+                for interface in interfaces
             ],
             fields=lambda: build_field_def_map(object_introspection),
         )
@@ -172,7 +172,7 @@ def build_client_schema(introspection, assume_valid=False):
             name=union_introspection["name"],
             description=union_introspection.get("description"),
             types=lambda: [
-                get_object_type(type_) for type_ in cast(List[Dict], possible_types)
+                get_object_type(type_) for type_ in possible_types
             ],
         )
 
@@ -300,10 +300,7 @@ def build_client_schema(introspection, assume_valid=False):
             name=directive_introspection["name"],
             description=directive_introspection.get("description"),
             locations=list(
-                cast(
-                    Sequence[DirectiveLocation],
-                    directive_introspection.get("locations"),
-                )
+                directive_introspection.get("locations")
             ),
             args=build_arg_value_def_map(directive_introspection["args"]),
         )

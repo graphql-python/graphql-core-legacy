@@ -64,4 +64,4 @@ def middleware_chain(func, middlewares):
     last_func = None
     for middleware in middlewares:
         last_func = partial(middleware, last_func) if last_func else middleware
-    return cast(GraphQLFieldResolver, last_func)
+    return last_func

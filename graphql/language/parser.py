@@ -171,7 +171,7 @@ def parse_document(lexer):
 def parse_definition(lexer):
     """Definition: ExecutableDefinition or TypeSystemDefinition"""
     if peek(lexer, TokenKind.NAME):
-        func = _parse_definition_functions.get(cast(str, lexer.token.value))
+        func = _parse_definition_functions.get(lexer.token.value)
         if func:
             return func(lexer)
     elif peek(lexer, TokenKind.BRACE_L):
@@ -184,7 +184,7 @@ def parse_definition(lexer):
 def parse_executable_definition(lexer):
     """ExecutableDefinition: OperationDefinition or FragmentDefinition"""
     if peek(lexer, TokenKind.NAME):
-        func = _parse_executable_definition_functions.get(cast(str, lexer.token.value))
+        func = _parse_executable_definition_functions.get(lexer.token.value)
         if func:
             return func(lexer)
     elif peek(lexer, TokenKind.BRACE_L):
@@ -231,12 +231,9 @@ def parse_operation_type(lexer):
 def parse_variable_definitions(lexer):
     """VariableDefinitions: (VariableDefinition+)"""
     return (
-        cast(
-            List[VariableDefinitionNode],
-            many_nodes(
+        many_nodes(
                 lexer, TokenKind.PAREN_L, parse_variable_definition, TokenKind.PAREN_R
-            ),
-        )
+            )
         if peek(lexer, TokenKind.PAREN_L)
         else []
     )
@@ -314,10 +311,7 @@ def parse_arguments(lexer, is_const):
     """Arguments[Const]: (Argument[?Const]+)"""
     item = parse_const_argument if is_const else parse_argument
     return (
-        cast(
-            List[ArgumentNode],
-            many_nodes(lexer, TokenKind.PAREN_L, item, TokenKind.PAREN_R),
-        )
+        many_nodes(lexer, TokenKind.PAREN_L, item, TokenKind.PAREN_R)
         if peek(lexer, TokenKind.PAREN_L)
         else []
     )
@@ -684,12 +678,9 @@ def parse_implements_interfaces(lexer):
 def parse_fields_definition(lexer):
     """FieldsDefinition: {FieldDefinition+}"""
     return (
-        cast(
-            List[FieldDefinitionNode],
-            many_nodes(
+        many_nodes(
                 lexer, TokenKind.BRACE_L, parse_field_definition, TokenKind.BRACE_R
-            ),
-        )
+            )
         if peek(lexer, TokenKind.BRACE_L)
         else []
     )
@@ -717,12 +708,9 @@ def parse_field_definition(lexer):
 def parse_argument_defs(lexer):
     """ArgumentsDefinition: (InputValueDefinition+)"""
     return (
-        cast(
-            List[InputValueDefinitionNode],
-            many_nodes(
+        many_nodes(
                 lexer, TokenKind.PAREN_L, parse_input_value_def, TokenKind.PAREN_R
-            ),
-        )
+            )
         if peek(lexer, TokenKind.PAREN_L)
         else []
     )
@@ -815,12 +803,9 @@ def parse_enum_type_definition(lexer):
 def parse_enum_values_definition(lexer):
     """EnumValuesDefinition: {EnumValueDefinition+}"""
     return (
-        cast(
-            List[EnumValueDefinitionNode],
-            many_nodes(
+        many_nodes(
                 lexer, TokenKind.BRACE_L, parse_enum_value_definition, TokenKind.BRACE_R
-            ),
-        )
+            )
         if peek(lexer, TokenKind.BRACE_L)
         else []
     )
@@ -857,12 +842,9 @@ def parse_input_object_type_definition(lexer):
 def parse_input_fields_definition(lexer):
     """InputFieldsDefinition: {InputValueDefinition+}"""
     return (
-        cast(
-            List[InputValueDefinitionNode],
-            many_nodes(
+        many_nodes(
                 lexer, TokenKind.BRACE_L, parse_input_value_def, TokenKind.BRACE_R
-            ),
-        )
+            )
         if peek(lexer, TokenKind.BRACE_L)
         else []
     )

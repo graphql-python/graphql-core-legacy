@@ -78,7 +78,7 @@ def allowed_variable_usage(
         has_location_default_value = location_default_value is not INVALID
         if not has_non_null_variable_default_value and not has_location_default_value:
             return False
-        location_type = cast(GraphQLNonNull, location_type)
+        location_type = location_type
         nullable_location_type = location_type.of_type
         return is_type_sub_type_of(schema, var_type, nullable_location_type)
     return is_type_sub_type_of(schema, var_type, location_type)

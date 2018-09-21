@@ -183,22 +183,22 @@ def extend_schema(schema, document_ast, assume_valid=False, assume_valid_sdl=Fal
         name = type_.name
         if name not in extend_type_cache:
             if is_scalar_type(type_):
-                type_ = cast(GraphQLScalarType, type_)
+                type_ = type_
                 extend_type_cache[name] = extend_scalar_type(type_)
             elif is_object_type(type_):
-                type_ = cast(GraphQLObjectType, type_)
+                type_ = type_
                 extend_type_cache[name] = extend_object_type(type_)
             elif is_interface_type(type_):
-                type_ = cast(GraphQLInterfaceType, type_)
+                type_ = type_
                 extend_type_cache[name] = extend_interface_type(type_)
             elif is_enum_type(type_):
-                type_ = cast(GraphQLEnumType, type_)
+                type_ = type_
                 extend_type_cache[name] = extend_enum_type(type_)
             elif is_input_object_type(type_):
-                type_ = cast(GraphQLInputObjectType, type_)
+                type_ = type_
                 extend_type_cache[name] = extend_input_object_type(type_)
             elif is_union_type(type_):
-                type_ = cast(GraphQLUnionType, type_)
+                type_ = type_
                 extend_type_cache[name] = extend_union_type(type_)
 
         return extend_type_cache[name]
@@ -235,7 +235,7 @@ def extend_schema(schema, document_ast, assume_valid=False, assume_valid_sdl=Fal
         old_field_map = type_.fields
         new_field_map = {
             field_name: GraphQLInputField(
-                cast(GraphQLInputType, extend_type(field.type)),
+                extend_type(field.type),
                 description=field.description,
                 default_value=field.default_value,
                 ast_node=field.ast_node,
@@ -358,7 +358,7 @@ def extend_schema(schema, document_ast, assume_valid=False, assume_valid_sdl=Fal
     def extend_args(args):
         return {
             arg_name: GraphQLArgument(
-                cast(GraphQLInputType, extend_type(arg.type)),
+                extend_type(arg.type),
                 default_value=arg.default_value,
                 description=arg.description,
                 ast_node=arg.ast_node,
@@ -421,15 +421,12 @@ def extend_schema(schema, document_ast, assume_valid=False, assume_valid_sdl=Fal
                     # produce more actionable results.
                     possible_types.append(ast_builder.build_type(named_type))
 
-        return cast(List[GraphQLObjectType], possible_types)
+        return possible_types
 
     def extend_implemented_interfaces(type_):
         interfaces = list(
             map(
-                cast(
-                    Callable[[GraphQLNamedType], GraphQLInterfaceType],
-                    extend_named_type,
-                ),
+                extend_named_type,
                 type_.interfaces,
             )
         )
@@ -441,7 +438,7 @@ def extend_schema(schema, document_ast, assume_valid=False, assume_valid_sdl=Fal
                 # correctly typed values, that would throw immediately while
                 # type system validation with validate_schema() will produce
                 # more actionable results.
-                interfaces.append(cast(GraphQLInterfaceType, build_type(named_type)))
+                interfaces.append(build_type(named_type))
 
         return interfaces
 
@@ -449,7 +446,7 @@ def extend_schema(schema, document_ast, assume_valid=False, assume_valid_sdl=Fal
         old_field_map = type_.fields
         new_field_map = {
             field_name: GraphQLField(
-                cast(GraphQLObjectType, extend_type(field.type)),
+                extend_type(field.type),
                 description=field.description,
                 deprecation_reason=field.deprecation_reason,
                 args=extend_args(field.args),
@@ -547,7 +544,7 @@ def extend_schema(schema, document_ast, assume_valid=False, assume_valid_sdl=Fal
                 operation_types[operation] = ast_builder.build_type(operation_type.type)
 
     schema_extension_ast_nodes = (
-        schema.extension_ast_nodes or cast(Tuple[SchemaExtensionNode], ())
+        schema.extension_ast_nodes or ()
     ) + tuple(schema_extensions)
 
     # Iterate through all types, getting the type definition for each, ensuring

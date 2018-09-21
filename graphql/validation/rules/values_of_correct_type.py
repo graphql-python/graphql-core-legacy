@@ -168,7 +168,7 @@ class ValuesOfCorrectTypeRule(ValidationRule):
 
         # Scalars determine if a literal value is valid via parse_literal()
         # which may throw or return an invalid value to indicate failure.
-        type_ = cast(GraphQLScalarType, type_)
+        type_ = type_
         try:
             parse_result = type_.parse_literal(node)
             if is_invalid(parse_result):
@@ -190,7 +190,7 @@ class ValuesOfCorrectTypeRule(ValidationRule):
 
 def enum_type_suggestion(type_, node):
     if is_enum_type(type_):
-        type_ = cast(GraphQLEnumType, type_)
+        type_ = type_
         suggestions = suggestion_list(print_ast(node), list(type_.values))
         if suggestions:
             return "Did you mean the enum value {}?".format(or_list(suggestions))

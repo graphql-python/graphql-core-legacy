@@ -59,7 +59,7 @@ def value_from_ast(
     if is_non_null_type(type_):
         if isinstance(value_node, NullValueNode):
             return INVALID
-        type_ = cast(GraphQLNonNull, type_)
+        type_ = type_
         return value_from_ast(value_node, type_.of_type, variables)
 
     if isinstance(value_node, NullValueNode):
@@ -80,7 +80,7 @@ def value_from_ast(
         return variable_value
 
     if is_list_type(type_):
-        type_ = cast(GraphQLList, type_)
+        type_ = type_
         item_type = type_.of_type
         if isinstance(value_node, ListValueNode):
             coerced_values = []
@@ -107,7 +107,7 @@ def value_from_ast(
     if is_input_object_type(type_):
         if not isinstance(value_node, ObjectValueNode):
             return INVALID
-        type_ = cast(GraphQLInputObjectType, type_)
+        type_ = type_
         coerced_obj = {}
         fields = type_.fields
         field_nodes = {field.name.value: field for field in value_node.fields}
@@ -128,7 +128,7 @@ def value_from_ast(
     if is_enum_type(type_):
         if not isinstance(value_node, EnumValueNode):
             return INVALID
-        type_ = cast(GraphQLEnumType, type_)
+        type_ = type_
         enum_value = type_.values.get(value_node.value)
         if not enum_value:
             return INVALID
@@ -138,7 +138,7 @@ def value_from_ast(
         # Scalars fulfill parsing a literal value via parse_literal().
         # Invalid values represent a failure to parse correctly, in which case
         # INVALID is returned.
-        type_ = cast(GraphQLScalarType, type_)
+        type_ = type_
         try:
             if variables:
                 result = type_.parse_literal(value_node, variables)

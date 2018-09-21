@@ -100,7 +100,7 @@ class GraphQLSchema:
         self.directives = list(directives or specified_directives)
         self.ast_node = ast_node
         self.extension_ast_nodes = (
-            cast(Tuple[ast.SchemaExtensionNode], tuple(extension_ast_nodes))
+            tuple(extension_ast_nodes)
             if extension_ast_nodes
             else None
         )
@@ -126,7 +126,7 @@ class GraphQLSchema:
         setdefault = self._implementations.setdefault
         for type_ in self.type_map.values():
             if is_object_type(type_):
-                type_ = cast(GraphQLObjectType, type_)
+                type_ = type_
                 for interface in type_.interfaces:
                     if is_interface_type(interface):
                         setdefault(interface.name, []).append(type_)
@@ -139,7 +139,7 @@ class GraphQLSchema:
     def get_possible_types(self, abstract_type):
         """Get list of all possible concrete types for given abstract type."""
         if is_union_type(abstract_type):
-            abstract_type = cast(GraphQLUnionType, abstract_type)
+            abstract_type = abstract_type
             return abstract_type.types
         return self._implementations[abstract_type.name]
 
@@ -184,11 +184,11 @@ def type_map_reducer(map_, type_=None):
     map_[name] = type_
 
     if is_union_type(type_):
-        type_ = cast(GraphQLUnionType, type_)
+        type_ = type_
         map_ = type_map_reduce(type_.types, map_)
 
     if is_object_type(type_):
-        type_ = cast(GraphQLObjectType, type_)
+        type_ = type_
         map_ = type_map_reduce(type_.interfaces, map_)
 
     if is_object_type(type_) or is_interface_type(type_):

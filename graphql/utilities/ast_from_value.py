@@ -51,7 +51,7 @@ def ast_from_value(value, type_):
 
     """
     if is_non_null_type(type_):
-        type_ = cast(GraphQLNonNull, type_)
+        type_ = type_
         ast_value = ast_from_value(value, type_.of_type)
         if isinstance(ast_value, NullValueNode):
             return None
@@ -68,7 +68,7 @@ def ast_from_value(value, type_):
     # Convert Python list to GraphQL list. If the GraphQLType is a list, but
     # the value is not a list, convert the value using the list's item type.
     if is_list_type(type_):
-        type_ = cast(GraphQLList, type_)
+        type_ = type_
         item_type = type_.of_type
         if isinstance(value, Iterable) and not isinstance(value, str):
             value_nodes = [
@@ -82,7 +82,7 @@ def ast_from_value(value, type_):
     if is_input_object_type(type_):
         if value is None or not isinstance(value, Mapping):
             return None
-        type_ = cast(GraphQLInputObjectType, type_)
+        type_ = type_
         field_nodes = []
         append_node = field_nodes.append
         for field_name, field in type_.fields.items():

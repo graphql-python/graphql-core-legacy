@@ -87,11 +87,11 @@ class TypeInfo:
         self._get_field_def = get_field_def_fn or get_field_def
         if initial_type:
             if is_input_type(initial_type):
-                self._input_type_stack.append(cast(GraphQLInputType, initial_type))
+                self._input_type_stack.append(initial_type)
             if is_composite_type(initial_type):
-                self._parent_type_stack.append(cast(GraphQLCompositeType, initial_type))
+                self._parent_type_stack.append(initial_type)
             if is_output_type(initial_type):
-                self._type_stack.append(cast(GraphQLOutputType, initial_type))
+                self._type_stack.append(initial_type)
 
     def get_type(self):
         if self._type_stack:
@@ -175,7 +175,7 @@ class TypeInfo:
             else get_named_type(self.get_type())
         )
         self._type_stack.append(
-            cast(GraphQLOutputType, output_type)
+            output_type
             if is_output_type(output_type)
             else None
         )
@@ -185,7 +185,7 @@ class TypeInfo:
     def enter_variable_definition(self, node):
         input_type = type_from_ast(self._schema, node.type)
         self._input_type_stack.append(
-            cast(GraphQLInputType, input_type) if is_input_type(input_type) else None
+            input_type if is_input_type(input_type) else None
         )
 
     def enter_argument(self, node):
@@ -280,6 +280,6 @@ def get_field_def(
     if name == "__typename" and is_composite_type(parent_type):
         return TypeNameMetaFieldDef
     if is_object_type(parent_type) or is_interface_type(parent_type):
-        parent_type = cast(Union[GraphQLObjectType, GraphQLInterfaceType], parent_type)
+        parent_type = parent_type
         return parent_type.fields.get(name)
     return None

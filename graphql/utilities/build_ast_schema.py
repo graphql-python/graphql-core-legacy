@@ -98,7 +98,7 @@ def build_ast_schema(document_ast, assume_valid=False, assume_valid_sdl=False):
         if isinstance(def_, SchemaDefinitionNode):
             schema_def = def_
         elif isinstance(def_, TypeDefinitionNode):
-            def_ = cast(TypeDefinitionNode, def_)
+            def_ = def_
             type_name = def_.name.value
             if type_name in node_map:
                 raise TypeError(
@@ -145,15 +145,13 @@ def build_ast_schema(document_ast, assume_valid=False, assume_valid_sdl=False):
     mutation_type = operation_types.get(OperationType.MUTATION)
     subscription_type = operation_types.get(OperationType.SUBSCRIPTION)
     return GraphQLSchema(
-        query=cast(GraphQLObjectType, definition_builder.build_type(query_type))
+        query=definition_builder.build_type(query_type)
         if query_type
         else None,
-        mutation=cast(GraphQLObjectType, definition_builder.build_type(mutation_type))
+        mutation=definition_builder.build_type(mutation_type)
         if mutation_type
         else None,
-        subscription=cast(
-            GraphQLObjectType, definition_builder.build_type(subscription_type)
-        )
+        subscription=definition_builder.build_type(subscription_type)
         if subscription_type
         else None,
         types=[definition_builder.build_type(node) for node in type_defs],
@@ -221,9 +219,9 @@ class ASTDefinitionBuilder:
         if isinstance(type_node, NonNullTypeNode):
             return GraphQLNonNull(
                 # Note: GraphQLNonNull constructor validates this type
-                cast(GraphQLNullableType, self._build_wrapped_type(type_node.type))
+                self._build_wrapped_type(type_node.type)
             )
-        return self.build_type(cast(NamedTypeNode, type_node))
+        return self.build_type(type_node)
 
     def build_directive(self, directive_node):
         return GraphQLDirective(
@@ -245,7 +243,7 @@ class ASTDefinitionBuilder:
         # value, that would throw immediately while type system validation
         # with validate_schema() will produce more actionable results.
         type_ = self._build_wrapped_type(field.type)
-        type_ = cast(GraphQLOutputType, type_)
+        type_ = type_
         return GraphQLField(
             type_=type_,
             description=field.description.value if field.description else None,
@@ -259,7 +257,7 @@ class ASTDefinitionBuilder:
         # value, that would throw immediately while type system validation
         # with validate_schema() will produce more actionable results.
         type_ = self._build_wrapped_type(value.type)
-        type_ = cast(GraphQLInputType, type_)
+        type_ = type_
         return GraphQLInputField(
             type_=type_,
             description=value.description.value if value.description else None,
@@ -318,7 +316,7 @@ class ASTDefinitionBuilder:
         # value, that would throw immediately while type system validation
         # with validate_schema will produce more actionable results.
         type_ = self._build_wrapped_type(value_node.type)
-        type_ = cast(GraphQLInputType, type_)
+        type_ = type_
         return GraphQLArgument(
             type_=type_,
             description=value_node.description.value
@@ -389,11 +387,11 @@ class ASTDefinitionBuilder:
             description=type_def.description.value if type_def.description else None,
             fields=(
                 lambda: self._make_input_fields(
-                    cast(List[InputValueDefinitionNode], type_def.fields)
+                    type_def.fields
                 )
             )
             if type_def.fields
-            else cast(Dict[str, GraphQLInputField], {}),
+            else {},
             ast_node=type_def,
         )
 

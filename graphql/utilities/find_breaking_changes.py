@@ -202,8 +202,8 @@ def find_arg_changes(old_schema, new_schema):
             or new_type.__class__ is not old_type.__class__
         ):
             continue
-        old_type = cast(Union[GraphQLObjectType, GraphQLInterfaceType], old_type)
-        new_type = cast(Union[GraphQLObjectType, GraphQLInterfaceType], new_type)
+        old_type = old_type
+        new_type = new_type
 
         old_type_fields = old_type.fields
         new_type_fields = new_type.fields
@@ -315,8 +315,8 @@ def find_fields_that_changed_type_on_object_or_interface_types(old_schema, new_s
             or new_type.__class__ is not old_type.__class__
         ):
             continue
-        old_type = cast(Union[GraphQLObjectType, GraphQLInterfaceType], old_type)
-        new_type = cast(Union[GraphQLObjectType, GraphQLInterfaceType], new_type)
+        old_type = old_type
+        new_type = new_type
 
         old_type_fields_def = old_type.fields
         new_type_fields_def = new_type.fields
@@ -371,8 +371,8 @@ def find_fields_that_changed_type_on_input_object_types(old_schema, new_schema):
         new_type = new_type_map.get(type_name)
         if not (is_input_object_type(old_type) and is_input_object_type(new_type)):
             continue
-        old_type = cast(GraphQLInputObjectType, old_type)
-        new_type = cast(GraphQLInputObjectType, new_type)
+        old_type = old_type
+        new_type = new_type
 
         old_type_fields_def = old_type.fields
         new_type_fields_def = new_type.fields
@@ -542,8 +542,8 @@ def find_types_removed_from_unions(old_schema, new_schema):
         new_type = new_type_map.get(old_type_name)
         if not (is_union_type(old_type) and is_union_type(new_type)):
             continue
-        old_type = cast(GraphQLUnionType, old_type)
-        new_type = cast(GraphQLUnionType, new_type)
+        old_type = old_type
+        new_type = new_type
         type_names_in_new_union = {type_.name for type_ in new_type.types}
         for type_ in old_type.types:
             type_name = type_.name
@@ -573,8 +573,8 @@ def find_types_added_to_unions(old_schema, new_schema):
         old_type = old_type_map.get(new_type_name)
         if not (is_union_type(old_type) and is_union_type(new_type)):
             continue
-        old_type = cast(GraphQLUnionType, old_type)
-        new_type = cast(GraphQLUnionType, new_type)
+        old_type = old_type
+        new_type = new_type
         type_names_in_old_union = {type_.name for type_ in old_type.types}
         for type_ in new_type.types:
             type_name = type_.name
@@ -604,8 +604,8 @@ def find_values_removed_from_enums(old_schema, new_schema):
         new_type = new_type_map.get(type_name)
         if not (is_enum_type(old_type) and is_enum_type(new_type)):
             continue
-        old_type = cast(GraphQLEnumType, old_type)
-        new_type = cast(GraphQLEnumType, new_type)
+        old_type = old_type
+        new_type = new_type
         values_in_new_enum = new_type.values
         for value_name in old_type.values:
             if value_name not in values_in_new_enum:
@@ -634,8 +634,8 @@ def find_values_added_to_enums(old_schema, new_schema):
         new_type = new_type_map.get(type_name)
         if not (is_enum_type(old_type) and is_enum_type(new_type)):
             continue
-        old_type = cast(GraphQLEnumType, old_type)
-        new_type = cast(GraphQLEnumType, new_type)
+        old_type = old_type
+        new_type = new_type
         values_in_old_enum = old_type.values
         for value_name in new_type.values:
             if value_name not in values_in_old_enum:
@@ -657,8 +657,8 @@ def find_interfaces_removed_from_object_types(old_schema, new_schema):
         new_type = new_type_map.get(type_name)
         if not (is_object_type(old_type) and is_object_type(new_type)):
             continue
-        old_type = cast(GraphQLObjectType, old_type)
-        new_type = cast(GraphQLObjectType, new_type)
+        old_type = old_type
+        new_type = new_type
 
         old_interfaces = old_type.interfaces
         new_interfaces = new_type.interfaces
@@ -687,8 +687,8 @@ def find_interfaces_added_to_object_types(old_schema, new_schema):
         old_type = old_type_map.get(type_name)
         if not (is_object_type(old_type) and is_object_type(new_type)):
             continue
-        old_type = cast(GraphQLObjectType, old_type)
-        new_type = cast(GraphQLObjectType, new_type)
+        old_type = old_type
+        new_type = new_type
 
         old_interfaces = old_type.interfaces
         new_interfaces = new_type.interfaces

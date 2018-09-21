@@ -122,22 +122,22 @@ def is_schema_of_common_names(schema):
 
 def print_type(type_):
     if is_scalar_type(type_):
-        type_ = cast(GraphQLScalarType, type_)
+        type_ = type_
         return print_scalar(type_)
     if is_object_type(type_):
-        type_ = cast(GraphQLObjectType, type_)
+        type_ = type_
         return print_object(type_)
     if is_interface_type(type_):
-        type_ = cast(GraphQLInterfaceType, type_)
+        type_ = type_
         return print_interface(type_)
     if is_union_type(type_):
-        type_ = cast(GraphQLUnionType, type_)
+        type_ = type_
         return print_union(type_)
     if is_enum_type(type_):
-        type_ = cast(GraphQLEnumType, type_)
+        type_ = type_
         return print_enum(type_)
     if is_input_object_type(type_):
-        type_ = cast(GraphQLInputObjectType, type_)
+        type_ = type_
         return print_input_object(type_)
     raise TypeError("Unknown type: {!r}".format(type_))
 

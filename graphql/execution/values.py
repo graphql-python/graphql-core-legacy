@@ -58,7 +58,7 @@ def get_variable_values(schema, var_def_nodes, inputs):
                 )
             )
         else:
-            var_type = cast(GraphQLInputType, var_type)
+            var_type = var_type
             has_value = var_name in inputs
             value = inputs[var_name] if has_value else INVALID
             if not has_value and var_def_node.default_value:
@@ -119,8 +119,8 @@ def get_argument_values(type_def, node, variable_values=None):
     arg_node_map = {arg.name.value: arg for arg in arg_nodes}
     for name, arg_def in arg_defs.items():
         arg_type = arg_def.type
-        argument_node = cast(ArgumentNode, arg_node_map.get(name))
-        variable_values = cast(Dict[str, Any], variable_values)
+        argument_node = arg_node_map.get(name)
+        variable_values = variable_values
         if argument_node and isinstance(argument_node.value, VariableNode):
             variable_name = argument_node.value.name.value
             has_value = variable_values and variable_name in variable_values

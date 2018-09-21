@@ -240,7 +240,7 @@ class ExecutionContext:
                 return self.build_response(await data)
 
             return build_response_async()
-        data = cast(Optional[Dict[str, Any]], data)
+        data = data
         return ExecutionResult(data=data, errors=self.errors or None)
 
     def execute_operation(self, operation, root_value):
@@ -310,7 +310,7 @@ class ExecutionContext:
                     return awaited_results
 
                 results = await_and_set_result(
-                    cast(Awaitable, results), response_name, result
+                    results, response_name, result
                 )
             elif isawaitable(result):
                 # noinspection PyShadowingNames
@@ -438,7 +438,7 @@ class ExecutionContext:
             return True
         if is_abstract_type(conditional_type):
             return self.schema.is_possible_type(
-                cast(GraphQLAbstractType, conditional_type), type_
+                conditional_type, type_
             )
         return False
 
@@ -622,25 +622,25 @@ class ExecutionContext:
         # If field type is List, complete each item in the list with inner type
         if is_list_type(return_type):
             return self.complete_list_value(
-                cast(GraphQLList, return_type), field_nodes, info, path, result
+                return_type, field_nodes, info, path, result
             )
 
         # If field type is a leaf type, Scalar or Enum, serialize to a valid
         # value, returning null if serialization is not possible.
         if is_leaf_type(return_type):
-            return self.complete_leaf_value(cast(GraphQLLeafType, return_type), result)
+            return self.complete_leaf_value(return_type, result)
 
         # If field type is an abstract type, Interface or Union, determine the
         # runtime Object type and complete for that type.
         if is_abstract_type(return_type):
             return self.complete_abstract_value(
-                cast(GraphQLAbstractType, return_type), field_nodes, info, path, result
+                return_type, field_nodes, info, path, result
             )
 
         # If field type is Object, execute and complete all sub-selections.
         if is_object_type(return_type):
             return self.complete_object_value(
-                cast(GraphQLObjectType, return_type), field_nodes, info, path, result
+                return_type, field_nodes, info, path, result
             )
 
         # Not reachable. All possible output types have been considered.
@@ -736,7 +736,7 @@ class ExecutionContext:
                 return value
 
             return await_complete_object_value()
-        runtime_type = cast(Optional[Union[GraphQLObjectType, str]], runtime_type)
+        runtime_type = runtime_type
 
         return self.complete_object_value(
             self.ensure_valid_runtime_type(
@@ -777,7 +777,7 @@ class ExecutionContext:
                 ),
                 field_nodes,
             )
-        runtime_type = cast(GraphQLObjectType, runtime_type)
+        runtime_type = runtime_type
 
         if not self.schema.is_possible_type(return_type, runtime_type):
             raise GraphQLError(

@@ -45,7 +45,7 @@ def coerce_value(value, type_, blame_node=None, path=None):
                     )
                 ]
             )
-        type_ = cast(GraphQLNonNull, type_)
+        type_ = type_
         return coerce_value(value, type_.of_type, blame_node, path)
 
     if value is None or value is INVALID:
@@ -56,7 +56,7 @@ def coerce_value(value, type_, blame_node=None, path=None):
         # Scalars determine if a value is valid via parse_value(), which can
         # throw to indicate failure. If it throws, maintain a reference to
         # the original error.
-        type_ = cast(GraphQLScalarType, type_)
+        type_ = type_
         try:
             parse_result = type_.parse_value(value)
             if is_invalid(parse_result):
@@ -82,7 +82,7 @@ def coerce_value(value, type_, blame_node=None, path=None):
             )
 
     if is_enum_type(type_):
-        type_ = cast(GraphQLEnumType, type_)
+        type_ = type_
         values = type_.values
         if isinstance(value, str):
             enum_value = values.get(value)
@@ -104,7 +104,7 @@ def coerce_value(value, type_, blame_node=None, path=None):
         )
 
     if is_list_type(type_):
-        type_ = cast(GraphQLList, type_)
+        type_ = type_
         item_type = type_.of_type
         if isinstance(value, Iterable) and not isinstance(value, str):
             errors = None
@@ -124,7 +124,7 @@ def coerce_value(value, type_, blame_node=None, path=None):
         return coerced_item if coerced_item.errors else of_value([coerced_item.value])
 
     if is_input_object_type(type_):
-        type_ = cast(GraphQLInputObjectType, type_)
+        type_ = type_
         if not isinstance(value, dict):
             return of_errors(
                 [

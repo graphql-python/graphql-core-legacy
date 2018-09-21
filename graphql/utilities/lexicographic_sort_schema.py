@@ -109,12 +109,10 @@ def lexicographic_sort_schema(schema):
         if is_scalar_type(type_):
             return type_
         elif is_object_type(type_):
-            type1 = cast(GraphQLObjectType, type_)
+            type1 = type_
             return GraphQLObjectType(
                 type_.name,
-                interfaces=lambda: cast(
-                    List[GraphQLInterfaceType], sort_types(type1.interfaces)
-                ),
+                interfaces=lambda: sort_types(type1.interfaces),
                 fields=lambda: sort_fields(type1.fields),
                 is_type_of=type1.is_type_of,
                 description=type_.description,
@@ -122,7 +120,7 @@ def lexicographic_sort_schema(schema):
                 extension_ast_nodes=type1.extension_ast_nodes,
             )
         elif is_interface_type(type_):
-            type2 = cast(GraphQLInterfaceType, type_)
+            type2 = type_
             return GraphQLInterfaceType(
                 type_.name,
                 fields=lambda: sort_fields(type2.fields),
@@ -132,16 +130,16 @@ def lexicographic_sort_schema(schema):
                 extension_ast_nodes=type2.extension_ast_nodes,
             )
         elif is_union_type(type_):
-            type3 = cast(GraphQLUnionType, type_)
+            type3 = type_
             return GraphQLUnionType(
                 type_.name,
-                types=lambda: cast(List[GraphQLObjectType], sort_types(type3.types)),
+                types=lambda: sort_types(type3.types),
                 resolve_type=type3.resolve_type,
                 description=type_.description,
                 ast_node=type3.ast_node,
             )
         elif is_enum_type(type_):
-            type4 = cast(GraphQLEnumType, type_)
+            type4 = type_
             return GraphQLEnumType(
                 type_.name,
                 values={
@@ -157,7 +155,7 @@ def lexicographic_sort_schema(schema):
                 ast_node=type4.ast_node,
             )
         elif is_input_object_type(type_):
-            type5 = cast(GraphQLInputObjectType, type_)
+            type5 = type_
             return GraphQLInputObjectType(
                 type_.name,
                 sort_input_fields(type5.fields),

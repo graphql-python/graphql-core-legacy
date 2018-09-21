@@ -65,9 +65,9 @@ class GraphQLDirective:
             )
         else:
             args = {
-                name: cast(GraphQLArgument, value)
+                name: value
                 if isinstance(value, GraphQLArgument)
-                else GraphQLArgument(cast(GraphQLInputType, value))
+                else GraphQLArgument(value)
                 for name, value in args.items()
             }
         if description is not None and not isinstance(description, str):

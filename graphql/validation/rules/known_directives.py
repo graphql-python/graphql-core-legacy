@@ -39,7 +39,7 @@ class KnownDirectivesRule(ASTValidationRule):
 
         schema = context.schema
         defined_directives = (
-            schema.directives if schema else cast(List, specified_directives)
+            schema.directives if schema else specified_directives
         )
         for directive in defined_directives:
             locations_map[directive.name] = directive.locations
@@ -107,7 +107,7 @@ def get_directive_location_for_ast_path(ancestors):
     if isinstance(applied_to, Node):
         kind = applied_to.kind
         if kind == "operation_definition":
-            applied_to = cast(OperationDefinitionNode, applied_to)
+            applied_to = applied_to
             return _operation_location.get(applied_to.operation.value)
         elif kind == "input_value_definition":
             parent_node = ancestors[-3]

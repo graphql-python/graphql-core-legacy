@@ -86,8 +86,8 @@ def is_type_sub_type_of(
         is_abstract_type(super_type)
         and is_object_type(maybe_subtype)
         and schema.is_possible_type(
-            cast(GraphQLAbstractType, super_type),
-            cast(GraphQLObjectType, maybe_subtype),
+            super_type,
+            maybe_subtype,
         )
     ):
         return True

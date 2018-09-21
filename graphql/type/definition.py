@@ -244,9 +244,9 @@ def get_named_type(type_):  # noqa: F811
     if type_:
         unwrapped_type = type_
         while is_wrapping_type(unwrapped_type):
-            unwrapped_type = cast(GraphQLWrappingType, unwrapped_type)
+            unwrapped_type = unwrapped_type
             unwrapped_type = unwrapped_type.of_type
-        return cast(GraphQLNamedType, unwrapped_type)
+        return unwrapped_type
     return None
 
 
@@ -405,9 +405,9 @@ class GraphQLField:
             raise TypeError("Field args must be GraphQLArgument or input type objects.")
         else:
             args = {
-                name: cast(GraphQLArgument, value)
+                name: value
                 if isinstance(value, GraphQLArgument)
-                else GraphQLArgument(cast(GraphQLInputType, value))
+                else GraphQLArgument(value)
                 for name, value in args.items()
             }
         if resolve is not None and not callable(resolve):
@@ -940,9 +940,9 @@ class GraphQLEnumType(GraphQLNamedType):
                             " with value names as keys."
                         ).format(name)
                     )
-            values = cast(Dict, values)
+            values = values
         else:
-            values = cast(Dict, values)
+            values = values
             values = {key: value.value for key, value in values.items()}
         values = {
             key: value
@@ -1307,9 +1307,9 @@ def get_nullable_type(type_):
 def get_nullable_type(type_):  # noqa: F811
     """Unwrap possible non-null type"""
     if is_non_null_type(type_):
-        type_ = cast(GraphQLNonNull, type_)
+        type_ = type_
         type_ = type_.of_type
-    return cast(Optional[GraphQLNullableType], type_)
+    return type_
 
 
 # These types may be used as input types for arguments and directives.

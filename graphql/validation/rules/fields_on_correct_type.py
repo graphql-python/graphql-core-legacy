@@ -75,7 +75,7 @@ def get_suggested_type_names(schema, type_, field_name):
     Interfaces.
     """
     if is_abstract_type(type_):
-        type_ = cast(GraphQLAbstractType, type_)
+        type_ = type_
         suggested_object_types = []
         interface_usage_count = defaultdict(int)
         for possible_type in schema.get_possible_types(type_):
