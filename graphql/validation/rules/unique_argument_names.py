@@ -19,7 +19,7 @@ class UniqueArgumentNamesRule(ASTValidationRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(UniqueArgumentNamesRule, self).__init__(context)
         self.known_arg_names = {}
 
     def enter_field(self, *_args):

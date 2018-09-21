@@ -145,7 +145,7 @@ class Node:
         )
 
     def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
+        super(Node, cls).__init_subclass__(**kwargs)
         name = cls.__name__
         if name.endswith("Node"):
             name = name[:-4]

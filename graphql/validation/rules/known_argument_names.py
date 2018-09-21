@@ -39,7 +39,7 @@ class KnownArgumentNamesOnDirectivesRule(ASTValidationRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(KnownArgumentNamesOnDirectivesRule, self).__init__(context)
         directive_args = {}
 
         schema = context.schema
@@ -83,7 +83,7 @@ class KnownArgumentNamesRule(KnownArgumentNamesOnDirectivesRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(KnownArgumentNamesRule, self).__init__(context)
 
     def enter_argument(self, arg_node, *args):
         context = self.context

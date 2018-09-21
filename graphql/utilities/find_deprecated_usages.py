@@ -22,7 +22,7 @@ class FindDeprecatedUsages(Visitor):
     """A validation rule which reports deprecated usages."""
 
     def __init__(self, type_info):
-        super().__init__()
+        super(FindDeprecatedUsages, self).__init__()
         self.type_info = type_info
         self.errors = []
 

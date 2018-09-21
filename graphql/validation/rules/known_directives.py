@@ -34,7 +34,7 @@ class KnownDirectivesRule(ASTValidationRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(KnownDirectivesRule, self).__init__(context)
         locations_map = {}
 
         schema = context.schema

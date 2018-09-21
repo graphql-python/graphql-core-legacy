@@ -23,7 +23,7 @@ class NoUndefinedVariablesRule(ValidationRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(NoUndefinedVariablesRule, self).__init__(context)
         self.defined_variable_names = set()
 
     def enter_operation_definition(self, *_args):

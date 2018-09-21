@@ -74,7 +74,7 @@ class SDLValidationContext(ASTValidationContext):
     """
 
     def __init__(self, ast, schema=None):
-        super().__init__(ast)
+        super(SDLValidationContext, self).__init__(ast)
         self.schema = schema
 
 
@@ -87,7 +87,7 @@ class ValidationContext(ASTValidationContext):
     """
 
     def __init__(self, schema, ast, type_info):
-        super().__init__(ast)
+        super(ValidationContext, self).__init__(ast)
         self.schema = schema
         self._type_info = type_info
         self._fragments = None

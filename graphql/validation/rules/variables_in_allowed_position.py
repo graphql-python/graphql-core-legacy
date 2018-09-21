@@ -24,7 +24,7 @@ class VariablesInAllowedPositionRule(ValidationRule):
     """Variables passed to field arguments conform to type"""
 
     def __init__(self, context):
-        super().__init__(context)
+        super(VariablesInAllowedPositionRule, self).__init__(context)
         self.var_def_map = {}
 
     def enter_operation_definition(self, *_args):

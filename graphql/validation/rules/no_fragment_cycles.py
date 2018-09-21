@@ -16,7 +16,7 @@ class NoFragmentCyclesRule(ValidationRule):
     """No fragment cycles"""
 
     def __init__(self, context):
-        super().__init__(context)
+        super(NoFragmentCyclesRule, self).__init__(context)
         # Tracks already visited fragments to maintain O(N) and to ensure that
         # cycles are not redundantly reported.
         self.visited_frags = set()

@@ -19,7 +19,7 @@ class UniqueFragmentNamesRule(ASTValidationRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(UniqueFragmentNamesRule, self).__init__(context)
         self.known_fragment_names = {}
 
     def enter_operation_definition(self, *_args):

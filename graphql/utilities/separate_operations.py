@@ -55,7 +55,7 @@ def separate_operations(document_ast):
 
 class SeparateOperations(Visitor):
     def __init__(self):
-        super().__init__()
+        super(SeparateOperations, self).__init__()
         self.operations = []
         self.fragments = {}
         self.positions = {}

@@ -23,7 +23,7 @@ class NoUnusedVariablesRule(ValidationRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(NoUnusedVariablesRule, self).__init__(context)
         self.variable_defs = []
 
     def enter_operation_definition(self, *_args):

@@ -19,7 +19,7 @@ class UniqueInputFieldNamesRule(ASTValidationRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(UniqueInputFieldNamesRule, self).__init__(context)
         self.known_names_stack = []
         self.known_names = {}
 

@@ -19,7 +19,7 @@ class UniqueOperationNamesRule(ASTValidationRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(UniqueOperationNamesRule, self).__init__(context)
         self.known_operation_names = {}
 
     def enter_operation_definition(self, node, *_args):

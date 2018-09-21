@@ -23,12 +23,12 @@ class ASTValidationRule(Visitor):
 
 class SDLValidationRule(ASTValidationRule):
     def __init__(self, context):
-        super().__init__(context)
+        super(SDLValidationRule, self).__init__(context)
 
 
 class ValidationRule(ASTValidationRule):
     def __init__(self, context):
-        super().__init__(context)
+        super(ValidationRule, self).__init__(context)
 
 
 RuleType = Type[ASTValidationRule]

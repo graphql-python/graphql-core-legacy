@@ -18,7 +18,7 @@ class UniqueVariableNamesRule(ASTValidationRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(UniqueVariableNamesRule, self).__init__(context)
         self.known_variable_names = {}
 
     def enter_operation_definition(self, *_args):

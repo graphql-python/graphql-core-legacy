@@ -65,7 +65,7 @@ class OverlappingFieldsCanBeMergedRule(ValidationRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(OverlappingFieldsCanBeMergedRule, self).__init__(context)
         # A memoization for when two fragments are compared "between" each
         # other for conflicts.
         # Two fragments may be compared many times, so memoizing this can

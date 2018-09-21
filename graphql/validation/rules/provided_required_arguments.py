@@ -41,7 +41,7 @@ class ProvidedRequiredArgumentsOnDirectivesRule(ASTValidationRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(ProvidedRequiredArgumentsOnDirectivesRule, self).__init__(context)
         required_args_map = {}
 
         schema = context.schema
@@ -100,7 +100,7 @@ class ProvidedRequiredArgumentsRule(ProvidedRequiredArgumentsOnDirectivesRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(ProvidedRequiredArgumentsRule, self).__init__(context)
 
     def leave_field(self, field_node, *_args):
         # Validate on leave to allow for deeper errors to appear first.

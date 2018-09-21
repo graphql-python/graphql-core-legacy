@@ -20,7 +20,7 @@ class NoUnusedFragmentsRule(ValidationRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(NoUnusedFragmentsRule, self).__init__(context)
         self.operation_defs = []
         self.fragment_defs = []
 

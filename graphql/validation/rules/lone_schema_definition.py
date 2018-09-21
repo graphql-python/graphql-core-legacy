@@ -24,7 +24,7 @@ class LoneSchemaDefinitionRule(SDLValidationRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(LoneSchemaDefinitionRule, self).__init__(context)
         old_schema = context.schema
         self.already_defined = old_schema and (
             old_schema.ast_node

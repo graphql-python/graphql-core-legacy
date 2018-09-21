@@ -315,7 +315,7 @@ class GraphQLScalarType(GraphQLNamedType):
         extension_ast_nodes=None,  # type: Optional[Sequence[ScalarTypeExtensionNode]]
     ):
         # type: (...) -> None
-        super().__init__(
+        super(GraphQLScalarType, self).__init__(
             name=name,
             description=description,
             ast_node=ast_node,
@@ -597,7 +597,7 @@ class GraphQLObjectType(GraphQLNamedType):
         ast_node=None,
         extension_ast_nodes=None,
     ):
-        super().__init__(
+        super(GraphQLObjectType, self).__init__(
             name=name,
             description=description,
             ast_node=ast_node,
@@ -718,7 +718,7 @@ class GraphQLInterfaceType(GraphQLNamedType):
         ast_node=None,
         extension_ast_nodes=None,
     ):
-        super().__init__(
+        super(GraphQLInterfaceType, self).__init__(
             name=name,
             description=description,
             ast_node=ast_node,
@@ -821,7 +821,7 @@ class GraphQLUnionType(GraphQLNamedType):
         ast_node=None,
         extension_ast_nodes=None,
     ):
-        super().__init__(
+        super(GraphQLUnionType, self).__init__(
             name=name,
             description=description,
             ast_node=ast_node,
@@ -918,7 +918,7 @@ class GraphQLEnumType(GraphQLNamedType):
     def __init__(
         self, name, values, description=None, ast_node=None, extension_ast_nodes=None
     ):
-        super().__init__(
+        super(GraphQLEnumType, self).__init__(
             name=name,
             description=description,
             ast_node=ast_node,
@@ -1078,7 +1078,7 @@ class GraphQLInputObjectType(GraphQLNamedType):
     def __init__(
         self, name, fields, description=None, ast_node=None, extension_ast_nodes=None
     ):
-        super().__init__(
+        super(GraphQLInputObjectType, self).__init__(
             name=name,
             description=description,
             ast_node=ast_node,
@@ -1194,7 +1194,7 @@ class GraphQLList(Generic[GT], GraphQLWrappingType[GT]):
     """
 
     def __init__(self, type_):
-        super().__init__(type_=type_)
+        super(GraphQLList, self).__init__(type_=type_)
 
     def __str__(self):
         return "[{}]".format(self.of_type)
@@ -1235,7 +1235,7 @@ class GraphQLNonNull(GraphQLWrappingType[GNT], Generic[GNT]):
     """
 
     def __init__(self, type_):
-        super().__init__(type_=type_)
+        super(GraphQLNonNull, self).__init__(type_=type_)
         if isinstance(type_, GraphQLNonNull):
             raise TypeError(
                 "Can only create NonNull of a Nullable GraphQLType but got:"

@@ -18,7 +18,7 @@ class LoneAnonymousOperationRule(ASTValidationRule):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(LoneAnonymousOperationRule, self).__init__(context)
         self.operation_count = 0
 
     def enter_document(self, node, *_args):
