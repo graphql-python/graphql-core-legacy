@@ -392,8 +392,10 @@ def parse_fragment_definition(lexer):
 
 
 _parse_executable_definition_functions = {
-    **dict.fromkeys(("query", "mutation", "subscription"), parse_operation_definition),
-    **dict.fromkeys(("fragment",), parse_fragment_definition),
+    "query": parse_operation_definition,
+    "mutation": parse_operation_definition,
+    "subscription": parse_operation_definition,
+    "fragment": parse_fragment_definition,
 }
 
 
@@ -574,22 +576,17 @@ def parse_type_system_extension(lexer):
 
 
 _parse_definition_functions = {
-    **dict.fromkeys(
-        ("query", "mutation", "subscription", "fragment"), parse_executable_definition
-    ),
-    **dict.fromkeys(
-        (
-            "schema",
-            "scalar",
-            "type",
-            "interface",
-            "union",
-            "enum",
-            "input",
-            "directive",
-        ),
-        parse_type_system_definition,
-    ),
+            "query":parse_executable_definition,
+            "mutation": parse_executable_definition,
+            "subscription":parse_executable_definition, "fragment":parse_executable_definition,
+            "schema": parse_type_system_definition,
+            "scalar": parse_type_system_definition,
+            "type": parse_type_system_definition,
+            "interface": parse_type_system_definition,
+            "union": parse_type_system_definition,
+            "enum": parse_type_system_definition,
+            "input": parse_type_system_definition,
+            "directive": parse_type_system_definition,
     "extend": parse_type_system_extension,
 }
 

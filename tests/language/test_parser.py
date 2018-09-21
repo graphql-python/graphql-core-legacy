@@ -124,16 +124,16 @@ def describe_parser():
         for keyword in non_keywords:
             # You can't define or reference a fragment named `on`.
             fragment_name = 'a' if keyword == 'on' else keyword
-            document = f"""
-                query {keyword} {{
-                  ... {fragment_name}
-                  ... on {keyword} {{ field }}
+            document = """
+                query {} {{
+                  ... {}
+                  ... on {} {{ field }}
                 }}
-                fragment {fragment_name} on Type {{
-                  {keyword}({keyword}: ${keyword})
-                    @{keyword}({keyword}: {keyword})
+                fragment {} on Type {{
+                  {}({}: ${})
+                    @{}({}: {})
                 }}
-                """
+                """.format(keyword, fragment_name, keyword, fragment_name, keyword, keyword, keyword, keyword, keyword, keyword)
             parse(document)
 
     def parses_anonymous_mutation_operations():
@@ -178,7 +178,7 @@ def describe_parser():
         definitions = doc.definitions
         assert isinstance(definitions, list)
         assert len(definitions) == 1
-        definition = cast(OperationDefinitionNode, definitions[0])
+        definition = definitions[0]
         assert isinstance(definition, DefinitionNode)
         assert definition.loc == (0, 40)
         assert definition.operation == OperationType.QUERY

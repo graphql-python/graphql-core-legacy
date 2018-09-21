@@ -3,7 +3,7 @@ from .location import SourceLocation
 __all__ = ["Source"]
 
 
-class Source:
+class Source(object):
     """A representation of source input to GraphQL."""
 
     __slots__ = "body", "name", "location_offset"

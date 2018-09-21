@@ -58,7 +58,7 @@ def build_client_schema(introspection, assume_valid=False):
     # A cache to use to store the actual GraphQLType definition objects by
     # name. Initialize to the GraphQL built in scalars. All functions below are
     # inline so that this type def cache is within the scope of the closure.
-    type_def_cache = {**specified_scalar_types, **introspection_types}
+    type_def_cache = dict(specified_scalar_types, **introspection_types.items())
 
     # Given a type reference in introspection, return the GraphQLType instance.
     # preferring cached instances before building new instances.
@@ -148,8 +148,7 @@ def build_client_schema(introspection, assume_valid=False):
             name=object_introspection["name"],
             description=object_introspection.get("description"),
             interfaces=lambda: [
-                get_interface_type(interface)
-                for interface in interfaces
+                get_interface_type(interface) for interface in interfaces
             ],
             fields=lambda: build_field_def_map(object_introspection),
         )
@@ -171,9 +170,7 @@ def build_client_schema(introspection, assume_valid=False):
         return GraphQLUnionType(
             name=union_introspection["name"],
             description=union_introspection.get("description"),
-            types=lambda: [
-                get_object_type(type_) for type_ in possible_types
-            ],
+            types=lambda: [get_object_type(type_) for type_ in possible_types],
         )
 
     def build_enum_def(enum_introspection):
@@ -299,9 +296,7 @@ def build_client_schema(introspection, assume_valid=False):
         return GraphQLDirective(
             name=directive_introspection["name"],
             description=directive_introspection.get("description"),
-            locations=list(
-                directive_introspection.get("locations")
-            ),
+            locations=list(directive_introspection.get("locations")),
             args=build_arg_value_def_map(directive_introspection["args"]),
         )
 

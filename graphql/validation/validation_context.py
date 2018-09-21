@@ -49,7 +49,7 @@ class VariableUsageVisitor(Visitor):
         self._append_usage(usage)
 
 
-class ASTValidationContext:
+class ASTValidationContext(object):
     """Utility class providing a context for validation of an AST.
 
     An instance of this class is passed as the context attribute to all

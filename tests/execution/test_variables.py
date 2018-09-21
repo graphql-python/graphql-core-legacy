@@ -1,5 +1,3 @@
-from math import nan
-
 from graphql.error import INVALID
 from graphql.execution import execute
 from graphql.language import parse
@@ -33,13 +31,13 @@ TestNestedInputObject = GraphQLInputObjectType('TestNestedInputObject', {
 TestEnum = GraphQLEnumType('TestEnum', {
     'NULL': None,
     'UNDEFINED': INVALID,
-    'NAN': nan,
+    'NAN': float('nan'),
     'FALSE': False,
     'CUSTOM': 'custom value',
     'DEFAULT_VALUE': GraphQLEnumValue()})
 
 
-def field_with_input_arg(input_arg: GraphQLArgument):
+def field_with_input_arg(input_arg):
     return GraphQLField(
         GraphQLString, args={'input': input_arg},
         resolve=lambda _obj, _info, **args:

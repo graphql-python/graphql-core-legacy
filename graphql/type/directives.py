@@ -22,7 +22,7 @@ def is_directive(directive):
     return isinstance(directive, GraphQLDirective)
 
 
-class GraphQLDirective:
+class GraphQLDirective(object):
     """GraphQL Directive
 
     Directives are used by the GraphQL runtime as a way of modifying execution

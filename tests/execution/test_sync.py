@@ -1,5 +1,3 @@
-from inspect import isawaitable
-
 from pytest import fixture, mark, raises
 from promise import Promise, is_thenable
 

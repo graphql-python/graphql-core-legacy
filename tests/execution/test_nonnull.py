@@ -412,7 +412,7 @@ def describe_execute_handles_non_nullable_types():
         @fixture
         def resolve(_obj, _info, cannotBeNull):
             if isinstance(cannotBeNull, str):
-                return f'Passed: {cannotBeNull}'
+                return 'Passed: {}'.format(cannotBeNull)
 
         schema_with_non_null_arg = GraphQLSchema(
             GraphQLObjectType('Query', {

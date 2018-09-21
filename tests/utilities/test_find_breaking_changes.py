@@ -340,7 +340,7 @@ def describe_find_breaking_changes():
 
         assert find_values_removed_from_enums(old_schema, new_schema) == [
             (BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
-             'VALUE1 was removed from enum type EnumType1.')]
+             'VALUE1 was removed from graphql.pyutils.enum type EnumType1.')]
 
     def should_detect_if_a_field_argument_was_removed():
         old_schema = build_schema("""
@@ -695,7 +695,7 @@ def describe_find_breaking_changes():
              'TypeInUnion2 was removed from union type'
              ' UnionTypeThatLosesAType.'),
             (BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
-             'VALUE0 was removed from enum type EnumTypeThatLosesAValue.'),
+             'VALUE0 was removed from graphql.pyutils.enum type EnumTypeThatLosesAValue.'),
             (BreakingChangeType.ARG_CHANGED_KIND,
              'ArgThatChanges.field1 arg id has changed'
              ' type from Int to String'),
@@ -737,7 +737,7 @@ def describe_find_breaking_changes():
 
         assert find_removed_directives(old_schema, new_schema) == [
             (BreakingChangeType.DIRECTIVE_REMOVED,
-             f'{GraphQLDeprecatedDirective.name} was removed')]
+             '{} was removed'.format(GraphQLDeprecatedDirective.name))]
 
     def should_detect_if_a_directive_argument_was_removed():
         old_schema = build_schema("""

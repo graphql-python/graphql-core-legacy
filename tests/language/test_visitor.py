@@ -21,15 +21,15 @@ def get_node_by_path(ast, path):
             try:
                 result = result[key]
             except IndexError:
-                fail(f'invalid index {key} in node list {result}')
+                fail('invalid index {} in node list {}'.format(key, result))
         elif isinstance(key, str):
             assert isinstance(result, Node)
             try:
                 result = getattr(result, key)
             except AttributeError:
-                fail(f'invalid key {key} in node {result}')
+                fail('invalid key {} in node {}'.format(key, result))
         else:
-            fail(f'invalid key {key!r} in path {path}')
+            fail('invalid key {!r} in path {}'.format(key, path))
     return result
 
 
@@ -72,11 +72,11 @@ def describe_visitor():
 
             def enter(self, *args):
                 check_visitor_fn_args(ast, *args)
-                visited.append(['enter', *args[3]])
+                visited.append(['enter'] + list(args[3]))
 
             def leave(self, *args):
                 check_visitor_fn_args(ast, *args)
-                visited.append(['leave', *args[3]])
+                visited.append(['leave'] + list(args[3]))
 
         visit(ast, TestVisitor())
         assert visited == [
@@ -804,7 +804,7 @@ def describe_visit_in_parallel():
                 node = args[0]
                 kind, value = node.kind, getattr(node, 'value', None)
                 name = self.name
-                visited.append([f'no-{name}', 'enter', kind, value])
+                visited.append(['no-{}'.format(name), 'enter', kind, value])
                 if kind == 'field' and node.name.value == name:
                     return SKIP
 
@@ -813,7 +813,7 @@ def describe_visit_in_parallel():
                 node = args[0]
                 kind, value = node.kind, getattr(node, 'value', None)
                 name = self.name
-                visited.append([f'no-{name}', 'leave', kind, value])
+                visited.append(['no-{}'.format(name), 'leave', kind, value])
 
         visit(ast, ParallelVisitor([TestVisitor('a'), TestVisitor('b')]))
         assert visited == [
@@ -904,7 +904,7 @@ def describe_visit_in_parallel():
                 node = args[0]
                 kind, value = node.kind, getattr(node, 'value', None)
                 name = self.name
-                visited.append([f'break-{name}', 'enter', kind, value])
+                visited.append(['break-{}'.format(name), 'enter', kind, value])
                 if kind == 'name' and node.value == name:
                     return BREAK
 
@@ -913,7 +913,7 @@ def describe_visit_in_parallel():
                 node = args[0]
                 kind, value = node.kind, getattr(node, 'value', None)
                 name = self.name
-                visited.append([f'break-{name}', 'leave', kind, value])
+                visited.append(['break-{}'.format(name), 'leave', kind, value])
 
         visit(ast, ParallelVisitor([TestVisitor('a'), TestVisitor('b')]))
         assert visited == [
@@ -991,14 +991,14 @@ def describe_visit_in_parallel():
                 node = args[0]
                 kind, value = node.kind, getattr(node, 'value', None)
                 name = self.name
-                visited.append([f'break-{name}', 'enter', kind, value])
+                visited.append(['break-{}'.format(name), 'enter', kind, value])
 
             def leave(self, *args):
                 check_visitor_fn_args(ast, *args)
                 node = args[0]
                 kind, value = node.kind, getattr(node, 'value', None)
                 name = self.name
-                visited.append([f'break-{name}', 'leave', kind, value])
+                visited.append(['break-{}'.format(name), 'leave', kind, value])
                 if kind == 'field' and node.name.value == name:
                     return BREAK
 

@@ -1,4 +1,4 @@
-from enum import Enum
+from ..pyutils.enum import Enum
 
 __all__ = ["DirectiveLocation"]
 

@@ -1,5 +1,5 @@
-from inspect import isawaitable
 from collections import namedtuple
+from promise import Promise, is_thenable
 
 from ..error import GraphQLError, INVALID, located_error
 from ..language import (
@@ -44,7 +44,6 @@ from .values import get_argument_values, get_directive_values, get_variable_valu
 if True:  # pragma: no cover
     from typing import (
         Any,
-        Awaitable,
         Dict,
         Iterable,
         List,
@@ -105,7 +104,7 @@ class ExecutionResult(namedtuple("ExecutionResult", ("data,errors"))):
 ExecutionResult.__new__.__defaults__ = (None, None)  # type: ignore
 
 
-class ExecutionContext:
+class ExecutionContext(object):
     """Data that must be available at all points during query execution.
 
     Namely, schema of the type system that is currently executing,
@@ -234,7 +233,7 @@ class ExecutionContext:
         Given a completed execution context and data, build the (data, errors)
         response defined by the "Response" section of the GraphQL spec.
         """
-        if isawaitable(data):
+        if is_thenable(data):
             raise
             # async def build_response_async():
             #     return self.build_response(await data)
@@ -272,7 +271,7 @@ class ExecutionContext:
             self.errors.append(error)
             return None
         else:
-            if isawaitable(result):
+            if is_thenable(result):
                 raise
                 # noinspection PyShadowingNames
                 # async def await_result():
@@ -301,20 +300,20 @@ class ExecutionContext:
             )
             if result is INVALID:
                 continue
-            if isawaitable(results):
+            if is_thenable(results):
                 raise
                 # noinspection PyShadowingNames
                 # async def await_and_set_result(results, response_name, result):
                 #     awaited_results = await results
                 #     awaited_results[response_name] = (
-                #         await result if isawaitable(result) else result
+                #         await result if is_thenable(result) else result
                 #     )
                 #     return awaited_results
 
                 # results = await_and_set_result(
                 #     results, response_name, result
                 # )
-            elif isawaitable(result):
+            elif is_thenable(result):
                 raise
                 # noinspection PyShadowingNames
                 # async def set_result(results, response_name, result):
@@ -324,7 +323,7 @@ class ExecutionContext:
                 # results = set_result(results, response_name, result)
             else:
                 results[response_name] = result
-        if isawaitable(results):
+        if is_thenable(results):
             raise
             # noinspection PyShadowingNames
             # async def get_results():
@@ -349,7 +348,7 @@ class ExecutionContext:
             )
             if result is not INVALID:
                 results[response_name] = result
-                if not is_async and isawaitable(result):
+                if not is_async and is_thenable(result):
                     is_async = True
 
         #  If there are no coroutines, we can just return the object
@@ -363,7 +362,7 @@ class ExecutionContext:
         raise
         # async def get_results():
         #     return {
-        #         key: await value if isawaitable(value) else value
+        #         key: await value if is_thenable(value) else value
         #         for key, value in results.items()
         #     }
 
@@ -442,9 +441,7 @@ class ExecutionContext:
         if conditional_type is type_:
             return True
         if is_abstract_type(conditional_type):
-            return self.schema.is_possible_type(
-                conditional_type, type_
-            )
+            return self.schema.is_possible_type(conditional_type, type_)
         return False
 
     def build_resolve_info(self, field_def, field_nodes, parent_type, path):
@@ -507,7 +504,7 @@ class ExecutionContext:
             # Note that contrary to the JavaScript implementation,
             # we pass the context value as part of the resolve info.
             result = resolve_fn(source, info, **args)
-            if isawaitable(result):
+            if is_thenable(result):
                 raise
                 # noinspection PyShadowingNames
                 # async def await_result():
@@ -534,13 +531,13 @@ class ExecutionContext:
         errors in the execution context.
         """
         try:
-            if isawaitable(result):
+            if is_thenable(result):
                 raise
                 # async def await_result():
                 #     value = self.complete_value(
                 #         return_type, field_nodes, info, path, await result
                 #     )
-                #     if isawaitable(value):
+                #     if is_thenable(value):
                 #         return await value
                 #     return value
 
@@ -549,7 +546,7 @@ class ExecutionContext:
                 completed = self.complete_value(
                     return_type, field_nodes, info, path, result
                 )
-            if isawaitable(completed):
+            if is_thenable(completed):
                 raise
                 # noinspection PyShadowingNames
                 # async def await_completed():
@@ -682,7 +679,7 @@ class ExecutionContext:
                 item_type, field_nodes, info, field_path, item
             )
 
-            if not is_async and isawaitable(completed_item):
+            if not is_async and is_thenable(completed_item):
                 is_async = True
             append(completed_item)
 
@@ -690,7 +687,7 @@ class ExecutionContext:
             raise
             # async def get_completed_results():
             #     return [
-            #         await value if isawaitable(value) else value
+            #         await value if is_thenable(value) else value
             #         for value in completed_results
             #     ]
 
@@ -726,7 +723,7 @@ class ExecutionContext:
             else default_resolve_type_fn(result, info, return_type)
         )
 
-        if isawaitable(runtime_type):
+        if is_thenable(runtime_type):
             raise
             # async def await_complete_object_value():
             #     value = self.complete_object_value(
@@ -738,7 +735,7 @@ class ExecutionContext:
             #         path,
             #         result,
             #     )
-            #     if isawaitable(value):
+            #     if is_thenable(value):
             #         return await value
             #     return value
 
@@ -804,7 +801,7 @@ class ExecutionContext:
         if return_type.is_type_of:
             is_type_of = return_type.is_type_of(result, info)
 
-            if isawaitable(is_type_of):
+            if is_thenable(is_type_of):
                 raise
                 # async def collect_and_execute_subfields_async():
                 #     if not await is_type_of:
@@ -1015,7 +1012,7 @@ def default_resolve_type_fn(value, info, abstract_type):
         if type_.is_type_of:
             is_type_of_result = type_.is_type_of(value, info)
 
-            if isawaitable(is_type_of_result):
+            if is_thenable(is_type_of_result):
                 is_type_of_results_async.append((is_type_of_result, type_))
             elif is_type_of_result:
                 return type_

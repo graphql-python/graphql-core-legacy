@@ -3,7 +3,7 @@
 __all__ = ["cached_property"]
 
 
-class CachedProperty:
+class CachedProperty(object):
     """A cached property.
 
     A property that is only computed once per instance and then replaces itself

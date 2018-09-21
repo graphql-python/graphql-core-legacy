@@ -1,5 +1,5 @@
 from copy import deepcopy
-from enum import Enum
+from ..pyutils.enum import Enum
 
 from .lexer import Token
 from .source import Source
@@ -105,7 +105,7 @@ class OperationType(Enum):
 # Base AST Node
 
 
-class Node:
+class Node(object):
     """AST nodes"""
 
     __slots__ = ("loc",)

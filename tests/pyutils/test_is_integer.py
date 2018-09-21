@@ -1,11 +1,10 @@
-from math import inf, nan
-
 from graphql.error import INVALID
 from graphql.pyutils import is_integer
 
+inf, nan = float("inf"), float("nan")
+
 
 def describe_is_integer():
-
     def null_is_not_integer():
         assert is_integer(None) is False
 
@@ -17,7 +16,7 @@ def describe_is_integer():
         assert is_integer(True) is False
 
     def strings_are_not_integer():
-        assert is_integer('string') is False
+        assert is_integer("string") is False
 
     def ints_are_integer():
         assert is_integer(0) is True

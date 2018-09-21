@@ -1,4 +1,4 @@
-from enum import Enum
+from ..pyutils.enum import Enum
 from typing import Dict, List, Union, cast
 from collections import namedtuple
 
@@ -591,7 +591,7 @@ def find_types_added_to_unions(old_schema, new_schema):
 
 
 def find_values_removed_from_enums(old_schema, new_schema):
-    """Find values removed from enums.
+    """Find values removed from ..pyutils.enums.
 
     Given two schemas, returns a list containing descriptions of any breaking
     changes in the new_schema related to removing values from an enum type.
@@ -612,7 +612,7 @@ def find_values_removed_from_enums(old_schema, new_schema):
                 values_removed_from_enums.append(
                     BreakingChange(
                         BreakingChangeType.VALUE_REMOVED_FROM_ENUM,
-                        "{} was removed from enum type {}.".format(
+                        "{} was removed from ..pyutils.enum type {}.".format(
                             value_name, type_name
                         ),
                     )

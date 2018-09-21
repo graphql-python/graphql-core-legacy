@@ -35,7 +35,7 @@ def describe_type_comparators():
     def describe_is_type_sub_type_of():
 
         @fixture
-        def test_schema(field_type: GraphQLOutputType=GraphQLString):
+        def test_schema(field_type=GraphQLString):
             return GraphQLSchema(
                 query=GraphQLObjectType('Query', {
                         'field': GraphQLField(field_type)}))

@@ -1,5 +1,4 @@
 from operator import attrgetter
-from typing import Collection, Dict, List, cast
 
 from ..type import (
     GraphQLArgument,

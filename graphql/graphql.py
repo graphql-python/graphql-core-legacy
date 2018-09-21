@@ -1,10 +1,8 @@
-from typing import Any, Awaitable, Callable, Dict, Union, Type, cast
 from promise import Promise
 
 from .error import GraphQLError
 from .execution import execute, ExecutionResult, Middleware
 from .language import parse, Source
-from .pyutils import MaybeAwaitable
 from .type import GraphQLSchema, validate_schema
 from .execution.execute import ExecutionResult, ExecutionContext
 
@@ -14,13 +12,13 @@ __all__ = ["graphql", "graphql_sync"]
 def graphql(
     schema,
     source,
-    root_value = None,
-    context_value = None,
-    variable_values = None,
-    operation_name = None,
-    field_resolver = None,
-    middleware = None,
-    execution_context_class = ExecutionContext,
+    root_value=None,
+    context_value=None,
+    variable_values=None,
+    operation_name=None,
+    field_resolver=None,
+    middleware=None,
+    execution_context_class=ExecutionContext,
 ):
     """Execute a GraphQL operation asynchronously.
 
@@ -77,21 +75,19 @@ def graphql(
             execution_context_class,
         )
 
-    return Promise.resolve(None).then(
-        on_resolve
-    )
+    return Promise.resolve(None).then(on_resolve)
 
 
 def graphql_sync(
     schema,
     source,
-    root_value = None,
-    context_value = None,
-    variable_values = None,
-    operation_name = None,
-    field_resolver = None,
-    middleware = None,
-    execution_context_class = ExecutionContext,
+    root_value=None,
+    context_value=None,
+    variable_values=None,
+    operation_name=None,
+    field_resolver=None,
+    middleware=None,
+    execution_context_class=ExecutionContext,
 ):
     """Execute a GraphQL operation synchronously.
 

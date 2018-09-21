@@ -740,7 +740,7 @@ def subfield_conflicts(conflicts, response_name, node1, node2):
     return None  # no conflict
 
 
-class PairSet:
+class PairSet(object):
     """Pair set
 
     A way to keep track of pairs of things when the ordering of the pair does

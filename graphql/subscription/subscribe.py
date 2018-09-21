@@ -1,5 +1,5 @@
-from inspect import isawaitable
-from typing import Any, AsyncIterable, AsyncIterator, Awaitable, Dict, Union, cast
+from promise import is_thenable
+from typing import Any, Dict, Union, cast
 
 from ..error import GraphQLError, located_error
 from ..execution.execute import (

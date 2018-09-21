@@ -12,32 +12,6 @@ from ..type import (
 __all__ = ["type_from_ast"]
 
 
-@overload
-def type_from_ast(
-    schema, type_node
-):
-    ...
-
-
-@overload  # noqa: F811 (pycqa/flake8#423)
-def type_from_ast(
-    schema, type_node
-):
-    ...
-
-
-@overload  # noqa: F811
-def type_from_ast(
-    schema, type_node
-):
-    ...
-
-
-@overload  # noqa: F811
-def type_from_ast(schema, type_node):
-    ...
-
-
 def type_from_ast(schema, type_node):  # noqa: F811
     """Get the GraphQL type definition from an AST node.
 

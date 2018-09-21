@@ -1172,7 +1172,7 @@ def describe_introspection():
 
         def field_resolver(value, info):
             called_for_fields.add(
-                f'{info.parent_type.name}::{info.field_name}')
+                '{}::{}'.format(info.parent_type.name, info.field_name))
             return value
 
         graphql_sync(schema, source, field_resolver=field_resolver)

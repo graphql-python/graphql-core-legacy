@@ -9,7 +9,7 @@ __all__ = ["MiddlewareManager"]
 GraphQLFieldResolver = Callable[..., Any]
 
 
-class MiddlewareManager:
+class MiddlewareManager(object):
     """Manager for the middleware chain.
 
     This class helps to wrap resolver functions with the provided middleware

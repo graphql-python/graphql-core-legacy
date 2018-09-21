@@ -1,4 +1,3 @@
-import asyncio
 from json import dumps
 from typing import cast
 
@@ -68,7 +67,7 @@ def describe_execute_handles_basic_execution_tasks():
             f = 'Fish'
 
             def pic(self, _info, size=50):
-                return f'Pic of size: {size}'
+                return 'Pic of size: {}'.format(size)
 
             def deep(self, _info):
                 return DeepData()
@@ -212,8 +211,8 @@ def describe_execute_handles_basic_execution_tasks():
         execute(schema, ast, root_value, variable_values={'var': 'abc'})
 
         assert len(infos) == 1
-        operation = cast(OperationDefinitionNode, ast.definitions[0])
-        field = cast(FieldNode, operation.selection_set.selections[0])
+        operation = ast.definitions[0]
+        field = operation.selection_set.selections[0]
         assert infos[0] == GraphQLResolveInfo(
             field_name='test', field_nodes=[field],
             return_type=GraphQLString, parent_type=schema.query_type,
@@ -623,7 +622,7 @@ def describe_execute_handles_basic_execution_tasks():
                 self.value = value
 
             def __repr__(self):
-                return f'{self.__class__.__name__}({self.value!r})'
+                return '{}({!r})'.format(self.__class__.__name__, self.value)
 
         SpecialType = GraphQLObjectType('SpecialType', {
                 'value': GraphQLField(GraphQLString)},

@@ -1,4 +1,4 @@
-from enum import Enum
+from ..pyutils.enum import Enum
 from typing import Any
 
 from .definition import (
@@ -248,7 +248,7 @@ __Type = GraphQLObjectType(
 )
 
 
-class TypeFieldResolvers:
+class TypeFieldResolvers(object):
     @staticmethod
     def kind(type_, _info):
         if is_scalar_type(type_):

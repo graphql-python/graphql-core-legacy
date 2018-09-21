@@ -146,9 +146,9 @@ InvalidScalar = GraphQLScalarType(
     name='Invalid',
     serialize=lambda value: value,
     parse_literal=lambda node: raise_type_error(
-        f'Invalid scalar is always invalid: {node.value}'),
+        'Invalid scalar is always invalid: {}'.format(node.value)),
     parse_value=lambda node: raise_type_error(
-        f'Invalid scalar is always invalid: {node}'))
+        'Invalid scalar is always invalid: {}'.format(node)))
 
 AnyScalar = GraphQLScalarType(
     name='Any',

@@ -1,5 +1,5 @@
 from copy import copy
-from enum import Enum
+from ..pyutils.enum import Enum
 
 from ..error import GraphQLSyntaxError
 from .source import Source
@@ -38,7 +38,7 @@ class TokenKind(Enum):
     COMMENT = "Comment"
 
 
-class Token:
+class Token(object):
     __slots__ = ("kind", "start", "end", "line", "column", "prev", "next", "value")
 
     def __init__(
@@ -130,7 +130,7 @@ _KIND_FOR_PUNCT = {
 }
 
 
-class Lexer:
+class Lexer(object):
     """GraphQL Lexer
 
     A Lexer is a stateful stream generator in that every time

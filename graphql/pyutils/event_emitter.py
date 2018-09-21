@@ -8,10 +8,10 @@ from collections import defaultdict
 __all__ = ["EventEmitter", "EventEmitterAsyncIterator"]
 
 
-class EventEmitter:
+class EventEmitter(object):
     """A very simple EventEmitter."""
 
-    def __init__(self, loop = None):
+    def __init__(self, loop=None):
         self.loop = loop
         self.listeners = defaultdict(list)
 

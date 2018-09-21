@@ -1,13 +1,5 @@
 from copy import copy
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    List,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Callable, List, Sequence, Tuple, Union
 from collections import namedtuple
 
 
@@ -108,7 +100,7 @@ QUERY_DOCUMENT_KEYS = {
 }
 
 
-class Visitor:
+class Visitor(object):
     """Visitor that walks through an AST.
 
     Visitors can define two generic methods "enter" and "leave".

@@ -51,7 +51,7 @@ GetFieldDefType = Callable[
 ]
 
 
-class TypeInfo:
+class TypeInfo(object):
     """Utility class for keeping track of type definitions.
 
     TypeInfo is a utility class which, given a GraphQL schema,
@@ -60,12 +60,7 @@ class TypeInfo:
     `enter(node)` and `leave(node)`.
     """
 
-    def __init__(
-        self,
-        schema,
-        get_field_def_fn = None,
-        initial_type = None,
-    ):
+    def __init__(self, schema, get_field_def_fn=None, initial_type=None):
         """Initialize the TypeInfo for the given GraphQL schema.
 
         The experimental optional second parameter is only needed in order to
@@ -174,19 +169,13 @@ class TypeInfo:
             if type_condition_ast
             else get_named_type(self.get_type())
         )
-        self._type_stack.append(
-            output_type
-            if is_output_type(output_type)
-            else None
-        )
+        self._type_stack.append(output_type if is_output_type(output_type) else None)
 
     enter_fragment_definition = enter_inline_fragment
 
     def enter_variable_definition(self, node):
         input_type = type_from_ast(self._schema, node.type)
-        self._input_type_stack.append(
-            input_type if is_input_type(input_type) else None
-        )
+        self._input_type_stack.append(input_type if is_input_type(input_type) else None)
 
     def enter_argument(self, node):
         field_or_directive = self.get_directive() or self.get_field_def()
@@ -263,9 +252,7 @@ class TypeInfo:
         self._enum_value = None
 
 
-def get_field_def(
-    schema, parent_type, field_node
-):
+def get_field_def(schema, parent_type, field_node):
     """Get field definition.
 
     Not exactly the same as the executor's definition of getFieldDef, in this

@@ -13,7 +13,7 @@ from graphql.pyutils import dedent
 from graphql.utilities import build_ast_schema, build_schema, print_schema
 
 
-def cycle_output(body: str) -> str:
+def cycle_output(body):
     """Full cycle test.
 
     This function does a full cycle of going from a string with the contents of
@@ -567,7 +567,7 @@ def describe_schema_builder():
         schema = build_ast_schema(ast)
 
         my_enum = schema.get_type('MyEnum')
-        my_enum = cast(GraphQLEnumType, my_enum)
+        my_enum = my_enum
 
         value = my_enum.values['VALUE']
         assert value.is_deprecated is False
@@ -627,14 +627,14 @@ def describe_schema_builder():
             """))
         schema = build_ast_schema(schema_ast)
         query = schema.get_type('Query')
-        query = cast(GraphQLObjectType, query)
+        query = query
         test_input = schema.get_type('TestInput')
-        test_input = cast(GraphQLInputObjectType, test_input)
+        test_input = test_input
         test_enum = schema.get_type('TestEnum')
-        test_enum = cast(GraphQLEnumType, test_enum)
+        test_enum = test_enum
         test_union = schema.get_type('TestUnion')
         test_interface = schema.get_type('TestInterface')
-        test_interface = cast(GraphQLInterfaceType, test_interface)
+        test_interface = test_interface
         test_type = schema.get_type('TestType')
         test_scalar = schema.get_type('TestScalar')
         test_directive = schema.get_directive('test')

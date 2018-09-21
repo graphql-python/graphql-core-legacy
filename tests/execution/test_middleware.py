@@ -172,9 +172,9 @@ def describe_middleware():
 
                 # noinspection PyMethodMayBeStatic
                 def resolve(self, next_, *args, **kwargs):
-                    log.append(f'enter {self.name}')
+                    log.append('enter {}'.format(self.name))
                     value = next_(*args, **kwargs)
-                    log.append(f'exit {self.name}')
+                    log.append('exit {}'.format(self.name))
                     return value
 
             middlewares = [

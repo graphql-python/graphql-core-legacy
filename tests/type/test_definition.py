@@ -68,7 +68,7 @@ ScalarType = GraphQLScalarType(
     parse_value=lambda: None, parse_literal=lambda: None)
 
 
-def schema_with_field_type(type_: GraphQLOutputType) -> GraphQLSchema:
+def schema_with_field_type(type_):
     return GraphQLSchema(
         query=GraphQLObjectType('Query', {'field': GraphQLField(type_)}),
         types=[type_])
@@ -306,11 +306,11 @@ def describe_field_config_must_be_a_dict():
         assert obj_type.fields['f'].type is GraphQLString
 
     def thunk_for_fields_of_object_type_is_resolved_only_once():
+        calls = 0
         def fields():
-            nonlocal calls
+            global calls
             calls += 1
             return {'f': GraphQLField(GraphQLString)}
-        calls = 0
         obj_type = GraphQLObjectType('SomeObject', fields)
         assert 'f' in obj_type.fields
         assert calls == 1
@@ -318,7 +318,7 @@ def describe_field_config_must_be_a_dict():
         assert calls == 1
 
     def rejects_an_object_type_field_with_undefined_config():
-        undefined_field = cast(GraphQLField, None)
+        undefined_field = None
         obj_type = GraphQLObjectType('SomeObject', {'f': undefined_field})
         with raises(TypeError) as exc_info:
             if obj_type.fields:
@@ -328,7 +328,7 @@ def describe_field_config_must_be_a_dict():
             'SomeObject fields must be GraphQLField or output type objects.')
 
     def rejects_an_object_type_with_incorrectly_typed_fields():
-        invalid_field = cast(GraphQLField, [GraphQLField(GraphQLString)])
+        invalid_field = [GraphQLField(GraphQLString)]
         obj_type = GraphQLObjectType('SomeObject', {'f': invalid_field})
         with raises(TypeError) as exc_info:
             if obj_type.fields:
@@ -366,7 +366,7 @@ def describe_field_args_must_be_a_dict():
 
     def rejects_an_object_type_with_incorrectly_typed_field_args():
         invalid_args = [{'bad_args': GraphQLArgument(GraphQLString)}]
-        invalid_args = cast(Dict[str, GraphQLArgument], invalid_args)
+        invalid_args = invalid_args
         with raises(TypeError) as exc_info:
             GraphQLObjectType('SomeObject', {
                 'badField': GraphQLField(GraphQLString, args=invalid_args)})
@@ -398,11 +398,11 @@ def describe_object_interfaces_must_be_a_sequence():
         assert obj_type.interfaces == [InterfaceType]
 
     def thunk_for_interfaces_of_object_type_is_resolved_only_once():
+        calls = 0
         def interfaces():
-            nonlocal calls
+            global calls
             calls += 1
             return [InterfaceType]
-        calls = 0
         obj_type = GraphQLObjectType(
             'SomeObject', interfaces=interfaces,
             fields={'f': GraphQLField(GraphQLString)})
@@ -740,7 +740,7 @@ def describe_type_system_list_must_accept_only_types():
         msg = str(exc_info.value)
         assert msg == (
             'Can only create a wrapper for a GraphQLType,'
-            f' but got: {type_}.')
+            ' but got: {}.'.format(type_))
 
 
 def describe_type_system_non_null_must_only_accept_non_nullable_types():
@@ -764,9 +764,9 @@ def describe_type_system_non_null_must_only_accept_non_nullable_types():
         msg = str(exc_info.value)
         assert msg == (
             'Can only create NonNull of a Nullable GraphQLType'
-            f' but got: {type_}.') if isinstance(type_, GraphQLNonNull) else (
+            ' but got: {}.'.format(type_)) if isinstance(type_, GraphQLNonNull) else (
             'Can only create a wrapper for a GraphQLType,'
-            f' but got: {type_}.')
+            ' but got: {}.'.format(type_))
 
 
 def describe_type_system_a_schema_must_contain_uniquely_named_types():
@@ -783,7 +783,7 @@ def describe_type_system_a_schema_must_contain_uniquely_named_types():
         msg = str(exc_info.value)
         assert msg == (
             'Schema must contain unique named types'
-            f" but contains multiple types named 'String'.")
+            .format())
 
     def rejects_a_schema_which_defines_an_object_twice():
         A = GraphQLObjectType('SameName', {'f': GraphQLField(GraphQLString)})
@@ -796,7 +796,7 @@ def describe_type_system_a_schema_must_contain_uniquely_named_types():
         msg = str(exc_info.value)
         assert msg == (
             'Schema must contain unique named types'
-            f" but contains multiple types named 'SameName'.")
+            .format())
 
     def rejects_a_schema_with_same_named_objects_implementing_an_interface():
         AnotherInterface = GraphQLInterfaceType('AnotherInterface', {
@@ -818,4 +818,4 @@ def describe_type_system_a_schema_must_contain_uniquely_named_types():
         msg = str(exc_info.value)
         assert msg == (
             'Schema must contain unique named types'
-            f" but contains multiple types named 'BadObject'.")
+            .format())

@@ -313,7 +313,7 @@ def describe_type_system_a_schema_must_have_object_root_types():
 
     def rejects_a_schema_whose_directives_are_incorrectly_typed():
         schema = GraphQLSchema(SomeObjectType, directives=[
-            cast(GraphQLDirective, 'somedirective')])
+            'somedirective'])
         msg = validate_schema(schema)[0].message
         assert msg == "Expected directive but got: 'somedirective'."
 

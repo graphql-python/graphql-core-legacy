@@ -8,23 +8,24 @@ with open("README.md") as readme_file:
     readme = readme_file.read()
 
 setup(
-    name="GraphQL-core-next",
+    name="GraphQL-core",
     version=version,
-    description="GraphQL-core-next is a Python port of GraphQL.js,"
+    description="GraphQL-core is a Python port of GraphQL.js,"
     " the JavaScript reference implementation for GraphQL.",
     long_description=readme,
     long_description_content_type="text/markdown",
     keywords="graphql",
-    url="https://github.com/graphql-python/graphql-core-next",
-    author="Christoph Zwerschke",
-    author_email="cito@online.de",
+    url="https://github.com/graphql-python/graphql-core",
+    author="Syrus Akbary",
+    author_email="me@syrusakbary.com",
     license="MIT license",
     # PEP-561: https://www.python.org/dev/peps/pep-0561/
-    package_data={"graphql": ["py.typed"]},
+    # package_data={"graphql": ["py.typed"]},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
@@ -34,7 +35,6 @@ setup(
     test_suite="tests",
     tests_require=[
         "pytest",
-        "pytest-asyncio",
         "pytest-cov",
         "pytest-describe",
         "flake8",

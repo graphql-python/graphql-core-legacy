@@ -50,7 +50,7 @@ def describe_execute_handles_execution_with_a_complex_schema():
                 self.id = id
                 self.isPublished = True
                 self.author = JohnSmith()
-                self.title = f'My Article {id}'
+                self.title = 'My Article {}'.format(id)
                 self.body = 'This is a post'
                 self.hidden = 'This data is not exposed in the schema'
                 self.keywords = ['foo', 'bar', 1, True, None]
@@ -72,9 +72,9 @@ def describe_execute_handles_execution_with_a_complex_schema():
         class Pic:
 
             def __init__(self, uid, width, height):
-                self.url = f'cdn://{uid}'
-                self.width = f'{width}'
-                self.height = f'{height}'
+                self.url = 'cdn://{}'.format(uid)
+                self.width = '{}'.format(width)
+                self.height = '{}'.format(height)
 
         request = """
             {

@@ -1,5 +1,3 @@
-import asyncio
-
 from pytest import mark
 from promise import Promise
 
@@ -25,17 +23,19 @@ class Root:
     def __init__(self, originalNumber):
         self.numberHolder = NumberHolder(originalNumber)
 
-    def immediately_change_the_number(self, newNumber) -> NumberHolder:
+    def immediately_change_the_number(self, newNumber):
         self.numberHolder.theNumber = newNumber
         return self.numberHolder
 
-    def promise_to_change_the_number(self, new_number) -> NumberHolder:
+    def promise_to_change_the_number(self, new_number):
         return Promise.resolve(self.immediately_change_the_number(new_number))
 
     def fail_to_change_the_number(self, newNumber):
-        return Promise.reject(RuntimeError(f"Cannot change the number to {newNumber}"))
+        return Promise.reject(
+            RuntimeError("Cannot change the number to {}".format(newNumber))
+        )
 
-    def promise_and_fail_to_change_the_number(self, newNumber: int):
+    def promise_and_fail_to_change_the_number(self, newNumber):
         return self.fail_to_change_the_number(newNumber)
 
 

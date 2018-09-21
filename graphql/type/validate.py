@@ -79,7 +79,7 @@ def assert_valid_schema(schema):
         raise TypeError("\n\n".join(error.message for error in errors))
 
 
-class SchemaValidationContext:
+class SchemaValidationContext(object):
     """Utility class providing a context for schema validation."""
 
     def __init__(self, schema):

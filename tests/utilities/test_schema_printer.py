@@ -10,24 +10,24 @@ from graphql.utilities import (
     build_schema, print_schema, print_introspection_schema)
 
 
-def print_for_test(schema: GraphQLSchema) -> str:
+def print_for_test(schema):
     schema_text = print_schema(schema)
     # keep print_schema and build_schema in sync
     assert print_schema(build_schema(schema_text)) == schema_text
     return schema_text
 
 
-def print_single_field_schema(field: GraphQLField):
+def print_single_field_schema(field):
     Query = GraphQLObjectType(
         name='Query', fields={'singleField': field})
     return print_for_test(GraphQLSchema(query=Query))
 
 
-def list_of(type_: GraphQLType):
+def list_of(type_):
     return GraphQLList(type_)
 
 
-def non_null(type_: GraphQLNullableType):
+def non_null(type_):
     return GraphQLNonNull(type_)
 
 

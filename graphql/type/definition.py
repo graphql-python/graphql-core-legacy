@@ -1,4 +1,4 @@
-from enum import Enum
+from ..pyutils.enum import Enum
 from typing import (
     Any,
     Callable,
@@ -370,7 +370,7 @@ def assert_scalar_type(type_):
 GraphQLArgumentMap = Dict[str, "GraphQLArgument"]
 
 
-class GraphQLField:
+class GraphQLField(object):
     """Definition of a GraphQL field"""
 
     # type: "GraphQLOutputType"
@@ -438,7 +438,7 @@ class GraphQLField:
             and self.deprecation_reason == other.deprecation_reason
         )
 
-    @property
+    @cached_property
     def is_deprecated(self):
         return bool(self.deprecation_reason)
 
@@ -511,7 +511,7 @@ GraphQLTypeResolver = Callable[
 GraphQLIsTypeOfFn = Callable[[Any, GraphQLResolveInfo], MaybeAwaitable[bool]]
 
 
-class GraphQLArgument:
+class GraphQLArgument(object):
     """Definition of a GraphQL argument"""
 
     # type: "GraphQLInputType"
@@ -1020,7 +1020,7 @@ def assert_enum_type(type_):
     return type_
 
 
-class GraphQLEnumValue:
+class GraphQLEnumValue(object):
 
     def __init__(
         self, value=None, description=None, deprecation_reason=None, ast_node=None
@@ -1044,7 +1044,7 @@ class GraphQLEnumValue:
             and self.deprecation_reason == other.deprecation_reason
         )
 
-    @property
+    @cached_property
     def is_deprecated(self):
         return bool(self.deprecation_reason)
 
@@ -1143,7 +1143,7 @@ def assert_input_object_type(type_):
     return type_
 
 
-class GraphQLInputField:
+class GraphQLInputField(object):
     """Definition of a GraphQL input field"""
 
     def __init__(self, type_, description=None, default_value=INVALID, ast_node=None):
@@ -1286,21 +1286,6 @@ def assert_nullable_type(type_):
     if not is_nullable_type(type_):
         raise TypeError("Expected {} to be a GraphQL nullable type.".format(type_))
     return type_
-
-
-@overload
-def get_nullable_type(type_):
-    ...
-
-
-@overload  # noqa: F811 (pycqa/flake8#423)
-def get_nullable_type(type_):
-    ...
-
-
-@overload  # noqa: F811
-def get_nullable_type(type_):
-    ...
 
 
 def get_nullable_type(type_):  # noqa: F811

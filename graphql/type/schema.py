@@ -31,7 +31,7 @@ def is_schema(schema):
     return isinstance(schema, GraphQLSchema)
 
 
-class GraphQLSchema:
+class GraphQLSchema(object):
     """Schema Definition
 
     A Schema is created by supplying the root types of each type of operation,
@@ -100,9 +100,7 @@ class GraphQLSchema:
         self.directives = list(directives or specified_directives)
         self.ast_node = ast_node
         self.extension_ast_nodes = (
-            tuple(extension_ast_nodes)
-            if extension_ast_nodes
-            else None
+            tuple(extension_ast_nodes) if extension_ast_nodes else None
         )
 
         # Build type map now to detect any errors within this schema.
@@ -189,7 +187,7 @@ def type_map_reducer(map_, type_=None):
 
     if is_object_type(type_):
         type_ = type_
-        map_ = type_map_reduce(type_.interfaces, map_)
+        map_ = type_map_reduce(list(type_.interfaces), map_)
 
     if is_object_type(type_) or is_interface_type(type_):
         for field in cast(GraphQLInterfaceType, type_).fields.values():

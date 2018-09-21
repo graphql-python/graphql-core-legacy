@@ -1,4 +1,4 @@
-from math import isfinite
+from math import isinf, isnan
 from typing import Any
 
 from ..error import INVALID
@@ -97,7 +97,7 @@ def serialize_float(value):
             value = ""
             raise ValueError
         num = value if isinstance(value, float) else float(value)
-        if not isfinite(num):
+        if isinf(num) or isnan(num):
             raise ValueError
     except (ValueError, TypeError):
         raise TypeError("Float cannot represent non numeric value: {!r}".format(value))
@@ -145,7 +145,9 @@ def serialize_string(value):
 
 def coerce_string(value):
     if not isinstance(value, str):
-        raise TypeError("String cannot represent a non string value: {!r}".format(value))
+        raise TypeError(
+            "String cannot represent a non string value: {!r}".format(value)
+        )
     return value
 
 
@@ -178,7 +180,9 @@ def serialize_boolean(value):
 
 def coerce_boolean(value):
     if not isinstance(value, bool):
-        raise TypeError("Boolean cannot represent a non boolean value: {!r}".format(value))
+        raise TypeError(
+            "Boolean cannot represent a non boolean value: {!r}".format(value)
+        )
     return value
 
 

@@ -145,9 +145,7 @@ def build_ast_schema(document_ast, assume_valid=False, assume_valid_sdl=False):
     mutation_type = operation_types.get(OperationType.MUTATION)
     subscription_type = operation_types.get(OperationType.SUBSCRIPTION)
     return GraphQLSchema(
-        query=definition_builder.build_type(query_type)
-        if query_type
-        else None,
+        query=definition_builder.build_type(query_type) if query_type else None,
         mutation=definition_builder.build_type(mutation_type)
         if mutation_type
         else None,
@@ -185,7 +183,7 @@ def default_type_resolver(type_ref):
     raise TypeError("Type '{}' not found in document.".format(type_ref.name.value))
 
 
-class ASTDefinitionBuilder:
+class ASTDefinitionBuilder(object):
     def __init__(
         self,
         type_definitions_map,
@@ -196,7 +194,7 @@ class ASTDefinitionBuilder:
         self._assume_valid = assume_valid
         self._resolve_type = resolve_type
         # Initialize to the GraphQL built in scalars and introspection types.
-        self._cache = {**specified_scalar_types, **introspection_types}
+        self._cache = dict(specified_scalar_types, **introspection_types)
 
     def build_type(self, node):
         type_name = node.name.value
@@ -385,11 +383,7 @@ class ASTDefinitionBuilder:
         return GraphQLInputObjectType(
             name=type_def.name.value,
             description=type_def.description.value if type_def.description else None,
-            fields=(
-                lambda: self._make_input_fields(
-                    type_def.fields
-                )
-            )
+            fields=(lambda: self._make_input_fields(type_def.fields))
             if type_def.fields
             else {},
             ast_node=type_def,
