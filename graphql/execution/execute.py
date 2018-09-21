@@ -235,11 +235,11 @@ class ExecutionContext:
         response defined by the "Response" section of the GraphQL spec.
         """
         if isawaitable(data):
+            raise
+            # async def build_response_async():
+            #     return self.build_response(await data)
 
-            async def build_response_async():
-                return self.build_response(await data)
-
-            return build_response_async()
+            # return build_response_async()
         data = data
         return ExecutionResult(data=data, errors=self.errors or None)
 
@@ -273,17 +273,18 @@ class ExecutionContext:
             return None
         else:
             if isawaitable(result):
+                raise
                 # noinspection PyShadowingNames
-                async def await_result():
-                    try:
-                        return await result
-                    except GraphQLError as error:
-                        self.errors.append(error)
-                    except Exception as error:
-                        error = GraphQLError(str(error), original_error=error)
-                        self.errors.append(error)
+                # async def await_result():
+                #     try:
+                #         return await result
+                #     except GraphQLError as error:
+                #         self.errors.append(error)
+                #     except Exception as error:
+                #         error = GraphQLError(str(error), original_error=error)
+                #         self.errors.append(error)
 
-                return await_result()
+                # return await_result()
             return result
 
     def execute_fields_serially(self, parent_type, source_value, path, fields):
@@ -301,30 +302,33 @@ class ExecutionContext:
             if result is INVALID:
                 continue
             if isawaitable(results):
+                raise
                 # noinspection PyShadowingNames
-                async def await_and_set_result(results, response_name, result):
-                    awaited_results = await results
-                    awaited_results[response_name] = (
-                        await result if isawaitable(result) else result
-                    )
-                    return awaited_results
+                # async def await_and_set_result(results, response_name, result):
+                #     awaited_results = await results
+                #     awaited_results[response_name] = (
+                #         await result if isawaitable(result) else result
+                #     )
+                #     return awaited_results
 
-                results = await_and_set_result(
-                    results, response_name, result
-                )
+                # results = await_and_set_result(
+                #     results, response_name, result
+                # )
             elif isawaitable(result):
+                raise
                 # noinspection PyShadowingNames
-                async def set_result(results, response_name, result):
-                    results[response_name] = await result
-                    return results
+                # async def set_result(results, response_name, result):
+                #     results[response_name] = await result
+                #     return results
 
-                results = set_result(results, response_name, result)
+                # results = set_result(results, response_name, result)
             else:
                 results[response_name] = result
         if isawaitable(results):
+            raise
             # noinspection PyShadowingNames
-            async def get_results():
-                return await results
+            # async def get_results():
+            #     return await results
 
             return get_results()
         return results
@@ -356,11 +360,12 @@ class ExecutionContext:
         # resolving that field, which is possibly a coroutine object.
         # Return a coroutine object that will yield this same map, but with
         # any coroutines awaited and replaced with the values they yielded.
-        async def get_results():
-            return {
-                key: await value if isawaitable(value) else value
-                for key, value in results.items()
-            }
+        raise
+        # async def get_results():
+        #     return {
+        #         key: await value if isawaitable(value) else value
+        #         for key, value in results.items()
+        #     }
 
         return get_results()
 
@@ -503,16 +508,17 @@ class ExecutionContext:
             # we pass the context value as part of the resolve info.
             result = resolve_fn(source, info, **args)
             if isawaitable(result):
+                raise
                 # noinspection PyShadowingNames
-                async def await_result():
-                    try:
-                        return await result
-                    except GraphQLError as error:
-                        return error
-                    except Exception as error:
-                        return GraphQLError(str(error), original_error=error)
+                # async def await_result():
+                #     try:
+                #         return await result
+                #     except GraphQLError as error:
+                #         return error
+                #     except Exception as error:
+                #         return GraphQLError(str(error), original_error=error)
 
-                return await_result()
+                # return await_result()
             return result
         except GraphQLError as error:
             return error
@@ -529,29 +535,30 @@ class ExecutionContext:
         """
         try:
             if isawaitable(result):
+                raise
+                # async def await_result():
+                #     value = self.complete_value(
+                #         return_type, field_nodes, info, path, await result
+                #     )
+                #     if isawaitable(value):
+                #         return await value
+                #     return value
 
-                async def await_result():
-                    value = self.complete_value(
-                        return_type, field_nodes, info, path, await result
-                    )
-                    if isawaitable(value):
-                        return await value
-                    return value
-
-                completed = await_result()
+                # completed = await_result()
             else:
                 completed = self.complete_value(
                     return_type, field_nodes, info, path, result
                 )
             if isawaitable(completed):
+                raise
                 # noinspection PyShadowingNames
-                async def await_completed():
-                    try:
-                        return await completed
-                    except Exception as error:
-                        self.handle_field_error(error, field_nodes, path, return_type)
+                # async def await_completed():
+                #     try:
+                #         return await completed
+                #     except Exception as error:
+                #         self.handle_field_error(error, field_nodes, path, return_type)
 
-                return await_completed()
+                # return await_completed()
             return completed
         except Exception as error:
             self.handle_field_error(error, field_nodes, path, return_type)
@@ -680,14 +687,14 @@ class ExecutionContext:
             append(completed_item)
 
         if is_async:
+            raise
+            # async def get_completed_results():
+            #     return [
+            #         await value if isawaitable(value) else value
+            #         for value in completed_results
+            #     ]
 
-            async def get_completed_results():
-                return [
-                    await value if isawaitable(value) else value
-                    for value in completed_results
-                ]
-
-            return get_completed_results()
+            # return get_completed_results()
         return completed_results
 
     @staticmethod
@@ -720,22 +727,22 @@ class ExecutionContext:
         )
 
         if isawaitable(runtime_type):
+            raise
+            # async def await_complete_object_value():
+            #     value = self.complete_object_value(
+            #         self.ensure_valid_runtime_type(
+            #             await runtime_type, return_type, field_nodes, info, result
+            #         ),
+            #         field_nodes,
+            #         info,
+            #         path,
+            #         result,
+            #     )
+            #     if isawaitable(value):
+            #         return await value
+            #     return value
 
-            async def await_complete_object_value():
-                value = self.complete_object_value(
-                    self.ensure_valid_runtime_type(
-                        await runtime_type, return_type, field_nodes, info, result
-                    ),
-                    field_nodes,
-                    info,
-                    path,
-                    result,
-                )
-                if isawaitable(value):
-                    return await value
-                return value
-
-            return await_complete_object_value()
+            # return await_complete_object_value()
         runtime_type = runtime_type
 
         return self.complete_object_value(
@@ -798,17 +805,17 @@ class ExecutionContext:
             is_type_of = return_type.is_type_of(result, info)
 
             if isawaitable(is_type_of):
+                raise
+                # async def collect_and_execute_subfields_async():
+                #     if not await is_type_of:
+                #         raise invalid_return_type_error(
+                #             return_type, result, field_nodes
+                #         )
+                #     return self.collect_and_execute_subfields(
+                #         return_type, field_nodes, path, result
+                #     )
 
-                async def collect_and_execute_subfields_async():
-                    if not await is_type_of:
-                        raise invalid_return_type_error(
-                            return_type, result, field_nodes
-                        )
-                    return self.collect_and_execute_subfields(
-                        return_type, field_nodes, path, result
-                    )
-
-                return collect_and_execute_subfields_async()
+                # return collect_and_execute_subfields_async()
 
             if not is_type_of:
                 raise invalid_return_type_error(return_type, result, field_nodes)
@@ -1015,16 +1022,17 @@ def default_resolve_type_fn(value, info, abstract_type):
 
     if is_type_of_results_async:
         # noinspection PyShadowingNames
-        async def get_type():
-            is_type_of_results = [
-                (await is_type_of_result, type_)
-                for is_type_of_result, type_ in is_type_of_results_async
-            ]
-            for is_type_of_result, type_ in is_type_of_results:
-                if is_type_of_result:
-                    return type_
+        raise
+        # async def get_type():
+        #     is_type_of_results = [
+        #         (await is_type_of_result, type_)
+        #         for is_type_of_result, type_ in is_type_of_results_async
+        #     ]
+        #     for is_type_of_result, type_ in is_type_of_results:
+        #         if is_type_of_result:
+        #             return type_
 
-        return get_type()
+        # return get_type()
 
     return None
 

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, List, NamedTuple, Union, cast
+from typing import Dict, List, Union, cast
 from collections import namedtuple
 
 from ..error import INVALID

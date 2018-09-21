@@ -1,82 +1,89 @@
 import asyncio
 
 from pytest import mark
+from promise import Promise
 
 from graphql.execution import execute
 from graphql.language import parse
 from graphql.type import (
-    GraphQLArgument, GraphQLField, GraphQLInt,
-    GraphQLObjectType, GraphQLSchema)
+    GraphQLArgument,
+    GraphQLField,
+    GraphQLInt,
+    GraphQLObjectType,
+    GraphQLSchema,
+)
 
 
 # noinspection PyPep8Naming
 class NumberHolder:
-
-    theNumber: int
-
-    def __init__(self, originalNumber: int):
+    def __init__(self, originalNumber):
         self.theNumber = originalNumber
 
 
 # noinspection PyPep8Naming
 class Root:
-
-    numberHolder: NumberHolder
-
-    def __init__(self, originalNumber: int):
+    def __init__(self, originalNumber):
         self.numberHolder = NumberHolder(originalNumber)
 
-    def immediately_change_the_number(self, newNumber: int) -> NumberHolder:
+    def immediately_change_the_number(self, newNumber) -> NumberHolder:
         self.numberHolder.theNumber = newNumber
         return self.numberHolder
 
-    async def promise_to_change_the_number(
-            self, new_number: int) -> NumberHolder:
-        await asyncio.sleep(0)
-        return self.immediately_change_the_number(new_number)
+    def promise_to_change_the_number(self, new_number) -> NumberHolder:
+        return Promise.resolve(self.immediately_change_the_number(new_number))
 
-    def fail_to_change_the_number(self, newNumber: int):
-        raise RuntimeError(f'Cannot change the number to {newNumber}')
+    def fail_to_change_the_number(self, newNumber):
+        return Promise.reject(RuntimeError(f"Cannot change the number to {newNumber}"))
 
-    async def promise_and_fail_to_change_the_number(self, newNumber: int):
-        await asyncio.sleep(0)
-        self.fail_to_change_the_number(newNumber)
+    def promise_and_fail_to_change_the_number(self, newNumber: int):
+        return self.fail_to_change_the_number(newNumber)
 
 
-numberHolderType = GraphQLObjectType('NumberHolder', {
-    'theNumber': GraphQLField(GraphQLInt)})
+numberHolderType = GraphQLObjectType(
+    "NumberHolder", {"theNumber": GraphQLField(GraphQLInt)}
+)
 
 # noinspection PyPep8Naming
 schema = GraphQLSchema(
-    GraphQLObjectType('Query', {
-        'numberHolder': GraphQLField(numberHolderType)}),
-    GraphQLObjectType('Mutation', {
-        'immediatelyChangeTheNumber': GraphQLField(
-            numberHolderType,
-            args={'newNumber': GraphQLArgument(GraphQLInt)},
-            resolve=lambda obj, _info, newNumber:
-                obj.immediately_change_the_number(newNumber)),
-        'promiseToChangeTheNumber': GraphQLField(
-            numberHolderType,
-            args={'newNumber': GraphQLArgument(GraphQLInt)},
-            resolve=lambda obj, _info, newNumber:
-                obj.promise_to_change_the_number(newNumber)),
-        'failToChangeTheNumber': GraphQLField(
-            numberHolderType,
-            args={'newNumber': GraphQLArgument(GraphQLInt)},
-            resolve=lambda obj, _info, newNumber:
-            obj.fail_to_change_the_number(newNumber)),
-        'promiseAndFailToChangeTheNumber': GraphQLField(
-            numberHolderType,
-            args={'newNumber': GraphQLArgument(GraphQLInt)},
-            resolve=lambda obj, _info, newNumber:
-            obj.promise_and_fail_to_change_the_number(newNumber))}))
+    GraphQLObjectType("Query", {"numberHolder": GraphQLField(numberHolderType)}),
+    GraphQLObjectType(
+        "Mutation",
+        {
+            "immediatelyChangeTheNumber": GraphQLField(
+                numberHolderType,
+                args={"newNumber": GraphQLArgument(GraphQLInt)},
+                resolve=lambda obj, _info, newNumber: obj.immediately_change_the_number(
+                    newNumber
+                ),
+            ),
+            "promiseToChangeTheNumber": GraphQLField(
+                numberHolderType,
+                args={"newNumber": GraphQLArgument(GraphQLInt)},
+                resolve=lambda obj, _info, newNumber: obj.promise_to_change_the_number(
+                    newNumber
+                ),
+            ),
+            "failToChangeTheNumber": GraphQLField(
+                numberHolderType,
+                args={"newNumber": GraphQLArgument(GraphQLInt)},
+                resolve=lambda obj, _info, newNumber: obj.fail_to_change_the_number(
+                    newNumber
+                ),
+            ),
+            "promiseAndFailToChangeTheNumber": GraphQLField(
+                numberHolderType,
+                args={"newNumber": GraphQLArgument(GraphQLInt)},
+                resolve=lambda obj, _info, newNumber: obj.promise_and_fail_to_change_the_number(
+                    newNumber
+                ),
+            ),
+        },
+    ),
+)
 
 
 def describe_execute_handles_mutation_execution_ordering():
-
-    @mark.asyncio
-    async def evaluates_mutations_serially():
+    def evaluates_mutations_serially():
         doc = """
             mutation M {
               first: immediatelyChangeTheNumber(newNumber: 1) {
@@ -97,18 +104,20 @@ def describe_execute_handles_mutation_execution_ordering():
             }
             """
 
-        mutation_result = await execute(schema, parse(doc), Root(6))
+        mutation_result = execute(schema, parse(doc), Root(6)).get()
 
-        assert mutation_result == ({
-            'first': {'theNumber': 1},
-            'second': {'theNumber': 2},
-            'third': {'theNumber': 3},
-            'fourth': {'theNumber': 4},
-            'fifth': {'theNumber': 5}
-        }, None)
+        assert mutation_result == (
+            {
+                "first": {"theNumber": 1},
+                "second": {"theNumber": 2},
+                "third": {"theNumber": 3},
+                "fourth": {"theNumber": 4},
+                "fifth": {"theNumber": 5},
+            },
+            None,
+        )
 
-    @mark.asyncio
-    async def evaluates_mutations_correctly_in_presence_of_a_failed_mutation():
+    def evaluates_mutations_correctly_in_presence_of_a_failed_mutation():
         doc = """
             mutation M {
               first: immediatelyChangeTheNumber(newNumber: 1) {
@@ -132,27 +141,27 @@ def describe_execute_handles_mutation_execution_ordering():
             }
             """
 
-        result = await execute(schema, parse(doc), Root(6))
+        result = execute(schema, parse(doc), Root(6)).get()
 
-        assert result == ({
-            'first': {
-              'theNumber': 1,
+        assert result == (
+            {
+                "first": {"theNumber": 1},
+                "second": {"theNumber": 2},
+                "third": None,
+                "fourth": {"theNumber": 4},
+                "fifth": {"theNumber": 5},
+                "sixth": None,
             },
-            'second': {
-              'theNumber': 2,
-            },
-            'third': None,
-            'fourth': {
-              'theNumber': 4,
-            },
-            'fifth': {
-              'theNumber': 5,
-            },
-            'sixth': None
-        }, [{
-            'message': 'Cannot change the number to 3',
-            'locations': [(9, 15)], 'path': ['third']
-        }, {
-            'message': 'Cannot change the number to 6',
-            'locations': [(18, 15)], 'path': ['sixth']
-        }])
+            [
+                {
+                    "message": "Cannot change the number to 3",
+                    "locations": [(9, 15)],
+                    "path": ["third"],
+                },
+                {
+                    "message": "Cannot change the number to 6",
+                    "locations": [(18, 15)],
+                    "path": ["sixth"],
+                },
+            ],
+        )

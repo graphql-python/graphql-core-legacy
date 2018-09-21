@@ -2,6 +2,7 @@ from collections import namedtuple
 from gc import collect
 
 from pytest import mark
+from promise import Promise
 
 from graphql.language import parse
 from graphql.type import (
@@ -12,12 +13,12 @@ from graphql.execution import execute
 Data = namedtuple('Data', 'test')
 
 
-async def get_async(value):
-    return value
+def get_async(value):
+    return Promise.resolve(value)
 
 
-async def raise_async(msg):
-    raise RuntimeError(msg)
+def raise_async(msg):
+    raise Promise.reject(RuntimeError(msg))
 
 
 def get_response(test_type, test_data):
@@ -45,8 +46,8 @@ def check(test_type, test_data, expected):
     check_response(get_response(test_type, test_data), expected)
 
 
-async def check_async(test_type, test_data, expected):
-    check_response(await get_response(test_type, test_data), expected)
+def check_async(test_type, test_data, expected):
+    check_response(get_response(test_type, test_data).get(), expected)
 
     # Note: When Array values are rejected asynchronously,
     # the remaining values may not be awaited any more.
@@ -108,44 +109,37 @@ def describe_execute_handles_list_nullability():
 
         def describe_async_list():
 
-            @mark.asyncio
-            async def contains_values():
-                await check_async(type_, get_async([1, 2]), {
+            def contains_values():
+                check_async(type_, get_async([1, 2]), {
                     'nest': {'test': [1, 2]}})
 
-            @mark.asyncio
-            async def contains_null():
-                await check_async(type_, get_async([1, None, 2]), {
+            def contains_null():
+                check_async(type_, get_async([1, None, 2]), {
                         'nest': {'test': [1, None, 2]}})
 
-            @mark.asyncio
-            async def returns_null():
-                await check_async(type_, get_async(None), {
+            def returns_null():
+                check_async(type_, get_async(None), {
                     'nest': {'test': None}})
 
-            @mark.asyncio
-            async def async_error():
-                await check_async(type_, raise_async('bad'), (
+            def async_error():
+                check_async(type_, raise_async('bad'), (
                     {'nest': {'test': None}},
                     [{'message': 'bad',
                      'locations': [(1, 10)], 'path': ['nest', 'test']}]))
 
         def describe_list_async():
 
-            @mark.asyncio
-            async def contains_values():
-                await check_async(type_, [get_async(1), get_async(2)], {
+            def contains_values():
+                check_async(type_, [get_async(1), get_async(2)], {
                     'nest': {'test': [1, 2]}})
 
-            @mark.asyncio
-            async def contains_null():
-                await check_async(type_, [
+            def contains_null():
+                check_async(type_, [
                     get_async(1), get_async(None), get_async(2)], {
                     'nest': {'test': [1, None, 2]}})
 
-            @mark.asyncio
-            async def contains_async_error():
-                await check_async(type_, [
+            def contains_async_error():
+                check_async(type_, [
                     get_async(1), raise_async('bad'), get_async(2)], (
                     {'nest': {'test': [1, None, 2]}},
                     [{'message': 'bad',
@@ -171,47 +165,40 @@ def describe_execute_handles_list_nullability():
 
         def describe_async_list():
 
-            @mark.asyncio
-            async def contains_values():
-                await check_async(type_, get_async([1, 2]), {
+            def contains_values():
+                check_async(type_, get_async([1, 2]), {
                     'nest': {'test': [1, 2]}})
 
-            @mark.asyncio
-            async def contains_null():
-                await check_async(type_, get_async([1, None, 2]), {
+            def contains_null():
+                check_async(type_, get_async([1, None, 2]), {
                         'nest': {'test': [1, None, 2]}})
 
-            @mark.asyncio
-            async def returns_null():
-                await check_async(type_, get_async(None), (
+            def returns_null():
+                check_async(type_, get_async(None), (
                     {'nest': None},
                     [{'message': 'Cannot return null'
                                  ' for non-nullable field DataType.test.',
                       'locations': [(1, 10)], 'path': ['nest', 'test']}]))
 
-            @mark.asyncio
-            async def async_error():
-                await check_async(type_, raise_async('bad'), (
+            def async_error():
+                check_async(type_, raise_async('bad'), (
                     {'nest': None},
                     [{'message': 'bad',
                      'locations': [(1, 10)], 'path': ['nest', 'test']}]))
 
         def describe_list_async():
 
-            @mark.asyncio
-            async def contains_values():
-                await check_async(type_, [get_async(1), get_async(2)], {
+            def contains_values():
+                check_async(type_, [get_async(1), get_async(2)], {
                     'nest': {'test': [1, 2]}})
 
-            @mark.asyncio
-            async def contains_null():
-                await check_async(type_, [
+            def contains_null():
+                check_async(type_, [
                     get_async(1), get_async(None), get_async(2)], {
                     'nest': {'test': [1, None, 2]}})
 
-            @mark.asyncio
-            async def contains_async_error():
-                await check_async(type_, [
+            def contains_async_error():
+                check_async(type_, [
                     get_async(1), raise_async('bad'), get_async(2)], (
                     {'nest': {'test': [1, None, 2]}},
                     [{'message': 'bad',
@@ -237,52 +224,45 @@ def describe_execute_handles_list_nullability():
 
         def describe_async_list():
 
-            @mark.asyncio
-            async def contains_values():
-                await check_async(type_, get_async([1, 2]), {
+            def contains_values():
+                check_async(type_, get_async([1, 2]), {
                     'nest': {'test': [1, 2]}})
 
-            @mark.asyncio
-            async def contains_null():
-                await check_async(type_, get_async([1, None, 2]), (
+            def contains_null():
+                check_async(type_, get_async([1, None, 2]), (
                     {'nest': {'test': None}},
                     [{'message': 'Cannot return null'
                                  ' for non-nullable field DataType.test.',
                       'locations': [(1, 10)], 'path': ['nest', 'test', 1]}]))
 
-            @mark.asyncio
-            async def returns_null():
-                await check_async(type_, get_async(None), {
+            def returns_null():
+                check_async(type_, get_async(None), {
                     'nest': {'test': None}})
 
-            @mark.asyncio
-            async def async_error():
-                await check_async(type_, raise_async('bad'), (
+            def async_error():
+                check_async(type_, raise_async('bad'), (
                     {'nest': {'test': None}},
                     [{'message': 'bad',
                       'locations': [(1, 10)], 'path': ['nest', 'test']}]))
 
         def describe_list_async():
 
-            @mark.asyncio
-            async def contains_values():
-                await check_async(type_, [get_async(1), get_async(2)], {
+            def contains_values():
+                check_async(type_, [get_async(1), get_async(2)], {
                     'nest': {'test': [1, 2]}})
 
-            @mark.asyncio
             @mark.filterwarnings('ignore::RuntimeWarning')
-            async def contains_null():
-                await check_async(type_, [
+            def contains_null():
+                check_async(type_, [
                     get_async(1), get_async(None), get_async(2)], (
                     {'nest': {'test': None}},
                     [{'message': 'Cannot return null'
                                  ' for non-nullable field DataType.test.',
                       'locations': [(1, 10)], 'path': ['nest', 'test', 1]}]))
 
-            @mark.asyncio
             @mark.filterwarnings('ignore::RuntimeWarning')
-            async def contains_async_error():
-                await check_async(type_, [
+            def contains_async_error():
+                check_async(type_, [
                     get_async(1), raise_async('bad'), get_async(2)], (
                     {'nest': {'test': None}},
                     [{'message': 'bad',
@@ -312,55 +292,48 @@ def describe_execute_handles_list_nullability():
 
         def describe_async_list():
 
-            @mark.asyncio
-            async def contains_values():
-                await check_async(type_, get_async([1, 2]), {
+            def contains_values():
+                check_async(type_, get_async([1, 2]), {
                     'nest': {'test': [1, 2]}})
 
-            @mark.asyncio
-            async def contains_null():
-                await check_async(type_, get_async([1, None, 2]), (
+            def contains_null():
+                check_async(type_, get_async([1, None, 2]), (
                     {'nest': None},
                     [{'message': 'Cannot return null'
                                  ' for non-nullable field DataType.test.',
                       'locations': [(1, 10)], 'path': ['nest', 'test', 1]}]))
 
-            @mark.asyncio
-            async def returns_null():
-                await check_async(type_, get_async(None), (
+            def returns_null():
+                check_async(type_, get_async(None), (
                     {'nest': None},
                     [{'message': 'Cannot return null'
                                  ' for non-nullable field DataType.test.',
                       'locations': [(1, 10)], 'path': ['nest', 'test']}]))
 
-            @mark.asyncio
-            async def async_error():
-                await check_async(type_, raise_async('bad'), (
+            def async_error():
+                check_async(type_, raise_async('bad'), (
                     {'nest': None},
                     [{'message': 'bad',
                       'locations': [(1, 10)], 'path': ['nest', 'test']}]))
 
         def describe_list_async():
 
-            @mark.asyncio
-            async def contains_values():
-                await check_async(type_, [get_async(1), get_async(2)], {
+            def contains_values():
+                check_async(type_, [get_async(1), get_async(2)], {
                     'nest': {'test': [1, 2]}})
 
-            @mark.asyncio
             @mark.filterwarnings('ignore::RuntimeWarning')
-            async def contains_null():
-                await check_async(type_, [
+            def contains_null():
+                check_async(type_, [
                     get_async(1), get_async(None), get_async(2)], (
                     {'nest': None},
                     [{'message': 'Cannot return null'
                                  ' for non-nullable field DataType.test.',
                       'locations': [(1, 10)], 'path': ['nest', 'test', 1]}]))
 
-            @mark.asyncio
             @mark.filterwarnings('ignore::RuntimeWarning')
-            async def contains_async_error():
-                await check_async(type_, [
+            def contains_async_error():
+                check_async(type_, [
                     get_async(1), raise_async('bad'), get_async(2)], (
                     {'nest': None},
                     [{'message': 'bad',

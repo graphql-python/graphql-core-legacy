@@ -1,6 +1,7 @@
 from collections import namedtuple
 
 from pytest import mark
+from promise import Promise
 
 from graphql import graphql
 from graphql.error import format_error
@@ -14,19 +15,19 @@ Cat = namedtuple('Cat', 'name meows')
 Human = namedtuple('Human', 'name')
 
 
-async def is_type_of_error(*_args):
-    raise RuntimeError('We are testing this error')
+def is_type_of_error(*_args):
+    return Promise.reject(RuntimeError('We are testing this error'))
 
 
 def get_is_type_of(type_):
-    async def is_type_of(obj, _info):
-        return isinstance(obj, type_)
+    def is_type_of(obj, _info):
+        return Promise.resolve(isinstance(obj, type_))
     return is_type_of
 
 
 def get_type_resolver(types):
-    async def resolve(obj, _info):
-        return resolve_thunk(types).get(obj.__class__)
+    def resolve(obj, _info):
+        return Promise.resolve(resolve_thunk(types).get(obj.__class__))
     return resolve
 
 
@@ -36,8 +37,7 @@ def resolve_thunk(thunk):
 
 def describe_execute_handles_asynchronous_execution_of_abstract_types():
 
-    @mark.asyncio
-    async def is_type_of_used_to_resolve_runtime_type_for_interface():
+    def is_type_of_used_to_resolve_runtime_type_for_interface():
         PetType = GraphQLInterfaceType('Pet', {
             'name': GraphQLField(GraphQLString)})
 
@@ -72,13 +72,12 @@ def describe_execute_handles_asynchronous_execution_of_abstract_types():
             }
             """
 
-        result = await graphql(schema, query)
+        result = graphql(schema, query).get()
         assert result == ({'pets': [
             {'name': 'Odie', 'woofs': True},
             {'name': 'Garfield', 'meows': False}]}, None)
 
-    @mark.asyncio
-    async def is_type_of_with_async_error():
+    def is_type_of_with_async_error():
         PetType = GraphQLInterfaceType('Pet', {
             'name': GraphQLField(GraphQLString)})
 
@@ -113,7 +112,7 @@ def describe_execute_handles_asynchronous_execution_of_abstract_types():
             }
             """
 
-        result = await graphql(schema, query)
+        result = graphql(schema, query).get()
         # Note: we get two errors, because first all types are resolved
         # and only then they are checked sequentially
         assert result.data == {'pets': [None, None]}
@@ -123,8 +122,7 @@ def describe_execute_handles_asynchronous_execution_of_abstract_types():
             'message': 'We are testing this error',
             'locations': [(3, 15)], 'path': ['pets', 1]}]
 
-    @mark.asyncio
-    async def is_type_of_used_to_resolve_runtime_type_for_union():
+    def is_type_of_used_to_resolve_runtime_type_for_union():
         DogType = GraphQLObjectType('Dog', {
             'name': GraphQLField(GraphQLString),
             'woofs': GraphQLField(GraphQLBoolean)},
@@ -156,13 +154,12 @@ def describe_execute_handles_asynchronous_execution_of_abstract_types():
             }
             """
 
-        result = await graphql(schema, query)
+        result = graphql(schema, query).get()
         assert result == ({'pets': [
             {'name': 'Odie', 'woofs': True},
             {'name': 'Garfield', 'meows': False}]}, None)
 
-    @mark.asyncio
-    async def resolve_type_on_interface_yields_useful_error():
+    def resolve_type_on_interface_yields_useful_error():
         PetType = GraphQLInterfaceType('Pet', {
             'name': GraphQLField(GraphQLString)},
             resolve_type=get_type_resolver(lambda: {
@@ -200,7 +197,7 @@ def describe_execute_handles_asynchronous_execution_of_abstract_types():
             }
             """
 
-        result = await graphql(schema, query)
+        result = graphql(schema, query).get()
         assert result.data == {'pets': [
             {'name': 'Odie', 'woofs': True},
             {'name': 'Garfield', 'meows': False}, None]}
@@ -211,8 +208,7 @@ def describe_execute_handles_asynchronous_execution_of_abstract_types():
                        " is not a possible type for 'Pet'.",
             'locations': [(3,  15)], 'path': ['pets', 2]}
 
-    @mark.asyncio
-    async def resolve_type_on_union_yields_useful_error():
+    def resolve_type_on_union_yields_useful_error():
         HumanType = GraphQLObjectType('Human', {
             'name': GraphQLField(GraphQLString)})
 
@@ -248,7 +244,7 @@ def describe_execute_handles_asynchronous_execution_of_abstract_types():
             }
             """
 
-        result = await graphql(schema, query)
+        result = graphql(schema, query).get()
         assert result.data == {'pets': [
             {'name': 'Odie', 'woofs': True},
             {'name': 'Garfield', 'meows': False}, None]}
@@ -259,8 +255,7 @@ def describe_execute_handles_asynchronous_execution_of_abstract_types():
                        " is not a possible type for 'Pet'.",
             'locations': [(3,  15)], 'path': ['pets', 2]}
 
-    @mark.asyncio
-    async def resolve_type_allows_resolving_with_type_name():
+    def resolve_type_allows_resolving_with_type_name():
         PetType = GraphQLInterfaceType('Pet', {
            'name': GraphQLField(GraphQLString)},
            resolve_type=get_type_resolver({
@@ -294,7 +289,7 @@ def describe_execute_handles_asynchronous_execution_of_abstract_types():
               }
             }"""
 
-        result = await graphql(schema, query)
+        result = graphql(schema, query).get()
         assert result == ({'pets': [
             {'name': 'Odie', 'woofs': True},
             {'name': 'Garfield', 'meows': False}]}, None)

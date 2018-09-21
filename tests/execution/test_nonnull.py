@@ -1,6 +1,7 @@
 import re
-from inspect import isawaitable
 from pytest import fixture, mark
+
+from promise import Promise, is_thenable
 
 from graphql.execution import execute
 from graphql.language import parse
@@ -23,11 +24,11 @@ class ThrowingData:
     def syncNonNull(self, _info):
         raise sync_non_null_error
 
-    async def promise(self, _info):
-        raise promise_error
+    def promise(self, _info):
+        return Promise.reject(promise_error)
 
-    async def promiseNonNull(self, _info):
-        raise promise_non_null_error
+    def promiseNonNull(self, _info):
+        return Promise.reject(promise_non_null_error)
 
     def syncNest(self, _info):
         return ThrowingData()
@@ -35,11 +36,11 @@ class ThrowingData:
     def syncNonNullNest(self, _info):
         return ThrowingData()
 
-    async def promiseNest(self, _info):
-        return ThrowingData()
+    def promiseNest(self, _info):
+        return Promise.resolve(ThrowingData())
 
-    async def promiseNonNullNest(self, _info):
-        return ThrowingData()
+    def promiseNonNullNest(self, _info):
+        return Promise.resolve(ThrowingData())
 
 
 # noinspection PyPep8Naming,PyMethodMayBeStatic
@@ -51,11 +52,11 @@ class NullingData:
     def syncNonNull(self, _info):
         return None
 
-    async def promise(self, _info):
-        return None
+    def promise(self, _info):
+        return Promise.resolve(None)
 
-    async def promiseNonNull(self, _info):
-        return None
+    def promiseNonNull(self, _info):
+        return Promise.resolve(None)
 
     def syncNest(self, _info):
         return NullingData()
@@ -63,11 +64,11 @@ class NullingData:
     def syncNonNullNest(self, _info):
         return NullingData()
 
-    async def promiseNest(self, _info):
-        return NullingData()
+    def promiseNest(self, _info):
+        return Promise.resolve(NullingData())
 
-    async def promiseNonNullNest(self, _info):
-        return NullingData()
+    def promiseNonNullNest(self, _info):
+        return Promise.resolve(NullingData())
 
 
 DataType = GraphQLObjectType('DataType', lambda: {
@@ -92,11 +93,11 @@ def patch(data):
         r'\bsync\b', 'promise', data))
 
 
-async def execute_sync_and_async(query, root_value):
+def execute_sync_and_async(query, root_value):
     sync_result = execute_query(query, root_value)
-    if isawaitable(sync_result):
-        sync_result = await sync_result
-    async_result = await execute_query(patch(query), root_value)
+    if is_thenable(sync_result):
+        sync_result = sync_result.get()
+    async_result = execute_query(patch(query), root_value).get()
 
     assert repr(async_result) == patch(repr(sync_result))
     return sync_result
@@ -111,14 +112,13 @@ def describe_execute_handles_non_nullable_types():
             }
             """
 
-        @mark.asyncio
-        async def returns_null():
-            result = await execute_sync_and_async(query, NullingData())
+        def returns_null():
+            result = execute_sync_and_async(query, NullingData())
             assert result == ({'sync': None}, None)
 
-        @mark.asyncio
-        async def throws():
-            result = await execute_sync_and_async(query, ThrowingData())
+        
+        def throws():
+            result = execute_sync_and_async(query, ThrowingData())
             assert result == ({'sync': None}, [{
                 'message': str(sync_error),
                 'path': ['sync'], 'locations': [(3, 15)]}])
@@ -133,18 +133,18 @@ def describe_execute_handles_non_nullable_types():
             }
             """
 
-        @mark.asyncio
-        async def returns_null():
-            result = await execute_sync_and_async(query, NullingData())
+        
+        def returns_null():
+            result = execute_sync_and_async(query, NullingData())
             assert result == ({'syncNest': None}, [{
                 'message': 'Cannot return null for non-nullable field'
                            ' DataType.syncNonNull.',
                 'path': ['syncNest', 'syncNonNull'],
                 'locations': [(4, 17)]}])
 
-        @mark.asyncio
-        async def throws():
-            result = await execute_sync_and_async(query, ThrowingData())
+        
+        def throws():
+            result = execute_sync_and_async(query, ThrowingData())
             assert result == ({'syncNest': None}, [{
                 'message': str(sync_non_null_error),
                 'path': ['syncNest', 'syncNonNull'],
@@ -159,18 +159,18 @@ def describe_execute_handles_non_nullable_types():
             }
             """
 
-        @mark.asyncio
-        async def returns_null():
-            result = await execute_sync_and_async(query, NullingData())
+        
+        def returns_null():
+            result = execute_sync_and_async(query, NullingData())
             assert result == ({'promiseNest': None}, [{
                 'message': 'Cannot return null for non-nullable field'
                            ' DataType.syncNonNull.',
                 'path': ['promiseNest', 'syncNonNull'],
                 'locations': [(4, 17)]}])
 
-        @mark.asyncio
-        async def throws():
-            result = await execute_sync_and_async(query, ThrowingData())
+        
+        def throws():
+            result = execute_sync_and_async(query, ThrowingData())
             assert result == ({'promiseNest': None}, [{
                 'message': str(sync_non_null_error),
                 'path': ['promiseNest', 'syncNonNull'],
@@ -205,14 +205,14 @@ def describe_execute_handles_non_nullable_types():
                 'syncNest': {'sync': None, 'promise': None},
                 'promiseNest': {'sync': None, 'promise': None}}}
 
-        @mark.asyncio
-        async def returns_null():
-            result = await execute_query(query, NullingData())
+        
+        def returns_null():
+            result = execute_query(query, NullingData()).get()
             assert result == (data, None)
 
-        @mark.asyncio
-        async def throws():
-            result = await execute_query(query, ThrowingData())
+        
+        def throws():
+            result = execute_query(query, ThrowingData()).get()
             assert result == (data, [{
                 'message': str(sync_error),
                 'path': ['syncNest', 'sync'],
@@ -318,9 +318,9 @@ def describe_execute_handles_non_nullable_types():
             'anotherNest': None,
             'anotherPromiseNest': None}
 
-        @mark.asyncio
-        async def returns_null():
-            result = await execute_query(query, NullingData())
+        
+        def returns_null():
+            result = execute_query(query, NullingData()).get()
             assert result == (data, [{
                 'message': 'Cannot return null for non-nullable field'
                            ' DataType.syncNonNull.',
@@ -353,9 +353,9 @@ def describe_execute_handles_non_nullable_types():
                 'locations': [(41, 25)]
             }])
 
-        @mark.asyncio
-        async def throws():
-            result = await execute_query(query, ThrowingData())
+        
+        def throws():
+            result = execute_query(query, ThrowingData()).get()
             assert result == (data, [{
                 'message': str(sync_non_null_error),
                 'path': [
@@ -391,17 +391,17 @@ def describe_execute_handles_non_nullable_types():
             }
             """
 
-        @mark.asyncio
-        async def returns_null():
-            result = await execute_sync_and_async(query, NullingData())
+        
+        def returns_null():
+            result = execute_sync_and_async(query, NullingData())
             assert result == (None, [{
                 'message': 'Cannot return null for non-nullable field'
                            ' DataType.syncNonNull.',
                 'path': ['syncNonNull'], 'locations': [(3, 17)]}])
 
-        @mark.asyncio
-        async def throws():
-            result = await execute_sync_and_async(query, ThrowingData())
+        
+        def throws():
+            result = execute_sync_and_async(query, ThrowingData())
             assert result == (None, [{
                 'message': str(sync_non_null_error),
                 'path': ['syncNonNull'], 'locations': [(3, 17)]}])

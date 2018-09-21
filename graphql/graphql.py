@@ -1,6 +1,5 @@
-from asyncio import ensure_future
-from inspect import isawaitable
 from typing import Any, Awaitable, Callable, Dict, Union, Type, cast
+from promise import Promise
 
 from .error import GraphQLError
 from .execution import execute, ExecutionResult, Middleware
@@ -12,7 +11,7 @@ from .execution.execute import ExecutionResult, ExecutionContext
 __all__ = ["graphql", "graphql_sync"]
 
 
-async def graphql(
+def graphql(
     schema,
     source,
     root_value = None,
@@ -65,22 +64,22 @@ async def graphql(
       The execution context class to use to build the context
     """
     # Always return asynchronously for a consistent API.
-    result = graphql_impl(
-        schema,
-        source,
-        root_value,
-        context_value,
-        variable_values,
-        operation_name,
-        field_resolver,
-        middleware,
-        execution_context_class,
+    def on_resolve(_):
+        return graphql_impl(
+            schema,
+            source,
+            root_value,
+            context_value,
+            variable_values,
+            operation_name,
+            field_resolver,
+            middleware,
+            execution_context_class,
+        )
+
+    return Promise.resolve(None).then(
+        on_resolve
     )
-
-    if isawaitable(result):
-        return await result
-
-    return result
 
 
 def graphql_sync(
@@ -114,8 +113,7 @@ def graphql_sync(
     )
 
     # Assert that the execution was synchronous.
-    if isawaitable(result):
-        ensure_future(result).cancel()
+    if isinstance(result, Promise):
         raise RuntimeError("GraphQL execution failed to complete synchronously.")
 
     return result

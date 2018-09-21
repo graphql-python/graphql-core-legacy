@@ -3,6 +3,7 @@ from json import dumps
 from typing import cast
 
 from pytest import raises, mark
+from promise import Promise
 
 from graphql.error import GraphQLError
 from graphql.execution import execute
@@ -44,8 +45,7 @@ def describe_execute_handles_basic_execution_tasks():
         assert execute(schema, document=parse(doc), root_value=data) == (
             {'a': 'rootValue'}, None)
 
-    @mark.asyncio
-    async def executes_arbitrary_code():
+    def executes_arbitrary_code():
 
         # noinspection PyMethodMayBeStatic,PyMethodMayBeStatic
         class Data:
@@ -91,9 +91,8 @@ def describe_execute_handles_basic_execution_tasks():
             def deeper(self, _info):
                 return [Data(), None, Data()]
 
-        async def promise_data():
-            await asyncio.sleep(0)
-            return Data()
+        def promise_data():
+            return Promise.resolve(Data())
 
         doc = """
             query Example($size: Int) {
@@ -166,9 +165,9 @@ def describe_execute_handles_basic_execution_tasks():
 
         schema = GraphQLSchema(DataType)
 
-        assert await execute(
+        assert execute(
             schema, ast, Data(), variable_values={'size': 100},
-            operation_name='Example') == expected
+            operation_name='Example').get() == expected
 
     def merges_parallel_fragments():
         ast = parse("""
@@ -264,8 +263,7 @@ def describe_execute_handles_basic_execution_tasks():
         assert len(resolved_args) == 1
         assert resolved_args[0] == {'numArg': 123, 'stringArg': 'foo'}
 
-    @mark.asyncio
-    async def nulls_out_error_subtrees():
+    def nulls_out_error_subtrees():
         doc = """{
               syncOk
               syncError
@@ -301,22 +299,22 @@ def describe_execute_handles_basic_execution_tasks():
                     'sync2',
                     Exception('Error getting syncReturnErrorList3')]
 
-            async def asyncOk(self, _info):
-                return 'async ok'
+            def asyncOk(self, _info):
+                return Promise.resolve('async ok')
 
-            async def asyncError(self, _info):
-                raise Exception('Error getting asyncError')
+            def asyncError(self, _info):
+                return Promise.reject(Exception('Error getting asyncError'))
 
-            async def asyncRawError(self, _info):
-                raise Exception('Error getting asyncRawError')
+            def asyncRawError(self, _info):
+                return Promise.reject(Exception('Error getting asyncRawError'))
 
-            async def asyncReturnError(self, _info):
-                return GraphQLError('Error getting asyncReturnError')
+            def asyncReturnError(self, _info):
+                return Promise.resolve(GraphQLError('Error getting asyncReturnError'))
 
-            async def asyncReturnErrorWithExtensions(self, _info):
-                return GraphQLError(
+            def asyncReturnErrorWithExtensions(self, _info):
+                return Promise.resolve(GraphQLError(
                     'Error getting asyncReturnErrorWithExtensions',
-                    extensions={'foo': 'bar'})
+                    extensions={'foo': 'bar'}))
 
         ast = parse(doc)
 
@@ -333,7 +331,7 @@ def describe_execute_handles_basic_execution_tasks():
             'asyncReturnError': GraphQLField(GraphQLString),
             'asyncReturnErrorWithExtensions': GraphQLField(GraphQLString)}))
 
-        assert await execute(schema, ast, Data()) == ({
+        assert execute(schema, ast, Data()).get() == ({
             'syncOk': 'sync ok',
             'syncError': None,
             'syncRawError': None,
@@ -526,8 +524,7 @@ def describe_execute_handles_basic_execution_tasks():
         assert execute(schema, ast, Data(), operation_name='S') == (
             {'a': 'b'}, None)
 
-    @mark.asyncio
-    async def correct_field_ordering_despite_execution_order():
+    def correct_field_ordering_despite_execution_order():
         doc = '{ a, b, c, d, e}'
 
         # noinspection PyMethodMayBeStatic,PyMethodMayBeStatic
@@ -536,14 +533,14 @@ def describe_execute_handles_basic_execution_tasks():
             def a(self, _info):
                 return 'a'
 
-            async def b(self, _info):
-                return 'b'
+            def b(self, _info):
+                return Promise.resolve('b')
 
             def c(self, _info):
                 return 'c'
 
-            async def d(self, _info):
-                return 'd'
+            def d(self, _info):
+                return Promise.resolve('d')
 
             def e(self, _info):
                 return 'e'
@@ -556,7 +553,7 @@ def describe_execute_handles_basic_execution_tasks():
             'd': GraphQLField(GraphQLString),
             'e': GraphQLField(GraphQLString)}))
 
-        result = await execute(schema, ast, Data())
+        result = execute(schema, ast, Data()).get()
 
         assert result == (
             {'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e'}, None)

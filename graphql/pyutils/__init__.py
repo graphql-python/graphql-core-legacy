@@ -12,7 +12,8 @@ from .convert_case import camel_to_snake, snake_to_camel
 from .cached_property import cached_property
 from .contain_subset import contain_subset
 from .dedent import dedent
-from .event_emitter import EventEmitter, EventEmitterAsyncIterator
+
+# from .event_emitter import EventEmitter, EventEmitterAsyncIterator
 from .is_finite import is_finite
 from .is_integer import is_integer
 from .is_invalid import is_invalid
@@ -28,8 +29,8 @@ __all__ = [
     "cached_property",
     "contain_subset",
     "dedent",
-    "EventEmitter",
-    "EventEmitterAsyncIterator",
+    # "EventEmitter",
+    # "EventEmitterAsyncIterator",
     "is_finite",
     "is_integer",
     "is_invalid",

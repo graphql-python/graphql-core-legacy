@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable, List, NamedTuple, Optional, Union, cast
+from typing import Any, Dict, Iterable, List, Optional, Union, cast
 from collections import namedtuple
 
 from ..error import GraphQLError, INVALID

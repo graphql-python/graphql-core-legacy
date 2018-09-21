@@ -5,7 +5,6 @@ from typing import (
     Dict,
     Generic,
     List,
-    NamedTuple,
     Optional,
     Sequence,
     TYPE_CHECKING,
