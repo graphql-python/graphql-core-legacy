@@ -78,7 +78,7 @@ async def graphql(
     )
 
     if isawaitable(result):
-        return await cast(Awaitable[ExecutionResult], result)
+        return await result
 
     return result
 

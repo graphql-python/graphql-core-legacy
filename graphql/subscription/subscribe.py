@@ -164,7 +164,7 @@ async def create_source_event_stream(
     result = context.resolve_field_value_or_error(
         field_def, field_nodes, resolve_fn, root_value, info
     )
-    event_stream = await cast(Awaitable, result) if isawaitable(result) else result
+    event_stream = await result if isawaitable(result) else result
     # If event_stream is an Error, rethrow a located error.
     if isinstance(event_stream, Exception):
         raise located_error(event_stream, field_nodes, response_path_as_list(path))

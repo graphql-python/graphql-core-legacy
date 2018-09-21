@@ -324,7 +324,7 @@ class ExecutionContext:
         if isawaitable(results):
             # noinspection PyShadowingNames
             async def get_results():
-                return await cast(Awaitable, results)
+                return await results
 
             return get_results()
         return results
