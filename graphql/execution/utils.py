@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-from traceback import format_exception
 
 from ..error import GraphQLError
 from ..language import ast
@@ -145,10 +144,8 @@ class ExecutionContext(object):
 
     def report_error(self, error, traceback=None):
         # type: (Exception, Optional[TracebackType]) -> None
-        exception = format_exception(
-            type(error), error, getattr(error, "stack", None) or traceback
-        )
-        logger.error("".join(exception))
+        info = (type(error), error, getattr(error, "stack", None) or traceback)
+        logger.error("%s", error, exc_info=info)
         self.errors.append(error)
 
     def get_sub_fields(self, return_type, field_asts):
