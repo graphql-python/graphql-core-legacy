@@ -126,7 +126,7 @@ def test_fetch_some_id_query():
     """
     params = {"someId": "1000"}
     expected = {"human": {"name": "Luke Skywalker"}}
-    result = graphql(StarWarsSchema, query, variable_values=params)
+    result = graphql(StarWarsSchema, query, variables=params)
     assert not result.errors
     assert result.data == expected
 
@@ -141,7 +141,7 @@ def test_fetch_some_id_query2():
     """
     params = {"someId": "1002"}
     expected = {"human": {"name": "Han Solo"}}
-    result = graphql(StarWarsSchema, query, variable_values=params)
+    result = graphql(StarWarsSchema, query, variables=params)
     assert not result.errors
     assert result.data == expected
 
@@ -156,7 +156,7 @@ def test_invalid_id_query():
     """
     params = {"id": "not a valid id"}
     expected = {"human": None}
-    result = graphql(StarWarsSchema, query, variable_values=params)
+    result = graphql(StarWarsSchema, query, variables=params)
     assert not result.errors
     assert result.data == expected
 
