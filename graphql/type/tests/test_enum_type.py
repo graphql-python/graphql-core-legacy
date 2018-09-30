@@ -161,7 +161,7 @@ def test_accepts_json_string_as_enum_variable():
     result = graphql(
         Schema,
         "query test($color: Color!) { colorEnum(fromEnum: $color) }",
-        variable_values={"color": "BLUE"},
+        variables={"color": "BLUE"},
     )
     assert not result.errors
     assert result.data == {"colorEnum": "BLUE"}
@@ -171,7 +171,7 @@ def test_accepts_enum_literals_as_input_arguments_to_mutations():
     result = graphql(
         Schema,
         "mutation x($color: Color!) { favoriteEnum(color: $color) }",
-        variable_values={"color": "GREEN"},
+        variables={"color": "GREEN"},
     )
     assert not result.errors
     assert result.data == {"favoriteEnum": "GREEN"}
@@ -181,7 +181,7 @@ def test_accepts_enum_literals_as_input_arguments_to_subscriptions():
     result = graphql(
         Schema,
         "subscription x($color: Color!) { subscribeToEnum(color: $color) }",
-        variable_values={"color": "GREEN"},
+        variables={"color": "GREEN"},
         allow_subscriptions=True,
     )
     assert isinstance(result, Observable)
@@ -196,7 +196,7 @@ def test_does_not_accept_internal_value_as_enum_variable():
     result = graphql(
         Schema,
         "query test($color: Color!) { colorEnum(fromEnum: $color) }",
-        variable_values={"color": 2},
+        variables={"color": 2},
     )
     assert not result.data
     assert (
@@ -209,7 +209,7 @@ def test_does_not_accept_string_variables_as_enum_input():
     result = graphql(
         Schema,
         "query test($color: String!) { colorEnum(fromEnum: $color) }",
-        variable_values={"color": "BLUE"},
+        variables={"color": "BLUE"},
     )
     assert not result.data
     assert (
@@ -222,7 +222,7 @@ def test_does_not_accept_internal_value_as_enum_input():
     result = graphql(
         Schema,
         "query test($color: Int!) { colorEnum(fromEnum: $color) }",
-        variable_values={"color": 2},
+        variables={"color": 2},
     )
     assert not result.data
     assert (

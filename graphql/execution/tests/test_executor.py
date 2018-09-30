@@ -136,7 +136,7 @@ def test_executes_arbitary_code():
     schema = GraphQLSchema(query=DataType)
 
     result = execute(
-        schema, ast, Data(), operation_name="Example", variable_values={"size": 100}
+        schema, ast, Data(), operation_name="Example", variables={"size": 100}
     )
     assert not result.errors
     assert result.data == expected

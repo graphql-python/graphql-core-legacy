@@ -152,7 +152,7 @@ def check(
 ):
     # type: (...) -> None
     ast = parse(doc)
-    response = execute(schema, ast, variable_values=args)
+    response = execute(schema, ast, variables=args)
 
     if response.errors:
         result = {

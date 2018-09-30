@@ -145,14 +145,14 @@ def test_executes_arbitary_code():
             schema,
             ast,
             Data(),
-            variable_values={"size": 100},
+            variables={"size": 100},
             operation_name="Example",
             executor=ThreadExecutor(),
         )
     )
     handle_result(
         execute(
-            schema, ast, Data(), variable_values={"size": 100}, operation_name="Example"
+            schema, ast, Data(), variables={"size": 100}, operation_name="Example"
         )
     )
 
