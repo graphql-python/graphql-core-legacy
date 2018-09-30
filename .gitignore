@@ -71,3 +71,4 @@ target/
 .pyre
 /.vscode
 /type_info.json
+/.venv
