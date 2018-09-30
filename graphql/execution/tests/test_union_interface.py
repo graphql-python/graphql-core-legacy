@@ -367,7 +367,7 @@ def test_gets_execution_info_in_resolver():
     context = {"hey"}
     ast = parse("""{ name, friends { name } }""")
 
-    result = execute(schema2, ast, john2, context_value=context)
+    result = execute(schema2, ast, john2, context=context)
     assert not result.errors
     assert result.data == {"name": "John", "friends": [{"name": "Liz"}]}
 
