@@ -72,7 +72,7 @@ def test_batches_correctly(executor):
     class Context(object):
         business_data_loader = BusinessDataLoader()
 
-    result = execute(schema, doc_ast, None, context_value=Context(), executor=executor)
+    result = execute(schema, doc_ast, None, context=Context(), executor=executor)
     assert not result.errors
     assert result.data == {"business1": {"id": "1"}, "business2": {"id": "2"}}
     assert load_calls == [["1", "2"]]
@@ -161,7 +161,7 @@ def test_batches_multiple_together(executor):
         business_data_loader = BusinessDataLoader()
         location_data_loader = LocationDataLoader()
 
-    result = execute(schema, doc_ast, None, context_value=Context(), executor=executor)
+    result = execute(schema, doc_ast, None, context=Context(), executor=executor)
     assert not result.errors
     assert result.data == {
         "business1": {"id": "1", "location": {"id": "location-1"}},
