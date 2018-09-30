@@ -183,7 +183,7 @@ def test_accepts_an_object_with_named_properties_as_arguments():
       }
   """
     )
-    result = subscribe(email_schema, document, root_value=None)
+    result = subscribe(email_schema, document, root=None)
     assert isinstance(result, Observable)
 
 
