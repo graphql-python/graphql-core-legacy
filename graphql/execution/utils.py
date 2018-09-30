@@ -121,11 +121,15 @@ class ExecutionContext(object):
         self.variable_values = variable_values
         self.errors = errors
         self.context_value = context_value
-        self.argument_values_cache = {}  # type: Dict[Tuple[GraphQLField, Field], Dict[str, Any]]
+        self.argument_values_cache = (
+            {}
+        )  # type: Dict[Tuple[GraphQLField, Field], Dict[str, Any]]
         self.executor = executor
         self.middleware = middleware
         self.allow_subscriptions = allow_subscriptions
-        self._subfields_cache = {}  # type: Dict[Tuple[GraphQLObjectType, Tuple[Field, ...]], DefaultOrderedDict]
+        self._subfields_cache = (
+            {}
+        )  # type: Dict[Tuple[GraphQLObjectType, Tuple[Field, ...]], DefaultOrderedDict]
 
     def get_field_resolver(self, field_resolver):
         # type: (Callable) -> Callable

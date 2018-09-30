@@ -151,9 +151,7 @@ def test_executes_arbitary_code():
         )
     )
     handle_result(
-        execute(
-            schema, ast, Data(), variables={"size": 100}, operation_name="Example"
-        )
+        execute(schema, ast, Data(), variables={"size": 100}, operation_name="Example")
     )
 
 
