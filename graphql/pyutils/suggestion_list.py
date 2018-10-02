@@ -1,6 +1,8 @@
 if False:  # pragma: no cover
     from typing import Collection
 
+from ..pyutils.ordereddict import OrderedDict
+
 __all__ = ["suggestion_list"]
 
 
@@ -11,7 +13,7 @@ def suggestion_list(input_, options):
     Given an invalid input string and list of valid options, returns a filtered
     list of valid options sorted based on their similarity with the input.
     """
-    options_by_distance = {}
+    options_by_distance = OrderedDict()
     input_threshold = len(input_) // 2
 
     for option in options:
