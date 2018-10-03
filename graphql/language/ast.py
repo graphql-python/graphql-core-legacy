@@ -84,6 +84,9 @@ class Location(object):
     def __str__(self):
         return "{}:{}".format(self.start, self.end)
 
+    def __repr__(self):
+        return "Location({}, {})".format(self.start, self.end)
+
     def __eq__(self, other):
         if isinstance(other, Location):
             return self.start == other.start and self.end == other.end
@@ -100,6 +103,9 @@ class OperationType(Enum):
     QUERY = "query"
     MUTATION = "mutation"
     SUBSCRIPTION = "subscription"
+
+    def __repr__(self):
+        return "OperationType.{}".format(self.name)
 
 
 # Base AST Node
@@ -118,6 +124,12 @@ class Node(object):
         self.loc = loc
 
     def __repr__(self):
+        """Get a simple representation of the node."""
+        name = self.__class__.__name__
+        args = ['{}={!r}'.format(key, getattr(self, key)) for key in self.__slots__]
+        return "{}({})".format(name, ', '.join(args))
+
+    def __str__(self):
         """Get a simple representation of the node."""
         name, loc = self.__class__.__name__, getattr(self, "loc", None)
         return "{} at {}".format(name, loc) if loc else name
@@ -144,12 +156,12 @@ class Node(object):
             **{key: deepcopy(getattr(self, key), memo) for key in self.__slots__}
         )
 
-    def __init_subclass__(cls, **kwargs):
-        super(Node, cls).__init_subclass__(**kwargs)
-        name = cls.__name__
-        if name.endswith("Node"):
-            name = name[:-4]
-        cls.kind = camel_to_snake(name)
+    # def __init_subclass__(cls, **kwargs):
+    #     super(Node, cls).__init_subclass__(**kwargs)
+    #     name = cls.__name__
+    #     if name.endswith("Node"):
+    #         name = name[:-4]
+    #     cls.kind = camel_to_snake(name)
 
 
 # Name
@@ -157,6 +169,7 @@ class Node(object):
 
 class NameNode(Node):
     __slots__ = ("value", "loc")
+    kind = 'name'
 
     def __init__(self, value, loc=None):
         # type: (str, Optional[Location]) -> None
@@ -169,6 +182,7 @@ class NameNode(Node):
 
 class DocumentNode(Node):
     __slots__ = ("definitions", "loc")
+    kind = 'document'
 
     def __init__(self, definitions, loc=None):
         # type: (List[DefinitionNode], Optional[Location]) -> None
@@ -182,6 +196,7 @@ class DefinitionNode(Node):
 
 class ExecutableDefinitionNode(DefinitionNode):
     __slots__ = ("directives", "variable_definitions", "selection_set", "loc")
+    kind = 'executable_definition'
 
     def __init__(
         self,
@@ -208,6 +223,7 @@ class OperationDefinitionNode(ExecutableDefinitionNode):
         "directives",
         "loc",
     )
+    kind = 'operation_definition'
 
     def __init__(
         self,
@@ -229,6 +245,7 @@ class OperationDefinitionNode(ExecutableDefinitionNode):
 
 class VariableDefinitionNode(Node):
     __slots__ = ("variable", "type", "default_value", "directives", "loc")
+    kind = 'variable_definition'
 
     def __init__(
         self,
@@ -248,6 +265,7 @@ class VariableDefinitionNode(Node):
 
 class SelectionSetNode(Node):
     __slots__ = ("selections", "loc")
+    kind = 'selection_set'
 
     def __init__(
         self,
@@ -261,6 +279,7 @@ class SelectionSetNode(Node):
 
 class SelectionNode(Node):
     __slots__ = ("directives", "loc")
+    kind = 'selection'
 
     def __init__(
         self,
@@ -274,6 +293,7 @@ class SelectionNode(Node):
 
 class FieldNode(SelectionNode):
     __slots__ = ("alias", "name", "arguments", "selection_set", "directives", "loc")
+    kind = 'field'
 
     def __init__(
         self,
@@ -295,6 +315,7 @@ class FieldNode(SelectionNode):
 
 class ArgumentNode(Node):
     __slots__ = ("name", "value", "loc")
+    kind = 'argument'
 
     def __init__(
         self,
@@ -313,6 +334,7 @@ class ArgumentNode(Node):
 
 class FragmentSpreadNode(SelectionNode):
     __slots__ = ("name", "loc")
+    kind = 'fragment_spread'
 
     def __init__(
         self,
@@ -328,6 +350,7 @@ class FragmentSpreadNode(SelectionNode):
 
 class InlineFragmentNode(SelectionNode):
     __slots__ = ("type_condition", "selection_set", "loc")
+    kind = 'inline_fragment'
 
     def __init__(
         self,
@@ -352,6 +375,7 @@ class FragmentDefinitionNode(ExecutableDefinitionNode):
         "selection_set",
         "loc",
     )
+    kind = 'fragment_definition'
 
     def __init__(
         self,
@@ -380,6 +404,7 @@ class ValueNode(Node):
 
 class VariableNode(ValueNode):
     __slots__ = ("name", "loc")
+    kind = 'variable'
 
     def __init__(self, name, loc=None):
         # type: (NameNode, Optional[Location]) -> None
@@ -389,6 +414,7 @@ class VariableNode(ValueNode):
 
 class IntValueNode(ValueNode):
     __slots__ = ("value", "loc")
+    kind = 'int_value'
 
     def __init__(self, value, loc=None):
         # type: (str, Optional[Location]) -> None
@@ -398,6 +424,7 @@ class IntValueNode(ValueNode):
 
 class FloatValueNode(ValueNode):
     __slots__ = ("value", "loc")
+    kind = 'float_value'
 
     def __init__(self, value, loc=None):
         # type: (str, Optional[Location]) -> None
@@ -407,6 +434,7 @@ class FloatValueNode(ValueNode):
 
 class StringValueNode(ValueNode):
     __slots__ = ("value", "block", "loc")
+    kind = 'string_value'
 
     def __init__(
         self,
@@ -422,6 +450,7 @@ class StringValueNode(ValueNode):
 
 class BooleanValueNode(ValueNode):
     __slots__ = ("value",)
+    kind = 'boolean_value'
 
     def __init__(self, value, loc=None):
         # type: (bool, Optional[Location]) -> None
@@ -430,11 +459,12 @@ class BooleanValueNode(ValueNode):
 
 
 class NullValueNode(ValueNode):
-    pass
+    kind = 'null_value'
 
 
 class EnumValueNode(ValueNode):
     __slots__ = ("value", "loc")
+    kind = 'enum_value'
 
     def __init__(self, value, loc=None):
         # type: (str, Optional[Location]) -> None
@@ -444,6 +474,7 @@ class EnumValueNode(ValueNode):
 
 class ListValueNode(ValueNode):
     __slots__ = ("values", "loc")
+    kind = 'list_value'
 
     def __init__(self, values, loc=None):
         # type: (List[ValueNode], Optional[Location]) -> None
@@ -453,6 +484,7 @@ class ListValueNode(ValueNode):
 
 class ObjectValueNode(ValueNode):
     __slots__ = ("fields", "loc")
+    kind = 'object_value'
 
     def __init__(
         self,
@@ -466,6 +498,7 @@ class ObjectValueNode(ValueNode):
 
 class ObjectFieldNode(Node):
     __slots__ = ("name", "value", "loc")
+    kind = 'object_field'
 
     def __init__(
         self,
@@ -484,6 +517,7 @@ class ObjectFieldNode(Node):
 
 class DirectiveNode(Node):
     __slots__ = ("name", "arguments", "loc")
+    kind = 'directive'
 
     def __init__(
         self,
@@ -506,6 +540,7 @@ class TypeNode(Node):
 
 class NamedTypeNode(TypeNode):
     __slots__ = ("name", "loc")
+    kind = 'named_type'
 
     def __init__(self, name, loc=None):
         # type: (NameNode, Optional[Location]) -> None
@@ -515,6 +550,7 @@ class NamedTypeNode(TypeNode):
 
 class ListTypeNode(TypeNode):
     __slots__ = ("type", "loc")
+    kind = 'list_type'
 
     def __init__(self, type, loc=None):
         # type: (TypeNode, Optional[Location]) -> None
@@ -524,6 +560,7 @@ class ListTypeNode(TypeNode):
 
 class NonNullTypeNode(TypeNode):
     __slots__ = ("type",)
+    kind = 'non_null_type'
 
     def __init__(
         self,
@@ -544,6 +581,7 @@ class TypeSystemDefinitionNode(DefinitionNode):
 
 class SchemaDefinitionNode(TypeSystemDefinitionNode):
     __slots__ = ("directives", "operation_types", "loc")
+    kind = 'schema_definition'
 
     def __init__(
         self,
@@ -559,6 +597,7 @@ class SchemaDefinitionNode(TypeSystemDefinitionNode):
 
 class OperationTypeDefinitionNode(Node):
     __slots__ = ("operation", "type", "loc")
+    kind = 'operation_type_definition'
 
     def __init__(
         self,
@@ -577,6 +616,7 @@ class OperationTypeDefinitionNode(Node):
 
 class TypeDefinitionNode(TypeSystemDefinitionNode):
     __slots__ = ("description", "name", "directives", "loc")
+    kind = 'type_definition'
 
     def __init__(
         self,
@@ -593,11 +633,12 @@ class TypeDefinitionNode(TypeSystemDefinitionNode):
 
 
 class ScalarTypeDefinitionNode(TypeDefinitionNode):
-    pass
+    kind = 'scalar_type_definition'
 
 
 class ObjectTypeDefinitionNode(TypeDefinitionNode):
     __slots__ = ("interfaces", "fields", "name", "description", "directives", "loc")
+    kind = 'object_type_definition'
 
     def __init__(
         self,
@@ -619,6 +660,7 @@ class ObjectTypeDefinitionNode(TypeDefinitionNode):
 
 class FieldDefinitionNode(TypeDefinitionNode):
     __slots__ = ("arguments", "type", "name", "description", "directives", "loc")
+    kind = 'field_definition'
 
     def __init__(
         self,
@@ -640,6 +682,7 @@ class FieldDefinitionNode(TypeDefinitionNode):
 
 class InputValueDefinitionNode(TypeDefinitionNode):
     __slots__ = ("type", "default_value", "name", "description", "directives", "loc")
+    kind = 'input_value_definition'
 
     def __init__(
         self,
@@ -661,6 +704,7 @@ class InputValueDefinitionNode(TypeDefinitionNode):
 
 class InterfaceTypeDefinitionNode(TypeDefinitionNode):
     __slots__ = ("fields", "name", "description", "directives", "loc")
+    kind = 'interface_type_definition'
 
     def __init__(
         self,
@@ -680,6 +724,7 @@ class InterfaceTypeDefinitionNode(TypeDefinitionNode):
 
 class UnionTypeDefinitionNode(TypeDefinitionNode):
     __slots__ = ("name", "description", "directives", "types", "loc")
+    kind = 'union_type_definition'
 
     def __init__(
         self,
@@ -700,6 +745,7 @@ class UnionTypeDefinitionNode(TypeDefinitionNode):
 
 class EnumTypeDefinitionNode(TypeDefinitionNode):
     __slots__ = ("name", "description", "directives", "values", "loc")
+    kind = 'enum_type_definition'
 
     def __init__(
         self,
@@ -718,11 +764,12 @@ class EnumTypeDefinitionNode(TypeDefinitionNode):
 
 
 class EnumValueDefinitionNode(TypeDefinitionNode):
-    pass
+    kind = 'enum_value_definition'
 
 
 class InputObjectTypeDefinitionNode(TypeDefinitionNode):
     __slots__ = ("name", "description", "directives", "fields", "loc")
+    kind = 'input_object_type_definition'
 
     def __init__(
         self,
@@ -745,6 +792,7 @@ class InputObjectTypeDefinitionNode(TypeDefinitionNode):
 
 class DirectiveDefinitionNode(TypeSystemDefinitionNode):
     __slots__ = ("name", "locations", "description", "arguments", "loc")
+    kind = 'directive_definition'
 
     def __init__(
         self,
@@ -767,6 +815,7 @@ class DirectiveDefinitionNode(TypeSystemDefinitionNode):
 
 class SchemaExtensionNode(Node):
     __slots__ = ("directives", "operation_types", "loc")
+    kind = 'schema_extension'
 
     def __init__(
         self,
@@ -785,6 +834,7 @@ class SchemaExtensionNode(Node):
 
 class TypeExtensionNode(TypeSystemDefinitionNode):
     __slots__ = ("name", "directives", "loc")
+    kind = 'type_extension'
 
     def __init__(
         self,
@@ -805,11 +855,12 @@ else:
 
 
 class ScalarTypeExtensionNode(TypeExtensionNode):
-    pass
+    kind = 'scalar_type_extension'
 
 
 class ObjectTypeExtensionNode(TypeExtensionNode):
     __slots__ = ("name", "directives", "interfaces", "fields", "loc")
+    kind = 'object_type_extension'
 
     def __init__(
         self,
@@ -829,6 +880,7 @@ class ObjectTypeExtensionNode(TypeExtensionNode):
 
 class InterfaceTypeExtensionNode(TypeExtensionNode):
     __slots__ = ("name", "directives", "fields", "loc")
+    kind = 'interface_type_extension'
 
     def __init__(
         self,
@@ -846,6 +898,7 @@ class InterfaceTypeExtensionNode(TypeExtensionNode):
 
 class UnionTypeExtensionNode(TypeExtensionNode):
     __slots__ = ("name", "directives", "types", "loc")
+    kind = 'union_type_extension'
 
     def __init__(
         self,
@@ -863,6 +916,7 @@ class UnionTypeExtensionNode(TypeExtensionNode):
 
 class EnumTypeExtensionNode(TypeExtensionNode):
     __slots__ = ("name", "directives", "values", "loc")
+    kind = 'enum_type_extension'
 
     def __init__(
         self,
@@ -880,6 +934,7 @@ class EnumTypeExtensionNode(TypeExtensionNode):
 
 class InputObjectTypeExtensionNode(TypeExtensionNode):
     __slots__ = ("name", "directives", "fields", "loc")
+    kind = 'input_object_type_extension'
 
     def __init__(
         self,

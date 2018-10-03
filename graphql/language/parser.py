@@ -59,6 +59,7 @@ from .directive_locations import DirectiveLocation
 from .lexer import Lexer, Token, TokenKind
 from .source import Source
 from ..error import GraphQLError, GraphQLSyntaxError
+from ..pyutils.compat import string_types
 
 __all__ = ["parse", "parse_type", "parse_value"]
 
@@ -99,7 +100,7 @@ def parse(
           ...
         }
     """
-    if isinstance(source, str):
+    if isinstance(source, string_types):
         source = Source(source)
     elif not isinstance(source, Source):
         raise TypeError("Must provide Source. Received: {!r}".format(source))
@@ -122,7 +123,7 @@ def parse_value(source, **options):
 
     Consider providing the results to the utility function: value_from_ast().
     """
-    if isinstance(source, str):
+    if isinstance(source, string_types):
         source = Source(source)
     lexer = Lexer(source, **options)
     expect(lexer, TokenKind.SOF)
@@ -141,7 +142,7 @@ def parse_type(source, **options):
 
     Consider providing the results to the utility function: type_from_ast().
     """
-    if isinstance(source, str):
+    if isinstance(source, string_types):
         source = Source(source)
     lexer = Lexer(source, **options)
     expect(lexer, TokenKind.SOF)
@@ -232,8 +233,8 @@ def parse_variable_definitions(lexer):
     """VariableDefinitions: (VariableDefinition+)"""
     return (
         many_nodes(
-                lexer, TokenKind.PAREN_L, parse_variable_definition, TokenKind.PAREN_R
-            )
+            lexer, TokenKind.PAREN_L, parse_variable_definition, TokenKind.PAREN_R
+        )
         if peek(lexer, TokenKind.PAREN_L)
         else []
     )
@@ -576,17 +577,18 @@ def parse_type_system_extension(lexer):
 
 
 _parse_definition_functions = {
-            "query":parse_executable_definition,
-            "mutation": parse_executable_definition,
-            "subscription":parse_executable_definition, "fragment":parse_executable_definition,
-            "schema": parse_type_system_definition,
-            "scalar": parse_type_system_definition,
-            "type": parse_type_system_definition,
-            "interface": parse_type_system_definition,
-            "union": parse_type_system_definition,
-            "enum": parse_type_system_definition,
-            "input": parse_type_system_definition,
-            "directive": parse_type_system_definition,
+    "query": parse_executable_definition,
+    "mutation": parse_executable_definition,
+    "subscription": parse_executable_definition,
+    "fragment": parse_executable_definition,
+    "schema": parse_type_system_definition,
+    "scalar": parse_type_system_definition,
+    "type": parse_type_system_definition,
+    "interface": parse_type_system_definition,
+    "union": parse_type_system_definition,
+    "enum": parse_type_system_definition,
+    "input": parse_type_system_definition,
+    "directive": parse_type_system_definition,
     "extend": parse_type_system_extension,
 }
 
@@ -675,9 +677,7 @@ def parse_implements_interfaces(lexer):
 def parse_fields_definition(lexer):
     """FieldsDefinition: {FieldDefinition+}"""
     return (
-        many_nodes(
-                lexer, TokenKind.BRACE_L, parse_field_definition, TokenKind.BRACE_R
-            )
+        many_nodes(lexer, TokenKind.BRACE_L, parse_field_definition, TokenKind.BRACE_R)
         if peek(lexer, TokenKind.BRACE_L)
         else []
     )
@@ -705,9 +705,7 @@ def parse_field_definition(lexer):
 def parse_argument_defs(lexer):
     """ArgumentsDefinition: (InputValueDefinition+)"""
     return (
-        many_nodes(
-                lexer, TokenKind.PAREN_L, parse_input_value_def, TokenKind.PAREN_R
-            )
+        many_nodes(lexer, TokenKind.PAREN_L, parse_input_value_def, TokenKind.PAREN_R)
         if peek(lexer, TokenKind.PAREN_L)
         else []
     )
@@ -801,8 +799,8 @@ def parse_enum_values_definition(lexer):
     """EnumValuesDefinition: {EnumValueDefinition+}"""
     return (
         many_nodes(
-                lexer, TokenKind.BRACE_L, parse_enum_value_definition, TokenKind.BRACE_R
-            )
+            lexer, TokenKind.BRACE_L, parse_enum_value_definition, TokenKind.BRACE_R
+        )
         if peek(lexer, TokenKind.BRACE_L)
         else []
     )
@@ -839,9 +837,7 @@ def parse_input_object_type_definition(lexer):
 def parse_input_fields_definition(lexer):
     """InputFieldsDefinition: {InputValueDefinition+}"""
     return (
-        many_nodes(
-                lexer, TokenKind.BRACE_L, parse_input_value_def, TokenKind.BRACE_R
-            )
+        many_nodes(lexer, TokenKind.BRACE_L, parse_input_value_def, TokenKind.BRACE_R)
         if peek(lexer, TokenKind.BRACE_L)
         else []
     )
@@ -1071,7 +1067,9 @@ def expect(lexer, kind):
         lexer.advance()
         return token
     raise GraphQLSyntaxError(
-        lexer.source, token.start, "Expected {}, found {}".format(kind.value, token.kind.value)
+        lexer.source,
+        token.start,
+        "Expected {}, found {}".format(kind.value, token.kind.value),
     )
 
 
@@ -1091,18 +1089,15 @@ def expect_keyword(lexer, value):
     )
 
 
-def unexpected(lexer, at_token = None):
+def unexpected(lexer, at_token=None):
     """Create an error when an unexpected lexed token is encountered."""
     token = at_token or lexer.token
-    return GraphQLSyntaxError(lexer.source, token.start, "Unexpected {}".format(token.desc))
+    return GraphQLSyntaxError(
+        lexer.source, token.start, "Unexpected {}".format(token.desc)
+    )
 
 
-def any_nodes(
-    lexer,
-    open_kind,
-    parse_fn,
-    close_kind,
-):
+def any_nodes(lexer, open_kind, parse_fn, close_kind):
     """Fetch any matching nodes, possibly none.
 
     Returns a possibly empty list of parse nodes, determined by the `parse_fn`.
@@ -1118,12 +1113,7 @@ def any_nodes(
     return nodes
 
 
-def many_nodes(
-    lexer,
-    open_kind,
-    parse_fn,
-    close_kind,
-):
+def many_nodes(lexer, open_kind, parse_fn, close_kind):
     """Fetch matching nodes, at least one.
 
     Returns a non-empty list of parse nodes, determined by the `parse_fn`.

@@ -22,6 +22,8 @@ from .maybe_awaitable import MaybeAwaitable
 from .or_list import or_list
 from .quoted_or_list import quoted_or_list
 from .suggestion_list import suggestion_list
+from .ordereddict import OrderedDict
+from .defaultordereddict import DefaultOrderedDict
 
 __all__ = [
     "camel_to_snake",
@@ -39,4 +41,6 @@ __all__ = [
     "or_list",
     "quoted_or_list",
     "suggestion_list",
+    "OrderedDict",
+    "DefaultOrderedDict",
 ]

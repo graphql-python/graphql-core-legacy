@@ -42,12 +42,14 @@ if PY3:
     class_types = (type,)
     text_type = str
     binary_type = bytes
+    unichr = chr
 else:
     string_types = (basestring,)
     integer_types = (int, long)
     class_types = (type, types.ClassType)
     text_type = unicode
     binary_type = str
+    unichr = unichr
 
 
 try:

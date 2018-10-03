@@ -1,5 +1,9 @@
+from __future__ import unicode_literals
+import json
+
 from copy import copy
 from ..pyutils.enum import Enum
+from ..pyutils.compat import string_types, text_type, unichr
 
 from ..error import GraphQLSyntaxError
 from .source import Source
@@ -74,7 +78,7 @@ class Token(object):
                 and self.column == other.column
                 and self.value == other.value
             )
-        elif isinstance(other, str):
+        elif isinstance(other, string_types):
             return other == self.desc
         return False
 
@@ -99,6 +103,8 @@ class Token(object):
         # type: () -> str
         """A helper property to describe a token as a string for debugging"""
         kind, value = self.kind.value, self.value
+        if isinstance(value, string_types):
+            value = str(value)
         return "{} {!r}".format(kind, value) if value else kind
 
 
@@ -109,8 +115,15 @@ def char_at(s, pos):
         return None
 
 
-def print_char(char):
-    return TokenKind.EOF.value if char is None else repr(char)
+def print_char(code):
+    if code is None:
+        return TokenKind.EOF.value
+
+    ord_code = ord(code)
+    if ord_code < 0x007F:
+        return "'{}'".format(code.encode("utf8"))
+
+    return "'\\u{:04X}'".format(ord_code)
 
 
 _KIND_FOR_PUNCT = {
@@ -392,17 +405,17 @@ def read_string(source, start, line, col, prev):
                     char_at(body, position + 4),
                 )
                 if code < 0:
-                    escape = repr(body[position : position + 5])
+                    escape = repr(body[position : position + 5].encode("utf8"))
                     escape = escape[:1] + "\\" + escape[1:]
                     raise GraphQLSyntaxError(
                         source,
                         position,
                         "Invalid character escape sequence: {}.".format(escape),
                     )
-                append(chr(code))
+                append(unichr(code))
                 position += 4
             else:
-                escape = repr(char)
+                escape = repr(char.encode("utf8"))
                 escape = escape[:1] + "\\" + escape[1:]
                 raise GraphQLSyntaxError(
                     source,

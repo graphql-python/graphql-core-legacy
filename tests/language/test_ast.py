@@ -6,6 +6,8 @@ from graphql.language import Node
 class SampleTestNode(Node):
     __slots__ = ("alpha", "beta", "loc")
 
+    kind = "sample_test"
+
     def __init__(self, alpha, beta=None, loc=None):
         self.alpha = alpha
         self.beta = beta
@@ -29,9 +31,9 @@ def describe_node_class():
 
     def has_representation_with_loc():
         node = SampleTestNode(alpha=1, beta=2)
-        assert repr(node) == "SampleTestNode"
+        assert repr(node) == "SampleTestNode(alpha=1, beta=2, loc=None)"
         node = SampleTestNode(alpha=1, beta=2, loc=3)
-        assert repr(node) == "SampleTestNode at 3"
+        assert repr(node) == "SampleTestNode(alpha=1, beta=2, loc=3)"
 
     def can_check_equality():
         node = SampleTestNode(alpha=1, beta=2)
