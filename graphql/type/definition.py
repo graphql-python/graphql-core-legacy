@@ -42,7 +42,8 @@ from ..language import (
     UnionTypeExtensionNode,
     ValueNode,
 )
-from ..pyutils import MaybeAwaitable, cached_property
+from ..pyutils import MaybeAwaitable, cached_property, OrderedDict
+from ..pyutils.compat import string_types
 from ..utilities.value_from_ast_untyped import value_from_ast_untyped
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -194,9 +195,9 @@ class GraphQLNamedType(GraphQLType):
     ):
         if not name:
             raise TypeError("Must provide name.")
-        if not isinstance(name, str):
+        if not isinstance(name, string_types):
             raise TypeError("The name must be a string.")
-        if description is not None and not isinstance(description, str):
+        if description is not None and not isinstance(description, string_types):
             raise TypeError("The description must be a string.")
         if ast_node and not isinstance(ast_node, TypeDefinitionNode):
             raise TypeError("{} AST node must be a TypeDefinitionNode.".format(name))
@@ -394,7 +395,7 @@ class GraphQLField(object):
         if not is_output_type(type_):
             raise TypeError("Field type must be an output type.")
         if args is None:
-            args = {}
+            args = OrderedDict()
         elif not isinstance(args, dict):
             raise TypeError("Field args must be a dict with argument names as keys.")
         elif not all(
@@ -403,20 +404,25 @@ class GraphQLField(object):
         ):
             raise TypeError("Field args must be GraphQLArgument or input type objects.")
         else:
-            args = {
-                name: value
-                if isinstance(value, GraphQLArgument)
-                else GraphQLArgument(value)
-                for name, value in args.items()
-            }
+            args = OrderedDict(
+                (
+                    (
+                        name,
+                        value
+                        if isinstance(value, GraphQLArgument)
+                        else GraphQLArgument(value),
+                    )
+                    for name, value in args.items()
+                )
+            )
         if resolve is not None and not callable(resolve):
             raise TypeError(
                 "Field resolver must be a function if provided, "
                 " but got: {!r}.".format(resolve)
             )
-        if description is not None and not isinstance(description, str):
+        if description is not None and not isinstance(description, string_types):
             raise TypeError("The description must be a string.")
-        if deprecation_reason is not None and not isinstance(deprecation_reason, str):
+        if deprecation_reason is not None and not isinstance(deprecation_reason, string_types):
             raise TypeError("The deprecation reason must be a string.")
         if ast_node and not isinstance(ast_node, FieldDefinitionNode):
             raise TypeError("Field AST node must be a FieldDefinitionNode.")
@@ -529,7 +535,7 @@ class GraphQLArgument(object):
         # type: (...) -> None
         if not is_input_type(type_):
             raise TypeError("Argument type must be a GraphQL input type.")
-        if description is not None and not isinstance(description, str):
+        if description is not None and not isinstance(description, string_types):
             raise TypeError("The description must be a string.")
         if ast_node and not isinstance(ast_node, InputValueDefinitionNode):
             raise TypeError("Argument AST node must be an InputValueDefinitionNode.")
@@ -634,7 +640,7 @@ class GraphQLObjectType(GraphQLNamedType):
         except Exception as error:
             raise TypeError("{} fields cannot be resolved: {}".format(self.name, error))
         if not isinstance(fields, dict) or not all(
-            isinstance(key, str) for key in fields
+            isinstance(key, string_types) for key in fields
         ):
             raise TypeError(
                 (
@@ -651,10 +657,15 @@ class GraphQLObjectType(GraphQLNamedType):
                     self.name
                 )
             )
-        return {
-            name: value if isinstance(value, GraphQLField) else GraphQLField(value)
-            for name, value in fields.items()
-        }
+        return OrderedDict(
+            (
+                (
+                    name,
+                    value if isinstance(value, GraphQLField) else GraphQLField(value),
+                )
+                for name, value in fields.items()
+            )
+        )
 
     @cached_property
     def interfaces(self):
@@ -755,7 +766,7 @@ class GraphQLInterfaceType(GraphQLNamedType):
         except Exception as error:
             raise TypeError("{} fields cannot be resolved: {}".format(self.name, error))
         if not isinstance(fields, dict) or not all(
-            isinstance(key, str) for key in fields
+            isinstance(key, string_types) for key in fields
         ):
             raise TypeError(
                 (
@@ -772,10 +783,15 @@ class GraphQLInterfaceType(GraphQLNamedType):
                     self.name
                 )
             )
-        return {
-            name: value if isinstance(value, GraphQLField) else GraphQLField(value)
-            for name, value in fields.items()
-        }
+        return OrderedDict(
+            (
+                (
+                    name,
+                    value if isinstance(value, GraphQLField) else GraphQLField(value),
+                )
+                for name, value in fields.items()
+            )
+        )
 
 
 def is_interface_type(type_):
@@ -927,7 +943,7 @@ class GraphQLEnumType(GraphQLNamedType):
             values = cast(Enum, values).__members__  # type: ignore
         except AttributeError:
             if not isinstance(values, dict) or not all(
-                isinstance(name, str) for name in values
+                isinstance(name, string_types) for name in values
             ):
                 try:
                     # noinspection PyTypeChecker
@@ -942,13 +958,18 @@ class GraphQLEnumType(GraphQLNamedType):
             values = values
         else:
             values = values
-            values = {key: value.value for key, value in values.items()}
-        values = {
-            key: value
-            if isinstance(value, GraphQLEnumValue)
-            else GraphQLEnumValue(value)
-            for key, value in values.items()
-        }
+            values = OrderedDict(((key, value.value) for key, value in values.items()))
+        values = OrderedDict(
+            (
+                (
+                    key,
+                    value
+                    if isinstance(value, GraphQLEnumValue)
+                    else GraphQLEnumValue(value),
+                )
+                for key, value in values.items()
+            )
+        )
         if ast_node and not isinstance(ast_node, EnumTypeDefinitionNode):
             raise TypeError(
                 "{} AST node must be an EnumTypeDefinitionNode.".format(name)
@@ -964,7 +985,7 @@ class GraphQLEnumType(GraphQLNamedType):
     @cached_property
     def _value_lookup(self):
         # use first value or name as lookup
-        lookup = {}
+        lookup = OrderedDict()
         for name, enum_value in self.values.items():
             value = enum_value.value
             if value is None:
@@ -986,7 +1007,7 @@ class GraphQLEnumType(GraphQLNamedType):
         return INVALID
 
     def parse_value(self, value):
-        if isinstance(value, str):
+        if isinstance(value, string_types):
             try:
                 enum_value = self.values[value]
             except KeyError:
@@ -1021,13 +1042,12 @@ def assert_enum_type(type_):
 
 
 class GraphQLEnumValue(object):
-
     def __init__(
         self, value=None, description=None, deprecation_reason=None, ast_node=None
     ):
-        if description is not None and not isinstance(description, str):
+        if description is not None and not isinstance(description, string_types):
             raise TypeError("The description must be a string.")
-        if deprecation_reason is not None and not isinstance(deprecation_reason, str):
+        if deprecation_reason is not None and not isinstance(deprecation_reason, string_types):
             raise TypeError("The deprecation reason must be a string.")
         if ast_node and not isinstance(ast_node, EnumValueDefinitionNode):
             raise TypeError("AST node must be an EnumValueDefinitionNode.")
@@ -1108,7 +1128,7 @@ class GraphQLInputObjectType(GraphQLNamedType):
         except Exception as error:
             raise TypeError("{} fields cannot be resolved: {}".format(self.name, error))
         if not isinstance(fields, dict) or not all(
-            isinstance(key, str) for key in fields
+            isinstance(key, string_types) for key in fields
         ):
             raise TypeError(
                 (
@@ -1125,12 +1145,17 @@ class GraphQLInputObjectType(GraphQLNamedType):
                     "{} fields must be" " GraphQLInputField or input type objects."
                 ).format(self.name)
             )
-        return {
-            name: value
-            if isinstance(value, GraphQLInputField)
-            else GraphQLInputField(value)
-            for name, value in fields.items()
-        }
+        return OrderedDict(
+            (
+                (
+                    name,
+                    value
+                    if isinstance(value, GraphQLInputField)
+                    else GraphQLInputField(value),
+                )
+                for name, value in fields.items()
+            )
+        )
 
 
 def is_input_object_type(type_):

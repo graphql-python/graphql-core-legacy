@@ -1,6 +1,7 @@
 from typing import Any, Dict, Sequence, cast
 
 from ..language import ast, DirectiveLocation
+from ..pyutils.compat import string_types
 from .definition import GraphQLArgument, GraphQLInputType, GraphQLNonNull, is_input_type
 from .scalars import GraphQLBoolean, GraphQLString
 
@@ -32,7 +33,7 @@ class GraphQLDirective(object):
     def __init__(self, name, locations, args=None, description=None, ast_node=None):
         if not name:
             raise TypeError("Directive must be named.")
-        elif not isinstance(name, str):
+        elif not isinstance(name, string_types):
             raise TypeError("The directive name must be a string.")
         if not isinstance(locations, (list, tuple)):
             raise TypeError("{} locations must be a list/tuple.".format(name))
@@ -51,7 +52,7 @@ class GraphQLDirective(object):
         if args is None:
             args = {}
         elif not isinstance(args, dict) or not all(
-            isinstance(key, str) for key in args
+            isinstance(key, string_types) for key in args
         ):
             raise TypeError(
                 "{} args must be a dict with argument names as keys.".format(name)
@@ -70,7 +71,7 @@ class GraphQLDirective(object):
                 else GraphQLArgument(value)
                 for name, value in args.items()
             }
-        if description is not None and not isinstance(description, str):
+        if description is not None and not isinstance(description, string_types):
             raise TypeError("{} description must be a string.".format(name))
         if ast_node and not isinstance(ast_node, ast.DirectiveDefinitionNode):
             raise TypeError(
