@@ -306,16 +306,16 @@ def describe_field_config_must_be_a_dict():
         assert obj_type.fields['f'].type is GraphQLString
 
     def thunk_for_fields_of_object_type_is_resolved_only_once():
-        calls = 0
+        class c:
+            calls = 0
         def fields():
-            global calls
-            calls += 1
+            c.calls += 1
             return {'f': GraphQLField(GraphQLString)}
         obj_type = GraphQLObjectType('SomeObject', fields)
         assert 'f' in obj_type.fields
-        assert calls == 1
+        assert c.calls == 1
         assert 'f' in obj_type.fields
-        assert calls == 1
+        assert c.calls == 1
 
     def rejects_an_object_type_field_with_undefined_config():
         undefined_field = None
@@ -398,18 +398,19 @@ def describe_object_interfaces_must_be_a_sequence():
         assert obj_type.interfaces == [InterfaceType]
 
     def thunk_for_interfaces_of_object_type_is_resolved_only_once():
-        calls = 0
+        class c:
+            calls = 0
         def interfaces():
-            global calls
-            calls += 1
+            c.calls += 1
             return [InterfaceType]
+
         obj_type = GraphQLObjectType(
             'SomeObject', interfaces=interfaces,
             fields={'f': GraphQLField(GraphQLString)})
         assert obj_type.interfaces == [InterfaceType]
-        assert calls == 1
+        assert c.calls == 1
         assert obj_type.interfaces == [InterfaceType]
-        assert calls == 1
+        assert c.calls == 1
 
     def rejects_an_object_type_with_incorrectly_typed_interfaces():
         obj_type = GraphQLObjectType(
@@ -519,7 +520,7 @@ def describe_type_system_scalar_types_must_be_serializable():
             # noinspection PyArgumentList
             schema_with_field_type(GraphQLScalarType('SomeScalar'))
         msg = str(exc_info.value)
-        assert "missing 1 required positional argument: 'serialize'" in msg
+        assert "takes at least 3 arguments" in msg
         with raises(TypeError) as exc_info:
             # noinspection PyTypeChecker
             schema_with_field_type(GraphQLScalarType('SomeScalar', None))
@@ -603,7 +604,7 @@ def describe_union_types_must_be_list():
             # noinspection PyArgumentList
             schema_with_field_type(GraphQLUnionType('SomeUnion'))
         msg = str(exc_info.value)
-        assert "missing 1 required positional argument: 'types'" in msg
+        assert "takes at least 3 arguments" in msg
         schema_with_field_type(GraphQLUnionType('SomeUnion', None))
 
     def rejects_a_union_type_with_incorrectly_typed_types():
@@ -783,7 +784,7 @@ def describe_type_system_a_schema_must_contain_uniquely_named_types():
         msg = str(exc_info.value)
         assert msg == (
             'Schema must contain unique named types'
-            .format())
+            ' but contains multiple types named \'String\'.')
 
     def rejects_a_schema_which_defines_an_object_twice():
         A = GraphQLObjectType('SameName', {'f': GraphQLField(GraphQLString)})
@@ -796,7 +797,7 @@ def describe_type_system_a_schema_must_contain_uniquely_named_types():
         msg = str(exc_info.value)
         assert msg == (
             'Schema must contain unique named types'
-            .format())
+            ' but contains multiple types named \'SameName\'.')
 
     def rejects_a_schema_with_same_named_objects_implementing_an_interface():
         AnotherInterface = GraphQLInterfaceType('AnotherInterface', {
@@ -818,4 +819,4 @@ def describe_type_system_a_schema_must_contain_uniquely_named_types():
         msg = str(exc_info.value)
         assert msg == (
             'Schema must contain unique named types'
-            .format())
+            ' but contains multiple types named \'BadObject\'.')

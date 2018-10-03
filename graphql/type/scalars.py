@@ -10,6 +10,7 @@ from ..language.ast import (
     StringValueNode,
 )
 from .definition import GraphQLScalarType, is_named_type
+from ..pyutils.compat import string_types
 
 __all__ = [
     "is_specified_scalar_type",
@@ -42,7 +43,7 @@ def serialize_int(value):
             num = int(value)
             if num != value:
                 raise ValueError
-        elif not value and isinstance(value, str):
+        elif not value and isinstance(value, string_types):
             value = ""
             raise ValueError
         else:
@@ -93,7 +94,7 @@ def serialize_float(value):
     if isinstance(value, bool):
         return 1 if value else 0
     try:
-        if not value and isinstance(value, str):
+        if not value and isinstance(value, string_types):
             value = ""
             raise ValueError
         num = value if isinstance(value, float) else float(value)
@@ -130,7 +131,7 @@ GraphQLFloat = GraphQLScalarType(
 
 
 def serialize_string(value):
-    if isinstance(value, str):
+    if isinstance(value, string_types):
         return value
     if isinstance(value, bool):
         return "true" if value else "false"
@@ -138,13 +139,13 @@ def serialize_string(value):
         return str(value)
     # do not serialize builtin types as strings,
     # but allow serialization of custom types via their __str__ method
-    if type(value).__module__ == "builtins":
+    if type(value).__module__ == "__builtin__":
         raise TypeError("String cannot represent value: {!r}".format(value))
     return str(value)
 
 
 def coerce_string(value):
-    if not isinstance(value, str):
+    if not isinstance(value, string_types):
         raise TypeError(
             "String cannot represent a non string value: {!r}".format(value)
         )
@@ -203,19 +204,19 @@ GraphQLBoolean = GraphQLScalarType(
 
 
 def serialize_id(value):
-    if isinstance(value, str):
+    if isinstance(value, string_types):
         return value
     if is_integer(value):
         return str(int(value))
     # do not serialize builtin types as IDs,
     # but allow serialization of custom types via their __str__ method
-    if type(value).__module__ == "builtins":
+    if type(value).__module__ == "__builtin__":
         raise TypeError("ID cannot represent value: {!r}".format(value))
     return str(value)
 
 
 def coerce_id(value):
-    if not isinstance(value, str) and not is_integer(value):
+    if not isinstance(value, string_types) and not is_integer(value):
         raise TypeError("ID cannot represent value: {!r}".format(value))
     if isinstance(value, float):
         value = int(value)

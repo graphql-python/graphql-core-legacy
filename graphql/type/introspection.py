@@ -21,7 +21,7 @@ from .definition import (
     is_scalar_type,
     is_union_type,
 )
-from ..pyutils import is_invalid
+from ..pyutils import is_invalid, OrderedDict
 from .scalars import GraphQLBoolean, GraphQLString
 from ..language import DirectiveLocation
 
@@ -48,35 +48,35 @@ __Schema = GraphQLObjectType(
     " server. It exposes all available types and directives"
     " on the server, as well as the entry points for query,"
     " mutation, and subscription operations.",
-    fields=lambda: {
-        "types": GraphQLField(
+    fields=lambda: OrderedDict((
+        ("types", GraphQLField(
             GraphQLNonNull(GraphQLList(GraphQLNonNull(__Type))),
             resolve=lambda schema, _info: schema.type_map.values(),
             description="A list of all types supported by this server.",
-        ),
-        "queryType": GraphQLField(
+        )),
+        ("queryType", GraphQLField(
             GraphQLNonNull(__Type),
             resolve=lambda schema, _info: schema.query_type,
             description="The type that query operations will be rooted at.",
-        ),
-        "mutationType": GraphQLField(
+        )),
+        ("mutationType", GraphQLField(
             __Type,
             resolve=lambda schema, _info: schema.mutation_type,
             description="If this server supports mutation, the type that"
             " mutation operations will be rooted at.",
-        ),
-        "subscriptionType": GraphQLField(
+        )),
+        ("subscriptionType", GraphQLField(
             __Type,
             resolve=lambda schema, _info: schema.subscription_type,
             description="If this server support subscription, the type that"
             " subscription operations will be rooted at.",
-        ),
-        "directives": GraphQLField(
+        )),
+        ("directives", GraphQLField(
             GraphQLNonNull(GraphQLList(GraphQLNonNull(__Directive))),
             resolve=lambda schema, _info: schema.directives,
             description="A list of all directives supported by this server.",
-        ),
-    },
+        )),
+    )),
 )
 
 
@@ -89,23 +89,23 @@ __Directive = GraphQLObjectType(
     " arguments will not suffice, such as conditionally including"
     " or skipping a field. Directives provide this by describing"
     " additional information to the executor.",
-    fields=lambda: {
+    fields=lambda: OrderedDict((
         # Note: The fields onOperation, onFragment and onField are deprecated
-        "name": GraphQLField(
+        ("name", GraphQLField(
             GraphQLNonNull(GraphQLString), resolve=lambda obj, _info: obj.name
-        ),
-        "description": GraphQLField(
+        )),
+        ("description", GraphQLField(
             GraphQLString, resolve=lambda obj, _info: obj.description
-        ),
-        "locations": GraphQLField(
+        )),
+        ("locations", GraphQLField(
             GraphQLNonNull(GraphQLList(GraphQLNonNull(__DirectiveLocation))),
             resolve=lambda obj, _info: obj.locations,
-        ),
-        "args": GraphQLField(
+        )),
+        ("args", GraphQLField(
             GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
             resolve=lambda directive, _info: (directive.args or {}).items(),
-        ),
-    },
+        )),
+    )),
 )
 
 
@@ -114,83 +114,83 @@ __DirectiveLocation = GraphQLEnumType(
     description="A Directive can be adjacent to many parts of the GraphQL"
     " language, a __DirectiveLocation describes one such possible"
     " adjacencies.",
-    values={
-        "QUERY": GraphQLEnumValue(
+    values=OrderedDict((
+        ("QUERY", GraphQLEnumValue(
             DirectiveLocation.QUERY,
             description="Location adjacent to a query operation.",
-        ),
-        "MUTATION": GraphQLEnumValue(
+        )),
+        ("MUTATION", GraphQLEnumValue(
             DirectiveLocation.MUTATION,
             description="Location adjacent to a mutation operation.",
-        ),
-        "SUBSCRIPTION": GraphQLEnumValue(
+        )),
+        ("SUBSCRIPTION", GraphQLEnumValue(
             DirectiveLocation.SUBSCRIPTION,
             description="Location adjacent to a subscription operation.",
-        ),
-        "FIELD": GraphQLEnumValue(
+        )),
+        ("FIELD", GraphQLEnumValue(
             DirectiveLocation.FIELD, description="Location adjacent to a field."
-        ),
-        "FRAGMENT_DEFINITION": GraphQLEnumValue(
+        )),
+        ("FRAGMENT_DEFINITION", GraphQLEnumValue(
             DirectiveLocation.FRAGMENT_DEFINITION,
             description="Location adjacent to a fragment definition.",
-        ),
-        "FRAGMENT_SPREAD": GraphQLEnumValue(
+        )),
+        ("FRAGMENT_SPREAD", GraphQLEnumValue(
             DirectiveLocation.FRAGMENT_SPREAD,
             description="Location adjacent to a fragment spread.",
-        ),
-        "INLINE_FRAGMENT": GraphQLEnumValue(
+        )),
+        ("INLINE_FRAGMENT", GraphQLEnumValue(
             DirectiveLocation.INLINE_FRAGMENT,
             description="Location adjacent to an inline fragment.",
-        ),
-        "VARIABLE_DEFINITION": GraphQLEnumValue(
+        )),
+        ("VARIABLE_DEFINITION", GraphQLEnumValue(
             DirectiveLocation.VARIABLE_DEFINITION,
             description="Location adjacent to a variable definition.",
-        ),
-        "SCHEMA": GraphQLEnumValue(
+        )),
+        ("SCHEMA", GraphQLEnumValue(
             DirectiveLocation.SCHEMA,
             description="Location adjacent to a schema definition.",
-        ),
-        "SCALAR": GraphQLEnumValue(
+        )),
+        ("SCALAR", GraphQLEnumValue(
             DirectiveLocation.SCALAR,
             description="Location adjacent to a scalar definition.",
-        ),
-        "OBJECT": GraphQLEnumValue(
+        )),
+        ("OBJECT", GraphQLEnumValue(
             DirectiveLocation.OBJECT,
             description="Location adjacent to an object type definition.",
-        ),
-        "FIELD_DEFINITION": GraphQLEnumValue(
+        )),
+        ("FIELD_DEFINITION", GraphQLEnumValue(
             DirectiveLocation.FIELD_DEFINITION,
             description="Location adjacent to a field definition.",
-        ),
-        "ARGUMENT_DEFINITION": GraphQLEnumValue(
+        )),
+        ("ARGUMENT_DEFINITION", GraphQLEnumValue(
             DirectiveLocation.ARGUMENT_DEFINITION,
             description="Location adjacent to an argument definition.",
-        ),
-        "INTERFACE": GraphQLEnumValue(
+        )),
+        ("INTERFACE", GraphQLEnumValue(
             DirectiveLocation.INTERFACE,
             description="Location adjacent to an interface definition.",
-        ),
-        "UNION": GraphQLEnumValue(
+        )),
+        ("UNION", GraphQLEnumValue(
             DirectiveLocation.UNION,
             description="Location adjacent to a union definition.",
-        ),
-        "ENUM": GraphQLEnumValue(
+        )),
+        ("ENUM", GraphQLEnumValue(
             DirectiveLocation.ENUM,
             description="Location adjacent to an enum definition.",
-        ),
-        "ENUM_VALUE": GraphQLEnumValue(
+        )),
+        ("ENUM_VALUE", GraphQLEnumValue(
             DirectiveLocation.ENUM_VALUE,
             description="Location adjacent to an enum value definition.",
-        ),
-        "INPUT_OBJECT": GraphQLEnumValue(
+        )),
+        ("INPUT_OBJECT", GraphQLEnumValue(
             DirectiveLocation.INPUT_OBJECT,
             description="Location adjacent to" " an input object type definition.",
-        ),
-        "INPUT_FIELD_DEFINITION": GraphQLEnumValue(
+        )),
+        ("INPUT_FIELD_DEFINITION", GraphQLEnumValue(
             DirectiveLocation.INPUT_FIELD_DEFINITION,
             description="Location adjacent to" " an input object field definition.",
-        ),
-    },
+        )),
+    )),
 )
 
 
@@ -206,45 +206,45 @@ __Type = GraphQLObjectType(
     " Abstract types, Union and Interface, provide the Object"
     " types possible at runtime. List and NonNull types compose"
     " other types.",
-    fields=lambda: {
-        "kind": GraphQLField(
+    fields=lambda: OrderedDict((
+        ("kind", GraphQLField(
             GraphQLNonNull(__TypeKind), resolve=TypeFieldResolvers.kind
-        ),
-        "name": GraphQLField(GraphQLString, resolve=TypeFieldResolvers.name),
-        "description": GraphQLField(
+        )),
+        ("name", GraphQLField(GraphQLString, resolve=TypeFieldResolvers.name)),
+        ("description", GraphQLField(
             GraphQLString, resolve=TypeFieldResolvers.description
-        ),
-        "fields": GraphQLField(
+        )),
+        ("fields", GraphQLField(
             GraphQLList(GraphQLNonNull(__Field)),
-            args={
-                "includeDeprecated": GraphQLArgument(
+            args=OrderedDict((
+                ("includeDeprecated", GraphQLArgument(
                     GraphQLBoolean, default_value=False
-                )
-            },
+                )),
+            )),
             resolve=TypeFieldResolvers.fields,
-        ),
-        "interfaces": GraphQLField(
+        )),
+        ("interfaces", GraphQLField(
             GraphQLList(GraphQLNonNull(__Type)), resolve=TypeFieldResolvers.interfaces
-        ),
-        "possibleTypes": GraphQLField(
+        )),
+        ("possibleTypes", GraphQLField(
             GraphQLList(GraphQLNonNull(__Type)),
             resolve=TypeFieldResolvers.possible_types,
-        ),
-        "enumValues": GraphQLField(
+        )),
+        ("enumValues", GraphQLField(
             GraphQLList(GraphQLNonNull(__EnumValue)),
-            args={
-                "includeDeprecated": GraphQLArgument(
+            args=OrderedDict((
+                ("includeDeprecated", GraphQLArgument(
                     GraphQLBoolean, default_value=False
-                )
-            },
+                )),
+            )),
             resolve=TypeFieldResolvers.enum_values,
-        ),
-        "inputFields": GraphQLField(
+        )),
+        ("inputFields", GraphQLField(
             GraphQLList(GraphQLNonNull(__InputValue)),
             resolve=TypeFieldResolvers.input_fields,
-        ),
-        "ofType": GraphQLField(__Type, resolve=TypeFieldResolvers.of_type),
-    },
+        )),
+        ("ofType", GraphQLField(__Type, resolve=TypeFieldResolvers.of_type)),
+    )),
 )
 
 
@@ -320,28 +320,28 @@ __Field = GraphQLObjectType(
     description="Object and Interface types are described by a list of Fields,"
     " each of which has a name, potentially a list of arguments,"
     " and a return type.",
-    fields=lambda: {
-        "name": GraphQLField(
+    fields=lambda: OrderedDict((
+        ("name", GraphQLField(
             GraphQLNonNull(GraphQLString), resolve=lambda item, _info: item[0]
-        ),
-        "description": GraphQLField(
+        )),
+        ("description", GraphQLField(
             GraphQLString, resolve=lambda item, _info: item[1].description
-        ),
-        "args": GraphQLField(
+        )),
+        ("args", GraphQLField(
             GraphQLNonNull(GraphQLList(GraphQLNonNull(__InputValue))),
             resolve=lambda item, _info: (item[1].args or {}).items(),
-        ),
-        "type": GraphQLField(
+        )),
+        ("type", GraphQLField(
             GraphQLNonNull(__Type), resolve=lambda item, _info: item[1].type
-        ),
-        "isDeprecated": GraphQLField(
+        )),
+        ("isDeprecated", GraphQLField(
             GraphQLNonNull(GraphQLBoolean),
             resolve=lambda item, _info: item[1].is_deprecated,
-        ),
-        "deprecationReason": GraphQLField(
+        )),
+        ("deprecationReason", GraphQLField(
             GraphQLString, resolve=lambda item, _info: item[1].deprecation_reason
-        ),
-    },
+        )),
+    )),
 )
 
 
@@ -350,25 +350,25 @@ __InputValue = GraphQLObjectType(
     description="Arguments provided to Fields or Directives and the input"
     " fields of an InputObject are represented as Input Values"
     " which describe their type and optionally a default value.",
-    fields=lambda: {
-        "name": GraphQLField(
+    fields=lambda: OrderedDict((
+        ("name", GraphQLField(
             GraphQLNonNull(GraphQLString), resolve=lambda item, _info: item[0]
-        ),
-        "description": GraphQLField(
+        )),
+        ("description", GraphQLField(
             GraphQLString, resolve=lambda item, _info: item[1].description
-        ),
-        "type": GraphQLField(
+        )),
+        ("type", GraphQLField(
             GraphQLNonNull(__Type), resolve=lambda item, _info: item[1].type
-        ),
-        "defaultValue": GraphQLField(
+        )),
+        ("defaultValue", GraphQLField(
             GraphQLString,
             description="A GraphQL-formatted string representing"
             " the default value for this input value.",
             resolve=lambda item, _info: None
             if is_invalid(item[1].default_value)
             else print_value(item[1].default_value, item[1].type),
-        ),
-    },
+        )),
+    )),
 )
 
 
@@ -378,21 +378,21 @@ __EnumValue = GraphQLObjectType(
     " values, not a placeholder for a string or numeric value."
     " However an Enum value is returned in a JSON response as a"
     " string.",
-    fields=lambda: {
-        "name": GraphQLField(
+    fields=lambda: OrderedDict((
+        ("name", GraphQLField(
             GraphQLNonNull(GraphQLString), resolve=lambda item, _info: item[0]
-        ),
-        "description": GraphQLField(
+        )),
+        ("description", GraphQLField(
             GraphQLString, resolve=lambda item, _info: item[1].description
-        ),
-        "isDeprecated": GraphQLField(
+        )),
+        ("isDeprecated", GraphQLField(
             GraphQLNonNull(GraphQLBoolean),
             resolve=lambda item, _info: item[1].is_deprecated,
-        ),
-        "deprecationReason": GraphQLField(
+        )),
+        ("deprecationReason", GraphQLField(
             GraphQLString, resolve=lambda item, _info: item[1].deprecation_reason
-        ),
-    },
+        )),
+    )),
 )
 
 
@@ -410,52 +410,52 @@ class TypeKind(Enum):
 __TypeKind = GraphQLEnumType(
     name="__TypeKind",
     description="An enum describing what kind of type a given `__Type` is.",
-    values={
-        "SCALAR": GraphQLEnumValue(
+    values=OrderedDict((
+        ("SCALAR", GraphQLEnumValue(
             TypeKind.SCALAR, description="Indicates this type is a scalar."
-        ),
-        "OBJECT": GraphQLEnumValue(
+        )),
+        ("OBJECT", GraphQLEnumValue(
             TypeKind.OBJECT,
             description="Indicates this type is an object. "
             "`fields` and `interfaces` are valid fields.",
-        ),
-        "INTERFACE": GraphQLEnumValue(
+        )),
+        ("INTERFACE", GraphQLEnumValue(
             TypeKind.INTERFACE,
             description="Indicates this type is an interface. "
             "`fields` and `possibleTypes` are valid fields.",
-        ),
-        "UNION": GraphQLEnumValue(
+        )),
+        ("UNION", GraphQLEnumValue(
             TypeKind.UNION,
             description="Indicates this type is a union. "
             "`possibleTypes` is a valid field.",
-        ),
-        "ENUM": GraphQLEnumValue(
+        )),
+        ("ENUM", GraphQLEnumValue(
             TypeKind.ENUM,
             description="Indicates this type is an enum. "
             "`enumValues` is a valid field.",
-        ),
-        "INPUT_OBJECT": GraphQLEnumValue(
+        )),
+        ("INPUT_OBJECT", GraphQLEnumValue(
             TypeKind.INPUT_OBJECT,
             description="Indicates this type is an input object. "
             "`inputFields` is a valid field.",
-        ),
-        "LIST": GraphQLEnumValue(
+        )),
+        ("LIST", GraphQLEnumValue(
             TypeKind.LIST,
             description="Indicates this type is a list. " "`ofType` is a valid field.",
-        ),
-        "NON_NULL": GraphQLEnumValue(
+        )),
+        ("NON_NULL", GraphQLEnumValue(
             TypeKind.NON_NULL,
             description="Indicates this type is a non-null. "
             "`ofType` is a valid field.",
-        ),
-    },
+        )),
+    )),
 )
 
 
 SchemaMetaFieldDef = GraphQLField(
     GraphQLNonNull(__Schema),  # name = '__schema'
     description="Access the current type schema of this server.",
-    args={},
+    args=OrderedDict(),
     resolve=lambda source, info: info.schema,
 )
 
@@ -463,7 +463,9 @@ SchemaMetaFieldDef = GraphQLField(
 TypeMetaFieldDef = GraphQLField(
     __Type,  # name = '__type'
     description="Request the type information of a single type.",
-    args={"name": GraphQLArgument(GraphQLNonNull(GraphQLString))},
+    args=OrderedDict((
+        ("name", GraphQLArgument(GraphQLNonNull(GraphQLString)),
+    ),)),
     resolve=lambda source, info, **args: info.schema.get_type(args["name"]),
 )
 
@@ -471,7 +473,7 @@ TypeMetaFieldDef = GraphQLField(
 TypeNameMetaFieldDef = GraphQLField(
     GraphQLNonNull(GraphQLString),  # name='__typename'
     description="The name of the current Object type at runtime.",
-    args={},
+    args=OrderedDict(),
     resolve=lambda source, info, **args: info.parent_type.name,
 )
 

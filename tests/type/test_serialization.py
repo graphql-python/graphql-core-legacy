@@ -113,7 +113,7 @@ def describe_type_system_scalar_coercion():
         assert GraphQLString.serialize(True) == "true"
         assert GraphQLString.serialize(False) == "false"
 
-        class StringableObjValue:
+        class StringableObjValue(object):
             def __str__(self):
                 return "something useful"
 
@@ -175,7 +175,7 @@ def describe_type_system_scalar_coercion():
         assert GraphQLID.serialize(0) == "0"
         assert GraphQLID.serialize(-1) == "-1"
 
-        class ObjValue:
+        class ObjValue(object):
             def __init__(self, value):
                 self._id = value
 
