@@ -3,6 +3,7 @@ from functools import partial
 from itertools import chain
 from typing import Any, Callable, Dict, List, Optional, Union, Tuple, cast
 
+from ..pyutils import OrderedDict
 from ..error import GraphQLError
 from ..language import (
     DirectiveDefinitionNode,
@@ -90,7 +91,7 @@ def extend_schema(schema, document_ast, assume_valid=False, assume_valid_sdl=Fal
         assert_valid_sdl_extension(document_ast, schema)
 
     # Collect the type definitions and extensions found in the document.
-    type_definition_map = {}
+    type_definition_map = OrderedDict()
     type_extensions_map = defaultdict(list)
 
     # New directives and types are separate because a directives and types can
@@ -233,15 +234,20 @@ def extend_schema(schema, document_ast, assume_valid=False, assume_valid_sdl=Fal
 
     def extend_input_field_map(type_):
         old_field_map = type_.fields
-        new_field_map = {
-            field_name: GraphQLInputField(
-                extend_type(field.type),
-                description=field.description,
-                default_value=field.default_value,
-                ast_node=field.ast_node,
+        new_field_map = OrderedDict(
+            (
+                (
+                    field_name,
+                    GraphQLInputField(
+                        extend_type(field.type),
+                        description=field.description,
+                        default_value=field.default_value,
+                        ast_node=field.ast_node,
+                    ),
+                )
+                for field_name, field in old_field_map.items()
             )
-            for field_name, field in old_field_map.items()
-        }
+        )
 
         # If there are any extensions to the fields, apply those here.
         extensions = type_extensions_map.get(type_.name)
@@ -283,15 +289,20 @@ def extend_schema(schema, document_ast, assume_valid=False, assume_valid_sdl=Fal
 
     def extend_value_map(type_):
         old_value_map = type_.values
-        new_value_map = {
-            value_name: GraphQLEnumValue(
-                value.value,
-                description=value.description,
-                deprecation_reason=value.deprecation_reason,
-                ast_node=value.ast_node,
+        new_value_map = OrderedDict(
+            (
+                (
+                    value_name,
+                    GraphQLEnumValue(
+                        value.value,
+                        description=value.description,
+                        deprecation_reason=value.deprecation_reason,
+                        ast_node=value.ast_node,
+                    ),
+                )
+                for value_name, value in old_value_map.items()
             )
-            for value_name, value in old_value_map.items()
-        }
+        )
 
         # If there are any extensions to the values, apply those here.
         extensions = type_extensions_map.get(type_.name)
@@ -356,15 +367,20 @@ def extend_schema(schema, document_ast, assume_valid=False, assume_valid_sdl=Fal
         )
 
     def extend_args(args):
-        return {
-            arg_name: GraphQLArgument(
-                extend_type(arg.type),
-                default_value=arg.default_value,
-                description=arg.description,
-                ast_node=arg.ast_node,
+        return OrderedDict(
+            (
+                (
+                    arg_name,
+                    GraphQLArgument(
+                        extend_type(arg.type),
+                        default_value=arg.default_value,
+                        description=arg.description,
+                        ast_node=arg.ast_node,
+                    ),
+                )
+                for arg_name, arg in args.items()
             )
-            for arg_name, arg in args.items()
-        }
+        )
 
     def extend_interface_type(type_):
         name = type_.name
@@ -424,12 +440,7 @@ def extend_schema(schema, document_ast, assume_valid=False, assume_valid_sdl=Fal
         return possible_types
 
     def extend_implemented_interfaces(type_):
-        interfaces = list(
-            map(
-                extend_named_type,
-                type_.interfaces,
-            )
-        )
+        interfaces = list(map(extend_named_type, type_.interfaces))
 
         # If there are any extensions to the interfaces, apply those here.
         for extension in type_extensions_map[type_.name]:
@@ -444,17 +455,22 @@ def extend_schema(schema, document_ast, assume_valid=False, assume_valid_sdl=Fal
 
     def extend_field_map(type_):
         old_field_map = type_.fields
-        new_field_map = {
-            field_name: GraphQLField(
-                extend_type(field.type),
-                description=field.description,
-                deprecation_reason=field.deprecation_reason,
-                args=extend_args(field.args),
-                ast_node=field.ast_node,
-                resolve=field.resolve,
+        new_field_map = OrderedDict(
+            (
+                (
+                    field_name,
+                    GraphQLField(
+                        extend_type(field.type),
+                        description=field.description,
+                        deprecation_reason=field.deprecation_reason,
+                        args=extend_args(field.args),
+                        ast_node=field.ast_node,
+                        resolve=field.resolve,
+                    ),
+                )
+                for field_name, field in old_field_map.items()
             )
-            for field_name, field in old_field_map.items()
-        }
+        )
 
         # If there are any extensions to the fields, apply those here.
         for extension in type_extensions_map[type_.name]:
@@ -543,9 +559,9 @@ def extend_schema(schema, document_ast, assume_valid=False, assume_valid_sdl=Fal
                 # more actionable results.
                 operation_types[operation] = ast_builder.build_type(operation_type.type)
 
-    schema_extension_ast_nodes = (
-        schema.extension_ast_nodes or ()
-    ) + tuple(schema_extensions)
+    schema_extension_ast_nodes = (schema.extension_ast_nodes or ()) + tuple(
+        schema_extensions
+    )
 
     # Iterate through all types, getting the type definition for each, ensuring
     # that any type not directly referenced by a value will get created.

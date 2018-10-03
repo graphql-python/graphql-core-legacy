@@ -26,6 +26,7 @@ from ..type import (
     is_specified_scalar_type,
     is_union_type,
 )
+from ..pyutils import OrderedDict
 
 __all__ = ["lexicographic_sort_schema"]
 
@@ -48,40 +49,55 @@ def lexicographic_sort_schema(schema):
         )
 
     def sort_args(args):
-        return {
-            name: GraphQLArgument(
-                sort_type(arg.type),
-                default_value=arg.default_value,
-                description=arg.description,
-                ast_node=arg.ast_node,
+        return OrderedDict(
+            (
+                (
+                    name,
+                    GraphQLArgument(
+                        sort_type(arg.type),
+                        default_value=arg.default_value,
+                        description=arg.description,
+                        ast_node=arg.ast_node,
+                    ),
+                )
+                for name, arg in sorted(args.items())
             )
-            for name, arg in sorted(args.items())
-        }
+        )
 
     def sort_fields(fields_map):
-        return {
-            name: GraphQLField(
-                sort_type(field.type),
-                args=sort_args(field.args),
-                resolve=field.resolve,
-                subscribe=field.subscribe,
-                description=field.description,
-                deprecation_reason=field.deprecation_reason,
-                ast_node=field.ast_node,
+        return OrderedDict(
+            (
+                (
+                    name,
+                    GraphQLField(
+                        sort_type(field.type),
+                        args=sort_args(field.args),
+                        resolve=field.resolve,
+                        subscribe=field.subscribe,
+                        description=field.description,
+                        deprecation_reason=field.deprecation_reason,
+                        ast_node=field.ast_node,
+                    ),
+                )
+                for name, field in sorted(fields_map.items())
             )
-            for name, field in sorted(fields_map.items())
-        }
+        )
 
     def sort_input_fields(fields_map):
-        return {
-            name: GraphQLInputField(
-                sort_type(field.type),
-                description=field.description,
-                default_value=field.default_value,
-                ast_node=field.ast_node,
+        return OrderedDict(
+            (
+                (
+                    name,
+                    GraphQLInputField(
+                        sort_type(field.type),
+                        description=field.description,
+                        default_value=field.default_value,
+                        ast_node=field.ast_node,
+                    ),
+                )
+                for name, field in sorted(fields_map.items())
             )
-            for name, field in sorted(fields_map.items())
-        }
+        )
 
     def sort_type(type_):
         if is_list_type(type_):
@@ -141,15 +157,20 @@ def lexicographic_sort_schema(schema):
             type4 = type_
             return GraphQLEnumType(
                 type_.name,
-                values={
-                    name: GraphQLEnumValue(
-                        val.value,
-                        description=val.description,
-                        deprecation_reason=val.deprecation_reason,
-                        ast_node=val.ast_node,
+                values=OrderedDict(
+                    (
+                        (
+                            name,
+                            GraphQLEnumValue(
+                                val.value,
+                                description=val.description,
+                                deprecation_reason=val.deprecation_reason,
+                                ast_node=val.ast_node,
+                            ),
+                        )
+                        for name, val in sorted(type4.values.items())
                     )
-                    for name, val in sorted(type4.values.items())
-                },
+                ),
                 description=type_.description,
                 ast_node=type4.ast_node,
             )

@@ -50,6 +50,7 @@ from ..type import (
     introspection_types,
     specified_scalar_types,
 )
+from ..pyutils import OrderedDict
 from .value_from_ast import value_from_ast
 
 TypeDefinitionsMap = Dict[str, TypeDefinitionNode]
@@ -91,7 +92,7 @@ def build_ast_schema(document_ast, assume_valid=False, assume_valid_sdl=False):
     schema_def = None
     type_defs = []
     append_type_def = type_defs.append
-    node_map = {}
+    node_map = OrderedDict()
     directive_defs = []
     append_directive_def = directive_defs.append
     for def_ in document_ast.definitions:
@@ -304,9 +305,11 @@ class ASTDefinitionBuilder(object):
     def _make_field_def_map(self, type_def):
         fields = type_def.fields
         return (
-            {field.name.value: self.build_field(field) for field in fields}
+            OrderedDict(
+                ((field.name.value, self.build_field(field)) for field in fields)
+            )
             if fields
-            else {}
+            else OrderedDict()
         )
 
     def _make_arg(self, value_node):
@@ -325,10 +328,14 @@ class ASTDefinitionBuilder(object):
         )
 
     def _make_args(self, values):
-        return {value.name.value: self._make_arg(value) for value in values}
+        return OrderedDict(
+            ((value.name.value, self._make_arg(value)) for value in values)
+        )
 
     def _make_input_fields(self, values):
-        return {value.name.value: self.build_input_field(value) for value in values}
+        return OrderedDict(
+            ((value.name.value, self.build_input_field(value)) for value in values)
+        )
 
     def _make_interface_def(self, type_def):
         return GraphQLInterfaceType(
@@ -348,12 +355,14 @@ class ASTDefinitionBuilder(object):
 
     def _make_value_def_map(self, type_def):
         return (
-            {
-                value.name.value: self.build_enum_value(value)
-                for value in type_def.values
-            }
+            OrderedDict(
+                (
+                    (value.name.value, self.build_enum_value(value))
+                    for value in type_def.values
+                )
+            )
             if type_def.values
-            else {}
+            else OrderedDict()
         )
 
     def _make_union_def(self, type_def):
@@ -385,7 +394,7 @@ class ASTDefinitionBuilder(object):
             description=type_def.description.value if type_def.description else None,
             fields=(lambda: self._make_input_fields(type_def.fields))
             if type_def.fields
-            else {},
+            else OrderedDict(),
             ast_node=type_def,
         )
 

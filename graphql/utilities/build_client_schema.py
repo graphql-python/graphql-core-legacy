@@ -30,6 +30,7 @@ from ..type import (
     is_output_type,
     specified_scalar_types,
 )
+from ..pyutils import OrderedDict
 from .value_from_ast import value_from_ast
 
 __all__ = ["build_client_schema"]
@@ -51,14 +52,14 @@ def build_client_schema(introspection, assume_valid=False):
     schema_introspection = introspection["__schema"]
 
     # Converts the list of types into a dict based on the type names.
-    type_introspection_map = {
-        type_["name"]: type_ for type_ in schema_introspection["types"]
-    }
+    type_introspection_map = OrderedDict(
+        ((type_["name"], type_) for type_ in schema_introspection["types"])
+    )
 
     # A cache to use to store the actual GraphQLType definition objects by
     # name. Initialize to the GraphQL built in scalars. All functions below are
     # inline so that this type def cache is within the scope of the closure.
-    type_def_cache = dict(specified_scalar_types, **introspection_types.items())
+    type_def_cache = dict(specified_scalar_types, **introspection_types)
 
     # Given a type reference in introspection, return the GraphQLType instance.
     # preferring cached instances before building new instances.
@@ -182,13 +183,20 @@ def build_client_schema(introspection, assume_valid=False):
         return GraphQLEnumType(
             name=enum_introspection["name"],
             description=enum_introspection.get("description"),
-            values={
-                value_introspect["name"]: GraphQLEnumValue(
-                    description=value_introspect.get("description"),
-                    deprecation_reason=value_introspect.get("deprecationReason"),
+            values=OrderedDict(
+                (
+                    (
+                        value_introspect["name"],
+                        GraphQLEnumValue(
+                            description=value_introspect.get("description"),
+                            deprecation_reason=value_introspect.get(
+                                "deprecationReason"
+                            ),
+                        ),
+                    )
+                    for value_introspect in enum_introspection["enumValues"]
                 )
-                for value_introspect in enum_introspection["enumValues"]
-            },
+            ),
         )
 
     def build_input_object_def(input_object_introspection):
@@ -233,10 +241,12 @@ def build_client_schema(introspection, assume_valid=False):
                 "Introspection result missing fields:"
                 " {!r}".format(type_introspection)
             )
-        return {
-            field_introspection["name"]: build_field(field_introspection)
-            for field_introspection in type_introspection["fields"]
-        }
+        return OrderedDict(
+            (
+                (field_introspection["name"], build_field(field_introspection))
+                for field_introspection in type_introspection["fields"]
+            )
+        )
 
     def build_arg_value(arg_introspection):
         type_ = get_input_type(arg_introspection["type"])
@@ -253,12 +263,15 @@ def build_client_schema(introspection, assume_valid=False):
         )
 
     def build_arg_value_def_map(arg_introspections):
-        return {
-            input_value_introspection["name"]: build_arg_value(
-                input_value_introspection
+        return OrderedDict(
+            (
+                (
+                    input_value_introspection["name"],
+                    build_arg_value(input_value_introspection),
+                )
+                for input_value_introspection in arg_introspections
             )
-            for input_value_introspection in arg_introspections
-        }
+        )
 
     def build_input_value(input_value_introspection):
         type_ = get_input_type(input_value_introspection["type"])
@@ -275,12 +288,15 @@ def build_client_schema(introspection, assume_valid=False):
         )
 
     def build_input_value_def_map(input_value_introspections):
-        return {
-            input_value_introspection["name"]: build_input_value(
-                input_value_introspection
+        return OrderedDict(
+            (
+                (
+                    input_value_introspection["name"],
+                    build_input_value(input_value_introspection),
+                )
+                for input_value_introspection in input_value_introspections
             )
-            for input_value_introspection in input_value_introspections
-        }
+        )
 
     def build_directive(directive_introspection):
         if directive_introspection.get("args") is None:

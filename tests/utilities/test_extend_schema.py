@@ -26,6 +26,7 @@ from graphql.type import (
     specified_directives,
     validate_schema,
 )
+from graphql.pyutils import OrderedDict
 from graphql.utilities import extend_schema, print_schema
 
 # Test schema.
@@ -34,40 +35,43 @@ SomeScalarType = GraphQLScalarType(name="SomeScalar", serialize=lambda x: x)
 
 SomeInterfaceType = GraphQLInterfaceType(
     name="SomeInterface",
-    fields=lambda: {
-        "name": GraphQLField(GraphQLString),
-        "some": GraphQLField(SomeInterfaceType),
-    },
+    fields=lambda: OrderedDict((
+        ("name", GraphQLField(GraphQLString)),
+        ("some", GraphQLField(SomeInterfaceType)),
+    )),
 )
 
 FooType = GraphQLObjectType(
     name="Foo",
     interfaces=[SomeInterfaceType],
-    fields=lambda: {
-        "name": GraphQLField(GraphQLString),
-        "some": GraphQLField(SomeInterfaceType),
-        "tree": GraphQLField(GraphQLNonNull(GraphQLList(FooType))),
-    },
+    fields=lambda: OrderedDict((
+        ("name", GraphQLField(GraphQLString)),
+        ("some", GraphQLField(SomeInterfaceType)),
+        ("tree", GraphQLField(GraphQLNonNull(GraphQLList(FooType)))),
+    )),
 )
 
 BarType = GraphQLObjectType(
     name="Bar",
     interfaces=[SomeInterfaceType],
-    fields=lambda: {
-        "name": GraphQLField(GraphQLString),
-        "some": GraphQLField(SomeInterfaceType),
-        "foo": GraphQLField(FooType),
-    },
+    fields=lambda: OrderedDict((
+        ("name", GraphQLField(GraphQLString)),
+        ("some", GraphQLField(SomeInterfaceType)),
+        ("foo", GraphQLField(FooType)),
+    )),
 )
 
 BizType = GraphQLObjectType(
-    name="Biz", fields=lambda: {"fizz": GraphQLField(GraphQLString)}
+    name="Biz", fields=lambda: OrderedDict((("fizz", GraphQLField(GraphQLString)),))
 )
 
 SomeUnionType = GraphQLUnionType(name="SomeUnion", types=[FooType, BizType])
 
 SomeEnumType = GraphQLEnumType(
-    name="SomeEnum", values={"ONE": GraphQLEnumValue(1), "TWO": GraphQLEnumValue(2)}
+    name="SomeEnum", values=OrderedDict((
+        ("ONE", GraphQLEnumValue(1)),
+        ("TWO", GraphQLEnumValue(2)),
+    ))
 )
 
 SomeInputType = GraphQLInputObjectType(
@@ -76,7 +80,7 @@ SomeInputType = GraphQLInputObjectType(
 
 FooDirective = GraphQLDirective(
     name="foo",
-    args={"input": GraphQLArgument(SomeInputType)},
+    args=OrderedDict((("input", GraphQLArgument(SomeInputType)),)),
     locations=[
         DirectiveLocation.SCHEMA,
         DirectiveLocation.SCALAR,
@@ -95,19 +99,19 @@ FooDirective = GraphQLDirective(
 test_schema = GraphQLSchema(
     query=GraphQLObjectType(
         name="Query",
-        fields=lambda: {
-            "foo": GraphQLField(FooType),
-            "someScalar": GraphQLField(SomeScalarType),
-            "someUnion": GraphQLField(SomeUnionType),
-            "someEnum": GraphQLField(SomeEnumType),
-            "someInterface": GraphQLField(
+        fields=lambda: OrderedDict((
+            ("foo", GraphQLField(FooType)),
+            ("someScalar", GraphQLField(SomeScalarType)),
+            ("someUnion", GraphQLField(SomeUnionType)),
+            ("someEnum", GraphQLField(SomeEnumType)),
+            ("someInterface", GraphQLField(
                 SomeInterfaceType,
-                args={"id": GraphQLArgument(GraphQLNonNull(GraphQLID))},
-            ),
-            "someInput": GraphQLField(
-                GraphQLString, args={"input": GraphQLArgument(SomeInputType)}
-            ),
-        },
+                args=OrderedDict((("id", GraphQLArgument(GraphQLNonNull(GraphQLID))),)),
+            )),
+            ("someInput", GraphQLField(
+                GraphQLString, args=OrderedDict((("input", GraphQLArgument(SomeInputType)),))
+            )),
+        )),
     ),
     types=[FooType, BarType],
     directives=specified_directives + (FooDirective,),

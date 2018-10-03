@@ -15,6 +15,7 @@ from ..language import (
     ValueNode,
 )
 from ..pyutils import is_nullish, is_invalid
+from ..pyutils.compat import string_types
 from ..type import (
     GraphQLID,
     GraphQLInputType,
@@ -70,7 +71,7 @@ def ast_from_value(value, type_):
     if is_list_type(type_):
         type_ = type_
         item_type = type_.of_type
-        if isinstance(value, Iterable) and not isinstance(value, str):
+        if isinstance(value, Iterable) and not isinstance(value, string_types):
             value_nodes = [
                 ast_from_value(item, item_type) for item in value  # type: ignore
             ]  # type: List[ValueNode]
@@ -100,6 +101,7 @@ def ast_from_value(value, type_):
         # Since value is an internally represented value, it must be serialized
         # to an externally represented value before converting into an AST.
         serialized = type_.serialize(value)  # type: ignore
+
         if is_nullish(serialized):
             return None
 
@@ -113,7 +115,7 @@ def ast_from_value(value, type_):
         if isinstance(serialized, float):
             return FloatValueNode(value="{:g}".format(serialized))
 
-        if isinstance(serialized, str):
+        if isinstance(serialized, string_types):
             # Enum types use Enum literals.
             if is_enum_type(type_):
                 return EnumValueNode(value=serialized)

@@ -32,13 +32,16 @@ def describe_coerce_value():
         def returns_error_for_array_input_as_string():
             result = coerce_value([1, 2, 3], GraphQLString)
             assert expect_error(result) == [
-                "" " String cannot represent a non string value: [1, 2, 3]"
+                "Expected type String;"
+                " String cannot represent a non string value: [1, 2, 3]"
             ]
 
     def describe_for_graphql_id():
         def returns_error_for_array_input_as_string():
             result = coerce_value([1, 2, 3], GraphQLID)
-            assert expect_error(result) == ["" " ID cannot represent value: [1, 2, 3]"]
+            assert expect_error(result) == [
+                "Expected type ID;" " ID cannot represent value: [1, 2, 3]"
+            ]
 
     def describe_for_graphql_int():
         def returns_value_for_integer():
@@ -48,7 +51,7 @@ def describe_coerce_value():
         def returns_no_error_for_numeric_looking_string():
             result = coerce_value("1", GraphQLInt)
             assert expect_error(result) == [
-                "" " Int cannot represent non-integer value: '1'"
+                "Expected type Int;" " Int cannot represent non-integer value: '1'"
             ]
 
         def returns_value_for_negative_int_input():

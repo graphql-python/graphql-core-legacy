@@ -9,6 +9,7 @@ from ..language import (
     Visitor,
     visit,
 )
+from ..pyutils import OrderedDict
 
 __all__ = ["separate_operations"]
 
@@ -35,7 +36,7 @@ def separate_operations(document_ast):
 
     # For each operation, produce a new synthesized AST which includes only
     # what is necessary for completing that operation.
-    separated_document_asts = {}
+    separated_document_asts = OrderedDict()
     for operation in operations:
         operation_name = op_name(operation)
         dependencies = set()
@@ -85,9 +86,7 @@ def op_name(operation):
     return operation.name.value if operation.name else ""
 
 
-def collect_transitive_dependencies(
-    collected, dep_graph, from_name
-):
+def collect_transitive_dependencies(collected, dep_graph, from_name):
     """Collect transitive dependencies.
 
     From a dependency graph, collects a list of transitive dependencies by

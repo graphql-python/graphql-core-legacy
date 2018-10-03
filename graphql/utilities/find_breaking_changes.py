@@ -4,6 +4,7 @@ from collections import namedtuple
 
 from ..error import INVALID
 from ..language import DirectiveLocation
+from ..pyutils import OrderedDict
 from ..type import (
     GraphQLArgument,
     GraphQLDirective,
@@ -751,11 +752,11 @@ def find_removed_directive_args(old_schema, new_schema):
 
 def find_added_args_for_directive(old_directive, new_directive):
     old_arg_map = old_directive.args
-    return {
-        arg_name: arg
+    return OrderedDict((
+        (arg_name, arg)
         for arg_name, arg in new_directive.args.items()
         if arg_name not in old_arg_map
-    }
+    ))
 
 
 def find_added_non_null_directive_args(old_schema, new_schema):
@@ -815,4 +816,6 @@ def find_removed_directive_locations(old_schema, new_schema):
 
 
 def get_directive_map_for_schema(schema):
-    return {directive.name: directive for directive in schema.directives}
+    return OrderedDict((
+        (directive.name, directive) for directive in schema.directives
+    ))
