@@ -2,14 +2,12 @@ from typing import Any, Dict
 
 from ..error import INVALID
 from ..language import ValueNode
-from ..pyutils import is_invalid
+from ..pyutils import is_invalid, OrderedDict
 
 __all__ = ["value_from_ast_untyped"]
 
 
-def value_from_ast_untyped(
-    value_node, variables = None
-):
+def value_from_ast_untyped(value_node, variables=None):
     """Produce a Python value given a GraphQL Value AST.
 
     Unlike `value_from_ast()`, no type is provided. The resulting Python
@@ -17,7 +15,7 @@ def value_from_ast_untyped(
 
     | GraphQL Value        | JSON Value | Python Value |
     | -------------------- | ---------- | ------------ |
-    | Input Object         | Object     | dict         |
+    | Input Object         | Object     | OrderedDict  |
     | List                 | Array      | list         |
     | Boolean              | Boolean    | bool         |
     | String / Enum        | String     | str          |
@@ -58,10 +56,12 @@ def value_from_list(value_node, variables):
 
 
 def value_from_object(value_node, variables):
-    return {
-        field.name.value: value_from_ast_untyped(field.value, variables)
-        for field in value_node.fields
-    }
+    return OrderedDict(
+        (
+            (field.name.value, value_from_ast_untyped(field.value, variables))
+            for field in value_node.fields
+        )
+    )
 
 
 def value_from_variable(value_node, variables):

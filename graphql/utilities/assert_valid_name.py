@@ -3,6 +3,8 @@ from typing import Optional
 
 from ..language import Node
 from ..error import GraphQLError
+from ..pyutils.compat import string_types
+
 
 __all__ = ["assert_valid_name", "is_valid_name_error"]
 
@@ -20,7 +22,7 @@ def assert_valid_name(name):
 
 def is_valid_name_error(name, node=None):
     """Return an Error if a name is invalid."""
-    if not isinstance(name, str):
+    if not isinstance(name, string_types):
         raise TypeError("Expected string")
     if name.startswith("__"):
         return GraphQLError(

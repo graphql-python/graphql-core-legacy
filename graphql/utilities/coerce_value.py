@@ -3,7 +3,7 @@ from collections import namedtuple
 
 from ..error import GraphQLError, INVALID
 from ..language import Node
-from ..pyutils import is_invalid, or_list, suggestion_list
+from ..pyutils import is_invalid, or_list, suggestion_list, OrderedDict
 from ..type import (
     GraphQLEnumType,
     GraphQLInputObjectType,
@@ -17,6 +17,7 @@ from ..type import (
     is_scalar_type,
     GraphQLNonNull,
 )
+from ..pyutils.compat import string_types
 
 __all__ = ["coerce_value", "CoercedValue"]
 
@@ -84,7 +85,7 @@ def coerce_value(value, type_, blame_node=None, path=None):
     if is_enum_type(type_):
         type_ = type_
         values = type_.values
-        if isinstance(value, str):
+        if isinstance(value, string_types):
             enum_value = values.get(value)
             if enum_value:
                 return of_value(value if enum_value.value is None else enum_value.value)
@@ -106,7 +107,7 @@ def coerce_value(value, type_, blame_node=None, path=None):
     if is_list_type(type_):
         type_ = type_
         item_type = type_.of_type
-        if isinstance(value, Iterable) and not isinstance(value, str):
+        if isinstance(value, Iterable) and not isinstance(value, string_types):
             errors = None
             coerced_value_list = []
             append_item = coerced_value_list.append
@@ -136,7 +137,7 @@ def coerce_value(value, type_, blame_node=None, path=None):
                 ]
             )
         errors = None
-        coerced_value_dict = {}
+        coerced_value_dict = OrderedDict()
         fields = type_.fields
 
         # Ensure every defined field is valid.
@@ -225,7 +226,7 @@ def print_path(path):
     while current_path:
         path_str = (
             ".{}".format(current_path.key)
-            if isinstance(current_path.key, str)
+            if isinstance(current_path.key, string_types)
             else "[{}]".format(current_path.key)
         ) + path_str
         current_path = current_path.prev

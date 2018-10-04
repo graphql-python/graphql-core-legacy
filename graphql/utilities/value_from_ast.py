@@ -9,7 +9,7 @@ from ..language import (
     ValueNode,
     VariableNode,
 )
-from ..pyutils import is_invalid
+from ..pyutils import is_invalid, OrderedDict
 from ..type import (
     GraphQLEnumType,
     GraphQLInputObjectType,
@@ -27,11 +27,7 @@ from ..type import (
 __all__ = ["value_from_ast"]
 
 
-def value_from_ast(
-    value_node,
-    type_,
-    variables = None,
-):
+def value_from_ast(value_node, type_, variables=None):
     """Produce a Python value given a GraphQL Value AST.
 
     A GraphQL type must be provided, which will be used to interpret different
@@ -108,7 +104,7 @@ def value_from_ast(
         if not isinstance(value_node, ObjectValueNode):
             return INVALID
         type_ = type_
-        coerced_obj = {}
+        coerced_obj = OrderedDict()
         fields = type_.fields
         field_nodes = {field.name.value: field for field in value_node.fields}
         for field_name, field in fields.items():
@@ -151,9 +147,7 @@ def value_from_ast(
         return result
 
 
-def is_missing_variable(
-    value_node, variables = None
-):
+def is_missing_variable(value_node, variables=None):
     """Check if value_node is a variable not defined in the variables dict."""
     return isinstance(value_node, VariableNode) and (
         not variables or is_invalid(variables.get(value_node.name.value, INVALID))

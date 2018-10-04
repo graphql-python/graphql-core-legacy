@@ -1,3 +1,4 @@
+import json
 from typing import cast, Callable, Dict, List, Sequence
 
 from ..error import INVALID
@@ -143,7 +144,7 @@ def build_client_schema(introspection, assume_valid=False):
         if interfaces is None:
             raise TypeError(
                 "Introspection result missing interfaces:"
-                " {!r}".format(object_introspection)
+                " {}".format(json.dumps(object_introspection))
             )
         return GraphQLObjectType(
             name=object_introspection["name"],
@@ -307,7 +308,7 @@ def build_client_schema(introspection, assume_valid=False):
         if directive_introspection.get("locations") is None:
             raise TypeError(
                 "Introspection result missing directive locations:"
-                " {!r}".format(directive_introspection)
+                " {}".format(json.dumps(directive_introspection))
             )
         return GraphQLDirective(
             name=directive_introspection["name"],

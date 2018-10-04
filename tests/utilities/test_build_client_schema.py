@@ -9,6 +9,7 @@ from graphql.type import (
     GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType,
     GraphQLScalarType, GraphQLSchema, GraphQLString, GraphQLUnionType)
 from graphql.utilities import build_client_schema, introspection_from_schema
+from graphql.pyutils import OrderedDict
 
 
 def check_schema(server_schema):
@@ -382,17 +383,17 @@ def describe_throws_when_given_incomplete_introspection():
             build_client_schema(null_interface_introspection)
 
         assert str(exc_info.value) == (
-            'Introspection result missing interfaces:'
-            " {'kind': 'OBJECT', 'name': 'QueryType',"
-            " 'fields': [{'name': 'aString', 'args': [],"
-            " 'type': {'kind': 'SCALAR', 'name': 'String', 'ofType': None},"
-            " 'isDeprecated': False}]}")
+            'Introspection result missing interfaces: '
+            '{"fields": [{"args": [], "type": {"kind": "SCALAR", "name": "String", '
+            '"ofType": null}, "name": "aString", "isDeprecated": false}], "kind": '
+            '"OBJECT", "name": "QueryType"}'
+        )
 
     def throws_when_missing_directive_locations():
         introspection = {
             '__schema': {
                 'types': [],
-                'directives': [{'name': 'test', 'args': []}]
+                'directives': [OrderedDict((('name', 'test'), ('args', [])))]
             }
         }
 
@@ -401,7 +402,7 @@ def describe_throws_when_given_incomplete_introspection():
 
         assert str(exc_info.value) == (
             'Introspection result missing directive locations:'
-            " {'name': 'test', 'args': []}")
+            ' {"name": "test", "args": []}')
 
 
 def describe_very_deep_decorators_are_not_supported():
