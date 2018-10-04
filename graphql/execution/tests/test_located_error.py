@@ -9,7 +9,7 @@ from graphql import (
     execute,
     parse,
 )
-from graphql.error import GraphQLLocatedError
+from graphql.error import GraphQLError, GraphQLLocatedError
 
 
 def test_unicode_error_message():
@@ -18,7 +18,7 @@ def test_unicode_error_message():
 
     def resolver(context, *_):
         # type: (Optional[Any], *ResolveInfo) -> NoReturn
-        raise Exception(u"UNIÇODÉ!")
+        raise GraphQLError(u"UNIÇODÉ!")
 
     Type = GraphQLObjectType(
         "Type", {"unicode": GraphQLField(GraphQLString, resolver=resolver)}

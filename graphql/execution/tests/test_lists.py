@@ -1,7 +1,7 @@
 # type: ignore
 from collections import namedtuple
 
-from graphql.error import format_error
+from graphql.error import format_error, GraphQLError
 from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import (
@@ -66,7 +66,7 @@ class Test_ListOfT_Promise_Array_T:  # [T] Promise<Array<T>>
     )
     test_returns_null = check(resolved(None), {"data": {"nest": {"test": None}}})
     test_rejected = check(
-        lambda: rejected(Exception("bad")),
+        lambda: rejected(GraphQLError("bad")),
         {
             "data": {"nest": {"test": None}},
             "errors": [
@@ -91,7 +91,7 @@ class Test_ListOfT_Array_Promise_T:  # [T] Array<Promise<T>>
         {"data": {"nest": {"test": [1, None, 2]}}},
     )
     test_contains_reject = check(
-        lambda: [resolved(1), rejected(Exception("bad")), resolved(2)],
+        lambda: [resolved(1), rejected(GraphQLError("bad")), resolved(2)],
         {
             "data": {"nest": {"test": [1, None, 2]}},
             "errors": [
@@ -149,7 +149,7 @@ class Test_NotNullListOfT_Promise_Array_T:  # [T]! Promise<Array<T>>>
     )
 
     test_rejected = check(
-        lambda: rejected(Exception("bad")),
+        lambda: rejected(GraphQLError("bad")),
         {
             "data": {"nest": None},
             "errors": [
@@ -173,7 +173,7 @@ class Test_NotNullListOfT_Array_Promise_T:  # [T]! Promise<Array<T>>>
         {"data": {"nest": {"test": [1, None, 2]}}},
     )
     test_contains_reject = check(
-        lambda: [resolved(1), rejected(Exception("bad")), resolved(2)],
+        lambda: [resolved(1), rejected(GraphQLError("bad")), resolved(2)],
         {
             "data": {"nest": {"test": [1, None, 2]}},
             "errors": [
@@ -228,7 +228,7 @@ class TestListOfNotNullT_Promise_Array_T:  # [T!] Promise<Array<T>>
     test_returns_null = check(resolved(None), {"data": {"nest": {"test": None}}})
 
     test_rejected = check(
-        lambda: rejected(Exception("bad")),
+        lambda: rejected(GraphQLError("bad")),
         {
             "data": {"nest": {"test": None}},
             "errors": [
@@ -262,7 +262,7 @@ class TestListOfNotNullT_Array_Promise_T:  # [T!] Array<Promise<T>>
         },
     )
     test_contains_reject = check(
-        lambda: [resolved(1), rejected(Exception("bad")), resolved(2)],
+        lambda: [resolved(1), rejected(GraphQLError("bad")), resolved(2)],
         {
             "data": {"nest": {"test": None}},
             "errors": [
@@ -341,7 +341,7 @@ class TestNotNullListOfNotNullT_Promise_Array_T:  # [T!]! Promise<Array<T>>
     )
 
     test_rejected = check(
-        lambda: rejected(Exception("bad")),
+        lambda: rejected(GraphQLError("bad")),
         {
             "data": {"nest": None},
             "errors": [
@@ -375,7 +375,7 @@ class TestNotNullListOfNotNullT_Array_Promise_T:  # [T!]! Array<Promise<T>>
         },
     )
     test_contains_reject = check(
-        lambda: [resolved(1), rejected(Exception("bad")), resolved(2)],
+        lambda: [resolved(1), rejected(GraphQLError("bad")), resolved(2)],
         {
             "data": {"nest": None},
             "errors": [

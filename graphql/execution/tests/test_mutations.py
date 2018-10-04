@@ -1,4 +1,5 @@
 # type: ignore
+from graphql.error import GraphQLError
 from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import (
@@ -39,7 +40,7 @@ class Root(object):
 
     def fail_to_change_the_number(self, n):
         # type: (int) -> None
-        raise Exception("Cannot change the number")
+        raise GraphQLError("Cannot change the number")
 
     def promise_and_fail_to_change_the_number(self, n):
         # type: (int) -> None

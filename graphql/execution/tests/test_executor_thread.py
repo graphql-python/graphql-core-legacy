@@ -1,5 +1,5 @@
 # type: ignore
-from graphql.error import format_error
+from graphql.error import format_error, GraphQLError
 from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import (
@@ -191,19 +191,19 @@ def test_synchronous_error_nulls_out_error_subtrees():
 
         def syncError(self):
             # type: () -> NoReturn
-            raise Exception("Error getting syncError")
+            raise GraphQLError("Error getting syncError")
 
         def syncReturnError(self):
             # type: () -> Exception
-            return Exception("Error getting syncReturnError")
+            return GraphQLError("Error getting syncReturnError")
 
         def syncReturnErrorList(self):
             # type: () -> List[Union[Exception, str]]
             return [
                 "sync0",
-                Exception("Error getting syncReturnErrorList1"),
+                GraphQLError("Error getting syncReturnErrorList1"),
                 "sync2",
-                Exception("Error getting syncReturnErrorList3"),
+                GraphQLError("Error getting syncReturnErrorList3"),
             ]
 
         def asyncBasic(self):
@@ -212,15 +212,15 @@ def test_synchronous_error_nulls_out_error_subtrees():
 
         def asyncReject(self):
             # type: () -> Promise
-            return rejected(Exception("Error getting asyncReject"))
+            return rejected(GraphQLError("Error getting asyncReject"))
 
         def asyncEmptyReject(self):
             # type: () -> Promise
-            return rejected(Exception("An unknown error occurred."))
+            return rejected(GraphQLError("An unknown error occurred."))
 
         def asyncReturnError(self):
             # type: () -> Promise
-            return resolved(Exception("Error getting asyncReturnError"))
+            return resolved(GraphQLError("Error getting asyncReturnError"))
 
     schema = GraphQLSchema(
         query=GraphQLObjectType(

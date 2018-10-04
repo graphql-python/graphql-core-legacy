@@ -264,7 +264,7 @@ def test_nulls_out_error_subtrees():
 
         def error(self):
             # type: () -> NoReturn
-            raise Exception("Error getting error")
+            raise GraphQLError("Error getting error")
 
     doc_ast = parse(doc)
 
@@ -567,10 +567,8 @@ def test_fails_to_execute_a_query_containing_a_type_definition():
     assert isinstance(nodes[0], ObjectTypeDefinition)
 
 
-def test_exceptions_are_reraised_if_specified(mocker):
-    # type: (MockFixture) -> None
-
-    logger = mocker.patch("graphql.execution.executor.logger")
+def test_exceptions_are_reraised():
+    # type: () -> None
 
     query = parse(
         """
@@ -578,9 +576,12 @@ def test_exceptions_are_reraised_if_specified(mocker):
     """
     )
 
+    class Error(Exception):
+        pass
+
     def resolver(*_):
         # type: (*Any) -> NoReturn
-        raise Exception("UH OH!")
+        raise Error("UH OH!")
 
     schema = GraphQLSchema(
         GraphQLObjectType(
@@ -588,10 +589,35 @@ def test_exceptions_are_reraised_if_specified(mocker):
         )
     )
 
-    execute(schema, query)
-    logger.exception.assert_called_with(
-        "An error occurred while resolving field Query.foo"
+    with raises(Error):
+        execute(schema, query)
+
+
+def test_exceptions_are_reraised_promise():
+    # type: () -> None
+
+    query = parse(
+        """
+    { foo }
+    """
     )
+
+    class Error(Exception):
+        pass
+
+    @Promise.promisify
+    def resolver(*_):
+        # type: (*Any) -> NoReturn
+        raise Error("UH OH!")
+
+    schema = GraphQLSchema(
+        GraphQLObjectType(
+            name="Query", fields={"foo": GraphQLField(GraphQLString, resolver=resolver)}
+        )
+    )
+
+    with raises(Error):
+        execute(schema, query)
 
 
 def test_executor_properly_propogates_path_data(mocker):

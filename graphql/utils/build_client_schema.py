@@ -34,6 +34,7 @@ from ..type.introspection import (
     __Type,
     __TypeKind,
 )
+from ..error import GraphQLError
 from .value_from_ast import value_from_ast
 
 
@@ -46,7 +47,7 @@ def _none(*_):
 
 
 def no_execution(root, info, **args):
-    raise Exception("Client Schema cannot be used for execution.")
+    raise GraphQLError("Client Schema cannot be used for execution.")
 
 
 def build_client_schema(introspection):
@@ -77,14 +78,14 @@ def build_client_schema(introspection):
             item_ref = type_ref.get("ofType")
 
             if not item_ref:
-                raise Exception("Decorated type deeper than introspection query.")
+                raise GraphQLError("Decorated type deeper than introspection query.")
 
             return GraphQLList(get_type(item_ref))
 
         elif kind == TypeKind.NON_NULL:
             nullable_ref = type_ref.get("ofType")
             if not nullable_ref:
-                raise Exception("Decorated type deeper than introspection query.")
+                raise GraphQLError("Decorated type deeper than introspection query.")
 
             return GraphQLNonNull(get_type(nullable_ref))
 
@@ -96,7 +97,7 @@ def build_client_schema(introspection):
 
         type_introspection = type_introspection_map.get(type_name)
         if not type_introspection:
-            raise Exception(
+            raise GraphQLError(
                 "Invalid or incomplete schema, unknown type: {}. Ensure that a full introspection query "
                 "is used in order to build a client schema.".format(type_name)
             )
@@ -136,7 +137,7 @@ def build_client_schema(introspection):
         type_kind = type.get("kind")
         handler = type_builders.get(type_kind)
         if not handler:
-            raise Exception(
+            raise GraphQLError(
                 "Invalid or incomplete schema, unknown kind: {}. Ensure that a full introspection query "
                 "is used in order to build a client schema.".format(type_kind)
             )

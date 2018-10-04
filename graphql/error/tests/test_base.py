@@ -5,6 +5,7 @@ import traceback
 
 from promise import Promise
 
+from graphql.error import GraphQLError
 from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import GraphQLField, GraphQLObjectType, GraphQLSchema, GraphQLString
@@ -22,7 +23,7 @@ def test_raise():
 
     def resolver(context, *_):
         # type: (Optional[Any], *ResolveInfo) -> None
-        raise Exception("Failed")
+        raise GraphQLError("Failed")
 
     Type = GraphQLObjectType(
         "Type", {"a": GraphQLField(GraphQLString, resolver=resolver)}
@@ -38,14 +39,14 @@ def test_reraise():
 
     def resolver(context, *_):
         # type: (Optional[Any], *ResolveInfo) -> None
-        raise Exception("Failed")
+        raise GraphQLError("Failed")
 
     Type = GraphQLObjectType(
         "Type", {"a": GraphQLField(GraphQLString, resolver=resolver)}
     )
 
     result = execute(GraphQLSchema(Type), ast)
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(GraphQLError) as exc_info:
         result.errors[0].reraise()
 
     extracted = traceback.extract_tb(exc_info.tb)
@@ -59,7 +60,7 @@ def test_reraise():
             "return executor.execute(resolve_fn, source, info, **args)",
         ),
         ("execute", "return fn(*args, **kwargs)"),
-        ("resolver", 'raise Exception("Failed")'),
+        ("resolver", 'raise GraphQLError("Failed")'),
     ]
 
     assert str(exc_info.value) == "Failed"
@@ -71,7 +72,7 @@ def test_reraise_from_promise():
     ast = parse("query Example { a }")
 
     def fail():
-        raise Exception("Failed")
+        raise GraphQLError("Failed")
 
     def resolver(context, *_):
         # type: (Optional[Any], *ResolveInfo) -> None
@@ -93,7 +94,7 @@ def test_reraise_from_promise():
         ("test_reraise_from_promise", "result.errors[0].reraise()"),
         ("_resolve_from_executor", "executor(resolve, reject)"),
         ("<lambda>", "return Promise(lambda resolve, reject: resolve(fail()))"),
-        ("fail", 'raise Exception("Failed")'),
+        ("fail", 'raise GraphQLError("Failed")'),
     ]
 
     assert str(exc_info.value) == "Failed"

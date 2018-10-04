@@ -8,7 +8,7 @@ import pytest
 
 gevent = pytest.importorskip("gevent")
 
-from graphql.error import format_error
+from graphql.error import format_error, GraphQLError
 from graphql.execution import execute
 from graphql.language.location import SourceLocation
 from graphql.language.parser import parse
@@ -54,7 +54,7 @@ def test_gevent_executor_with_error():
 
     def resolver_2(context, *_):
         gevent.sleep(0.003)
-        raise Exception("resolver_2 failed!")
+        raise GraphQLError("resolver_2 failed!")
 
     Type = GraphQLObjectType(
         "Type",
