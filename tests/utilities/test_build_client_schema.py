@@ -362,21 +362,23 @@ def describe_throws_when_given_incomplete_introspection():
 
     def throws_when_missing_interfaces():
         null_interface_introspection = {
-            '__schema': {
-                'queryType': {'name': 'QueryType'},
-                'types': [{
-                    'kind': 'OBJECT',
-                    'name': 'QueryType',
-                    'fields': [{
-                        'name': 'aString',
-                        'args': [],
-                        'type': {
-                            'kind': 'SCALAR', 'name': 'String',
-                            'ofType': None},
-                        'isDeprecated': False
-                        }]
-                }]
-            }
+            '__schema': OrderedDict((
+                ('queryType', {'name': 'QueryType'}),
+                ('types', [OrderedDict((
+                    ('kind', 'OBJECT'),
+                    ('name', 'QueryType'),
+                    ('fields', [OrderedDict((
+                        ('name', 'aString'),
+                        ('args', []),
+                        ('type', OrderedDict((
+                            ('kind', 'SCALAR'),
+                            ('name', 'String'),
+                            ('ofType', None)
+                            ))),
+                        ('isDeprecated', False)
+                        ))])
+                ))])
+            ))
         }
 
         with raises(TypeError) as exc_info:
@@ -384,9 +386,9 @@ def describe_throws_when_given_incomplete_introspection():
 
         assert str(exc_info.value) == (
             'Introspection result missing interfaces: '
-            '{"fields": [{"args": [], "type": {"kind": "SCALAR", "name": "String", '
-            '"ofType": null}, "name": "aString", "isDeprecated": false}], "kind": '
-            '"OBJECT", "name": "QueryType"}'
+            '{"kind": "OBJECT", "name": "QueryType", "fields": [{"name": "aString", '
+            '"args": [], "type": {"kind": "SCALAR", "name": "String", "ofType": null}'
+            ', "isDeprecated": false}]}'
         )
 
     def throws_when_missing_directive_locations():

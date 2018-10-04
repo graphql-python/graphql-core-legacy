@@ -480,16 +480,16 @@ TypeNameMetaFieldDef = GraphQLField(
 
 # Since double underscore names are subject to name mangling in Python,
 # the introspection classes are best imported via this dictionary:
-introspection_types = {
-    "__Schema": __Schema,
-    "__Directive": __Directive,
-    "__DirectiveLocation": __DirectiveLocation,
-    "__Type": __Type,
-    "__Field": __Field,
-    "__InputValue": __InputValue,
-    "__EnumValue": __EnumValue,
-    "__TypeKind": __TypeKind,
-}
+introspection_types = OrderedDict((
+    ("__Schema", __Schema),
+    ("__Directive", __Directive),
+    ("__DirectiveLocation", __DirectiveLocation),
+    ("__Type", __Type),
+    ("__Field", __Field),
+    ("__InputValue", __InputValue),
+    ("__EnumValue", __EnumValue),
+    ("__TypeKind", __TypeKind),
+))
 
 
 def is_introspection_type(type_):
