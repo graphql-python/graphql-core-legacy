@@ -672,9 +672,11 @@ class ExecutionContext(object):
         serialized_result = return_type.serialize(result)
         if is_invalid(serialized_result):
             if isinstance(result, string_types):
-                result = result.encode('utf-8')
+                result = "'{}'".format(result)
+            else:
+                result = repr(result)
             raise TypeError(
-                "Expected a value of type '{}' but received: {!r}".format(
+                "Expected a value of type '{}' but received: {}".format(
                     return_type, result
                 )
             )
