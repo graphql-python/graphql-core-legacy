@@ -1,5 +1,8 @@
+import logging
+
 from collections import namedtuple
-from promise import Promise, is_thenable
+from functools import partial
+from promise import Promise, is_thenable, promise_for_dict
 
 from ..error import GraphQLError, INVALID, located_error
 from ..language import (
@@ -13,7 +16,8 @@ from ..language import (
     SelectionSetNode,
 )
 from .middleware import MiddlewareManager
-from ..pyutils import is_invalid, is_nullish, MaybeAwaitable
+from ..pyutils import is_invalid, is_nullish, MaybeAwaitable, OrderedDict
+from ..pyutils.compat import text_type, string_types
 from ..utilities import get_operation_root_type, type_from_ast
 from ..type import (
     GraphQLAbstractType,
@@ -234,12 +238,8 @@ class ExecutionContext(object):
         response defined by the "Response" section of the GraphQL spec.
         """
         if is_thenable(data):
-            raise
-            # async def build_response_async():
-            #     return self.build_response(await data)
+            return Promise.resolve(data).then(self.build_response)
 
-            # return build_response_async()
-        data = data
         return ExecutionResult(data=data, errors=self.errors or None)
 
     def execute_operation(self, operation, root_value):
@@ -248,7 +248,7 @@ class ExecutionContext(object):
         Implements the "Evaluating operations" section of the spec.
         """
         type_ = get_operation_root_type(self.schema, operation)
-        fields = self.collect_fields(type_, operation.selection_set, {}, set())
+        fields = self.collect_fields(type_, operation.selection_set, OrderedDict(), set())
 
         path = None
 
@@ -264,26 +264,24 @@ class ExecutionContext(object):
                 else self.execute_fields
             )(type_, root_value, path, fields)
         except GraphQLError as error:
+            logging.exception("GraphQLError")
             self.errors.append(error)
             return None
         except Exception as error:
-            error = GraphQLError(str(error), original_error=error)
+            logging.exception("Exception")
+            error = GraphQLError(text_type(error), original_error=error)
             self.errors.append(error)
             return None
         else:
             if is_thenable(result):
-                raise
-                # noinspection PyShadowingNames
-                # async def await_result():
-                #     try:
-                #         return await result
-                #     except GraphQLError as error:
-                #         self.errors.append(error)
-                #     except Exception as error:
-                #         error = GraphQLError(str(error), original_error=error)
-                #         self.errors.append(error)
+                def on_reject(error):
+                    if isinstance(error, GraphQLError):
+                        self.errors.append(error)
+                    else:
+                        error = GraphQLError(text_type(error), original_error=error)
+                        self.errors.append(error)
 
-                # return await_result()
+                return Promise.resolve(result).catch(on_reject)
             return result
 
     def execute_fields_serially(self, parent_type, source_value, path, fields):
@@ -292,44 +290,30 @@ class ExecutionContext(object):
         Implements the "Evaluating selection sets" section of the spec
         for "write" mode.
         """
-        results = {}
-        for response_name, field_nodes in fields.items():
+        results = OrderedDict()
+        def async_results_done(response_name, field_nodes, results):
             field_path = add_path(path, response_name)
             result = self.resolve_field(
                 parent_type, source_value, field_nodes, field_path
             )
             if result is INVALID:
-                continue
-            if is_thenable(results):
-                raise
-                # noinspection PyShadowingNames
-                # async def await_and_set_result(results, response_name, result):
-                #     awaited_results = await results
-                #     awaited_results[response_name] = (
-                #         await result if is_thenable(result) else result
-                #     )
-                #     return awaited_results
-
-                # results = await_and_set_result(
-                #     results, response_name, result
-                # )
-            elif is_thenable(result):
-                raise
-                # noinspection PyShadowingNames
-                # async def set_result(results, response_name, result):
-                #     results[response_name] = await result
-                #     return results
-
-                # results = set_result(results, response_name, result)
+                return results
+            
+            if is_thenable(result):
+                def on_result_done(r):
+                    results[response_name] = r
+                    return results
+                return Promise.resolve(result).then(on_result_done)
             else:
                 results[response_name] = result
-        if is_thenable(results):
-            raise
-            # noinspection PyShadowingNames
-            # async def get_results():
-            #     return await results
+            return results
 
-            return get_results()
+        for response_name, field_nodes in fields.items():
+            if is_thenable(results):
+                results = results.then(partial(async_results_done, response_name, field_nodes))
+            else:
+                results = async_results_done(response_name, field_nodes, results)
+
         return results
 
     def execute_fields(self, parent_type, source_value, path, fields):
@@ -340,7 +324,7 @@ class ExecutionContext(object):
         """
         is_async = False
 
-        results = {}
+        results = OrderedDict()
         for response_name, field_nodes in fields.items():
             field_path = add_path(path, response_name)
             result = self.resolve_field(
@@ -359,14 +343,8 @@ class ExecutionContext(object):
         # resolving that field, which is possibly a coroutine object.
         # Return a coroutine object that will yield this same map, but with
         # any coroutines awaited and replaced with the values they yielded.
-        raise
-        # async def get_results():
-        #     return {
-        #         key: await value if is_thenable(value) else value
-        #         for key, value in results.items()
-        #     }
+        return promise_for_dict(results)
 
-        return get_results()
 
     def collect_fields(
         self, runtime_type, selection_set, fields, visited_fragment_names
@@ -505,22 +483,21 @@ class ExecutionContext(object):
             # we pass the context value as part of the resolve info.
             result = resolve_fn(source, info, **args)
             if is_thenable(result):
-                raise
                 # noinspection PyShadowingNames
-                # async def await_result():
-                #     try:
-                #         return await result
-                #     except GraphQLError as error:
-                #         return error
-                #     except Exception as error:
-                #         return GraphQLError(str(error), original_error=error)
+                def await_result(error):
+                    if isinstance(error, GraphQLError):
+                        return error
+                    else:
+                        return GraphQLError(text_type(error), original_error=error)
+                return Promise.resolve(result).catch(await_result)
 
-                # return await_result()
             return result
         except GraphQLError as error:
+            logging.exception("GraphQLError")
             return error
         except Exception as error:
-            return GraphQLError(str(error), original_error=error)
+            logging.exception("Exception")
+            return GraphQLError(text_type(error), original_error=error)
 
     def complete_value_catching_error(
         self, return_type, field_nodes, info, path, result
@@ -532,40 +509,34 @@ class ExecutionContext(object):
         """
         try:
             if is_thenable(result):
-                raise
-                # async def await_result():
-                #     value = self.complete_value(
-                #         return_type, field_nodes, info, path, await result
-                #     )
-                #     if is_thenable(value):
-                #         return await value
-                #     return value
-
-                # completed = await_result()
+                def await_result(result_resolved):
+                    value = self.complete_value(
+                        return_type, field_nodes, info, path, result_resolved
+                    )
+                    # if is_thenable(value):
+                    #     return await value
+                    return value
+                completed = Promise.resolve(result).then(await_result)
             else:
                 completed = self.complete_value(
                     return_type, field_nodes, info, path, result
                 )
             if is_thenable(completed):
-                raise
                 # noinspection PyShadowingNames
-                # async def await_completed():
-                #     try:
-                #         return await completed
-                #     except Exception as error:
-                #         self.handle_field_error(error, field_nodes, path, return_type)
-
-                # return await_completed()
+                def await_completed(error):
+                    logging.exception("Exception", error)
+                    self.handle_field_error(error, field_nodes, path, return_type)
+                return Promise.resolve(completed).catch(await_completed)
             return completed
         except Exception as error:
+            logging.exception("Exception")
             self.handle_field_error(error, field_nodes, path, return_type)
             return None
 
     def handle_field_error(self, raw_error, field_nodes, path, return_type):
         if not isinstance(raw_error, GraphQLError):
-            raw_error = GraphQLError(str(raw_error), original_error=raw_error)
+            raw_error = GraphQLError(text_type(raw_error), original_error=raw_error)
         error = located_error(raw_error, field_nodes, response_path_as_list(path))
-
         # If the field type is non-nullable, then it is resolved without any
         # protection from errors, however it still properly locates the error.
         if is_non_null_type(return_type):
@@ -658,7 +629,7 @@ class ExecutionContext(object):
         Complete a list value by completing each item in the list with the
         inner type.
         """
-        if not isinstance(result, Iterable) or isinstance(result, str):
+        if not isinstance(result, Iterable) or isinstance(result, string_types):
             raise TypeError(
                 "Expected Iterable, but did not find one for field"
                 " {}.{}.".format(info.parent_type.name, info.field_name)
@@ -678,20 +649,17 @@ class ExecutionContext(object):
             completed_item = self.complete_value_catching_error(
                 item_type, field_nodes, info, field_path, item
             )
-
+            
             if not is_async and is_thenable(completed_item):
                 is_async = True
             append(completed_item)
 
         if is_async:
-            raise
-            # async def get_completed_results():
-            #     return [
-            #         await value if is_thenable(value) else value
-            #         for value in completed_results
-            #     ]
-
-            # return get_completed_results()
+            # TODO: Optimize it to only process thenables and skip
+            # non thenable values
+            return Promise.all(
+                completed_results
+            )
         return completed_results
 
     @staticmethod
@@ -703,6 +671,8 @@ class ExecutionContext(object):
         """
         serialized_result = return_type.serialize(result)
         if is_invalid(serialized_result):
+            if isinstance(result, string_types):
+                result = result.encode('utf-8')
             raise TypeError(
                 "Expected a value of type '{}' but received: {!r}".format(
                     return_type, result
@@ -724,22 +694,17 @@ class ExecutionContext(object):
         )
 
         if is_thenable(runtime_type):
-            raise
-            # async def await_complete_object_value():
-            #     value = self.complete_object_value(
-            #         self.ensure_valid_runtime_type(
-            #             await runtime_type, return_type, field_nodes, info, result
-            #         ),
-            #         field_nodes,
-            #         info,
-            #         path,
-            #         result,
-            #     )
-            #     if is_thenable(value):
-            #         return await value
-            #     return value
-
-            # return await_complete_object_value()
+            def await_complete_object_value(runtime_type_resolved):
+                return self.complete_object_value(
+                    self.ensure_valid_runtime_type(
+                        runtime_type_resolved, return_type, field_nodes, info, result
+                    ),
+                    field_nodes,
+                    info,
+                    path,
+                    result,
+                )
+            return Promise.resolve(runtime_type).then(await_complete_object_value)
         runtime_type = runtime_type
 
         return self.complete_object_value(
@@ -757,7 +722,7 @@ class ExecutionContext(object):
     ):
         runtime_type = (
             self.schema.get_type(runtime_type_or_name)
-            if isinstance(runtime_type_or_name, str)
+            if isinstance(runtime_type_or_name, string_types)
             else runtime_type_or_name
         )
 
@@ -801,21 +766,20 @@ class ExecutionContext(object):
         if return_type.is_type_of:
             is_type_of = return_type.is_type_of(result, info)
 
-            if is_thenable(is_type_of):
-                raise
-                # async def collect_and_execute_subfields_async():
-                #     if not await is_type_of:
-                #         raise invalid_return_type_error(
-                #             return_type, result, field_nodes
-                #         )
-                #     return self.collect_and_execute_subfields(
-                #         return_type, field_nodes, path, result
-                #     )
-
-                # return collect_and_execute_subfields_async()
-
             if not is_type_of:
                 raise invalid_return_type_error(return_type, result, field_nodes)
+
+            elif is_thenable(is_type_of):
+                def collect_and_execute_subfields_async(is_type_of_resolved):
+                    if not is_type_of_resolved:
+                        raise invalid_return_type_error(
+                            return_type, result, field_nodes
+                        )
+                    return self.collect_and_execute_subfields(
+                        return_type, field_nodes, path, result
+                    )
+
+                return Promise.resolve(is_type_of).then(collect_and_execute_subfields_async)
 
         return self.collect_and_execute_subfields(
             return_type, field_nodes, path, result
@@ -837,7 +801,7 @@ class ExecutionContext(object):
         cache_key = return_type, tuple(field_nodes)
         sub_field_nodes = self._subfields_cache.get(cache_key)
         if sub_field_nodes is None:
-            sub_field_nodes = {}
+            sub_field_nodes = OrderedDict()
             visited_fragment_names = set()
             for field_node in field_nodes:
                 selection_set = field_node.selection_set
@@ -1001,35 +965,31 @@ def default_resolve_type_fn(value, info, abstract_type):
     """
 
     # First, look for `__typename`.
-    if isinstance(value, dict) and isinstance(value.get("__typename"), str):
+    if isinstance(value, dict) and isinstance(value.get("__typename"), string_types):
         return value["__typename"]
 
     # Otherwise, test each possible type.
     possible_types = info.schema.get_possible_types(abstract_type)
     is_type_of_results_async = []
-
+    types_async = []
     for type_ in possible_types:
         if type_.is_type_of:
             is_type_of_result = type_.is_type_of(value, info)
 
             if is_thenable(is_type_of_result):
-                is_type_of_results_async.append((is_type_of_result, type_))
+                is_type_of_results_async.append(is_type_of_result)
+                types_async.append(type_)
             elif is_type_of_result:
                 return type_
 
     if is_type_of_results_async:
         # noinspection PyShadowingNames
-        raise
-        # async def get_type():
-        #     is_type_of_results = [
-        #         (await is_type_of_result, type_)
-        #         for is_type_of_result, type_ in is_type_of_results_async
-        #     ]
-        #     for is_type_of_result, type_ in is_type_of_results:
-        #         if is_type_of_result:
-        #             return type_
-
-        # return get_type()
+        def get_type(is_type_of_results):
+            for is_type_of_result, type_ in zip(is_type_of_results, types_async):
+                if is_type_of_result:
+                    return type_
+        
+        return Promise.all(is_type_of_results_async).then(get_type)
 
     return None
 

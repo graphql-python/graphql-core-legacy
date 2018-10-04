@@ -9,6 +9,7 @@ from graphql.type import (
     GraphQLField, GraphQLInt, GraphQLList,
     GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString)
 from graphql.execution import execute
+from graphql.pyutils import OrderedDict
 
 Data = namedtuple('Data', 'test')
 
@@ -18,7 +19,7 @@ def get_async(value):
 
 
 def raise_async(msg):
-    raise Promise.reject(RuntimeError(msg))
+    return Promise.reject(RuntimeError(msg))
 
 
 def get_response(test_type, test_data):
@@ -61,7 +62,7 @@ def describe_execute_accepts_any_iterable_as_list_value():
     def accepts_a_set_as_a_list_value():
         # We need to use a dict instead of a set,
         # since sets are not ordered in Python.
-        check(GraphQLList(GraphQLString), dict.fromkeys(
+        check(GraphQLList(GraphQLString), OrderedDict.fromkeys(
             ['apple', 'banana', 'coconut']), {
             'nest': {'test': ['apple', 'banana', 'coconut']}})
 

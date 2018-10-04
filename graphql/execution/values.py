@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, List, NamedTuple, Optional, Union, cast
 from collections import namedtuple
 
@@ -24,6 +25,7 @@ from ..type import (
     is_input_type,
     is_non_null_type,
 )
+from ..pyutils import OrderedDict
 from ..utilities import coerce_value, type_from_ast, value_from_ast
 
 __all__ = ["get_variable_values", "get_argument_values", "get_directive_values"]
@@ -40,7 +42,7 @@ def get_variable_values(schema, var_def_nodes, inputs):
     parsed to match the variable definitions, a GraphQLError will be thrown.
     """
     errors = []
-    coerced_values = {}
+    coerced_values = OrderedDict()
     for var_def_node in var_def_nodes:
         var_name = var_def_node.variable.name.value
         var_type = type_from_ast(schema, var_def_node.type)
@@ -93,8 +95,8 @@ def get_variable_values(schema, var_def_nodes, inputs):
                     if coercion_errors:
                         for error in coercion_errors:
                             error.message = (
-                                "Variable '${}' got invalid" " value {!r}; {}"
-                            ).format(var_name, value, error.message)
+                                "Variable '${}' got invalid value {}; {}"
+                            ).format(var_name, json.dumps(value), error.message)
                         errors.extend(coercion_errors)
                     else:
                         coerced_values[var_name] = coerced.value
@@ -111,7 +113,7 @@ def get_argument_values(type_def, node, variable_values=None):
     Prepares an dict of argument values given a list of argument definitions
     and list of argument AST nodes.
     """
-    coerced_values = {}
+    coerced_values = OrderedDict()
     arg_defs = type_def.args
     arg_nodes = node.arguments
     if not arg_defs or arg_nodes is None:

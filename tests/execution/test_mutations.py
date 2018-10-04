@@ -165,3 +165,30 @@ def describe_execute_handles_mutation_execution_ordering():
                 },
             ],
         )
+
+    def only_return_promise_if_necessary():
+        doc = """
+            mutation M {
+              first: immediatelyChangeTheNumber(newNumber: 1) {
+                theNumber
+              },
+              second: immediatelyChangeTheNumber(newNumber: 2) {
+                theNumber
+              }
+              third: immediatelyChangeTheNumber(newNumber: 3) {
+                theNumber
+              }
+            }
+            """
+
+        mutation_result = execute(schema, parse(doc), Root(6))
+        assert not isinstance(mutation_result, Promise)
+        assert mutation_result == (
+            {
+                "first": {"theNumber": 1},
+                "second": {"theNumber": 2},
+                "third": {"theNumber": 3},
+            },
+            None,
+        )
+

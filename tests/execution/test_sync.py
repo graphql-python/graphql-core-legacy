@@ -5,22 +5,28 @@ from graphql import graphql_sync
 from graphql.execution import execute
 from graphql.language import parse
 from graphql.type import GraphQLField, GraphQLObjectType, GraphQLSchema, GraphQLString
+from graphql.pyutils import OrderedDict
+
+
+def resolve_sync(root_value, info_):
+    return root_value
+
+
+def resolve_async(root_value, info_):
+    return Promise.resolve(root_value)
 
 
 def describe_execute_synchronously_when_possible():
-    def resolve_sync(root_value, info_):
-        return root_value
-
-    def resolve_async(root_value, info_):
-        return Promise.resolve(root_value)
 
     schema = GraphQLSchema(
         GraphQLObjectType(
             "Query",
-            {
-                "syncField": GraphQLField(GraphQLString, resolve=resolve_sync),
-                "asyncField": GraphQLField(GraphQLString, resolve=resolve_async),
-            },
+            OrderedDict(
+                (
+                    ("syncField", GraphQLField(GraphQLString, resolve=resolve_sync)),
+                    ("asyncField", GraphQLField(GraphQLString, resolve=resolve_async)),
+                )
+            ),
         ),
         GraphQLObjectType(
             "Mutation",
