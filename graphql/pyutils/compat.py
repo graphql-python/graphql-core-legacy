@@ -43,6 +43,7 @@ if PY3:
     text_type = str
     binary_type = bytes
     unichr = chr
+    builtins_module = "builtins"
 else:
     string_types = (basestring,)
     integer_types = (int, long)
@@ -50,6 +51,7 @@ else:
     text_type = unicode
     binary_type = str
     unichr = unichr
+    builtins_module = "__builtin__"
 
 
 try:

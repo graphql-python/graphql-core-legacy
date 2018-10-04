@@ -10,7 +10,7 @@ from ..language.ast import (
     StringValueNode,
 )
 from .definition import GraphQLScalarType, is_named_type
-from ..pyutils.compat import string_types
+from ..pyutils.compat import string_types, builtins_module
 
 __all__ = [
     "is_specified_scalar_type",
@@ -139,7 +139,7 @@ def serialize_string(value):
         return str(value)
     # do not serialize builtin types as strings,
     # but allow serialization of custom types via their __str__ method
-    if type(value).__module__ == "__builtin__":
+    if type(value).__module__ == builtins_module:
         raise TypeError("String cannot represent value: {!r}".format(value))
     return str(value)
 
@@ -210,7 +210,7 @@ def serialize_id(value):
         return str(int(value))
     # do not serialize builtin types as IDs,
     # but allow serialization of custom types via their __str__ method
-    if type(value).__module__ == "__builtin__":
+    if type(value).__module__ == builtins_module:
         raise TypeError("ID cannot represent value: {!r}".format(value))
     return str(value)
 
