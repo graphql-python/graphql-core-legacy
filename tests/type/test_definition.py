@@ -437,14 +437,14 @@ def describe_object_interfaces_must_be_a_sequence():
             ' or a function which returns a list/tuple.')
 
 
-def describe_type_system_object_fields_must_have_valid_resolve_values():
 
-    @fixture
-    def schema_with_object_with_field_resolver(resolve_value):
-        BadResolverType = GraphQLObjectType('BadResolver', {
-            'bad_field': GraphQLField(GraphQLString, resolve=resolve_value)})
-        return GraphQLSchema(GraphQLObjectType('Query', {
-            'f': GraphQLField(BadResolverType)}))
+def schema_with_object_with_field_resolver(resolve_value):
+    BadResolverType = GraphQLObjectType('BadResolver', {
+        'bad_field': GraphQLField(GraphQLString, resolve=resolve_value)})
+    return GraphQLSchema(GraphQLObjectType('Query', {
+        'f': GraphQLField(BadResolverType)}))
+
+def describe_type_system_object_fields_must_have_valid_resolve_values():
 
     def accepts_a_lambda_as_an_object_field_resolver():
         schema_with_object_with_field_resolver(lambda _obj, _info: {})

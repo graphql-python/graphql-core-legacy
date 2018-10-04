@@ -11,6 +11,7 @@ from graphql.type import (
     GraphQLSchema,
     GraphQLString,
 )
+from graphql.pyutils import OrderedDict
 from graphql.utilities import introspection_from_schema
 
 ColorType = GraphQLEnumType("Color", values={"RED": 0, "GREEN": 1, "BLUE": 2})
@@ -38,7 +39,9 @@ class Complex2:
 complex1 = Complex1()
 complex2 = Complex2()
 
-ComplexEnum = GraphQLEnumType("Complex", {"ONE": complex1, "TWO": complex2})
+ComplexEnum = GraphQLEnumType(
+    "Complex", OrderedDict((("ONE", complex1), ("TWO", complex2)))
+)
 
 ColorType2 = GraphQLEnumType("Color", ColorTypeEnumValues)
 

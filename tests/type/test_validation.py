@@ -630,14 +630,13 @@ def describe_type_system_enum_types_must_be_well_defined():
             'Enum type SomeEnum cannot include value: null.')
 
 
-def describe_type_system_object_fields_must_have_output_types():
+def schema_with_object_field_of_type(field_type):
+    BadObjectType = GraphQLObjectType('BadObject', {
+        'badField': GraphQLField(field_type)})
+    return GraphQLSchema(GraphQLObjectType('Query', {
+        'f': GraphQLField(BadObjectType)}), types=[SomeObjectType])
 
-    @fixture
-    def schema_with_object_field_of_type(field_type):
-        BadObjectType = GraphQLObjectType('BadObject', {
-            'badField': GraphQLField(field_type)})
-        return GraphQLSchema(GraphQLObjectType('Query', {
-            'f': GraphQLField(BadObjectType)}), types=[SomeObjectType])
+def describe_type_system_object_fields_must_have_output_types():
 
     @mark.parametrize('type_', output_types)
     def accepts_an_output_type_as_an_object_field_type(type_):
@@ -861,18 +860,18 @@ def describe_type_system_interface_extensions_should_be_valid():
             'locations': [(3, 34), (15, 34)]}]
 
 
-def describe_type_system_interface_fields_must_have_output_types():
 
-    @fixture
-    def schema_with_interface_field_of_type(field_type):
-        BadInterfaceType = GraphQLInterfaceType('BadInterface', {
-            'badField': GraphQLField(field_type)})
-        BadImplementingType = GraphQLObjectType('BadImplementing', {
-            'badField': GraphQLField(field_type)},
-            interfaces=[BadInterfaceType])
-        return GraphQLSchema(GraphQLObjectType('Query', {
-            'f': GraphQLField(BadInterfaceType)}),
-            types=[BadImplementingType, SomeObjectType])
+def schema_with_interface_field_of_type(field_type):
+    BadInterfaceType = GraphQLInterfaceType('BadInterface', {
+        'badField': GraphQLField(field_type)})
+    BadImplementingType = GraphQLObjectType('BadImplementing', {
+        'badField': GraphQLField(field_type)},
+        interfaces=[BadInterfaceType])
+    return GraphQLSchema(GraphQLObjectType('Query', {
+        'f': GraphQLField(BadInterfaceType)}),
+        types=[BadImplementingType, SomeObjectType])
+
+def describe_type_system_interface_fields_must_have_output_types():
 
     @mark.parametrize('type_', output_types)
     def accepts_an_output_type_as_an_interface_field_type(type_):
@@ -940,15 +939,14 @@ def describe_type_system_interface_fields_must_have_output_types():
         assert validate_schema(schema) == []
 
 
-def describe_type_system_field_arguments_must_have_input_types():
+def schema_with_arg_of_type(arg_type):
+    BadObjectType = GraphQLObjectType('BadObject', {
+        'badField': GraphQLField(GraphQLString, args={
+            'badArg': GraphQLArgument(arg_type)})})
+    return GraphQLSchema(GraphQLObjectType('Query', {
+        'f': GraphQLField(BadObjectType)}))
 
-    @fixture
-    def schema_with_arg_of_type(arg_type):
-        BadObjectType = GraphQLObjectType('BadObject', {
-            'badField': GraphQLField(GraphQLString, args={
-                'badArg': GraphQLArgument(arg_type)})})
-        return GraphQLSchema(GraphQLObjectType('Query', {
-            'f': GraphQLField(BadObjectType)}))
+def describe_type_system_field_arguments_must_have_input_types():
 
     @mark.parametrize('type_', input_types)
     def accepts_an_input_type_as_a_field_arg_type(type_):
@@ -996,15 +994,15 @@ def describe_type_system_field_arguments_must_have_input_types():
             ' Argument type must be a GraphQL input type.')
 
 
-def describe_type_system_input_object_fields_must_have_input_types():
+def schema_with_input_field_of_type(input_field_type):
+    BadInputObjectType = GraphQLInputObjectType('BadInputObject', {
+        'badField': GraphQLInputField(input_field_type)})
+    return GraphQLSchema(GraphQLObjectType('Query', {
+        'f': GraphQLField(GraphQLString, args={
+            'badArg': GraphQLArgument(BadInputObjectType)})}))
 
-    @fixture
-    def schema_with_input_field_of_type(input_field_type):
-        BadInputObjectType = GraphQLInputObjectType('BadInputObject', {
-            'badField': GraphQLInputField(input_field_type)})
-        return GraphQLSchema(GraphQLObjectType('Query', {
-            'f': GraphQLField(GraphQLString, args={
-                'badArg': GraphQLArgument(BadInputObjectType)})}))
+
+def describe_type_system_input_object_fields_must_have_input_types():
 
     @mark.parametrize('type_', input_types)
     def accepts_an_input_type_as_an_input_fieldtype(type_):

@@ -3,6 +3,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple, ca
 
 from ..error import GraphQLError
 from ..language import ast
+from ..pyutils import OrderedDict
 from .definition import (
     GraphQLInterfaceType,
     GraphQLNamedType,
@@ -109,7 +110,7 @@ class GraphQLSchema(object):
             initial_types.extend(types)
 
         # Keep track of all types referenced within the schema.
-        type_map = {}
+        type_map = OrderedDict()
         # First by deeply visiting all initial types.
         type_map = type_map_reduce(initial_types, type_map)
         # Then by deeply visiting all directive types.
@@ -117,10 +118,10 @@ class GraphQLSchema(object):
         # Storing the resulting map for reference by the schema
         self.type_map = type_map
 
-        self._possible_type_map = {}
+        self._possible_type_map = OrderedDict()
 
         # Keep track of all implementations by interface name.
-        self._implementations = {}
+        self._implementations = OrderedDict()
         setdefault = self._implementations.setdefault
         for type_ in self.type_map.values():
             if is_object_type(type_):

@@ -4,6 +4,7 @@ from graphql.type import (
     GraphQLInputField, GraphQLInputObjectType, GraphQLList,
     GraphQLObjectType, GraphQLSchema, GraphQLString)
 from graphql.utilities import get_introspection_query
+from graphql.pyutils import OrderedDict
 from graphql.validation.rules.provided_required_arguments import (
     missing_field_arg_message)
 
@@ -758,11 +759,12 @@ def describe_introspection():
         }
 
     def introspects_on_input_object():
-        TestInputObject = GraphQLInputObjectType('TestInputObject', {
-            'a': GraphQLInputField(GraphQLString,
-                                   default_value='tes\t de\fault'),
-            'b': GraphQLInputField(GraphQLList(GraphQLString)),
-            'c': GraphQLInputField(GraphQLString, default_value=None)})
+        TestInputObject = GraphQLInputObjectType('TestInputObject', OrderedDict((
+            ('a', GraphQLInputField(GraphQLString,
+                                   default_value='tes\t de\fault')),
+            ('b', GraphQLInputField(GraphQLList(GraphQLString))),
+            ('c', GraphQLInputField(GraphQLString, default_value=None))
+        )))
 
         TestType = GraphQLObjectType('TestType', {
             'field': GraphQLField(GraphQLString, args={
@@ -857,10 +859,11 @@ def describe_introspection():
         }, None)
 
     def identifies_deprecated_fields():
-        TestType = GraphQLObjectType('TestType', {
-            'nonDeprecated': GraphQLField(GraphQLString),
-            'deprecated': GraphQLField(
-                GraphQLString, deprecation_reason='Removed in 1.0')})
+        TestType = GraphQLObjectType('TestType', OrderedDict((
+            ('nonDeprecated', GraphQLField(GraphQLString)),
+            ('deprecated', GraphQLField(
+                GraphQLString, deprecation_reason='Removed in 1.0'))
+        )))
 
         schema = GraphQLSchema(TestType)
         request = """
@@ -892,10 +895,11 @@ def describe_introspection():
         }, None)
 
     def respects_the_include_deprecated_parameter_for_fields():
-        TestType = GraphQLObjectType('TestType', {
-            'nonDeprecated': GraphQLField(GraphQLString),
-            'deprecated': GraphQLField(
-                GraphQLString, deprecation_reason='Removed in 1.0')})
+        TestType = GraphQLObjectType('TestType', OrderedDict((
+            ('nonDeprecated', GraphQLField(GraphQLString)),
+            ('deprecated', GraphQLField(
+                GraphQLString, deprecation_reason='Removed in 1.0')
+            ))))
 
         schema = GraphQLSchema(TestType)
         request = """
@@ -933,11 +937,12 @@ def describe_introspection():
         }, None)
 
     def identifies_deprecated_enum_values():
-        TestEnum = GraphQLEnumType('TestEnum', {
-            'NONDEPRECATED': GraphQLEnumValue(0),
-            'DEPRECATED': GraphQLEnumValue(
-                1, deprecation_reason='Removed in 1.0'),
-            'ALSONONDEPRECATED': GraphQLEnumValue(2)})
+        TestEnum = GraphQLEnumType('TestEnum', OrderedDict((
+            ('NONDEPRECATED', GraphQLEnumValue(0)),
+            ('DEPRECATED', GraphQLEnumValue(
+                1, deprecation_reason='Removed in 1.0')),
+            ('ALSONONDEPRECATED', GraphQLEnumValue(2))
+        )))
 
         TestType = GraphQLObjectType('TestType', {
             'testEnum': GraphQLField(TestEnum)})
@@ -976,11 +981,12 @@ def describe_introspection():
         }, None)
 
     def respects_the_include_deprecated_parameter_for_enum_values():
-        TestEnum = GraphQLEnumType('TestEnum', {
-            'NONDEPRECATED': GraphQLEnumValue(0),
-            'DEPRECATED': GraphQLEnumValue(
-                1, deprecation_reason='Removed in 1.0'),
-            'ALSONONDEPRECATED': GraphQLEnumValue(2)})
+        TestEnum = GraphQLEnumType('TestEnum', OrderedDict((
+            ('NONDEPRECATED', GraphQLEnumValue(0)),
+            ('DEPRECATED', GraphQLEnumValue(
+                1, deprecation_reason='Removed in 1.0')),
+            ('ALSONONDEPRECATED', GraphQLEnumValue(2))
+        )))
 
         TestType = GraphQLObjectType('TestType', {
             'testEnum': GraphQLField(TestEnum)})
