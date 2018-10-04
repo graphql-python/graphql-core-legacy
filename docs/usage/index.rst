@@ -1,7 +1,7 @@
 Usage
 =====
 
-GraphQL-core-next provides two important capabilities: building a type schema,
+graphql-core provides two important capabilities: building a type schema,
 and serving queries against that type schema.
 
 .. toctree::

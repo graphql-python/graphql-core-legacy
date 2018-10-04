@@ -1,7 +1,7 @@
 Extending a Schema
 ------------------
 
-With GraphQL-core-next you can also extend a given schema using type
+With graphql-core you can also extend a given schema using type
 extensions. For example, we might want to add a ``lastName`` property to our
 ``Human`` data type to retrieve only the last name of the person.
 

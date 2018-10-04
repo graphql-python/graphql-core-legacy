@@ -1,9 +1,9 @@
-"""GraphQL-core-next
+"""graphql-core
 
 The primary `graphql` package includes everything you need to define a GraphQL
 schema and fulfill GraphQL requests.
 
-GraphQL-core-next provides a reference implementation for the GraphQL
+graphql-core provides a reference implementation for the GraphQL
 specification but is also a useful utility for operating on GraphQL files
 and building sophisticated tools.
 
@@ -25,7 +25,7 @@ following two import statements are equivalent::
     from graphql import parse
     from graphql.language import parse
 
-The sub-packages of GraphQL-core-next are:
+The sub-packages of graphql-core are:
 
   - `graphql/language`: Parse and operate on the GraphQL language.
   - `graphql/type`: Define GraphQL types and schema.

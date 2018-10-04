@@ -5,7 +5,7 @@ Now that we have defined the schema and breathed life into it with our
 resolver functions, we can execute arbitrary query against the schema.
 
 The :mod:`graphql` package provides the :func:`graphql.graphql` function
-to execute queries. This is the main feature of GraphQL-core-next.
+to execute queries. This is the main feature of graphql-core.
 
 Note however that this function is actually a coroutine intended to be used
 in asynchronous code running in an event loop.

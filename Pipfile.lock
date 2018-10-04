@@ -103,7 +103,7 @@
             "index": "pypi",
             "version": "==3.5.0"
         },
-        "graphql-core-next": {
+        "graphql-core": {
             "editable": true,
             "path": "."
         },
