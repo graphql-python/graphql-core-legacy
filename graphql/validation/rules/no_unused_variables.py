@@ -27,7 +27,8 @@ class NoUnusedVariablesRule(ValidationRule):
         self.variable_defs = []
 
     def enter_operation_definition(self, *_args):
-        self.variable_defs.clear()
+        del self.variable_defs[:]
+        # self.variable_defs.clear()
 
     def leave_operation_definition(self, operation, *_args):
         variable_name_used = set()

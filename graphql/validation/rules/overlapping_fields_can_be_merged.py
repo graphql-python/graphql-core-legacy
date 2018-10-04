@@ -26,6 +26,7 @@ from ...type import (
     is_object_type,
 )
 from ...utilities import type_from_ast
+from ...pyutils import OrderedDict
 from . import ValidationContext, ValidationRule
 
 MYPY = False
@@ -660,8 +661,8 @@ def get_fields_and_fragment_names(
     """
     cached = cached_fields_and_fragment_names.get(selection_set)
     if not cached:
-        node_and_defs = {}
-        fragment_names = {}
+        node_and_defs = OrderedDict()
+        fragment_names = OrderedDict()
         collect_fields_and_fragment_names(
             context, parent_type, selection_set, node_and_defs, fragment_names
         )
@@ -704,9 +705,7 @@ def collect_fields_and_fragment_names(
             response_name = selection.alias.value if selection.alias else field_name
             if not node_and_defs.get(response_name):
                 node_and_defs[response_name] = []
-            node_and_defs[response_name].append(
-                (parent_type, selection, field_def)
-            )
+            node_and_defs[response_name].append((parent_type, selection, field_def))
         elif isinstance(selection, FragmentSpreadNode):
             fragment_names[selection.name.value] = True
         elif isinstance(selection, InlineFragmentNode):
