@@ -20,6 +20,8 @@ def located_error(
     GraphQL operation, produce a new GraphQLError aware of the location in the
     document responsible for the original Error.
     """
+    from ..pyutils.compat import text_type
+
     if original_error:
         # Note: this uses a brand-check to support GraphQL errors originating
         # from other contexts.
@@ -31,7 +33,7 @@ def located_error(
     try:
         message = original_error.message  # type: ignore
     except AttributeError:
-        message = str(original_error)
+        message = text_type(original_error)
     try:
         source = original_error.source  # type: ignore
     except AttributeError:

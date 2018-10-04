@@ -13,11 +13,13 @@ class InvalidType(ValueError):
     def __bool__(self):
         return False
 
+    __nonzero__ = __bool__
+
     def __eq__(self, other):
         return other is INVALID
 
     def __ne__(self, other):
-        return not self.__eq__(other)
+        return other is not INVALID
 
 
 # Used to indicate invalid values (like "undefined" in GraphQL.js):
