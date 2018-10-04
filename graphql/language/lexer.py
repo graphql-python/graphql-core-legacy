@@ -121,7 +121,7 @@ def print_char(code):
 
     ord_code = ord(code)
     if ord_code < 0x007F:
-        return "'{}'".format(code.encode("utf8"))
+        return "'{}'".format(code)
 
     return "'\\u{:04X}'".format(ord_code)
 
@@ -405,8 +405,7 @@ def read_string(source, start, line, col, prev):
                     char_at(body, position + 4),
                 )
                 if code < 0:
-                    escape = repr(body[position : position + 5].encode("utf8"))
-                    escape = escape[:1] + "\\" + escape[1:]
+                    escape = "'\\{}'".format(body[position : position + 5])
                     raise GraphQLSyntaxError(
                         source,
                         position,
@@ -415,8 +414,7 @@ def read_string(source, start, line, col, prev):
                 append(unichr(code))
                 position += 4
             else:
-                escape = repr(char.encode("utf8"))
-                escape = escape[:1] + "\\" + escape[1:]
+                escape = "'\\{}'".format(char)
                 raise GraphQLSyntaxError(
                     source,
                     position,
