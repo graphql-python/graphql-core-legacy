@@ -1,20 +1,33 @@
 language: python
-
-dist: xenial
-sudo: true
-
-python:
-  - 3.6
-  - 3.7
-
-install:
-  - pip install pipenv
-  - pipenv install --dev
-
-script:
-  - flake8 graphql tests
-  - mypy graphql
-  - pytest --cov-report term-missing --cov=graphql
-
-after_success:
-  - coveralls
+matrix:
+    include:
+        - env: TOXENV=py27
+        - env: TOXENV=py34
+          python: 3.4
+        - env: TOXENV=py35
+          python: 3.5
+        - env: TOXENV=py36
+          python: 3.6
+        # -  env: TOXENV=py37
+        #    python: 3.7
+        - env: TOXENV=pypy
+          python: pypy-5.7.1
+        - env: TOXENV=pre-commit
+          python: 3.6
+        # - env: TOXENV=mypy
+        #   python: 3.6
+install: pip install coveralls tox
+script: tox
+after_success: coveralls
+cache:
+    directories:
+        - $HOME/.cache/pip
+        - $HOME/.cache/pre-commit
+deploy:
+    provider: pypi
+    user: syrusakbary
+    on:
+        tags: true
+    password:
+        secure: q7kMxnJQ5LWr8fxVbQPm3pAXKRfYa1d2defM1UXKTQ+Gi6ZQ+QEOAOSbX1SKzYH62+hNRY2JGTeLkTQBeEYn05GJRh+WOkFzIFV1EnsgFbimSb6B83EmM57099GjJnO2nRUU4jyuNGU1joTeaD/g08ede072Es1I7DTuholNbYIq+brL/LQMJycuqZMoWUW4+pP8dE9SmjThMNYHlqNhzdXSE3BlZU0xcw7F2Ea384DNcekIIcapZuPjL167VouuSH/oMQMxBJo+ExEHdbqn5zsA9xcoF931XCgz4ag8U3jHhE48ZXM/xwdQt+S8JnOZcuv3MoAAioMbh+bYXUt2lmENWXCKK1kMDz2bJymwEUeZLA6lFxJQwvlVShowdi7xeyDYLIbeF7yG90Hd+5BqCZn5imzlcQxpjanaQq6xLwAzo6AHssWtd5bBOjDydknPxd1t3QGDoDvtfRdqrfOhlVX5813Hmd/vAopBAba7msKPMLxhsqDZKkwsVrLJLJDjGdpHNl/bbVaMsYcPrsFxa2W8PuddQFviHbL4HDNqHn5SpRwJcQ18YL1X5StQnUz1J+4E0W4mLrU3YW1k8RGlKTes/GeTH4sU+Sh3I9vrDv7849A8U9sSFyB2PT4Jyy8O2R5UyjoqnZDrkYYbLdn/caVo3ThrubTpwdPBmNwcDLA=
+    distributions: "sdist bdist_wheel"
