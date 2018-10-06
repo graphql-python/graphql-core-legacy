@@ -17,12 +17,7 @@ class MapAsyncIterator:
     will also be closed.
     """
 
-    def __init__(
-        self,
-        iterable,
-        callback,
-        reject_callback = None,
-    ):
+    def __init__(self, iterable, callback, reject_callback=None):
         self.iterator = iterable.__aiter__()
         self.callback = callback
         self.reject_callback = reject_callback

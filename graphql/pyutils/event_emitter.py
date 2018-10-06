@@ -1,9 +1,7 @@
-from typing import cast, Callable, Dict, List, Optional
-
-from asyncio import AbstractEventLoop, Queue, ensure_future
-from inspect import isawaitable
-
 from collections import defaultdict
+
+from rx.core import AnonymousObservable
+
 
 __all__ = ["EventEmitter", "EventEmitterAsyncIterator"]
 
@@ -11,8 +9,7 @@ __all__ = ["EventEmitter", "EventEmitterAsyncIterator"]
 class EventEmitter(object):
     """A very simple EventEmitter."""
 
-    def __init__(self, loop=None):
-        self.loop = loop
+    def __init__(self):
         self.listeners = defaultdict(list)
 
     def add_listener(self, event_name, listener):
@@ -32,35 +29,41 @@ class EventEmitter(object):
             return False
         for listener in listeners:
             result = listener(*args, **kwargs)
-            if isawaitable(result):
-                ensure_future(result, loop=self.loop)
         return True
 
+    def complete(self):
+        return self.emit(EventEmitterObservable.COMPLETE)
 
-class EventEmitterAsyncIterator:
-    """Create an AsyncIterator from an EventEmitter.
+
+class EventEmitterObservable(AnonymousObservable):
+    """Create an Observable from an EventEmitter.
 
     Useful for mocking a PubSub system for tests.
     """
 
+    COMPLETE = "__COMPLETE__"
+
     def __init__(self, event_emitter, event_name):
-        self.queue = Queue(loop=event_emitter.loop)
-        event_emitter.add_listener(event_name, self.queue.put)
-        self.remove_listener = lambda: event_emitter.remove_listener(
-            event_name, self.queue.put
-        )
-        self.closed = False
+        def push_from_emitter(observer):
+            event_emitter.add_listener(event_name, observer.on_next)
+            event_emitter.add_listener(self.COMPLETE, self.dispose)
 
-    def __aiter__(self):
-        return self
+            def remove_observer_listener():
+                event_emitter.remove_listener(event_name, observer.on_next)
+                event_emitter.remove_listener(self.COMPLETE, self.dispose)
+                observer.on_completed()
 
-    async def __anext__(self):
-        if self.closed:
-            raise StopAsyncIteration
-        return await self.queue.get()
+            self.remove_observer_listener = remove_observer_listener
 
-    async def aclose(self):
-        self.remove_listener()
-        while not self.queue.empty():
-            await self.queue.get()
-        self.closed = True
+        self.event_emitter = event_emitter
+        self.event_name = event_name
+        # self.event_emitter.add_listener(event_name, self.on_next)
+        super(EventEmitterObservable, self).__init__(push_from_emitter)
+
+    # def on_next(self, value):
+    #     self.last = value
+
+    def dispose(self):
+        self.remove_observer_listener()
+        # self.event_emitter.remove_listener(event_name, self.on_next)
+        # super(EventEmitterObservable, self).dispose()
