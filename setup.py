@@ -7,6 +7,19 @@ with open("graphql/__init__.py") as init_file:
 with open("README.md") as readme_file:
     readme = readme_file.read()
 
+install_requires = ["promise>=2.2.1", "rx>=1.6.1"]
+
+
+tests_requires = [
+    "pytest",
+    "pytest-cov",
+    "pytest-describe",
+    "flake8",
+    "mypy",
+    "tox",
+    "python-coveralls",
+]
+
 setup(
     name="GraphQL-core",
     version=version,
@@ -30,20 +43,13 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
     ],
-    install_requires=[],
+    install_requires=install_requires,
     python_requires=">=3.6",
     test_suite="tests",
-    tests_require=[
-        "pytest",
-        "pytest-cov",
-        "pytest-describe",
-        "flake8",
-        "mypy",
-        "tox",
-        "python-coveralls",
-    ],
+    tests_require=tests_requires,
     packages=find_packages(include=["graphql"]),
     include_package_data=True,
     zip_safe=False,
+    extras_require={"test": tests_requires},
 )
 
