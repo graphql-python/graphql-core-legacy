@@ -31,6 +31,11 @@ from ..pyutils import OrderedDict
 __all__ = ["lexicographic_sort_schema"]
 
 
+def key_getter(kv):
+    # We return the key in the kv tuple
+    return kv[0]
+
+
 def lexicographic_sort_schema(schema):
     """Sort GraphQLSchema."""
 
@@ -60,7 +65,7 @@ def lexicographic_sort_schema(schema):
                         ast_node=arg.ast_node,
                     ),
                 )
-                for name, arg in sorted(args.items())
+                for name, arg in sorted(args.items(), key=key_getter)
             )
         )
 
@@ -79,7 +84,7 @@ def lexicographic_sort_schema(schema):
                         ast_node=field.ast_node,
                     ),
                 )
-                for name, field in sorted(fields_map.items())
+                for name, field in sorted(fields_map.items(), key=key_getter)
             )
         )
 
@@ -95,7 +100,7 @@ def lexicographic_sort_schema(schema):
                         ast_node=field.ast_node,
                     ),
                 )
-                for name, field in sorted(fields_map.items())
+                for name, field in sorted(fields_map.items(), key=key_getter)
             )
         )
 
@@ -168,7 +173,7 @@ def lexicographic_sort_schema(schema):
                                 ast_node=val.ast_node,
                             ),
                         )
-                        for name, val in sorted(type4.values.items())
+                        for name, val in sorted(type4.values.items(), key=key_getter)
                     )
                 ),
                 description=type_.description,

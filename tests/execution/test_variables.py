@@ -32,34 +32,40 @@ TestComplexScalar = GraphQLScalarType(
 
 TestInputObject = GraphQLInputObjectType(
     "TestInputObject",
-    OrderedDict((
-        ("a", GraphQLInputField(GraphQLString)),
-        ("b", GraphQLInputField(GraphQLList(GraphQLString))),
-        ("c", GraphQLInputField(GraphQLNonNull(GraphQLString))),
-        ("d", GraphQLInputField(TestComplexScalar)),
-    )),
+    OrderedDict(
+        (
+            ("a", GraphQLInputField(GraphQLString)),
+            ("b", GraphQLInputField(GraphQLList(GraphQLString))),
+            ("c", GraphQLInputField(GraphQLNonNull(GraphQLString))),
+            ("d", GraphQLInputField(TestComplexScalar)),
+        )
+    ),
 )
 
 
 TestNestedInputObject = GraphQLInputObjectType(
     "TestNestedInputObject",
-    OrderedDict((
-        ("na", GraphQLInputField(GraphQLNonNull(TestInputObject))),
-        ("nb", GraphQLInputField(GraphQLNonNull(GraphQLString))),
-    )),
+    OrderedDict(
+        (
+            ("na", GraphQLInputField(GraphQLNonNull(TestInputObject))),
+            ("nb", GraphQLInputField(GraphQLNonNull(GraphQLString))),
+        )
+    ),
 )
 
 
 TestEnum = GraphQLEnumType(
     "TestEnum",
-    OrderedDict((
-        ("NULL", None),
-        ("UNDEFINED", INVALID),
-        ("NAN", float("nan")),
-        ("FALSE", False),
-        ("CUSTOM", "custom value"),
-        ("DEFAULT_VALUE", GraphQLEnumValue()),
-    )),
+    OrderedDict(
+        (
+            ("NULL", None),
+            ("UNDEFINED", INVALID),
+            ("NAN", float("nan")),
+            ("FALSE", False),
+            ("CUSTOM", "custom value"),
+            ("DEFAULT_VALUE", GraphQLEnumValue()),
+        )
+    ),
 )
 
 
@@ -314,7 +320,9 @@ def describe_execute_handles_inputs():
                 assert result == ({"fieldWithNullableStringInput": "null"}, None)
 
             def properly_parses_single_value_to_list():
-                params = {"input": OrderedDict((("a", "foo"), ("b", "bar"), ("c", "baz")))}
+                params = {
+                    "input": OrderedDict((("a", "foo"), ("b", "bar"), ("c", "baz")))
+                }
                 result = execute_query(doc, params)
 
                 assert result == (
@@ -332,7 +340,9 @@ def describe_execute_handles_inputs():
                 )
 
             def errors_on_null_for_nested_non_null():
-                params = {"input": OrderedDict((("a", "foo"), ("b", "bar"), ("c", None)))}
+                params = {
+                    "input": OrderedDict((("a", "foo"), ("b", "bar"), ("c", None)))
+                }
                 result = execute_query(doc, params)
 
                 assert result == (
@@ -340,7 +350,7 @@ def describe_execute_handles_inputs():
                     [
                         {
                             "message": "Variable '$input' got invalid value"
-                            " {\"a\": \"foo\", \"b\": \"bar\", \"c\": null};"
+                            ' {"a": "foo", "b": "bar", "c": null};'
                             " Expected non-nullable type String!"
                             " not to be null at value.c.",
                             "locations": [(2, 24)],
@@ -365,14 +375,16 @@ def describe_execute_handles_inputs():
                 )
 
             def errors_on_omission_of_nested_non_null():
-                result = execute_query(doc, {"input": {"a": "foo", "b": "bar"}})
+                result = execute_query(
+                    doc, {"input": OrderedDict((("a", "foo"), ("b", "bar")))}
+                )
 
                 assert result == (
                     None,
                     [
                         {
                             "message": "Variable '$input' got invalid value"
-                            " {\"a\": \"foo\", \"b\": \"bar\"}; Field value.c"
+                            ' {"a": "foo", "b": "bar"}; Field value.c'
                             " of required type String! was not provided.",
                             "locations": [(2, 24)],
                         }
@@ -392,13 +404,13 @@ def describe_execute_handles_inputs():
                     [
                         {
                             "message": "Variable '$input' got invalid value"
-                            " {\"na\": {\"a\": \"foo\"}}; Field value.na.c"
+                            ' {"na": {"a": "foo"}}; Field value.na.c'
                             " of required type String! was not provided.",
                             "locations": [(2, 28)],
                         },
                         {
                             "message": "Variable '$input' got invalid value"
-                            " {\"na\": {\"a\": \"foo\"}}; Field value.nb"
+                            ' {"na": {"a": "foo"}}; Field value.nb'
                             " of required type String! was not provided.",
                             "locations": [(2, 28)],
                         },
@@ -406,15 +418,19 @@ def describe_execute_handles_inputs():
                 )
 
             def errors_on_addition_of_unknown_input_field():
-                params = {"input": OrderedDict((("a", "foo"), ("b", "bar"), ("c", "baz"), ("extra", "dog")))}
+                params = {
+                    "input": OrderedDict(
+                        (("a", "foo"), ("b", "bar"), ("c", "baz"), ("extra", "dog"))
+                    )
+                }
                 result = execute_query(doc, params)
 
                 assert result == (
                     None,
                     [
                         {
-                            "message": "Variable '$input' got invalid value {\"a\": \"foo\","
-                            " \"b\": \"bar\", \"c\": \"baz\", \"extra\": \"dog\"}; Field"
+                            "message": 'Variable \'$input\' got invalid value {"a": "foo",'
+                            ' "b": "bar", "c": "baz", "extra": "dog"}; Field'
                             " 'extra' is not defined by type TestInputObject.",
                             "locations": [(2, 24)],
                         }
@@ -771,7 +787,7 @@ def describe_execute_handles_inputs():
                 [
                     {
                         "message": "Variable '$input' got invalid value"
-                        " [\"A\", null, \"B\"]; Expected non-nullable type"
+                        ' ["A", null, "B"]; Expected non-nullable type'
                         " String! not to be null at value[1].",
                         "locations": [(2, 24)],
                     }
@@ -820,7 +836,7 @@ def describe_execute_handles_inputs():
                 [
                     {
                         "message": "Variable '$input' got invalid value"
-                        " [\"A\", null, \"B\"]; Expected non-nullable type"
+                        ' ["A", null, "B"]; Expected non-nullable type'
                         " String! not to be null at value[1].",
                         "locations": [(2, 24)],
                         "path": None,

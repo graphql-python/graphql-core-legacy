@@ -11,6 +11,7 @@ from graphql.type import (
     GraphQLSchema, GraphQLObjectType, GraphQLString,
     GraphQLField, GraphQLArgument, GraphQLInt, GraphQLList, GraphQLNonNull,
     GraphQLBoolean, GraphQLResolveInfo, ResponsePath)
+from graphql.pyutils import OrderedDict
 
 
 def describe_execute_handles_basic_execution_tasks():
@@ -597,12 +598,13 @@ def describe_execute_handles_basic_execution_tasks():
 
     def does_not_include_arguments_that_were_not_set():
         schema = GraphQLSchema(GraphQLObjectType('Type', {
-            'field': GraphQLField(GraphQLString, args={
-                    'a': GraphQLArgument(GraphQLBoolean),
-                    'b': GraphQLArgument(GraphQLBoolean),
-                    'c': GraphQLArgument(GraphQLBoolean),
-                    'd': GraphQLArgument(GraphQLInt),
-                    'e': GraphQLArgument(GraphQLInt)},
+            'field': GraphQLField(GraphQLString, args=OrderedDict((
+                    ('a', GraphQLArgument(GraphQLBoolean)),
+                    ('b', GraphQLArgument(GraphQLBoolean)),
+                    ('c', GraphQLArgument(GraphQLBoolean)),
+                    ('d', GraphQLArgument(GraphQLInt)),
+                    ('e', GraphQLArgument(GraphQLInt))
+                )),
                 resolve=lambda _source, _info, **args: args and dumps(args))}))
 
         query = parse('{ field(a: true, c: false, e: 0) }')

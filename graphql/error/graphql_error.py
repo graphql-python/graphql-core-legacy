@@ -139,6 +139,14 @@ class GraphQLError(Exception):
             args.append("extensions={!r}".format(self.extensions))
         return "{}({})".format(self.__class__.__name__, ", ".join(args))
 
+    def __hash__(self):
+        return hash(
+            tuple(
+                getattr(self, slot) for slot in self.__slots__ if slot != "extensions"
+            )
+            + tuple(self.extensions.items())
+        )
+
     def __eq__(self, other):
         return (
             isinstance(other, GraphQLError)

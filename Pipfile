@@ -6,10 +6,9 @@ name = "pypi"
 [dev-packages]
 graphql-core = {path = ".", editable = true}
 flake8 = "*"
-mypy = "*"
 pytest = "*"
 pytest-describe = "*"
-pytest-asyncio = "*"
+# pytest-asyncio = "*"
 tox = "*"
 sphinx = "*"
 sphinx_rtd_theme = "*"

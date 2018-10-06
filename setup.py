@@ -15,7 +15,6 @@ tests_requires = [
     "pytest-cov",
     "pytest-describe",
     "flake8",
-    "mypy",
     "tox",
     "python-coveralls",
 ]
@@ -44,7 +43,7 @@ setup(
         "Programming Language :: Python :: 3.7",
     ],
     install_requires=install_requires,
-    python_requires=">=3.6",
+    # python_requires=">=2.7",
     test_suite="tests",
     tests_require=tests_requires,
     packages=find_packages(include=["graphql"]),

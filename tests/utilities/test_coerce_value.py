@@ -11,6 +11,8 @@ from graphql.type import (
 )
 from graphql.utilities import coerce_value
 from graphql.utilities.coerce_value import CoercedValue
+from graphql.pyutils import OrderedDict
+
 
 inf, nan = float("inf"), float("nan")
 
@@ -187,10 +189,12 @@ def describe_coerce_value():
     def describe_for_graphql_input_object():
         TestInputObject = GraphQLInputObjectType(
             "TestInputObject",
-            {
-                "foo": GraphQLInputField(GraphQLNonNull(GraphQLInt)),
-                "bar": GraphQLInputField(GraphQLInt),
-            },
+            OrderedDict(
+                (
+                    ("foo", GraphQLInputField(GraphQLNonNull(GraphQLInt))),
+                    ("bar", GraphQLInputField(GraphQLInt)),
+                )
+            ),
         )
 
         def returns_no_error_for_a_valid_input():
@@ -211,7 +215,9 @@ def describe_coerce_value():
             ]
 
         def returns_multiple_errors_for_multiple_invalid_fields():
-            result = coerce_value({"foo": "abc", "bar": "def"}, TestInputObject)
+            result = coerce_value(
+                OrderedDict((("foo", "abc"), ("bar", "def"))), TestInputObject
+            )
             assert expect_error(result) == [
                 "Expected type Int at value.foo;"
                 " Int cannot represent non-integer value: 'abc'",
