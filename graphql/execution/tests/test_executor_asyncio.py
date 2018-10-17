@@ -129,10 +129,7 @@ def test_asyncio_executor_exceptions_reraised():
         raise Error("UH OH!")
 
     Type = GraphQLObjectType(
-        "Type",
-        {
-            "a": GraphQLField(GraphQLString, resolver=resolver),
-        },
+        "Type", {"a": GraphQLField(GraphQLString, resolver=resolver)}
     )
 
     with pytest.raises(Error):
