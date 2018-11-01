@@ -1,4 +1,9 @@
 import collections
+
+try:
+    import collections.abc as collections_abc
+except ImportError:
+    import collections as collections_abc  # type: ignore
 import functools
 import logging
 import sys
@@ -580,7 +585,7 @@ def complete_list_value(
     """
     Complete a list value by completing each item in the list with the inner type
     """
-    assert isinstance(result, collections.Iterable), (
+    assert isinstance(result, collections_abc.Iterable), (
         "User Error: expected iterable, but did not find one " + "for field {}.{}."
     ).format(info.parent_type, info.field_name)
 

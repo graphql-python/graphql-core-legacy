@@ -1,4 +1,9 @@
 import collections
+
+try:
+    import collections.abc as collections_abc
+except ImportError:
+    import collections as collections_abc  # type: ignore
 import copy
 
 from ..language import ast
@@ -234,7 +239,7 @@ def define_field_map(
     if callable(field_map):
         field_map = field_map()
 
-    assert isinstance(field_map, collections.Mapping) and len(field_map) > 0, (
+    assert isinstance(field_map, collections_abc.Mapping) and len(field_map) > 0, (
         "{} fields must be a mapping (dict / OrderedDict) with field names as keys or a "
         "function which returns such a mapping."
     ).format(type)
@@ -248,7 +253,7 @@ def define_field_map(
 
         if field_args:
             assert isinstance(
-                field_args, collections.Mapping
+                field_args, collections_abc.Mapping
             ), "{}.{} args must be a mapping (dict / OrderedDict) with argument names as keys.".format(
                 type, field_name
             )
@@ -520,7 +525,7 @@ class GraphQLEnumType(GraphQLNamedType):
         if isinstance(value, PyEnum):
             # We handle PyEnum values
             value = value.value
-        if isinstance(value, collections.Hashable):
+        if isinstance(value, collections_abc.Hashable):
             enum_value = self._value_lookup.get(value)
             if enum_value:
                 return enum_value.name
@@ -528,7 +533,7 @@ class GraphQLEnumType(GraphQLNamedType):
         return None
 
     def parse_value(self, value):
-        if isinstance(value, collections.Hashable):
+        if isinstance(value, collections_abc.Hashable):
             enum_value = self._name_lookup.get(value)
 
             if enum_value:
@@ -555,7 +560,7 @@ class GraphQLEnumType(GraphQLNamedType):
 
 def define_enum_values(type, value_map):
     assert (
-        isinstance(value_map, collections.Mapping) and len(value_map) > 0
+        isinstance(value_map, collections_abc.Mapping) and len(value_map) > 0
     ), "{} values must be a mapping (dict / OrderedDict) with value names as keys.".format(
         type
     )
@@ -661,7 +666,7 @@ class GraphQLInputObjectType(GraphQLNamedType):
         else:
             fields = self._fields
 
-        assert isinstance(fields, collections.Mapping) and len(fields) > 0, (
+        assert isinstance(fields, collections_abc.Mapping) and len(fields) > 0, (
             "{} fields must be a mapping (dict / OrderedDict) with field names as keys or a "
             "function which returns such a mapping."
         ).format(self)
