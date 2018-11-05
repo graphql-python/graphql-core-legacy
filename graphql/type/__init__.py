@@ -31,6 +31,7 @@ from .directives import (
     GraphQLSkipDirective,
     GraphQLIncludeDirective,
     GraphQLDeprecatedDirective,
+    GraphQLDeferDirective,
     # Constant Deprecation Reason
     DEFAULT_DEPRECATION_REASON,
 )
