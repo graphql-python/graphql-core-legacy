@@ -580,6 +580,8 @@ directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ENUM_VALUE
 
+directive @defer on FIELD
+
 type __Directive {
   name: String!
   description: String

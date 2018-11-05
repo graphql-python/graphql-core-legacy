@@ -121,12 +121,10 @@ GraphQLDeprecatedDirective = GraphQLDirective(
 """Used to defer the result of an element."""
 GraphQLDeferDirective = GraphQLDirective(
     name="defer",
-    description="Marks an element of a GraphQL schema as deferred.",
+    description='Defers this field',
     args={},
     locations=[
-        DirectiveLocation.FIELD,
-        DirectiveLocation.FRAGMENT_SPREAD,
-        DirectiveLocation.INLINE_FRAGMENT,
+        DirectiveLocation.FIELD
     ],
 )
 
@@ -134,5 +132,5 @@ specified_directives = [
     GraphQLIncludeDirective,
     GraphQLSkipDirective,
     GraphQLDeprecatedDirective,
-    # GraphQLDeferDirective,
+    GraphQLDeferDirective,
 ]
