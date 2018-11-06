@@ -59,6 +59,7 @@ from .type import (  # no import order
     GraphQLSkipDirective,
     GraphQLIncludeDirective,
     GraphQLDeprecatedDirective,
+    GraphQLDeferDirective,
     # Constant Deprecation Reason
     DEFAULT_DEPRECATION_REASON,
     # GraphQL Types for introspection.
@@ -198,6 +199,7 @@ __all__ = (
     "GraphQLSkipDirective",
     "GraphQLIncludeDirective",
     "GraphQLDeprecatedDirective",
+    "GraphQLDeferDirective",
     "DEFAULT_DEPRECATION_REASON",
     "TypeKind",
     "DirectiveLocation",

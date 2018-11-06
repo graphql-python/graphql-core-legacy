@@ -4,6 +4,7 @@ from ..pyutils.ordereddict import OrderedDict
 from ..type import (
     GraphQLArgument,
     GraphQLBoolean,
+    GraphQLDeferDirective,
     GraphQLDeprecatedDirective,
     GraphQLDirective,
     GraphQLEnumType,
@@ -308,6 +309,9 @@ def build_ast_schema(document):
     find_deprecated_directive = (
         directive.name for directive in directives if directive.name == "deprecated"
     )
+    find_defer_directive = (
+        directive.name for directive in directives if directive.name == "defer"
+    )
 
     if not next(find_skip_directive, None):
         directives.append(GraphQLSkipDirective)
@@ -317,6 +321,9 @@ def build_ast_schema(document):
 
     if not next(find_deprecated_directive, None):
         directives.append(GraphQLDeprecatedDirective)
+
+    if not next(find_defer_directive, None):
+        directives.append(GraphQLDeferDirective)
 
     schema_kwargs = {"query": get_object_type(ast_map[query_type_name])}
 

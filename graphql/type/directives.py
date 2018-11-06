@@ -117,8 +117,20 @@ GraphQLDeprecatedDirective = GraphQLDirective(
     locations=[DirectiveLocation.FIELD_DEFINITION, DirectiveLocation.ENUM_VALUE],
 )
 
+
+"""Used to defer the result of an element."""
+GraphQLDeferDirective = GraphQLDirective(
+    name="defer",
+    description='Defers this field',
+    args={},
+    locations=[
+        DirectiveLocation.FIELD
+    ],
+)
+
 specified_directives = [
     GraphQLIncludeDirective,
     GraphQLSkipDirective,
     GraphQLDeprecatedDirective,
+    GraphQLDeferDirective,
 ]

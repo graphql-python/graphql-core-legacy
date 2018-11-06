@@ -39,7 +39,7 @@ def print_introspection_schema(schema):
 
 def is_spec_directive(directive_name):
     # type: (str) -> bool
-    return directive_name in ("skip", "include", "deprecated")
+    return directive_name in ("skip", "include", "deprecated", "defer")
 
 
 def _is_defined_type(typename):

@@ -8,6 +8,7 @@ from ...type import (
     GraphQLDeprecatedDirective,
     GraphQLIncludeDirective,
     GraphQLSkipDirective,
+    GraphQLDeferDirective
 )
 
 
@@ -66,10 +67,11 @@ def test_maintains_skip_and_include_directives():
     """
 
     schema = build_ast_schema(parse(body))
-    assert len(schema.get_directives()) == 3
+    assert len(schema.get_directives()) == 4
     assert schema.get_directive("skip") == GraphQLSkipDirective
     assert schema.get_directive("include") == GraphQLIncludeDirective
     assert schema.get_directive("deprecated") == GraphQLDeprecatedDirective
+    assert schema.get_directive("defer") == GraphQLDeferDirective
 
 
 def test_overriding_directives_excludes_specified():
@@ -81,20 +83,23 @@ def test_overriding_directives_excludes_specified():
     directive @skip on FIELD
     directive @include on FIELD
     directive @deprecated on FIELD_DEFINITION
-
+    directive @defer on FIELD
+    
     type Hello {
         str: String
     }
     """
 
     schema = build_ast_schema(parse(body))
-    assert len(schema.get_directives()) == 3
+    assert len(schema.get_directives()) == 4
     assert schema.get_directive("skip") != GraphQLSkipDirective
     assert schema.get_directive("skip") is not None
     assert schema.get_directive("include") != GraphQLIncludeDirective
     assert schema.get_directive("include") is not None
     assert schema.get_directive("deprecated") != GraphQLDeprecatedDirective
     assert schema.get_directive("deprecated") is not None
+    assert schema.get_directive("defer") != GraphQLDeferDirective
+    assert schema.get_directive("defer") is not None
 
 
 def test_overriding_skip_directive_excludes_built_in_one():
@@ -111,11 +116,12 @@ def test_overriding_skip_directive_excludes_built_in_one():
     """
 
     schema = build_ast_schema(parse(body))
-    assert len(schema.get_directives()) == 3
+    assert len(schema.get_directives()) == 4
     assert schema.get_directive("skip") != GraphQLSkipDirective
     assert schema.get_directive("skip") is not None
     assert schema.get_directive("include") == GraphQLIncludeDirective
     assert schema.get_directive("deprecated") == GraphQLDeprecatedDirective
+    assert schema.get_directive("defer") == GraphQLDeferDirective
 
 
 def test_overriding_include_directive_excludes_built_in_one():
@@ -132,11 +138,12 @@ def test_overriding_include_directive_excludes_built_in_one():
     """
 
     schema = build_ast_schema(parse(body))
-    assert len(schema.get_directives()) == 3
+    assert len(schema.get_directives()) == 4
     assert schema.get_directive("skip") == GraphQLSkipDirective
     assert schema.get_directive("deprecated") == GraphQLDeprecatedDirective
     assert schema.get_directive("include") != GraphQLIncludeDirective
     assert schema.get_directive("include") is not None
+    assert schema.get_directive("defer") == GraphQLDeferDirective
 
 
 def test_adding_directives_maintains_skip_and_include_directives():
@@ -153,10 +160,11 @@ def test_adding_directives_maintains_skip_and_include_directives():
     """
 
     schema = build_ast_schema(parse(body))
-    assert len(schema.get_directives()) == 4
+    assert len(schema.get_directives()) == 5
     assert schema.get_directive("skip") == GraphQLSkipDirective
     assert schema.get_directive("include") == GraphQLIncludeDirective
     assert schema.get_directive("deprecated") == GraphQLDeprecatedDirective
+    assert schema.get_directive("defer") == GraphQLDeferDirective
 
 
 def test_type_modifiers():
