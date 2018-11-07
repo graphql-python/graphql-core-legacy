@@ -1,0 +1,4 @@
+type Person {
+    name: ID!
+    age: Int
+}

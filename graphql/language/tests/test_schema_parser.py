@@ -1,6 +1,6 @@
 from pytest import raises
 
-from graphql import Source, parse
+from graphql import FileSource, Source, parse
 from graphql.error import GraphQLSyntaxError
 from graphql.language import ast
 from graphql.language.parser import Loc
@@ -563,6 +563,132 @@ input Hello {
             )
         ],
         loc=loc(1, 32),
+    )
+    assert doc == expected
+
+
+def test_parses_schema_files():
+    doc = parse(FileSource("tests/graphql_schemas"))
+    expected = ast.Document(
+        definitions=[
+            ast.ObjectTypeDefinition(
+                name=ast.Name(value="Query"),
+                interfaces=[],
+                fields=[
+                    ast.FieldDefinition(
+                        name=ast.Name(value="person"),
+                        arguments=[
+                            ast.InputValueDefinition(
+                                name=ast.Name(value="name"),
+                                type=ast.NonNullType(
+                                    type=ast.NamedType(name=ast.Name(value="ID"))
+                                ),
+                                default_value=None,
+                                directives=[]
+                            )
+                        ],
+                        type=ast.NamedType(name=ast.Name(value="Person")),
+                        directives=[]
+                    ),
+                    ast.FieldDefinition(
+                        name=ast.Name(value="skill"),
+                        arguments=[
+                            ast.InputValueDefinition(
+                                name=ast.Name(value="name"),
+                                type=ast.NonNullType(
+                                    type=ast.NamedType(name=ast.Name(value="ID"))
+                                ),
+                                default_value=None,
+                                directives=[]
+                            )
+                        ],
+                        type=ast.NamedType(name=ast.Name(value="Skill")),
+                        directives=[]
+                    )
+                ],
+                directives=[]
+            ),
+            ast.SchemaDefinition(
+                operation_types=[
+                    ast.OperationTypeDefinition(
+                        operation="query",
+                        type=ast.NamedType(name=ast.Name(value="Query"))
+                    )
+                ],
+                directives=[]
+            ),
+            ast.ObjectTypeDefinition(
+                name=ast.Name(value="Person"),
+                interfaces=[],
+                fields=[
+                    ast.FieldDefinition(
+                        name=ast.Name(value="name"),
+                        arguments=[],
+                        type=ast.NonNullType(
+                            type=ast.NamedType(name=ast.Name(value="ID"))
+                        ),
+                        directives=[]
+                    ),
+                    ast.FieldDefinition(
+                        name=ast.Name(value="age"),
+                        arguments=[],
+                        type=ast.NamedType(name=ast.Name(value="Int")),
+                        directives=[]
+                    )
+                ],
+                directives=[]
+            ),
+            ast.ObjectTypeDefinition(
+                name=ast.Name(value="Skill"),
+                interfaces=[],
+                fields=[
+                    ast.FieldDefinition(
+                        name=ast.Name(value="name"),
+                        arguments=[],
+                        type=ast.NonNullType(
+                            type=ast.NamedType(name=ast.Name(value="ID"))
+                        ),
+                        directives=[]
+                    ),
+                    ast.FieldDefinition(
+                        name=ast.Name(value="level"),
+                        arguments=[],
+                        type=ast.NamedType(name=ast.Name(value="Int")),
+                        directives=[]
+                    ),
+                    ast.FieldDefinition(
+                        name=ast.Name(value="possessors"),
+                        arguments=[],
+                        type=ast.ListType(
+                            type=ast.NonNullType(
+                                type=ast.NamedType(name=ast.Name(value="Person"))
+                            )
+                        ),
+                        directives=[]
+                    )
+                ],
+                directives=[]
+            ),
+            ast.TypeExtensionDefinition(
+                definition=ast.ObjectTypeDefinition(
+                    name=ast.Name(value="Person"),
+                    interfaces=[],
+                    fields=[
+                        ast.FieldDefinition(
+                            name=ast.Name(value="skills"),
+                            arguments=[],
+                            type=ast.ListType(
+                                type=ast.NonNullType(
+                                    type=ast.NamedType(name=ast.Name(value="Skill"))
+                                )
+                            ),
+                            directives=[]
+                        )
+                    ],
+                    directives=[]
+                )
+            )
+        ]
     )
     assert doc == expected
 

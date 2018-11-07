@@ -89,6 +89,7 @@ from .type import (  # no import order
 # Parse and operate on GraphQL language source files.
 from .language.base import (  # no import order
     Source,
+    FileSource,
     get_location,
     # Parse
     parse,
@@ -223,6 +224,7 @@ __all__ = (
     "BREAK",
     "ParallelVisitor",
     "Source",
+    "FileSource",
     "TypeInfoVisitor",
     "get_location",
     "parse",

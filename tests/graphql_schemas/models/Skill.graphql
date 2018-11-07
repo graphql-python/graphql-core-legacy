@@ -1,0 +1,9 @@
+type Skill {
+    name: ID!
+    level: Int
+    possessors: [Person!]
+}
+
+extend type Person {
+    skills: [Skill!]
+}
