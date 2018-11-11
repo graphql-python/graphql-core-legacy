@@ -1,9 +1,12 @@
-from pytest import raises
-
 from graphql import FileSource, Source, parse
 from graphql.error import GraphQLSyntaxError
 from graphql.language import ast
 from graphql.language.parser import Loc
+
+import os
+
+from pytest import raises
+
 from typing import Callable
 
 
@@ -568,7 +571,8 @@ input Hello {
 
 
 def test_parses_schema_files():
-    doc = parse(FileSource("tests/graphql_schemas"))
+    test_graphql_schemas_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "graphql_schemas")
+    doc = parse(FileSource(test_graphql_schemas_dir))
     expected = ast.Document(
         definitions=[
             ast.ObjectTypeDefinition(
