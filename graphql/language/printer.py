@@ -140,8 +140,10 @@ class PrintingVisitor(Visitor):
     def leave_FloatValue(self, node, *args):
         return node.value
 
-    def leave_StringValue(self, node, *args):
+    def leave_StringValue(self, node, key, *args):
         # type: (Any, *Any) -> str
+        if node.is_block_string:
+            return print_block_string(node.value, key == 'description')
         return json.dumps(node.value)
 
     def leave_BooleanValue(self, node, *args):
@@ -198,84 +200,102 @@ class PrintingVisitor(Visitor):
 
     def leave_ScalarTypeDefinition(self, node, *args):
         # type: (Any, *Any) -> str
-        return "scalar " + node.name + wrap(" ", join(node.directives, " "))
+        return join([
+            node.description,
+            join(["scalar", node.name, join(node.directives, " ")], " "),
+        ], "\n")
 
     def leave_ObjectTypeDefinition(self, node, *args):
         # type: (Any, *Any) -> str
-        return join(
-            [
+        return join([
+            node.description,
+            join([
                 "type",
                 node.name,
                 wrap("implements ", join(node.interfaces, ", ")),
                 join(node.directives, " "),
                 block(node.fields),
-            ],
-            " ",
-        )
+            ], " "),
+        ], "\n")
 
     def leave_FieldDefinition(self, node, *args):
         # type: (Any, *Any) -> str
-        return (
+        has_multiline_item = any("\n" in arg for arg in node.arguments)
+        if has_multiline_item:
+            arguments_str = wrap("(\n", indent(join(node.arguments, "\n")), "\n)")
+        else:
+            arguments_str = wrap("(", join(node.arguments, ", "), ")")
+
+        definition_str = (
             node.name
-            + wrap("(", join(node.arguments, ", "), ")")
+            + arguments_str
             + ": "
             + node.type
             + wrap(" ", join(node.directives, " "))
         )
+        return join([node.description, definition_str], "\n")
 
     def leave_InputValueDefinition(self, node, *args):
         # type: (Any, *Any) -> str
-        return (
+        definition_str = (
             node.name
             + ": "
             + node.type
             + wrap(" = ", node.default_value)
             + wrap(" ", join(node.directives, " "))
         )
+        return join([node.description, definition_str], "\n")
 
     def leave_InterfaceTypeDefinition(self, node, *args):
         # type: (Any, *Any) -> str
-        return (
+        definition_str = (
             "interface "
             + node.name
             + wrap(" ", join(node.directives, " "))
             + " "
             + block(node.fields)
         )
+        return join([node.description, definition_str], "\n")
 
     def leave_UnionTypeDefinition(self, node, *args):
         # type: (Any, *Any) -> str
-        return (
+        definition_str = (
             "union "
             + node.name
             + wrap(" ", join(node.directives, " "))
             + " = "
             + join(node.types, " | ")
         )
+        return join([node.description, definition_str], "\n")
 
     def leave_EnumTypeDefinition(self, node, *args):
         # type: (Any, *Any) -> str
-        return (
+        definition_str = (
             "enum "
             + node.name
             + wrap(" ", join(node.directives, " "))
             + " "
             + block(node.values)
         )
+        return join([node.description, definition_str], "\n")
 
     def leave_EnumValueDefinition(self, node, *args):
         # type: (Any, *Any) -> str
-        return node.name + wrap(" ", join(node.directives, " "))
+        return join([
+            node.description,
+            join([node.name, join(node.directives, " ")], " "),
+        ], "\n")
 
     def leave_InputObjectTypeDefinition(self, node, *args):
         # type: (Any, *Any) -> str
-        return (
+        definition_str = (
             "input "
             + node.name
             + wrap(" ", join(node.directives, " "))
             + " "
             + block(node.fields)
         )
+        return join([node.description, definition_str], "\n")
 
     def leave_TypeExtensionDefinition(self, node, *args):
         # type: (Any, *Any) -> str
@@ -283,11 +303,14 @@ class PrintingVisitor(Visitor):
 
     def leave_DirectiveDefinition(self, node, *args):
         # type: (Any, *Any) -> str
-        return "directive @{}{} on {}".format(
-            node.name,
-            wrap("(", join(node.arguments, ", "), ")"),
-            " | ".join(node.locations),
-        )
+        return join([
+            node.description,
+            "directive @{}{} on {}".format(
+                node.name,
+                wrap("(", join(node.arguments, ", "), ")"),
+                " | ".join(node.locations),
+            )
+        ], "\n")
 
 
 def join(maybe_list, separator=""):
@@ -317,3 +340,13 @@ def indent(maybe_str):
     if maybe_str:
         return '  ' + maybe_str.replace("\n", "\n  ")
     return ""
+
+
+def print_block_string(value, is_description):
+    escaped = value.replace('"""', '\\"""')
+    if "\n" in value or (value[0] != " " and value[0] != "\t"):
+        if is_description:
+            return '"""\n' + escaped + '\n"""'
+        else:
+            return '"""\n' + indent(escaped) + '\n"""'
+    return '"""' + escaped.replace(r'"$', '"\n') + '"""'

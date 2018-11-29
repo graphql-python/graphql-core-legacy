@@ -140,6 +140,10 @@ def peek(parser, kind):
     return parser.token.kind == kind
 
 
+def peek_description(parser):
+    return peek(parser, TokenKind.STRING) or peek(parser, TokenKind.BLOCK_STRING)
+
+
 def skip(parser, kind):
     # type: (Parser, int) -> bool
     """If the next token is of the given kind, return true after advancing
@@ -254,6 +258,9 @@ def parse_definition(parser):
     if peek(parser, TokenKind.BRACE_L):
         return parse_operation_definition(parser)
 
+    if peek_description(parser):
+        return parse_type_system_definition(parser)
+
     if peek(parser, TokenKind.NAME):
         name = parser.token.value
 
@@ -275,6 +282,11 @@ def parse_definition(parser):
             return parse_type_system_definition(parser)
 
     raise unexpected(parser)
+
+
+def parse_description(parser):
+    if peek_description(parser):
+        return parse_value_literal(parser, False)
 
 
 # Implements the parsing rules in the Operations section.
@@ -494,6 +506,14 @@ def parse_value_literal(parser, is_const):
             value=token.value, loc=loc(parser, token.start)
         )
 
+    elif token.kind == TokenKind.BLOCK_STRING:
+        advance(parser)
+        return ast.StringValue(  # type: ignore
+            value=token.value,
+            loc=loc(parser, token.start),
+            is_block_string=True,
+        )
+
     elif token.kind == TokenKind.NAME:
         if token.value in ("true", "false"):
             advance(parser)
@@ -624,10 +644,10 @@ def parse_type_system_definition(parser):
       - EnumTypeDefinition
       - InputObjectTypeDefinition
     """
-    if not peek(parser, TokenKind.NAME):
-        raise unexpected(parser)
-
-    name = parser.token.value
+    if peek_description(parser):
+        name = parser.lexer.look_ahead().value
+    else:
+        name = parser.token.value
 
     if name == "schema":
         return parse_schema_definition(parser)
@@ -688,9 +708,11 @@ def parse_scalar_type_definition(parser):
     # type: (Parser) -> ScalarTypeDefinition
     start = parser.token.start
     expect_keyword(parser, "scalar")
+    description = parse_description(parser)
 
     return ast.ScalarTypeDefinition(
         name=parse_name(parser),
+        description=description,
         directives=parse_directives(parser),
         loc=loc(parser, start),
     )
@@ -699,9 +721,11 @@ def parse_scalar_type_definition(parser):
 def parse_object_type_definition(parser):
     # type: (Parser) -> ObjectTypeDefinition
     start = parser.token.start
+    description = parse_description(parser)
     expect_keyword(parser, "type")
     return ast.ObjectTypeDefinition(
         name=parse_name(parser),
+        description=description,
         interfaces=parse_implements_interfaces(parser),
         directives=parse_directives(parser),
         fields=any(
@@ -729,9 +753,11 @@ def parse_implements_interfaces(parser):
 def parse_field_definition(parser):
     # type: (Parser) -> FieldDefinition
     start = parser.token.start
+    description = parse_description(parser)
 
     return ast.FieldDefinition(  # type: ignore
         name=parse_name(parser),
+        description=description,
         arguments=parse_argument_defs(parser),
         type=expect(parser, TokenKind.COLON) and parse_type(parser),
         directives=parse_directives(parser),
@@ -750,9 +776,11 @@ def parse_argument_defs(parser):
 def parse_input_value_def(parser):
     # type: (Parser) -> InputValueDefinition
     start = parser.token.start
+    description = parse_description(parser)
 
     return ast.InputValueDefinition(  # type: ignore
         name=parse_name(parser),
+        description=description,
         type=expect(parser, TokenKind.COLON) and parse_type(parser),
         default_value=parse_const_value(parser)
         if skip(parser, TokenKind.EQUALS)
@@ -765,10 +793,12 @@ def parse_input_value_def(parser):
 def parse_interface_type_definition(parser):
     # type: (Parser) -> InterfaceTypeDefinition
     start = parser.token.start
+    description = parse_description(parser)
     expect_keyword(parser, "interface")
 
     return ast.InterfaceTypeDefinition(
         name=parse_name(parser),
+        description=description,
         directives=parse_directives(parser),
         fields=any(
             parser, TokenKind.BRACE_L, parse_field_definition, TokenKind.BRACE_R
@@ -780,10 +810,12 @@ def parse_interface_type_definition(parser):
 def parse_union_type_definition(parser):
     # type: (Parser) -> UnionTypeDefinition
     start = parser.token.start
+    description = parse_description(parser)
     expect_keyword(parser, "union")
 
     return ast.UnionTypeDefinition(  # type: ignore
         name=parse_name(parser),
+        description=description,
         directives=parse_directives(parser),
         types=expect(parser, TokenKind.EQUALS) and parse_union_members(parser),
         loc=loc(parser, start),
@@ -806,10 +838,12 @@ def parse_union_members(parser):
 def parse_enum_type_definition(parser):
     # type: (Parser) -> EnumTypeDefinition
     start = parser.token.start
+    description = parse_description(parser)
     expect_keyword(parser, "enum")
 
     return ast.EnumTypeDefinition(
         name=parse_name(parser),
+        description=description,
         directives=parse_directives(parser),
         values=many(
             parser, TokenKind.BRACE_L, parse_enum_value_definition, TokenKind.BRACE_R
@@ -821,9 +855,11 @@ def parse_enum_type_definition(parser):
 def parse_enum_value_definition(parser):
     # type: (Parser) -> EnumValueDefinition
     start = parser.token.start
+    description = parse_description(parser)
 
     return ast.EnumValueDefinition(
         name=parse_name(parser),
+        description=description,
         directives=parse_directives(parser),
         loc=loc(parser, start),
     )
@@ -832,10 +868,12 @@ def parse_enum_value_definition(parser):
 def parse_input_object_type_definition(parser):
     # type: (Parser) -> InputObjectTypeDefinition
     start = parser.token.start
+    description = parse_description(parser)
     expect_keyword(parser, "input")
 
     return ast.InputObjectTypeDefinition(
         name=parse_name(parser),
+        description=description,
         directives=parse_directives(parser),
         fields=any(parser, TokenKind.BRACE_L, parse_input_value_def, TokenKind.BRACE_R),
         loc=loc(parser, start),
@@ -855,6 +893,7 @@ def parse_type_extension_definition(parser):
 def parse_directive_definition(parser):
     # type: (Parser) -> DirectiveDefinition
     start = parser.token.start
+    description = parse_description(parser)
     expect_keyword(parser, "directive")
     expect(parser, TokenKind.AT)
 
@@ -864,7 +903,11 @@ def parse_directive_definition(parser):
 
     locations = parse_directive_locations(parser)
     return ast.DirectiveDefinition(
-        name=name, locations=locations, arguments=args, loc=loc(parser, start)
+        name=name,
+        description=description,
+        locations=locations,
+        arguments=args,
+        loc=loc(parser, start),
     )
 
 

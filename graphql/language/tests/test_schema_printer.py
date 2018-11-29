@@ -38,14 +38,30 @@ def test_prints_kitchen_sink():
     ast = parse(SCHEMA_KITCHEN_SINK)
     printed = print_ast(ast)
 
-    expected = """schema {
+    expected = '''schema {
   query: QueryType
   mutation: MutationType
 }
 
+"""
+This is a description
+of the `Foo` type.
+"""
 type Foo implements Bar {
+  "Description of the `one` field."
   one: Type
-  two(argument: InputType!): Type
+  """
+  This is a description of the `two` field.
+  """
+  two(
+    """
+    This is a description of the `argument` argument.
+    """
+    argument: InputType!
+  ): Type
+  """
+  This is a description of the `three` field.
+  """
   three(argument: InputType, other: String): Int
   four(argument: String = "string"): String
   five(argument: [String] = ["string", "string"]): String
@@ -74,8 +90,16 @@ scalar CustomScalar
 scalar AnnotatedScalar @onScalar
 
 enum Site {
+  """
+  This is a description of the `DESKTOP` value
+  """
   DESKTOP
+  """
+  This is a description of the `MOBILE` value
+  """
   MOBILE
+  "This is a description of the `WEB` value"
+  WEB
 }
 
 enum AnnotatedEnum @onEnum {
@@ -100,9 +124,12 @@ extend type Foo @onType {}
 
 type NoFields {}
 
+"""
+This is a description of the `@skip` directive
+"""
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-"""
+'''
 
     assert printed == expected
