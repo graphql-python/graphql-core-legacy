@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 from ..error import GraphQLError
 from ..language import ast
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
@@ -66,6 +67,10 @@ class ExecutionContext(object):
         self.executor = executor
         self.middleware = middleware
         self._subfields_cache = {}
+
+    def report_error(self, error, traceback=None):
+        sys.excepthook(type(error), str(error), getattr(error, 'stack', None) or traceback)
+        self.errors.append(error)
 
     def get_field_resolver(self, field_resolver):
         if not self.middleware:
