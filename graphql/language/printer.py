@@ -301,7 +301,7 @@ def block(_list):
     # type: (List[str]) -> str
     """Given a list, print each item on its own line, wrapped in an indented "{ }" block."""
     if _list:
-        return indent("{\n" + join(_list, "\n")) + "\n}"
+        return "{\n" + indent(join(_list, "\n")) + "\n}"
     return "{}"
 
 
@@ -315,5 +315,5 @@ def wrap(start, maybe_str, end=""):
 def indent(maybe_str):
     # type: (Optional[str]) -> str
     if maybe_str:
-        return maybe_str.replace("\n", "\n  ")
+        return '  ' + maybe_str.replace("\n", "\n  ")
     return ""
