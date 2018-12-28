@@ -1,4 +1,7 @@
-import collections
+try:
+    from collections.abc import Iterable
+except ImportError:  # Python <3.3
+    from collections import Iterable
 import json
 
 from six import string_types
@@ -159,9 +162,7 @@ def coerce_value(type, value):
 
     if isinstance(type, GraphQLList):
         item_type = type.of_type
-        if not isinstance(value, string_types) and isinstance(
-            value, collections.Iterable
-        ):
+        if not isinstance(value, string_types) and isinstance(value, Iterable):
             return [coerce_value(item_type, item) for item in value]
         else:
             return [coerce_value(item_type, value)]
