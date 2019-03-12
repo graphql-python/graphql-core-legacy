@@ -86,9 +86,13 @@ class ValidationContext(object):
         self._errors = []  # type: List[GraphQLError]
         self._fragments = None  # type: Optional[Dict[str, FragmentDefinition]]
         self._fragment_spreads = {}  # type: Dict[Node, List[FragmentSpread]]
-        self._recursively_referenced_fragments = {}  # type: Dict[OperationDefinition, List[FragmentSpread]]
+        self._recursively_referenced_fragments = (
+            {}
+        )  # type: Dict[OperationDefinition, List[FragmentSpread]]
         self._variable_usages = {}  # type: Dict[Node, List[VariableUsage]]
-        self._recursive_variable_usages = {}  # type: Dict[OperationDefinition, List[VariableUsage]]
+        self._recursive_variable_usages = (
+            {}
+        )  # type: Dict[OperationDefinition, List[VariableUsage]]
 
     def report_error(self, error):
         self._errors.append(error)
