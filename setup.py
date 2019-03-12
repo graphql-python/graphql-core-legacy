@@ -81,5 +81,5 @@ setup(
     install_requires=install_requires,
     tests_require=tests_requires,
     cmdclass={"test": PyTest},
-    extras_require={"gevent": ["gevent==1.1rc1"], "test": tests_requires},
+    extras_require={"gevent": ["gevent>=1.1rc1"], "test": tests_requires},
 )
