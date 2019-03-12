@@ -1,4 +1,7 @@
-import collections
+try:
+    from collections.abc import Iterable, Mapping
+except ImportError:  # Python < 3.3
+    from collections import Iterable, Mapping
 
 from ..pyutils.ordereddict import OrderedDict
 from ..utils.assert_valid_name import assert_valid_name
@@ -42,9 +45,7 @@ class GraphQLDirective(object):
     def __init__(self, name, description=None, args=None, locations=None):
         assert name, "Directive must be named."
         assert_valid_name(name)
-        assert isinstance(
-            locations, collections.Iterable
-        ), "Must provide locations for directive."
+        assert isinstance(locations, Iterable), "Must provide locations for directive."
 
         self.name = name
         self.description = description
@@ -52,7 +53,7 @@ class GraphQLDirective(object):
 
         if args:
             assert isinstance(
-                args, collections.Mapping
+                args, Mapping
             ), "{} args must be a dict with argument names as keys.".format(name)
             for arg_name, _arg in args.items():
                 assert_valid_name(arg_name)
