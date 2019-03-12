@@ -8,10 +8,10 @@ matrix:
        python: 3.5
     -  env: TOXENV=py36
        python: 3.6
-    -  env: TOXENV=py37
-       python: 3.7
+    -  python: 3.7
+       env: TOXENV=py37
        dist: xenial
-       sudo: True
+       sudo: true # required workaround for https://github.com/travis-ci/travis-ci/issues/9815
     -  env: TOXENV=pypy
        python: pypy-5.7.1
     -  env: TOXENV=pre-commit
