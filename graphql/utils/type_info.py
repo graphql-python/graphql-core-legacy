@@ -60,8 +60,12 @@ class TypeInfo(object):
         # type: (GraphQLSchema, Callable) -> None
         self._schema = schema
         self._type_stack = []  # type: List[Optional[GraphQLType]]
-        self._parent_type_stack = []  # type: List[Union[GraphQLInterfaceType, GraphQLObjectType, None]]
-        self._input_type_stack = []  # type: List[Optional[Union[GraphQLInputObjectType, GraphQLNonNull, GraphQLList, GraphQLScalarType, None]]]
+        self._parent_type_stack = (
+            []
+        )  # type: List[Union[GraphQLInterfaceType, GraphQLObjectType, None]]
+        self._input_type_stack = (
+            []
+        )  # type: List[Optional[Union[GraphQLInputObjectType, GraphQLNonNull, GraphQLList, GraphQLScalarType, None]]]
         self._field_def_stack = []  # type: List[Optional[GraphQLField]]
         self._directive = None  # type: Optional[GraphQLDirective]
         self._argument = None  # type: Optional[GraphQLArgument]
