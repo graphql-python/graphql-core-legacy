@@ -1,6 +1,8 @@
 import pytest
 
-from graphql.type import GraphQLBoolean, GraphQLFloat, GraphQLInt, GraphQLString
+from ..scalars import GraphQLBoolean, GraphQLFloat, GraphQLInt, GraphQLString
+from ..definition import GraphQLEnumType, GraphQLEnumValue
+from ...pyutils.compat import Enum
 
 
 def test_serializes_output_int():
@@ -56,3 +58,26 @@ def test_serializes_output_boolean():
     assert GraphQLBoolean.serialize(0) is False
     assert GraphQLBoolean.serialize(True) is True
     assert GraphQLBoolean.serialize(False) is False
+
+
+def test_serializes_enum():
+    class Color(Enum):
+        RED = "RED"
+        GREEN = "GREEN"
+        BLUE = "BLUE"
+        EXTRA = "EXTRA"
+
+    enum_type = GraphQLEnumType(
+        "Color",
+        values={
+            "RED": GraphQLEnumValue("RED"),
+            "GREEN": GraphQLEnumValue("GREEN"),
+            "BLUE": GraphQLEnumValue("BLUE"),
+        },
+    )
+    assert enum_type.serialize("RED") == "RED"
+    assert enum_type.serialize("NON_EXISTING") is None
+    assert enum_type.serialize(Color.RED) == "RED"
+    assert enum_type.serialize(Color.RED.value) == "RED"
+    assert enum_type.serialize(Color.EXTRA) is None
+    assert enum_type.serialize(Color.EXTRA.value) is None

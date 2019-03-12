@@ -10,11 +10,12 @@ from .utils import (
     default_resolve_fn,
     get_field_def,
 )
+from ..pyutils.ordereddict import OrderedDict
 from ..error.format_error import format_error as default_format_error
 
 # Necessary for static type checking
 if False:  # flake8: noqa
-    from typing import Any, Optional, Dict, List, Union
+    from typing import Any, Optional, Dict, List, Union, Callable, Type
     from ..language.ast import Field, OperationDefinition
     from ..type.definition import GraphQLList, GraphQLObjectType, GraphQLScalarType
     from ..type.schema import GraphQLSchema
@@ -28,7 +29,7 @@ class ExecutionResult(object):
     __slots__ = "data", "errors", "invalid", "extensions"
 
     def __init__(self, data=None, errors=None, invalid=False, extensions=None):
-        # type: (Any, Any, bool, Optional[Any]) -> None
+        # type: (Optional[Dict], Optional[List[Exception]], bool, Optional[Any]) -> None
         self.data = data
         self.errors = errors
         self.extensions = extensions or dict()
@@ -39,6 +40,7 @@ class ExecutionResult(object):
         self.invalid = invalid
 
     def __eq__(self, other):
+        # type: (Any) -> bool
         return self is other or (
             isinstance(other, ExecutionResult)
             and self.data == other.data
@@ -46,7 +48,8 @@ class ExecutionResult(object):
             and self.invalid == other.invalid
         )
 
-    def to_dict(self, format_error=None, dict_class=dict):
+    def to_dict(self, format_error=None, dict_class=OrderedDict):
+        # type: (Optional[Callable[[Exception], Dict]], Type[Dict]) -> Dict[str, Any]
         if format_error is None:
             format_error = default_format_error
 

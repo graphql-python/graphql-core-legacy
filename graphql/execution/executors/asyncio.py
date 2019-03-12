@@ -37,7 +37,7 @@ try:
     from .asyncio_utils import asyncgen_to_observable, isasyncgen
 except Exception:
 
-    def isasyncgen(obj):
+    def isasyncgen(object):  # type: ignore
         False
 
     def asyncgen_to_observable(asyncgen, loop=None):

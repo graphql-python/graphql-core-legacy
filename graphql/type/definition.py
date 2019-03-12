@@ -4,6 +4,7 @@ import copy
 from ..language import ast
 from ..pyutils.cached_property import cached_property
 from ..pyutils.ordereddict import OrderedDict
+from ..pyutils.compat import Enum as PyEnum
 from ..utils.assert_valid_name import assert_valid_name
 from ..utils.undefined import Undefined
 
@@ -515,10 +516,12 @@ class GraphQLEnumType(GraphQLNamedType):
         return self._name_lookup.get(name)
 
     def serialize(self, value):
-        # type: (str) -> Optional[str]
+        # type: (Union[str, PyEnum]) -> Optional[str]
+        if isinstance(value, PyEnum):
+            # We handle PyEnum values
+            value = value.value
         if isinstance(value, collections.Hashable):
             enum_value = self._value_lookup.get(value)
-
             if enum_value:
                 return enum_value.name
 
