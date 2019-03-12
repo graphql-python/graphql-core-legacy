@@ -224,3 +224,10 @@ def test_maps_argument_out_names_well_with_input():
     assert result.data == {
         "test": '["Source!",{"a_input":{"input_recursive":{"input_one":"SourceRecursive!"}}}]'
     }
+
+
+def test_default_resolve_works_with_dicts():
+    schema = _test_schema(GraphQLField(GraphQLString))
+    result = graphql(schema, "{ test }", {"test": "testValue"})
+    assert not result.errors
+    assert result.data == {"test": "testValue"}
