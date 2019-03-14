@@ -1,5 +1,3 @@
-from six import text_type
-
 from .base import GraphQLError
 
 # Necessary for static type checking
@@ -9,7 +7,12 @@ if False:  # flake8: noqa
 
 def format_error(error):
     # type: (Exception) -> Dict[str, Any]
-    formatted_error = {"message": text_type(error)}  # type: Dict[str, Any]
+    # Protect against UnicodeEncodeError when run in py2 (#216)
+    try:
+        message = str(error)
+    except UnicodeEncodeError:
+        message = error.message.encode("utf-8")  # type: ignore
+    formatted_error = {"message": message}  # type: Dict[str, Any]
     if isinstance(error, GraphQLError):
         if error.locations is not None:
             formatted_error["locations"] = [

@@ -2,16 +2,17 @@ repos:
 -   repo: git://github.com/pre-commit/pre-commit-hooks
     rev: v2.1.0
     hooks:
+    -   id: check-merge-conflict
     -   id: check-json
     -   id: check-yaml
     -   id: debug-statements
     -   id: end-of-file-fixer
         exclude: ^docs/.*$
-    -   id: trailing-whitespace
-        exclude: README.md
     -   id: pretty-format-json
         args:
         - --autofix
+    -   id: trailing-whitespace
+        exclude: README.md
 -   repo: https://github.com/asottile/pyupgrade
     rev: v1.12.0
     hooks:
