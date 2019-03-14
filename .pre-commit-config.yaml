@@ -1,6 +1,6 @@
 repos:
 -   repo: git://github.com/pre-commit/pre-commit-hooks
-    rev: v1.3.0
+    rev: v2.1.0
     hooks:
     -   id: check-json
     -   id: check-yaml
@@ -13,11 +13,15 @@ repos:
         args:
         - --autofix
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v1.4.0
+    rev: v1.12.0
     hooks:
     -   id: pyupgrade
 -   repo: https://github.com/ambv/black
-    rev: 18.6b4
+    rev: 19.3b0
     hooks:
     - id: black
       language_version: python3.6
+-   repo: https://github.com/pycqa/flake8
+    rev: 3.7.7
+    hooks:
+    -   id: flake8
