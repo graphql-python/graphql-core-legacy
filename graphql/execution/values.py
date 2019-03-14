@@ -23,7 +23,7 @@ if False:  # flake8: noqa
     from ..language.ast import VariableDefinition, Argument
     from ..type.schema import GraphQLSchema
     from ..type.definition import GraphQLArgument
-    from typing import Any, Dict, List, Union, Dict, Optional
+    from typing import Any, List, Union, Dict, Optional
 
 __all__ = ["get_variable_values", "get_argument_values"]
 

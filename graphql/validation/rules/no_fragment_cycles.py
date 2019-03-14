@@ -5,7 +5,6 @@ from .base import ValidationRule
 if False:  # flake8: noqa
     from ..validation import ValidationContext
     from ...language.ast import Document, OperationDefinition, FragmentSpread
-    from ...error import GraphQLError
     from typing import List, Union, Dict, Set
 
 
