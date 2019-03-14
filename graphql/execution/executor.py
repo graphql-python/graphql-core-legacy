@@ -1,4 +1,9 @@
 import collections
+
+try:
+    from collections.abc import Iterable
+except ImportError:  # Python < 3.3
+    from collections import Iterable
 import functools
 import logging
 import sys
@@ -84,7 +89,7 @@ def execute(
         context = options["context_value"]
     if variables is None and "variable_values" in options:
         warnings.warn(
-            "variable_values has been deprecated. Please use values=... instead.",
+            "variable_values has been deprecated. Please use variables=... instead.",
             category=DeprecationWarning,
             stacklevel=2,
         )
@@ -580,7 +585,7 @@ def complete_list_value(
     """
     Complete a list value by completing each item in the list with the inner type
     """
-    assert isinstance(result, collections.Iterable), (
+    assert isinstance(result, Iterable), (
         "User Error: expected iterable, but did not find one " + "for field {}.{}."
     ).format(info.parent_type, info.field_name)
 

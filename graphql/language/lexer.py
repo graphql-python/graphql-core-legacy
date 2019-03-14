@@ -245,7 +245,7 @@ def position_after_whitespace(body, start_position):
 
 def read_number(source, start, first_code):
     # type: (Source, int, Optional[int]) -> Token
-    """Reads a number token from the source file, either a float
+    r"""Reads a number token from the source file, either a float
     or an int depending on whether a decimal point appears.
 
     Int:   -?(0|[1-9][0-9]*)

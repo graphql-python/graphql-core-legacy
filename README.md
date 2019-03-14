@@ -2,8 +2,7 @@
 
 GraphQL for Python.
 
-*This library is a port of [graphql-js](https://github.com/graphql/graphql-js) to Python and currently is up-to-date with release [0.6.0](https://github.com/graphql/graphql-js/releases/tag/v0.6.0).*
-
+_This library is a port of [graphql-js](https://github.com/graphql/graphql-js) to Python and currently is up-to-date with release [0.6.0](https://github.com/graphql/graphql-js/releases/tag/v0.6.0)._
 
 [![PyPI version](https://badge.fury.io/py/graphql-core.svg)](https://badge.fury.io/py/graphql-core)
 [![Build Status](https://travis-ci.org/graphql-python/graphql-core.svg?branch=master)](https://travis-ci.org/graphql-python/graphql-core)
@@ -98,11 +97,11 @@ print result.errors
 The graphql query is executed, by default, synchronously (using `SyncExecutor`).
 However the following executors are available if we want to resolve our fields in parallel:
 
-* `graphql.execution.executors.asyncio.AsyncioExecutor`: This executor executes the resolvers in the Python asyncio event loop.
-* `graphql.execution.executors.gevent.GeventExecutor`: This executor executes the resolvers in the Gevent event loop.
-* `graphql.execution.executors.process.ProcessExecutor`: This executor executes each resolver as a process.
-* `graphql.execution.executors.thread.ThreadExecutor`: This executor executes each resolver in a Thread.
-* `graphql.execution.executors.sync.SyncExecutor`: This executor executes each resolver synchronusly (default).
+- `graphql.execution.executors.asyncio.AsyncioExecutor`: This executor executes the resolvers in the Python asyncio event loop.
+- `graphql.execution.executors.gevent.GeventExecutor`: This executor executes the resolvers in the Gevent event loop.
+- `graphql.execution.executors.process.ProcessExecutor`: This executor executes each resolver as a process.
+- `graphql.execution.executors.thread.ThreadExecutor`: This executor executes each resolver in a Thread.
+- `graphql.execution.executors.sync.SyncExecutor`: This executor executes each resolver synchronusly (default).
 
 #### Usage
 
@@ -133,23 +132,27 @@ py.test PATH/TO/MY/DIR/ # All tests in directory
 
 Add the `-s` flag if you have introduced breakpoints into the code for debugging.
 Add the `-v` ("verbose") flag to get more detailed test output. For even more detailed output, use `-vv`.
-Check out the [pytest documentation](https://docs.pytest.org/en/latest/) for more options and test running controls.  
+Check out the [pytest documentation](https://docs.pytest.org/en/latest/) for more options and test running controls.
 
 GraphQL-core supports several versions of Python. To make sure that changes do not break compatibility with any of those versions, we use `tox` to create virtualenvs for each python version and run tests with that version. To run against all python versions defined in the `tox.ini` config file, just run:
+
 ```sh
 tox
 ```
+
 If you wish to run against a specific version defined in the `tox.ini` file:
+
 ```sh
 tox -e py36
 ```
+
 Tox can only use whatever versions of python are installed on your system. When you create a pull request, Travis will also be running the same tests and report the results, so there is no need for potential contributors to try to install every single version of python on their own system ahead of time. We appreciate opening issues and pull requests to make GraphQL-core even more stable & useful!
 
 ## Main Contributors
 
- * [@syrusakbary](https://github.com/syrusakbary/)
- * [@jhgg](https://github.com/jhgg/)
- * [@dittos](https://github.com/dittos/)
+- [@syrusakbary](https://github.com/syrusakbary/)
+- [@jhgg](https://github.com/jhgg/)
+- [@dittos](https://github.com/dittos/)
 
 ## License
 

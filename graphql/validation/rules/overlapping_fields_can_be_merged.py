@@ -47,7 +47,9 @@ class OverlappingFieldsCanBeMerged(ValidationRule):
         # A cache for the "field map" and list of fragment names found in any given
         # selection set. Selection sets may be asked for this information multiple
         # times, so this improves the performance of this validator.
-        self._cached_fields_and_fragment_names = {}  # type: Dict[SelectionSet, Tuple[Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]], List[str]]]
+        self._cached_fields_and_fragment_names = (
+            {}
+        )  # type: Dict[SelectionSet, Tuple[Dict[str, List[Tuple[Union[GraphQLInterfaceType, GraphQLObjectType, None], Field, GraphQLField]]], List[str]]]
 
     def leave_SelectionSet(
         self,

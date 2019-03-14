@@ -121,11 +121,15 @@ class ExecutionContext(object):
         self.variable_values = variable_values
         self.errors = errors
         self.context_value = context_value
-        self.argument_values_cache = {}  # type: Dict[Tuple[GraphQLField, Field], Dict[str, Any]]
+        self.argument_values_cache = (
+            {}
+        )  # type: Dict[Tuple[GraphQLField, Field], Dict[str, Any]]
         self.executor = executor
         self.middleware = middleware
         self.allow_subscriptions = allow_subscriptions
-        self._subfields_cache = {}  # type: Dict[Tuple[GraphQLObjectType, Tuple[Field, ...]], DefaultOrderedDict]
+        self._subfields_cache = (
+            {}
+        )  # type: Dict[Tuple[GraphQLObjectType, Tuple[Field, ...]], DefaultOrderedDict]
 
     def get_field_resolver(self, field_resolver):
         # type: (Callable) -> Callable
@@ -345,11 +349,14 @@ def get_field_entry_key(node):
 
 
 def default_resolve_fn(source, info, **args):
-    # type: (Any, ResolveInfo, **Any) -> Union[int, str]
+    # type: (Any, ResolveInfo, **Any) -> Optional[Any]
     """If a resolve function is not given, then a default resolve behavior is used which takes the property of the source object
     of the same name as the field and returns it as the result, or if it's a function, returns the result of calling that function."""
     name = info.field_name
-    property = getattr(source, name, None)
+    if isinstance(source, dict):
+        property = source.get(name)
+    else:
+        property = getattr(source, name, None)
     if callable(property):
         return property()
     return property
