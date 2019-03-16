@@ -2,7 +2,7 @@ from .base import GraphQLError
 
 # Necessary for static type checking
 if False:  # flake8: noqa
-    from typing import Any, Dict, Union
+    from typing import Any, Dict
 
 
 def format_error(error):

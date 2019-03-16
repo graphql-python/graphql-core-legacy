@@ -9,9 +9,6 @@ from .core import GraphQLCoreBackend
 from .decider import GraphQLDeciderBackend
 from .cache import GraphQLCachedBackend
 
-# Necessary for static type checking
-if False:  # flake8: noqa
-    from typing import Union
 
 _default_backend = None
 

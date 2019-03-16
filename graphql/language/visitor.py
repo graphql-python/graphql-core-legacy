@@ -9,9 +9,6 @@ from .visitor_meta import QUERY_DOCUMENT_KEYS, VisitorMeta
 if False:  # flake8: noqa
     from typing import Any, List, Optional, Union, Tuple, Dict
     from ..utils.type_info import TypeInfo
-    from ..validation.validation import UsageVisitor
-    from .ast import Node, Document, OperationDefinition
-    from .printer import PrintingVisitor
 
 
 class _Falsey(object):
@@ -44,7 +41,7 @@ class Stack(object):
 
 
 def visit(root, visitor, key_map=None):
-    # type: (Union[Node, List[Node]], Visitor, Optional[Dict[Node, Tuple]]) -> Any
+    # type: (Union[ast.Node, List[ast.Node]], Visitor, Optional[Dict[ast.Node, Tuple]]) -> Any
     visitor_keys = key_map or QUERY_DOCUMENT_KEYS
 
     stack = None  # type: Optional[Stack]
@@ -52,9 +49,9 @@ def visit(root, visitor, key_map=None):
     keys = [root]
     index = -1
     edits = []  # type: List[Tuple[Union[str, int], Any]]
-    parent = None  # type: Optional[Node]
+    parent = None  # type: Optional[ast.Node]
     path = []  # type: List
-    ancestors = []  # type: List[Node]
+    ancestors = []  # type: List[ast.Node]
     new_root = root
     leave = visitor.leave
     enter = visitor.enter
@@ -214,7 +211,7 @@ class ParallelVisitor(Visitor):
         self.visitors = visitors
         self.skipping = [None] * len(
             visitors
-        )  # type: List[Union[Node, _Break, _Falsey, None]]
+        )  # type: List[Union[ast.Node, _Break, _Falsey, None]]
         return None
 
     def enter(

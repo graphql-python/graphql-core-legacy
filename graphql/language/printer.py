@@ -4,45 +4,8 @@ from .visitor import Visitor, visit
 
 # Necessary for static type checking
 if False:  # flake8: noqa
-    from typing import Any, List, Optional, Union
-    from graphql.language.ast import (
-        Node,
-        Name,
-        Variable,
-        Document,
-        OperationDefinition,
-        VariableDefinition,
-        SelectionSet,
-        Field,
-        Argument,
-        FragmentSpread,
-        InlineFragment,
-        FragmentDefinition,
-        IntValue,
-        StringValue,
-        BooleanValue,
-        EnumValue,
-        ListValue,
-        ObjectValue,
-        ObjectField,
-        Directive,
-        NamedType,
-        ListType,
-        NonNullType,
-        SchemaDefinition,
-        OperationTypeDefinition,
-        ScalarTypeDefinition,
-        ObjectTypeDefinition,
-        FieldDefinition,
-        InputValueDefinition,
-        InterfaceTypeDefinition,
-        UnionTypeDefinition,
-        EnumTypeDefinition,
-        EnumValueDefinition,
-        InputObjectTypeDefinition,
-        TypeExtensionDefinition,
-        DirectiveDefinition,
-    )
+    from typing import Any, List, Optional
+    from graphql.language.ast import Node
 
 __all__ = ["print_ast"]
 

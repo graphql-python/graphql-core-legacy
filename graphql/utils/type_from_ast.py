@@ -6,7 +6,7 @@ if False:  # flake8: noqa
     from ..language.ast import ListType, NamedType, NonNullType
     from ..type.definition import GraphQLNamedType
     from ..type.schema import GraphQLSchema
-    from typing import Any, Union
+    from typing import Union
 
 
 def type_from_ast(schema, type_node):

@@ -18,7 +18,7 @@ from .definition import (
 # Necessary for static type checking
 if False:  # flake8: noqa
     from ..type.definition import GraphQLNamedType
-    from typing import Any, List, Optional, Union, Dict, Set, Mapping, DefaultDict
+    from typing import List, Union, Dict, Set, DefaultDict
 
 
 class GraphQLTypeMap(OrderedDict):

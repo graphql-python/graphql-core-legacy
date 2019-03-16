@@ -17,7 +17,6 @@ if False:  # flake8: noqa
         GraphQLArgument,
         GraphQLType,
         GraphQLField,
-        GraphQLInputObjectField,
         GraphQLEnumValue,
     )
     from ..type.schema import GraphQLSchema
