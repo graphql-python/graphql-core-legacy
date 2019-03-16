@@ -1,5 +1,4 @@
 from promise import Promise
-from promise.promise import Promise
 from typing import Any
 
 

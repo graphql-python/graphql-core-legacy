@@ -8,8 +8,6 @@ from .source import Source
 # Necessary for static type checking
 if False:  # flake8: noqa
     from typing import Dict, Union, Any, Optional, Callable, List
-    from ..error.syntax_error import GraphQLSyntaxError
-    from .source import Source
     from .lexer import Token
     from .ast import (
         Document,

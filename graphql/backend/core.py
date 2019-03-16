@@ -11,10 +11,8 @@ from .base import GraphQLBackend, GraphQLDocument
 # Necessary for static type checking
 if False:  # flake8: noqa
     from typing import Any, Optional, Union
-    from .base import GraphQLDocument
     from ..language.ast import Document
     from ..type.schema import GraphQLSchema
-    from ..execution.base import ExecutionResult
     from rx import Observable
 
 

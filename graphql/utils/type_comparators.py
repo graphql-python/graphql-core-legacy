@@ -9,12 +9,7 @@ from ..type.definition import (
 
 # Necessary for static type checking
 if False:  # flake8: noqa
-    from ..type.definition import (
-        GraphQLScalarType,
-        GraphQLInterfaceType,
-        GraphQLObjectType,
-        GraphQLUnionType,
-    )
+    from ..type.definition import GraphQLScalarType
     from ..type.typemap import GraphQLTypeMap
     from ..type.schema import GraphQLSchema
     from typing import Union

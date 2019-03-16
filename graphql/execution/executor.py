@@ -43,8 +43,6 @@ from .middleware import MiddlewareManager
 # Necessary for static type checking
 if False:  # flake8: noqa
     from typing import Any, Optional, Union, Dict, List, Callable
-    from rx import Observable
-    from ..type.schema import GraphQLSchema
     from ..language.ast import Document, OperationDefinition, Field
 
 logger = logging.getLogger(__name__)

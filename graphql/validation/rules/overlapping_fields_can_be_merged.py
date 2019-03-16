@@ -29,7 +29,6 @@ if False:  # flake8: noqa
         SelectionSet,
     )
     from ...type.definition import GraphQLUnionType, GraphQLField, GraphQLScalarType
-    from ...pyutils.pair_set import PairSet
     from typing import List, Union, Any, Optional, Dict, Tuple
 
 

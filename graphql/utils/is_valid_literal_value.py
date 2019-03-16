@@ -11,7 +11,6 @@ from ..type.definition import (
 # Necessary for static type checking
 if False:  # flake8: noqa
     from ..language.ast import ObjectValue, StringValue
-    from ..type.definition import GraphQLInputObjectType, GraphQLScalarType
     from typing import Union, Any, List
 
 _empty_list = []  # type: List
