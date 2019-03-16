@@ -16,7 +16,6 @@ if False:  # flake8: noqa
     from ..type.schema import GraphQLSchema
     from ..type.definition import (
         GraphQLType,
-        GraphQLInputObjectType,
         GraphQLInterfaceType,
         GraphQLObjectType,
         GraphQLField,

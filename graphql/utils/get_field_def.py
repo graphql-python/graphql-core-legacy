@@ -8,7 +8,7 @@ from ..type.introspection import (
 # Necessary for static type checking
 if False:  # flake8: noqa
     from ..language.ast import Field
-    from ..type.definition import GraphQLField, GraphQLInterfaceType, GraphQLObjectType
+    from ..type.definition import GraphQLField
     from ..type.schema import GraphQLSchema
     from typing import Optional, Union
 

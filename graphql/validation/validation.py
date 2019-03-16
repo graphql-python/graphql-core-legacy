@@ -7,8 +7,7 @@ from .rules import specified_rules
 # Necessary for static type checking
 if False:  # flake8: noqa
     from typing import List, Union, Optional, Dict, Set, Any, Type
-    from ..language.ast import Document, OperationDefinition, SelectionSet, Node
-    from ..type.schema import GraphQLSchema
+    from ..language.ast import Document, SelectionSet, Node
     from ..error import GraphQLError
     from .rules.base import ValidationRule
     from ..type.definition import (
