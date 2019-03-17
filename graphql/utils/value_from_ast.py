@@ -11,7 +11,7 @@ from ..type import (
 if False:  # flake8: noqa
     from ..language.ast import Node
     from ..type.definition import GraphQLType
-    from typing import Any, Dict, Union, Optional, List
+    from typing import Dict, Union, Optional, List
 
 
 def value_from_ast(value_ast, type, variables=None):

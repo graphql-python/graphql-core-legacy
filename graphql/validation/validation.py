@@ -11,11 +11,8 @@ if False:  # flake8: noqa
     from ..error import GraphQLError
     from .rules.base import ValidationRule
     from ..type.definition import (
-        GraphQLList,
         GraphQLObjectType,
-        GraphQLScalarType,
         GraphQLInterfaceType,
-        GraphQLUnionType,
         GraphQLField,
         GraphQLArgument,
         GraphQLType,

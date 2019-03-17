@@ -16,7 +16,7 @@ if False:  # flake8: noqa
         GraphQLUnionType,
         GraphQLType,
     )
-    from typing import Dict, Union, Any, List, Optional
+    from typing import Dict, Union, List, Optional
 
 
 class GraphQLSchema(object):

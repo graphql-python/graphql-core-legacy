@@ -1,3 +1,5 @@
+from casing import snake
+
 if __name__ == "__main__":
     import os.path
     import sys
@@ -13,8 +15,6 @@ if __name__ == "__main__":
         )
         sys.exit(process.wait())
 
-
-from casing import snake
 
 # Fix inconsistencies between libgraphqlparser and graphql-js
 REMAP_TYPES = {"ArrayValue": "ListValue"}

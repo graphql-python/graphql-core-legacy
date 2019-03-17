@@ -11,7 +11,7 @@ from ..pyutils.compat import Queue, check_threads
 
 # Necessary for static type checking
 if False:  # flake8: noqa
-    from typing import List, Union, Any, Optional, Hashable, Dict, Tuple, Type
+    from typing import List, Union, Optional, Hashable, Dict, Tuple, Type
     from ..type.schema import GraphQLSchema
 
 

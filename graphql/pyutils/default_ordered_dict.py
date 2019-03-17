@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 # Necessary for static type checking
 if False:  # flake8: noqa
-    from typing import Any, List
+    from typing import Any
 
 
 class DefaultOrderedDict(OrderedDict):

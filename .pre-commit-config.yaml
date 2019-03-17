@@ -26,4 +26,4 @@ repos:
     rev: 3.7.7
     hooks:
     -   id: flake8
-        exclude: (^docs/.*$|^scripts/generate_ast.py$|test_.*$)
+        exclude: test_.*$

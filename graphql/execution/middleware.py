@@ -2,12 +2,11 @@ import inspect
 from functools import partial
 from itertools import chain
 
-from promise import Promise, promisify
+from promise import promisify
 
 # Necessary for static type checking
 if False:  # flake8: noqa
-    from .base import ResolveInfo
-    from typing import Any, Callable, Iterator, Tuple, Union, List, Dict, Iterable
+    from typing import Any, Callable, Iterator, Tuple, Dict, Iterable
 
 MIDDLEWARE_RESOLVER_FUNCTION = "resolve"
 

@@ -1,6 +1,6 @@
 # Necessary for static type checking
 if False:  # flake8: noqa
-    from typing import Any, Dict
+    from typing import Any
 
 obj = (dict, list, tuple)
 

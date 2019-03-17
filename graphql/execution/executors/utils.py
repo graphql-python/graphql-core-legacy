@@ -4,7 +4,7 @@ from sys import exc_info
 if False:  # flake8: noqa
     from ..base import ResolveInfo
     from promise import Promise
-    from typing import Callable, Dict, Tuple, Union, Any
+    from typing import Callable, Dict, Tuple, Any
 
 
 def process(
