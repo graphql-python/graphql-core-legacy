@@ -362,7 +362,7 @@ def insert_recursive_selection(selection, depth, frame=[]):
             returnable_selection_set = selection.selection_set
             # insert in depth
             returnable_selection_set.selections.append(paste_selection)
-            return returnable_selection_set
+            return paste_selection
         for selection in selection.selection_set.selections:
             if selection.name.value == relay_frame:
                 return insert_in_frame(selection, paste_selection, frame)
