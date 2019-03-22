@@ -51,6 +51,12 @@ if False:  # flake8: noqa
 __all__ = ["parse"]
 
 
+def parse_recursive_body(source,):
+    # Attrs:
+    #   source: Type[Source]
+    pass
+
+
 def parse(source, **kwargs):
     # type: (Union[Source, str], **Any) -> Document
     """Given a GraphQL source, parses it into a Document."""
@@ -241,20 +247,25 @@ def parse_document(parser):
     start = parser.token.start
     definitions = []
     while True:
+        # all root types (query, subscription, mutation)
         definitions.append(parse_definition(parser))
 
         if skip(parser, TokenKind.EOF):
             break
-
+    print('Final definiations and location', definitions, loc(parser, start))
     return ast.Document(definitions=definitions, loc=loc(parser, start))
 
 
 def parse_definition(parser):
     # type: (Parser) -> Any
+    print('parse_definition', )
     if peek(parser, TokenKind.BRACE_L):
+        print('parse_definition: BRACE_L', parser.lexer, parser.token )
         return parse_operation_definition(parser)
 
     if peek(parser, TokenKind.NAME):
+        print('parse_definition: NAME', parser.lexer, parser.token)
+
         name = parser.token.value
 
         if name in ("query", "mutation", "subscription"):
@@ -307,17 +318,15 @@ def parse_operation_definition(parser):
     )
 
 
+OPERATION_NAMES = frozenset(("query", "mutation", "subscription"))
+
+
 def parse_operation_type(parser):
     # type: (Parser) -> str
     operation_token = expect(parser, TokenKind.NAME)
     operation = operation_token.value
-    if operation == "query":
-        return "query"
-    elif operation == "mutation":
-        return "mutation"
-    elif operation == "subscription":
-        return "subscription"
-
+    if operation in OPERATION_NAMES:
+        return operation
     raise unexpected(parser, operation_token)
 
 

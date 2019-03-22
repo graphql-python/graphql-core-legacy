@@ -85,7 +85,6 @@ class GraphQLSchema(object):
         self._subscription = subscription
         if directives is None:
             directives = specified_directives
-
         assert all(
             isinstance(d, GraphQLDirective) for d in directives
         ), "Schema directives must be List[GraphQLDirective] if provided but got: {}.".format(
