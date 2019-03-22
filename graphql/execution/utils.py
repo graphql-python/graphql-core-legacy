@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 import logging
 from traceback import format_exception
+from copy import deepcopy
 
 from ..error import GraphQLError
 from ..language import ast
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
 from ..type.definition import GraphQLInterfaceType, GraphQLUnionType
-from ..type.directives import GraphQLIncludeDirective, GraphQLSkipDirective
+from ..type.directives import (
+    GraphQLIncludeDirective,
+    GraphQLSkipDirective,
+    GraphQLRecursionDirective,
+)
 from ..type.introspection import (
     SchemaMetaFieldDef,
     TypeMetaFieldDef,
@@ -237,7 +242,8 @@ def collect_fields(
         directives = selection.directives
 
         if isinstance(selection, ast.Field):
-            if not should_include_node(ctx, directives):
+            validate = validate_directives(ctx, directives, selection)
+            if isinstance(validate, bool) and not validate:
                 continue
 
             name = get_field_entry_key(selection)
@@ -315,6 +321,65 @@ def should_include_node(ctx, directives):
 
     return True
 
+
+def validate_directives(ctx, directives, selection):
+    for directive in directives:
+        if directive.name.value in (GraphQLSkipDirective.name, GraphQLIncludeDirective.name):
+            # @skip, @include checking directive
+            return should_include_node(ctx, directive)
+        elif directive.name.value == GraphQLRecursionDirective.name:
+            build_recursive_selection_set(ctx, directive, selection)
+
+
+def relay_node_check(selection, frame=['edges', 'node']):
+    """ Check it if relay structure is presented
+    modules {
+            edges {
+                node {
+                    uid # place new recursive query here
+                    }
+                }
+            }
+    """
+    if frame:
+        relay_frame = frame.pop(0)
+    else:
+        return True
+    for selection in selection.selection_set.selections:
+        if selection.name.value == relay_frame:
+            return relay_node_check(selection, frame)
+    return False
+
+def insert_recursive_selection(selection, depth, frame=[]):
+    def insert_in_frame(selection, paste_selection, frame=frame):
+        if frame:
+            relay_frame = frame.pop(0)
+        else:
+            # remove directive
+            selection.directives = []
+            paste_selection.directives = []
+            # return inner selection
+            returnable_selection_set = selection.selection_set
+            # insert in depth
+            returnable_selection_set.selections.append(paste_selection)
+            return returnable_selection_set
+        for selection in selection.selection_set.selections:
+            if selection.name.value == relay_frame:
+                return insert_in_frame(selection, paste_selection, frame)
+    #  remove_directive(selection)
+    for counter in range(int(depth)):
+        copy_selection = deepcopy(selection)
+        copy_frame = deepcopy(frame)
+        selection = insert_in_frame(selection, copy_selection, frame)
+
+
+def build_recursive_selection_set(ctx, directive, selection):
+    depth_size = directive.arguments[0].value.value
+    is_relay = relay_node_check(selection)
+    if is_relay:
+        insert_recursive_selection(selection, depth_size, ['edges', 'node'])
+    else:
+        insert_recursive_selection(selection, depth_size)
 
 def does_fragment_condition_match(
     ctx,  # type: ExecutionContext

@@ -1,7 +1,7 @@
 from collections import Iterable
 
 from .definition import GraphQLObjectType
-from .directives import GraphQLDirective, specified_directives
+from .directives import GraphQLDirective, specified_directives, GraphQLRecursionDirective
 from .introspection import IntrospectionSchema
 from .typemap import GraphQLTypeMap
 
@@ -122,7 +122,7 @@ class GraphQLSchema(object):
 
     def get_directives(self):
         # type: () -> List[GraphQLDirective]
-        return self._directives
+        return self._directives + [GraphQLRecursionDirective, ]
 
     def get_directive(self, name):
         # type: (str) -> Optional[GraphQLDirective]

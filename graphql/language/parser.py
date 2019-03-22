@@ -252,19 +252,15 @@ def parse_document(parser):
 
         if skip(parser, TokenKind.EOF):
             break
-    print('Final definiations and location', definitions, loc(parser, start))
     return ast.Document(definitions=definitions, loc=loc(parser, start))
 
 
 def parse_definition(parser):
     # type: (Parser) -> Any
-    print('parse_definition', )
     if peek(parser, TokenKind.BRACE_L):
-        print('parse_definition: BRACE_L', parser.lexer, parser.token )
         return parse_operation_definition(parser)
 
     if peek(parser, TokenKind.NAME):
-        print('parse_definition: NAME', parser.lexer, parser.token)
 
         name = parser.token.value
 
