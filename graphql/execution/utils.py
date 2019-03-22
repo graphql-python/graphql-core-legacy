@@ -370,7 +370,7 @@ def insert_recursive_selection(selection, depth, frame=[]):
     for counter in range(int(depth)):
         copy_selection = deepcopy(selection)
         copy_frame = deepcopy(frame)
-        selection = insert_in_frame(selection, copy_selection, frame)
+        selection = insert_in_frame(selection, copy_selection, copy_frame)
 
 
 def build_recursive_selection_set(ctx, directive, selection):
