@@ -328,10 +328,11 @@ def validate_directives(ctx, directives, selection):
             # @skip, @include checking directive
             return should_include_node(ctx, directive)
         elif directive.name.value == GraphQLRecursionDirective.name:
+            # @recursive directive check
             build_recursive_selection_set(ctx, directive, selection)
 
 
-def relay_node_check(selection, frame=['edges', 'node']):
+def relay_node_check(selection, frame):
     """ Check it if relay structure is presented
     modules {
             edges {
@@ -377,7 +378,7 @@ def insert_recursive_selection(selection, depth, frame=[]):
 
 def build_recursive_selection_set(ctx, directive, selection):
     depth_size = directive.arguments[0].value.value
-    is_relay = relay_node_check(selection)
+    is_relay = relay_node_check(selection, ['edges', 'node'])
     if is_relay:
         insert_recursive_selection(selection, depth_size, ['edges', 'node'])
     else:
