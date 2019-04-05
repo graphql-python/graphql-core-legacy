@@ -26,9 +26,15 @@ class GraphQLLocatedError(GraphQLError):
         else:
             message = "An unknown error occurred."
 
-        stack = original_error and getattr(original_error, "stack", None)
-        if not stack:
-            stack = sys.exc_info()[2]
+        stack = (
+            original_error
+            and (
+                getattr(original_error, "stack", None)
+                # unfortunately, this is only available in Python 3:
+                or getattr(original_error, "__traceback__", None)
+            )
+            or sys.exc_info()[2]
+        )
 
         super(GraphQLLocatedError, self).__init__(
             message=message, nodes=nodes, stack=stack, path=path
