@@ -21,4 +21,7 @@ def format_error(error):
         if error.path is not None:
             formatted_error["path"] = error.path
 
+        if error.extensions is not None:
+            formatted_error["extensions"] = error.extensions
+
     return formatted_error

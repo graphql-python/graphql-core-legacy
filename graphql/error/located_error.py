@@ -30,7 +30,10 @@ class GraphQLLocatedError(GraphQLError):
         if not stack:
             stack = sys.exc_info()[2]
 
+        extensions = (
+            getattr(original_error, "extensions", None) if original_error else None
+        )
         super(GraphQLLocatedError, self).__init__(
-            message=message, nodes=nodes, stack=stack, path=path
+            message=message, nodes=nodes, stack=stack, path=path, extensions=extensions
         )
         self.original_error = original_error
