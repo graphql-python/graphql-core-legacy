@@ -1,10 +1,8 @@
 import sys
 
-if (sys.version_info.major, sys.version_info.minor) >= (3, 7):
+if sys.version_info >= (3, 7):
     # As of Python 3.7, dictionaries are specified to preserve insertion order
-    class OrderedDict(dict):
-        pass
-
+    OrderedDict = dict
 
 else:
     try:
@@ -13,5 +11,6 @@ else:
         from cyordereddict import OrderedDict  # type: ignore
     except ImportError:
         from collections import OrderedDict
+
 
 __all__ = ["OrderedDict"]
