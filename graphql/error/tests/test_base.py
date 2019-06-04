@@ -1,5 +1,9 @@
+import sys
+
 import pytest
 import traceback
+
+from promise import Promise
 
 from graphql.execution import execute
 from graphql.language.parser import parse
@@ -46,13 +50,10 @@ def test_reraise():
 
     extracted = traceback.extract_tb(exc_info.tb)
     formatted_tb = [row[2:] for row in extracted]
-    if formatted_tb[2][0] == "reraise":
-        formatted_tb[2:] = formatted_tb[3:]
+    formatted_tb = [tb for tb in formatted_tb if tb[0] != "reraise"]
 
     assert formatted_tb == [
         ("test_reraise", "result.errors[0].reraise()"),
-        ("reraise", "six.reraise(type(self), self, self.stack)"),
-        # ('reraise', 'raise value.with_traceback(tb)'),
         (
             "resolve_or_error",
             "return executor.execute(resolve_fn, source, info, **args)",
@@ -60,14 +61,41 @@ def test_reraise():
         ("execute", "return fn(*args, **kwargs)"),
         ("resolver", 'raise Exception("Failed")'),
     ]
-    # assert formatted_tb == [
-    #     ('test_reraise', 'result.errors[0].reraise()'),
-    #     ('reraise', 'six.reraise(type(self), self, self.stack)'),
-    #     ('on_complete_resolver', 'result = __resolver(*args, **kwargs)'),
-    #     # ('reraise', 'raise value.with_traceback(tb)'),
-    #     # ('resolve_or_error', 'return executor.execute(resolve_fn, source, info, **args)'),
-    #     # ('execute', 'return fn(*args, **kwargs)'),
-    #     ('resolver', "raise Exception('Failed')")
-    # ]
+
+    assert str(exc_info.value) == "Failed"
+
+
+@pytest.mark.skipif(sys.version_info < (3,), reason="this works only with Python 3")
+def test_reraise_from_promise():
+    # type: () -> None
+    ast = parse("query Example { a }")
+
+    def fail():
+        raise Exception("Failed")
+
+    def resolver(context, *_):
+        # type: (Optional[Any], *ResolveInfo) -> None
+        return Promise(lambda resolve, reject: resolve(fail()))
+
+    Type = GraphQLObjectType(
+        "Type", {"a": GraphQLField(GraphQLString, resolver=resolver)}
+    )
+
+    result = execute(GraphQLSchema(Type), ast)
+    with pytest.raises(Exception) as exc_info:
+        result.errors[0].reraise()
+
+    extracted = traceback.extract_tb(exc_info.tb)
+    formatted_tb = [row[2:] for row in extracted]
+    formatted_tb = [tb for tb in formatted_tb if tb[0] != "reraise"]
+
+    print(formatted_tb)
+
+    assert formatted_tb == [
+        ("test_reraise_from_promise", "result.errors[0].reraise()"),
+        ("_resolve_from_executor", "executor(resolve, reject)"),
+        ("<lambda>", "return Promise(lambda resolve, reject: resolve(fail()))"),
+        ("fail", 'raise Exception("Failed")'),
+    ]
 
     assert str(exc_info.value) == "Failed"
