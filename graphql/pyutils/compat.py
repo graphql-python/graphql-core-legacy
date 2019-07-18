@@ -54,7 +54,7 @@ try:
     advance_iterator = next
 except NameError:
 
-    def advance_iterator(it):
+    def advance_iterator(it):  # type: ignore
         return it.next()
 
 
@@ -65,7 +65,7 @@ try:
     callable = callable  # type: Callable
 except NameError:
 
-    def callable(obj):
+    def callable(obj):  # type: ignore
         return any("__call__" in klass.__dict__ for klass in type(obj).__mro__)
 
 
