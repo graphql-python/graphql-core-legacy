@@ -36,3 +36,5 @@ def get_field_def(
 
     elif isinstance(parent_type, (GraphQLObjectType, GraphQLInterfaceType)):
         return parent_type.fields.get(name)
+
+    return None
