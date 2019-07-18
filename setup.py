@@ -21,7 +21,7 @@ except Exception:
 
 sys.path[:] = path_copy
 
-install_requires = ["six>=1.10.0", "promise>=2.1", "rx>=1.6.0"]
+install_requires = ["six>=1.10.0", "promise>=2.1", "rx>=1.6,<3"]
 
 tests_requires = [
     "pytest>=3.3,<4.0",
