@@ -1,17 +1,13 @@
-# Created by https://www.gitignore.io
-
-### Python ###
-# Byte-compiled / optimized / DLL files
+# Compile Python files
 __pycache__/
 *.py[cod]
-venv
-
-# C extensions
-*.so
 
 # Distribution / packaging
 .Python
-env/
+venv
+.venv
+env
+.env
 build/
 develop-eggs/
 dist/
@@ -28,8 +24,6 @@ var/
 *.egg
 
 # PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
 
@@ -45,29 +39,26 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
-*,cover
+*.cover
 .pytest_cache/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-
-# Sphinx documentation
-docs/_build/
 
 # PyBuilder
 target/
+
+# Type checking
+/.mypy_cache
+.pyre
+/type_info.json
+
+# Sphinx documentation
+docs/_build/
 
 # IntelliJ
 .idea
 *.iml
 
+# Visual Studio
+/.vscode
+
 # OS X
 .DS_Store
-/.mypy_cache
-.pyre
-/.vscode
-/type_info.json
