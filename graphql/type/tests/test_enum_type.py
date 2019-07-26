@@ -1,3 +1,4 @@
+import sys
 from collections import OrderedDict
 from rx import Observable
 from graphql import graphql
@@ -11,6 +12,7 @@ from graphql.type import (
     GraphQLSchema,
     GraphQLString,
 )
+import pytest
 
 ColorType = GraphQLEnumType(
     name="Color",
@@ -263,6 +265,10 @@ def test_presents_a_get_value_api():
     assert badUsage is None
 
 
+@pytest.mark.skipif(
+    sys.version_info >= (3, 7),
+    reason="As of Python 3.7 we use built-in dicts, which preserve order",
+)
 def test_sorts_values_if_not_using_ordered_dict():
     enum = GraphQLEnumType(
         name="Test",

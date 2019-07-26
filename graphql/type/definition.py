@@ -404,6 +404,7 @@ class GraphQLInterfaceType(GraphQLNamedType):
     @cached_property
     def fields(self):
         # type: () -> Dict[str, GraphQLField]
+        assert self._fields is not None, '"fields" cannot be None'
         return define_field_map(self, self._fields)
 
 
