@@ -450,12 +450,13 @@ def resolve_or_error(
     try:
         return executor.execute(resolve_fn, source, info, **args)
     except Exception as e:
-        logger.exception(
-            "An error occurred while resolving field {}.{}".format(
-                info.parent_type.name, info.field_name
+        if not isinstance(e, GraphQLError):
+            logger.exception(
+                "An error occurred while resolving field {}.{}".format(
+                    info.parent_type.name, info.field_name
+                )
             )
-        )
-        e.stack = sys.exc_info()[2]  # type: ignore
+            e.stack = sys.exc_info()[2]  # type: ignore
         return e
 
 
