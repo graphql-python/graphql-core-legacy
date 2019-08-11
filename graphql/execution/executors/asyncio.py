@@ -4,6 +4,8 @@ from asyncio import Future, get_event_loop, iscoroutine, wait
 
 from promise import Promise
 
+from .base import BaseExecutor
+
 # Necessary for static type checking
 if False:  # flake8: noqa
     from asyncio.unix_events import _UnixSelectorEventLoop
@@ -44,7 +46,7 @@ except Exception:
         pass
 
 
-class AsyncioExecutor(object):
+class AsyncioExecutor(BaseExecutor):
     def __init__(self, loop=None):
         # type: (Optional[_UnixSelectorEventLoop]) -> None
         if loop is None:
@@ -54,12 +56,16 @@ class AsyncioExecutor(object):
 
     def wait_until_finished(self):
         # type: () -> None
+        self.loop.run_until_complete(self.wait_until_finished_async())
+
+    async def wait_until_finished_async(self):
+        # type: () -> None
         # if there are futures to wait for
         while self.futures:
             # wait for the futures to finish
             futures = self.futures
             self.futures = []
-            self.loop.run_until_complete(wait(futures))
+            await wait(futures)
 
     def clean(self):
         self.futures = []

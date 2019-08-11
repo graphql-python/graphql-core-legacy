@@ -103,3 +103,8 @@ class GraphQLQuiverCloudBackend(GraphQLBackend):
             schema, code, uptodate, self.extra_namespace
         )
         return document
+
+    def document_from_string_async(self, schema, request_string):
+        raise NotImplementedError(
+            "document_from_string method not implemented in {}.".format(self.__class__)
+        )

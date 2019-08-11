@@ -209,3 +209,8 @@ class GraphQLDeciderBackend(GraphQLCachedBackend):
             self.get_worker().queue(self.queue_backend, key, schema, request_string)
 
         return self.cache_map[key]
+
+    def document_from_string_async(self, schema, request_string):
+        raise NotImplementedError(
+            "document_from_string method not implemented in {}.".format(self.__class__)
+        )

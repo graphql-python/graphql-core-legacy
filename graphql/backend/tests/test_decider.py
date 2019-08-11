@@ -34,6 +34,11 @@ class FakeBackend(GraphQLBackend):
             raise Exception("Backend failed")
         return self.name
 
+    def document_from_string_async(self, schema, request_string):
+        raise NotImplementedError(
+            "document_from_string method not implemented in {}.".format(self.__class__)
+        )
+
     def wait(self):
         return self.event.wait()
 

@@ -24,7 +24,7 @@ following two import statements are equivalent:
 from .pyutils.version import get_version
 
 # The primary entry point into fulfilling a GraphQL request.
-from .graphql import graphql
+from .graphql import graphql, graphql_async
 
 # Create and operate on GraphQL type definitions and schema.
 from .type import (  # no import order
@@ -175,6 +175,7 @@ __version__ = get_version(VERSION)
 __all__ = (
     "__version__",
     "graphql",
+    "graphql_async",
     "GraphQLBoolean",
     "GraphQLEnumType",
     "GraphQLEnumValue",

@@ -2,6 +2,7 @@ from multiprocessing import Process, Queue
 
 from promise import Promise
 
+from .base import BaseExecutor
 from .utils import process
 
 
@@ -10,7 +11,7 @@ def queue_process(q):
     process(promise, fn, args, kwargs)
 
 
-class ProcessExecutor(object):
+class ProcessExecutor(BaseExecutor):
     def __init__(self):
         self.processes = []
         self.q = Queue()
@@ -22,6 +23,9 @@ class ProcessExecutor(object):
             [_process.join() for _process in processes]
         self.q.close()
         self.q.join_thread()
+
+    async def wait_until_finished_async(self):
+        raise NotImplementedError
 
     def clean(self):
         self.processes = []

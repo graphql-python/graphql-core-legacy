@@ -3,10 +3,11 @@ from __future__ import absolute_import
 import gevent
 from promise import Promise
 
+from .base import BaseExecutor
 from .utils import process
 
 
-class GeventExecutor(object):
+class GeventExecutor(BaseExecutor):
     def __init__(self):
         self.jobs = []
 
@@ -16,6 +17,9 @@ class GeventExecutor(object):
             jobs = self.jobs
             self.jobs = []
             [j.join() for j in jobs]
+
+    async def wait_until_finished_async(self):
+        raise NotImplementedError
 
     def clean(self):
         self.jobs = []

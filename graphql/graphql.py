@@ -44,6 +44,11 @@ def graphql(*args, **kwargs):
         return execute_graphql(*args, **kwargs)
 
 
+async def graphql_async(*args, **kwargs):
+    # type: (*Any, **Any) -> Union[ExecutionResult, Observable]
+    return await execute_graphql_async(*args, **kwargs)
+
+
 def execute_graphql(
     schema,  # type: GraphQLSchema
     request_string="",  # type: Union[Document, str]
@@ -62,6 +67,35 @@ def execute_graphql(
 
         document = backend.document_from_string(schema, request_string)
         return document.execute(
+            root=root,
+            context=context,
+            operation_name=operation_name,
+            variables=variables,
+            middleware=middleware,
+            **execute_options
+        )
+    except Exception as e:
+        return ExecutionResult(errors=[e], invalid=True)
+
+
+async def execute_graphql_async(
+    schema,  # type: GraphQLSchema
+    request_string="",  # type: Union[Document, str]
+    root=None,  # type: Any
+    context=None,  # type: Optional[Any]
+    variables=None,  # type: Optional[Any]
+    operation_name=None,  # type: Optional[Any]
+    middleware=None,  # type: Optional[Any]
+    backend=None,  # type: Optional[Any]
+    **execute_options  # type: Any
+):
+    # type: (...) -> Union[ExecutionResult, Observable, Promise[ExecutionResult]]
+    try:
+        if backend is None:
+            backend = get_default_backend()
+
+        document = backend.document_from_string_async(schema, request_string)
+        return await document.execute(
             root=root,
             context=context,
             operation_name=operation_name,

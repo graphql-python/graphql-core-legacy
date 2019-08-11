@@ -2,6 +2,8 @@ from multiprocessing.pool import ThreadPool
 from threading import Thread
 
 from promise import Promise
+
+from .base import BaseExecutor
 from .utils import process
 
 # Necessary for static type checking
@@ -9,7 +11,7 @@ if False:  # flake8: noqa
     from typing import Any, Callable, List
 
 
-class ThreadExecutor(object):
+class ThreadExecutor(BaseExecutor):
 
     pool = None
 
@@ -29,6 +31,9 @@ class ThreadExecutor(object):
             self.threads = []
             for thread in threads:
                 thread.join()
+
+    async def wait_until_finished_async(self):
+        raise NotImplementedError
 
     def clean(self):
         self.threads = []

@@ -37,6 +37,7 @@ from .base import (
     get_operation_root_type,
     SubscriberExecutionContext,
 )
+from .executors.asyncio import AsyncioExecutor
 from .executors.sync import SyncExecutor
 from .middleware import MiddlewareManager
 
@@ -56,21 +57,18 @@ def subscribe(*args, **kwargs):
     )
 
 
-def execute(
+def prepare_execution_context(
     schema,  # type: GraphQLSchema
     document_ast,  # type: Document
-    root=None,  # type: Any
-    context=None,  # type: Optional[Any]
-    variables=None,  # type: Optional[Any]
-    operation_name=None,  # type: Optional[str]
-    executor=None,  # type: Any
-    return_promise=False,  # type: bool
-    middleware=None,  # type: Optional[Any]
-    allow_subscriptions=False,  # type: bool
+    root,  # type: Any
+    context,  # type: Optional[Any]
+    variables,  # type: Optional[Any]
+    operation_name,  # type: Optional[str]
+    executor,  # type: Any
+    middleware,  # type: Optional[Any]
+    allow_subscriptions,  # type: bool
     **options  # type: Any
 ):
-    # type: (...) -> Union[ExecutionResult, Promise[ExecutionResult]]
-
     if root is None and "root_value" in options:
         warnings.warn(
             "root_value has been deprecated. Please use root=... instead.",
@@ -107,10 +105,7 @@ def execute(
             ' of MiddlewareManager. Received "{}".'.format(middleware)
         )
 
-    if executor is None:
-        executor = SyncExecutor()
-
-    exe_context = ExecutionContext(
+    return ExecutionContext(
         schema,
         document_ast,
         root,
@@ -122,15 +117,23 @@ def execute(
         allow_subscriptions,
     )
 
+
+def get_promise_executor(exe_context, root):
     def promise_executor(v):
         # type: (Optional[Any]) -> Union[Dict, Promise[Dict], Observable]
         return execute_operation(exe_context, exe_context.operation, root)
+    return promise_executor
 
+
+def get_on_rejected(exe_context):
     def on_rejected(error):
         # type: (Exception) -> None
         exe_context.errors.append(error)
         return None
+    return on_rejected
 
+
+def get_on_resolve(exe_context):
     def on_resolve(data):
         # type: (Union[None, Dict, Observable]) -> Union[ExecutionResult, Observable]
         if isinstance(data, Observable):
@@ -140,7 +143,43 @@ def execute(
             return ExecutionResult(data=data)
 
         return ExecutionResult(data=data, errors=exe_context.errors)
+    return on_resolve
 
+
+def execute(
+    schema,  # type: GraphQLSchema
+    document_ast,  # type: Document
+    root=None,  # type: Any
+    context=None,  # type: Optional[Any]
+    variables=None,  # type: Optional[Any]
+    operation_name=None,  # type: Optional[str]
+    executor=None,  # type: Any
+    return_promise=False,  # type: bool
+    middleware=None,  # type: Optional[Any]
+    allow_subscriptions=False,  # type: bool
+    **options  # type: Any
+):
+    # type: (...) -> Union[ExecutionResult, Promise[ExecutionResult]]
+
+    if executor is None:
+        executor = SyncExecutor()
+
+    exe_context = prepare_execution_context(
+        schema,
+        document_ast,
+        root,
+        context,
+        variables,
+        operation_name,
+        executor,
+        middleware,
+        allow_subscriptions,
+        **options
+    )
+
+    promise_executor = get_promise_executor(exe_context, root)
+    on_rejected = get_on_rejected(exe_context)
+    on_resolve = get_on_resolve(exe_context)
     promise = (
         Promise.resolve(None).then(promise_executor).catch(on_rejected).then(on_resolve)
     )
@@ -154,6 +193,45 @@ def execute(
             clean()
 
     return promise
+
+
+async def execute_async(
+    schema,  # type: GraphQLSchema
+    document_ast,  # type: Document
+    root=None,  # type: Any
+    context=None,  # type: Optional[Any]
+    variables=None,  # type: Optional[Any]
+    operation_name=None,  # type: Optional[str]
+    executor=None,  # type: Any
+    middleware=None,  # type: Optional[Any]
+    allow_subscriptions=False,  # type: bool
+    **options  # type: Any
+):
+    # type: (...) -> Union[ExecutionResult]
+    if executor is None:
+        executor = AsyncioExecutor()
+    exe_context = prepare_execution_context(
+        schema,
+        document_ast,
+        root,
+        context,
+        variables,
+        operation_name,
+        executor,
+        middleware,
+        allow_subscriptions,
+        **options
+    )
+
+    promise_executor = get_promise_executor(exe_context, root)
+    on_rejected = get_on_rejected(exe_context)
+    on_resolve = get_on_resolve(exe_context)
+    promise = (
+        Promise.resolve(None).then(promise_executor).catch(on_rejected).then(on_resolve)
+    )
+
+    await exe_context.executor.wait_until_finished_async()
+    return promise.get()
 
 
 def execute_operation(
