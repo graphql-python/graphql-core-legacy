@@ -1,3 +1,5 @@
+import asyncio
+
 from .execution import ExecutionResult
 from .backend import get_default_backend
 
@@ -44,9 +46,11 @@ def graphql(*args, **kwargs):
         return execute_graphql(*args, **kwargs)
 
 
-async def graphql_async(*args, **kwargs):
+@asyncio.coroutine
+def graphql_async(*args, **kwargs):
     # type: (*Any, **Any) -> Union[ExecutionResult, Observable]
-    return await execute_graphql_async(*args, **kwargs)
+    result = yield from execute_graphql_async(*args, **kwargs)
+    return result
 
 
 def execute_graphql(
@@ -78,7 +82,8 @@ def execute_graphql(
         return ExecutionResult(errors=[e], invalid=True)
 
 
-async def execute_graphql_async(
+@asyncio.coroutine
+def execute_graphql_async(
     schema,  # type: GraphQLSchema
     request_string="",  # type: Union[Document, str]
     root=None,  # type: Any
@@ -95,7 +100,7 @@ async def execute_graphql_async(
             backend = get_default_backend()
 
         document = backend.document_from_string_async(schema, request_string)
-        return await document.execute(
+        result = yield from document.execute(
             root=root,
             context=context,
             operation_name=operation_name,
@@ -103,6 +108,7 @@ async def execute_graphql_async(
             middleware=middleware,
             **execute_options
         )
+        return result
     except Exception as e:
         return ExecutionResult(errors=[e], invalid=True)
 

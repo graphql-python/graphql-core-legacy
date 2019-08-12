@@ -1,3 +1,4 @@
+import asyncio
 import collections
 
 try:
@@ -195,7 +196,8 @@ def execute(
     return promise
 
 
-async def execute_async(
+@asyncio.coroutine
+def execute_async(
     schema,  # type: GraphQLSchema
     document_ast,  # type: Document
     root=None,  # type: Any
@@ -230,7 +232,7 @@ async def execute_async(
         Promise.resolve(None).then(promise_executor).catch(on_rejected).then(on_resolve)
     )
 
-    await exe_context.executor.wait_until_finished_async()
+    yield from exe_context.executor.wait_until_finished_async()
     return promise.get()
 
 

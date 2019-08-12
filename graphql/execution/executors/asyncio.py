@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from asyncio import Future, get_event_loop, iscoroutine, wait
+from asyncio import Future, get_event_loop, iscoroutine, wait, coroutine
 
 from promise import Promise
 
@@ -58,14 +58,15 @@ class AsyncioExecutor(BaseExecutor):
         # type: () -> None
         self.loop.run_until_complete(self.wait_until_finished_async())
 
-    async def wait_until_finished_async(self):
+    @coroutine
+    def wait_until_finished_async(self):
         # type: () -> None
         # if there are futures to wait for
         while self.futures:
             # wait for the futures to finish
             futures = self.futures
             self.futures = []
-            await wait(futures)
+            yield from wait(futures)
 
     def clean(self):
         self.futures = []

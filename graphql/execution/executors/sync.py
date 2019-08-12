@@ -10,7 +10,7 @@ class SyncExecutor(BaseExecutor):
         # type: () -> None
         pass
 
-    async def wait_until_finished_async(self):
+    def wait_until_finished_async(self):
         raise NotImplementedError
 
     def clean(self):

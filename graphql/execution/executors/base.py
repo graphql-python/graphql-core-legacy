@@ -8,7 +8,7 @@ class BaseExecutor(ABC):
         pass
 
     @abstractmethod
-    async def wait_until_finished_async(self):
+    def wait_until_finished_async(self):
         pass
 
     @abstractmethod

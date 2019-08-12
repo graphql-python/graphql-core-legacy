@@ -1,4 +1,9 @@
+# type: ignore
+# flake8: noqa
+
 import pytest
+
+asyncio = pytest.importorskip("asyncio")
 
 from graphql import graphql, graphql_async
 from graphql.error import format_error
@@ -8,7 +13,8 @@ from .starwars_schema import StarWarsSchema
 
 @pytest.fixture(params=['sync', 'async'])
 def execute_graphql(request):
-    async def _execute(
+    @asyncio.coroutine
+    def _execute(
             schema,
             query,
             variable_values=None
@@ -16,26 +22,29 @@ def execute_graphql(request):
         if request.param == 'sync':
             return graphql(schema, query, variable_values=variable_values)
         else:
-            return await graphql_async(schema, query, variable_values=variable_values)
+            result = yield from graphql_async(schema, query, variable_values=variable_values)
+            return result
     return _execute
 
 
 @pytest.fixture
 def execute_and_validate_result(execute_graphql):
-    async def _execute_and_validate(
+    @asyncio.coroutine
+    def _execute_and_validate(
             schema,
             query,
             expected,
             variable_values=None
     ):
-        result = await execute_graphql(schema, query, variable_values=variable_values)
+        result = yield from execute_graphql(schema, query, variable_values=variable_values)
         assert not result.errors
         assert result.data == expected
     return _execute_and_validate
 
 
 @pytest.mark.asyncio
-async def test_hero_name_query(execute_and_validate_result):
+@asyncio.coroutine
+def test_hero_name_query(execute_and_validate_result):
     query = """
         query HeroNameQuery {
           hero {
@@ -44,11 +53,12 @@ async def test_hero_name_query(execute_and_validate_result):
         }
     """
     expected = {"hero": {"name": "R2-D2"}}
-    await execute_and_validate_result(StarWarsSchema, query, expected)
+    yield from execute_and_validate_result(StarWarsSchema, query, expected)
 
 
 @pytest.mark.asyncio
-async def test_hero_name_and_friends_query(execute_and_validate_result):
+@asyncio.coroutine
+def test_hero_name_and_friends_query(execute_and_validate_result):
     query = """
         query HeroNameAndFriendsQuery {
           hero {
@@ -71,11 +81,12 @@ async def test_hero_name_and_friends_query(execute_and_validate_result):
             ],
         }
     }
-    await execute_and_validate_result(StarWarsSchema, query, expected)
+    yield from execute_and_validate_result(StarWarsSchema, query, expected)
 
 
 @pytest.mark.asyncio
-async def test_nested_query(execute_and_validate_result):
+@asyncio.coroutine
+def test_nested_query(execute_and_validate_result):
     query = """
         query NestedQuery {
           hero {
@@ -126,11 +137,12 @@ async def test_nested_query(execute_and_validate_result):
             ],
         }
     }
-    await execute_and_validate_result(StarWarsSchema, query, expected)
+    yield from execute_and_validate_result(StarWarsSchema, query, expected)
 
 
 @pytest.mark.asyncio
-async def test_fetch_luke_query(execute_and_validate_result):
+@asyncio.coroutine
+def test_fetch_luke_query(execute_and_validate_result):
     query = """
         query FetchLukeQuery {
           human(id: "1000") {
@@ -139,11 +151,12 @@ async def test_fetch_luke_query(execute_and_validate_result):
         }
     """
     expected = {"human": {"name": "Luke Skywalker"}}
-    await execute_and_validate_result(StarWarsSchema, query, expected)
+    yield from execute_and_validate_result(StarWarsSchema, query, expected)
 
 
 @pytest.mark.asyncio
-async def test_fetch_some_id_query(execute_and_validate_result):
+@asyncio.coroutine
+def test_fetch_some_id_query(execute_and_validate_result):
     query = """
         query FetchSomeIDQuery($someId: String!) {
           human(id: $someId) {
@@ -153,11 +166,12 @@ async def test_fetch_some_id_query(execute_and_validate_result):
     """
     params = {"someId": "1000"}
     expected = {"human": {"name": "Luke Skywalker"}}
-    await execute_and_validate_result(StarWarsSchema, query, expected, variable_values=params)
+    yield from execute_and_validate_result(StarWarsSchema, query, expected, variable_values=params)
 
 
 @pytest.mark.asyncio
-async def test_fetch_some_id_query2(execute_and_validate_result):
+@asyncio.coroutine
+def test_fetch_some_id_query2(execute_and_validate_result):
     query = """
         query FetchSomeIDQuery($someId: String!) {
           human(id: $someId) {
@@ -167,11 +181,12 @@ async def test_fetch_some_id_query2(execute_and_validate_result):
     """
     params = {"someId": "1002"}
     expected = {"human": {"name": "Han Solo"}}
-    await execute_and_validate_result(StarWarsSchema, query, expected, variable_values=params)
+    yield from execute_and_validate_result(StarWarsSchema, query, expected, variable_values=params)
 
 
 @pytest.mark.asyncio
-async def test_invalid_id_query(execute_and_validate_result):
+@asyncio.coroutine
+def test_invalid_id_query(execute_and_validate_result):
     query = """
         query humanQuery($id: String!) {
           human(id: $id) {
@@ -181,11 +196,12 @@ async def test_invalid_id_query(execute_and_validate_result):
     """
     params = {"id": "not a valid id"}
     expected = {"human": None}
-    await execute_and_validate_result(StarWarsSchema, query, expected, variable_values=params)
+    yield from execute_and_validate_result(StarWarsSchema, query, expected, variable_values=params)
 
 
 @pytest.mark.asyncio
-async def test_fetch_luke_aliased(execute_and_validate_result):
+@asyncio.coroutine
+def test_fetch_luke_aliased(execute_and_validate_result):
     query = """
         query FetchLukeAliased {
           luke: human(id: "1000") {
@@ -194,11 +210,12 @@ async def test_fetch_luke_aliased(execute_and_validate_result):
         }
     """
     expected = {"luke": {"name": "Luke Skywalker"}}
-    await execute_and_validate_result(StarWarsSchema, query, expected)
+    yield from execute_and_validate_result(StarWarsSchema, query, expected)
 
 
 @pytest.mark.asyncio
-async def test_fetch_luke_and_leia_aliased(execute_and_validate_result):
+@asyncio.coroutine
+def test_fetch_luke_and_leia_aliased(execute_and_validate_result):
     query = """
         query FetchLukeAndLeiaAliased {
           luke: human(id: "1000") {
@@ -210,11 +227,12 @@ async def test_fetch_luke_and_leia_aliased(execute_and_validate_result):
         }
     """
     expected = {"luke": {"name": "Luke Skywalker"}, "leia": {"name": "Leia Organa"}}
-    await execute_and_validate_result(StarWarsSchema, query, expected)
+    yield from execute_and_validate_result(StarWarsSchema, query, expected)
 
 
 @pytest.mark.asyncio
-async def test_duplicate_fields(execute_and_validate_result):
+@asyncio.coroutine
+def test_duplicate_fields(execute_and_validate_result):
     query = """
         query DuplicateFields {
           luke: human(id: "1000") {
@@ -231,11 +249,12 @@ async def test_duplicate_fields(execute_and_validate_result):
         "luke": {"name": "Luke Skywalker", "homePlanet": "Tatooine"},
         "leia": {"name": "Leia Organa", "homePlanet": "Alderaan"},
     }
-    await execute_and_validate_result(StarWarsSchema, query, expected)
+    yield from execute_and_validate_result(StarWarsSchema, query, expected)
 
 
 @pytest.mark.asyncio
-async def test_use_fragment(execute_and_validate_result):
+@asyncio.coroutine
+def test_use_fragment(execute_and_validate_result):
     query = """
         query UseFragment {
           luke: human(id: "1000") {
@@ -254,11 +273,12 @@ async def test_use_fragment(execute_and_validate_result):
         "luke": {"name": "Luke Skywalker", "homePlanet": "Tatooine"},
         "leia": {"name": "Leia Organa", "homePlanet": "Alderaan"},
     }
-    await execute_and_validate_result(StarWarsSchema, query, expected)
+    yield from execute_and_validate_result(StarWarsSchema, query, expected)
 
 
 @pytest.mark.asyncio
-async def test_check_type_of_r2(execute_and_validate_result):
+@asyncio.coroutine
+def test_check_type_of_r2(execute_and_validate_result):
     query = """
         query CheckTypeOfR2 {
           hero {
@@ -268,11 +288,12 @@ async def test_check_type_of_r2(execute_and_validate_result):
         }
     """
     expected = {"hero": {"__typename": "Droid", "name": "R2-D2"}}
-    await execute_and_validate_result(StarWarsSchema, query, expected)
+    yield from execute_and_validate_result(StarWarsSchema, query, expected)
 
 
 @pytest.mark.asyncio
-async def test_check_type_of_luke(execute_and_validate_result):
+@asyncio.coroutine
+def test_check_type_of_luke(execute_and_validate_result):
     query = """
         query CheckTypeOfLuke {
           hero(episode: EMPIRE) {
@@ -282,15 +303,16 @@ async def test_check_type_of_luke(execute_and_validate_result):
         }
     """
     expected = {"hero": {"__typename": "Human", "name": "Luke Skywalker"}}
-    await execute_and_validate_result(StarWarsSchema, query, expected)
+    yield from execute_and_validate_result(StarWarsSchema, query, expected)
 
 
 @pytest.mark.asyncio
-async def test_parse_error(execute_graphql):
+@asyncio.coroutine
+def test_parse_error(execute_graphql):
     query = """
         qeury
     """
-    result = await execute_graphql(StarWarsSchema, query)
+    result = yield from execute_graphql(StarWarsSchema, query)
     assert result.invalid
     formatted_error = format_error(result.errors[0])
     assert formatted_error["locations"] == [{"column": 9, "line": 2}]
@@ -299,3 +321,4 @@ async def test_parse_error(execute_graphql):
         in formatted_error["message"]
     )
     assert result.data is None
+

@@ -1,3 +1,5 @@
+import asyncio
+
 from functools import partial
 from six import string_types
 
@@ -43,7 +45,8 @@ def execute_and_validate(
     return execute(schema, document_ast, *args, **kwargs)
 
 
-async def execute_and_validate_async(
+@asyncio.coroutine
+def execute_and_validate_async(
     schema,  # type: GraphQLSchema
     document_ast,  # type: Document
     *args,  # type: Any
@@ -53,7 +56,8 @@ async def execute_and_validate_async(
     execution_result = _validate_document_ast(schema, document_ast, **kwargs)
     if execution_result:
         return execution_result
-    return await execute_async(schema, document_ast, *args, **kwargs)
+    result = yield from execute_async(schema, document_ast, *args, **kwargs)
+    return result
 
 
 class GraphQLCoreBackend(GraphQLBackend):
@@ -66,7 +70,7 @@ class GraphQLCoreBackend(GraphQLBackend):
 
     @staticmethod
     def _get_doc_str_and_ast(document_string):
-        # type: (Union[Document, str] -> (str, ast.Document)
+        # type: (Union[Document, str]) -> (str, ast.Document)
         if isinstance(document_string, ast.Document):
             document_ast = document_string
             document_string = print_ast(document_ast)

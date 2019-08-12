@@ -19,15 +19,17 @@ from .test_mutations import assert_evaluate_mutations_serially
 
 def test_asyncio_executor():
     # type: () -> None
+
+    @asyncio.coroutine
     def resolver(context, *_):
         # type: (Optional[Any], *ResolveInfo) -> str
-        asyncio.sleep(0.001)
+        yield from asyncio.sleep(0.001)
         return "hey"
 
     @asyncio.coroutine
     def resolver_2(context, *_):
         # type: (Optional[Any], *ResolveInfo) -> str
-        asyncio.sleep(0.003)
+        yield from asyncio.sleep(0.003)
         return "hey2"
 
     def resolver_3(contest, *_):
@@ -50,17 +52,20 @@ def test_asyncio_executor():
 
 
 @pytest.mark.asyncio
-async def test_asyncio_executor_exc_async():
+@asyncio.coroutine
+def test_asyncio_executor_exc_async():
     # type: () -> None
+
+    @asyncio.coroutine
     def resolver(context, *_):
         # type: (Optional[Any], *ResolveInfo) -> str
-        asyncio.sleep(0.001)
+        yield from asyncio.sleep(0.001)
         return "hey"
 
     @asyncio.coroutine
     def resolver_2(context, *_):
         # type: (Optional[Any], *ResolveInfo) -> str
-        asyncio.sleep(0.003)
+        yield from asyncio.sleep(0.003)
         return "hey2"
 
     def resolver_3(contest, *_):
@@ -77,7 +82,7 @@ async def test_asyncio_executor_exc_async():
     )
 
     ast = parse("{ a b c }")
-    result = await execute_async(GraphQLSchema(Type), ast, executor=AsyncioExecutor())
+    result = yield from execute_async(GraphQLSchema(Type), ast, executor=AsyncioExecutor())
     assert not result.errors
     assert result.data == {"a": "hey", "b": "hey2", "c": "hey3"}
 
@@ -86,15 +91,16 @@ def test_asyncio_executor_custom_loop():
     # type: () -> None
     loop = asyncio.get_event_loop()
 
+    @asyncio.coroutine
     def resolver(context, *_):
         # type: (Optional[Any], *ResolveInfo) -> str
-        asyncio.sleep(0.001, loop=loop)
+        yield from asyncio.sleep(0.001, loop=loop)
         return "hey"
 
     @asyncio.coroutine
     def resolver_2(context, *_):
         # type: (Optional[Any], *ResolveInfo) -> str
-        asyncio.sleep(0.003, loop=loop)
+        yield from asyncio.sleep(0.003, loop=loop)
         return "hey2"
 
     def resolver_3(contest, *_):
@@ -120,14 +126,16 @@ def test_asyncio_executor_with_error():
     # type: () -> None
     ast = parse("query Example { a, b }")
 
-    async def resolver(context, *_):
+    @asyncio.coroutine
+    def resolver(context, *_):
         # type: (Optional[Any], *ResolveInfo) -> str
-        await asyncio.sleep(0.001)
+        yield from asyncio.sleep(0.001)
         return "hey"
 
-    async def resolver_2(context, *_):
+    @asyncio.coroutine
+    def resolver_2(context, *_):
         # type: (Optional[Any], *ResolveInfo) -> NoReturn
-        await asyncio.sleep(0.003)
+        yield from asyncio.sleep(0.003)
         raise Exception("resolver_2 failed!")
 
     Type = GraphQLObjectType(
@@ -151,18 +159,21 @@ def test_asyncio_executor_with_error():
 
 
 @pytest.mark.asyncio
-async def test_asyncio_executor_with_error_exc_async():
+@asyncio.coroutine
+def test_asyncio_executor_with_error_exc_async():
     # type: () -> None
     ast = parse("query Example { a, b }")
 
-    async def resolver(context, *_):
+    @asyncio.coroutine
+    def resolver(context, *_):
         # type: (Optional[Any], *ResolveInfo) -> str
-        await asyncio.sleep(0.001)
+        yield from asyncio.sleep(0.001)
         return "hey"
 
-    async def resolver_2(context, *_):
+    @asyncio.coroutine
+    def resolver_2(context, *_):
         # type: (Optional[Any], *ResolveInfo) -> NoReturn
-        await asyncio.sleep(0.003)
+        yield from asyncio.sleep(0.003)
         raise Exception("resolver_2 failed!")
 
     Type = GraphQLObjectType(
@@ -173,7 +184,7 @@ async def test_asyncio_executor_with_error_exc_async():
         },
     )
 
-    result = await execute_async(GraphQLSchema(Type), ast, executor=AsyncioExecutor())
+    result = yield from execute_async(GraphQLSchema(Type), ast, executor=AsyncioExecutor())
     formatted_errors = list(map(format_error, result.errors))
     assert formatted_errors == [
         {

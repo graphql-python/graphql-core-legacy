@@ -24,7 +24,7 @@ class ProcessExecutor(BaseExecutor):
         self.q.close()
         self.q.join_thread()
 
-    async def wait_until_finished_async(self):
+    def wait_until_finished_async(self):
         raise NotImplementedError
 
     def clean(self):
