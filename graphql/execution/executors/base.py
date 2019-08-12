@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 
 class BaseExecutor(ABC):
-
     @abstractmethod
     def wait_until_finished(self):
         pass

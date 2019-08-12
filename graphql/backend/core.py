@@ -19,9 +19,9 @@ if False:  # flake8: noqa
 
 
 def _validate_document_ast(
-        schema,  # type: GraphQLSchema
-        document_ast,  # type: Document
-        **kwargs  # type: Any
+    schema,  # type: GraphQLSchema
+    document_ast,  # type: Document
+    **kwargs  # type: Any
 ):
     # type: (...) -> Union[ExecutionResult, None]
     do_validation = kwargs.get("validate", True)

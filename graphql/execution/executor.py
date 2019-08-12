@@ -123,6 +123,7 @@ def get_promise_executor(exe_context, root):
     def promise_executor(v):
         # type: (Optional[Any]) -> Union[Dict, Promise[Dict], Observable]
         return execute_operation(exe_context, exe_context.operation, root)
+
     return promise_executor
 
 
@@ -131,6 +132,7 @@ def get_on_rejected(exe_context):
         # type: (Exception) -> None
         exe_context.errors.append(error)
         return None
+
     return on_rejected
 
 
@@ -144,6 +146,7 @@ def get_on_resolve(exe_context):
             return ExecutionResult(data=data)
 
         return ExecutionResult(data=data, errors=exe_context.errors)
+
     return on_resolve
 
 

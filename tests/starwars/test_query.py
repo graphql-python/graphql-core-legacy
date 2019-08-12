@@ -11,34 +11,31 @@ from graphql.error import format_error
 from .starwars_schema import StarWarsSchema
 
 
-@pytest.fixture(params=['sync', 'async'])
+@pytest.fixture(params=["sync", "async"])
 def execute_graphql(request):
     @asyncio.coroutine
-    def _execute(
-            schema,
-            query,
-            variable_values=None
-    ):
-        if request.param == 'sync':
+    def _execute(schema, query, variable_values=None):
+        if request.param == "sync":
             return graphql(schema, query, variable_values=variable_values)
         else:
-            result = yield from graphql_async(schema, query, variable_values=variable_values)
+            result = yield from graphql_async(
+                schema, query, variable_values=variable_values
+            )
             return result
+
     return _execute
 
 
 @pytest.fixture
 def execute_and_validate_result(execute_graphql):
     @asyncio.coroutine
-    def _execute_and_validate(
-            schema,
-            query,
-            expected,
-            variable_values=None
-    ):
-        result = yield from execute_graphql(schema, query, variable_values=variable_values)
+    def _execute_and_validate(schema, query, expected, variable_values=None):
+        result = yield from execute_graphql(
+            schema, query, variable_values=variable_values
+        )
         assert not result.errors
         assert result.data == expected
+
     return _execute_and_validate
 
 
@@ -166,7 +163,9 @@ def test_fetch_some_id_query(execute_and_validate_result):
     """
     params = {"someId": "1000"}
     expected = {"human": {"name": "Luke Skywalker"}}
-    yield from execute_and_validate_result(StarWarsSchema, query, expected, variable_values=params)
+    yield from execute_and_validate_result(
+        StarWarsSchema, query, expected, variable_values=params
+    )
 
 
 @pytest.mark.asyncio
@@ -181,7 +180,9 @@ def test_fetch_some_id_query2(execute_and_validate_result):
     """
     params = {"someId": "1002"}
     expected = {"human": {"name": "Han Solo"}}
-    yield from execute_and_validate_result(StarWarsSchema, query, expected, variable_values=params)
+    yield from execute_and_validate_result(
+        StarWarsSchema, query, expected, variable_values=params
+    )
 
 
 @pytest.mark.asyncio
@@ -196,7 +197,9 @@ def test_invalid_id_query(execute_and_validate_result):
     """
     params = {"id": "not a valid id"}
     expected = {"human": None}
-    yield from execute_and_validate_result(StarWarsSchema, query, expected, variable_values=params)
+    yield from execute_and_validate_result(
+        StarWarsSchema, query, expected, variable_values=params
+    )
 
 
 @pytest.mark.asyncio
@@ -321,4 +324,3 @@ def test_parse_error(execute_graphql):
         in formatted_error["message"]
     )
     assert result.data is None
-

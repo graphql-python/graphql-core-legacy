@@ -82,7 +82,9 @@ def test_asyncio_executor_exc_async():
     )
 
     ast = parse("{ a b c }")
-    result = yield from execute_async(GraphQLSchema(Type), ast, executor=AsyncioExecutor())
+    result = yield from execute_async(
+        GraphQLSchema(Type), ast, executor=AsyncioExecutor()
+    )
     assert not result.errors
     assert result.data == {"a": "hey", "b": "hey2", "c": "hey3"}
 
@@ -184,7 +186,9 @@ def test_asyncio_executor_with_error_exc_async():
         },
     )
 
-    result = yield from execute_async(GraphQLSchema(Type), ast, executor=AsyncioExecutor())
+    result = yield from execute_async(
+        GraphQLSchema(Type), ast, executor=AsyncioExecutor()
+    )
     formatted_errors = list(map(format_error, result.errors))
     assert formatted_errors == [
         {
