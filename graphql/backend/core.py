@@ -13,8 +13,10 @@ from .base import GraphQLBackend, GraphQLDocument
 if sys.version_info > (3, 3):
     from .async_util import execute_and_validate_async
 else:
+
     def execute_and_validate_async(*args, **kwargs):
-        raise ImportError('execute_and_validate_async needs python>=3.4')
+        raise ImportError("execute_and_validate_async needs python>=3.4")
+
 
 # Necessary for static type checking
 if False:  # flake8: noqa

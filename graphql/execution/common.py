@@ -41,7 +41,7 @@ from .middleware import MiddlewareManager
 
 # Necessary for static type checking
 if False:  # flake8: noqa
-    from typing import Any, Optional, Union, Dict, List, Callable, Generator
+    from typing import Any, Optional, Union, Dict, List, Callable
     from ..language.ast import Document, OperationDefinition, Field
 
 logger = logging.getLogger(__name__)
@@ -137,6 +137,7 @@ def get_on_resolve(exe_context):
         return ExecutionResult(data=data, errors=exe_context.errors)
 
     return on_resolve
+
 
 def execute_operation(
     exe_context,  # type: ExecutionContext

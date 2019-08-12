@@ -1,10 +1,15 @@
-try:
-    import asyncio
-except ImportError:
-    asyncio = None
+import asyncio
 
 from .utils import validate_document_ast
 from ..execution import execute_async
+
+# Necessary for static type checking
+if False:  # flake8: noqa
+    from typing import Any, Union
+    from ..execution import ExecutionResult
+    from ..language.ast import Document
+    from ..type.schema import GraphQLSchema
+    from rx import Observable
 
 
 @asyncio.coroutine

@@ -1,19 +1,11 @@
-try:
-    from collections.abc import Iterable
-except ImportError:  # Python < 3.3
-    from collections import Iterable
 import logging
 
 from rx import Observable
 
 from promise import Promise
 
-from ..type import (
-    GraphQLSchema,
-)
-from .base import (
-    ExecutionResult,
-)
+from ..type import GraphQLSchema
+from .base import ExecutionResult
 from .executors.sync import SyncExecutor
 from .common import (
     prepare_execution_context,

@@ -27,11 +27,6 @@ from .pyutils.version import get_version
 
 # The primary entry point into fulfilling a GraphQL request.
 from .graphql import graphql
-if sys.version_info > (3, 3):
-    from .graphql_async import graphql_async
-else:
-    def graphql_async(*args, **kwargs):
-        raise ImportError('graphql_async needs python>=3.4')
 
 # Create and operate on GraphQL type definitions and schema.
 from .type import (  # no import order
@@ -174,6 +169,14 @@ from .backend import (
     get_default_backend,
     set_default_backend,
 )
+
+if sys.version_info > (3, 3):
+    from .graphql_async import graphql_async
+else:
+
+    def graphql_async(*args, **kwargs):
+        raise ImportError("graphql_async needs python>=3.4")
+
 
 VERSION = (2, 2, 1, "final", 0)
 __version__ = get_version(VERSION)

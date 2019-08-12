@@ -7,7 +7,7 @@ from promise import promisify
 if False:  # flake8: noqa
     from promise import Promise
     from rx import Observable
-    from typing import Any, Union, Optional, Generator
+    from typing import Any, Union, Optional
     from .language.ast import Document
     from .type.schema import GraphQLSchema
 
@@ -71,6 +71,7 @@ def execute_graphql(
         )
     except Exception as e:
         return ExecutionResult(errors=[e], invalid=True)
+
 
 @promisify
 def execute_graphql_as_promise(*args, **kwargs):

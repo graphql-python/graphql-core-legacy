@@ -27,8 +27,10 @@ from .middleware import middlewares, MiddlewareManager
 if sys.version_info > (3, 3):
     from .executor_async import execute_async
 else:
+
     def execute_async(*args, **kwargs):
-        raise ImportError('execute_async needs python>=3.4')
+        raise ImportError("execute_async needs python>=3.4")
+
 
 __all__ = [
     "execute",

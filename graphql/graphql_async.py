@@ -1,7 +1,4 @@
-try:
-    import asyncio
-except ImportError:
-    asyncio = None
+import asyncio
 
 from .execution import ExecutionResult
 from .backend import get_default_backend
