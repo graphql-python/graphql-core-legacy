@@ -1,7 +1,8 @@
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
+import six
 
 
-class BaseExecutor(ABC):
+class BaseExecutor(six.with_metaclass(ABCMeta)):
     @abstractmethod
     def wait_until_finished(self):
         pass

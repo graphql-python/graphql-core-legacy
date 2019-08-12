@@ -562,7 +562,7 @@ def test_fails_to_execute_a_query_containing_a_type_definition():
 def test_exceptions_are_reraised_if_specified(mocker):
     # type: (MockFixture) -> None
 
-    logger = mocker.patch("graphql.execution.executor.logger")
+    logger = mocker.patch("graphql.execution.common.logger")
 
     query = parse(
         """

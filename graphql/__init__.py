@@ -21,10 +21,17 @@ following two import statements are equivalent:
     from graphql import parse
     from graphql.language.base import parse
 """
+import sys
+
 from .pyutils.version import get_version
 
 # The primary entry point into fulfilling a GraphQL request.
-from .graphql import graphql, graphql_async
+from .graphql import graphql
+if sys.version_info > (3, 3):
+    from .graphql_async import graphql_async
+else:
+    def graphql_async(*args, **kwargs):
+        raise ImportError('graphql_async needs python>=3.4')
 
 # Create and operate on GraphQL type definitions and schema.
 from .type import (  # no import order

@@ -1,14 +1,20 @@
-import asyncio
-
+import sys
 from functools import partial
 from six import string_types
 
-from ..execution import execute, execute_async, ExecutionResult
+from .utils import validate_document_ast
+from ..execution import execute, ExecutionResult
 from ..language.base import parse, print_ast
 from ..language import ast
-from ..validation import validate
+
 
 from .base import GraphQLBackend, GraphQLDocument
+
+if sys.version_info > (3, 3):
+    from .async_util import execute_and_validate_async
+else:
+    def execute_and_validate_async(*args, **kwargs):
+        raise ImportError('execute_and_validate_async needs python>=3.4')
 
 # Necessary for static type checking
 if False:  # flake8: noqa
@@ -18,20 +24,6 @@ if False:  # flake8: noqa
     from rx import Observable
 
 
-def _validate_document_ast(
-    schema,  # type: GraphQLSchema
-    document_ast,  # type: Document
-    **kwargs  # type: Any
-):
-    # type: (...) -> Union[ExecutionResult, None]
-    do_validation = kwargs.get("validate", True)
-    if do_validation:
-        validation_errors = validate(schema, document_ast)
-        if validation_errors:
-            return ExecutionResult(errors=validation_errors, invalid=True)
-    return None
-
-
 def execute_and_validate(
     schema,  # type: GraphQLSchema
     document_ast,  # type: Document
@@ -39,26 +31,11 @@ def execute_and_validate(
     **kwargs  # type: Any
 ):
     # type: (...) -> Union[ExecutionResult, Observable]
-    execution_result = _validate_document_ast(schema, document_ast, **kwargs)
+    execution_result = validate_document_ast(schema, document_ast, **kwargs)
     if execution_result:
         return execution_result
 
     return execute(schema, document_ast, *args, **kwargs)
-
-
-@asyncio.coroutine
-def execute_and_validate_async(
-    schema,  # type: GraphQLSchema
-    document_ast,  # type: Document
-    *args,  # type: Any
-    **kwargs  # type: Any
-):
-    # type: (...) -> Union[ExecutionResult, Observable]
-    execution_result = _validate_document_ast(schema, document_ast, **kwargs)
-    if execution_result:
-        return execution_result
-    result = yield from execute_async(schema, document_ast, *args, **kwargs)
-    return result
 
 
 class GraphQLCoreBackend(GraphQLBackend):

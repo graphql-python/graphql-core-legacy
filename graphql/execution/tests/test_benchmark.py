@@ -59,7 +59,7 @@ def test_big_list_of_ints(benchmark):
 
 
 def test_big_list_of_ints_serialize(benchmark):
-    from ..executor import complete_leaf_value
+    from ..common import complete_leaf_value
 
     @benchmark
     def serialize():
