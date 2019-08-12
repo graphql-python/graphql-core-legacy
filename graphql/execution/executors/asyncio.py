@@ -9,7 +9,7 @@ from .base import BaseExecutor
 # Necessary for static type checking
 if False:  # flake8: noqa
     from asyncio.unix_events import _UnixSelectorEventLoop
-    from typing import Optional, Any, Callable, List
+    from typing import Optional, Any, Callable, List, Generator
 
 try:
     from asyncio import ensure_future
@@ -60,7 +60,7 @@ class AsyncioExecutor(BaseExecutor):
 
     @coroutine
     def wait_until_finished_async(self):
-        # type: () -> None
+        # type: () -> Generator
         # if there are futures to wait for
         while self.futures:
             # wait for the futures to finish

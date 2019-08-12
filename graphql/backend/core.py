@@ -12,7 +12,7 @@ from .base import GraphQLBackend, GraphQLDocument
 
 # Necessary for static type checking
 if False:  # flake8: noqa
-    from typing import Any, Optional, Union
+    from typing import Any, Optional, Union, Tuple
     from ..language.ast import Document
     from ..type.schema import GraphQLSchema
     from rx import Observable
@@ -29,6 +29,7 @@ def _validate_document_ast(
         validation_errors = validate(schema, document_ast)
         if validation_errors:
             return ExecutionResult(errors=validation_errors, invalid=True)
+    return None
 
 
 def execute_and_validate(
@@ -70,7 +71,7 @@ class GraphQLCoreBackend(GraphQLBackend):
 
     @staticmethod
     def _get_doc_str_and_ast(document_string):
-        # type: (Union[Document, str]) -> (str, ast.Document)
+        # type: (Union[ast.Document, str]) -> Tuple[str, ast.Document]
         if isinstance(document_string, ast.Document):
             document_ast = document_string
             document_string = print_ast(document_ast)
@@ -82,7 +83,7 @@ class GraphQLCoreBackend(GraphQLBackend):
         return document_string, document_ast
 
     def document_from_string(self, schema, document_string):
-        # type: (GraphQLSchema, Union[Document, str]) -> GraphQLDocument
+        # type: (GraphQLSchema, Union[ast.Document, str]) -> GraphQLDocument
         document_string, document_ast = self._get_doc_str_and_ast(document_string)
         return GraphQLDocument(
             schema=schema,
@@ -94,6 +95,7 @@ class GraphQLCoreBackend(GraphQLBackend):
         )
 
     def document_from_string_async(self, schema, document_string):
+        # type: (GraphQLSchema, Union[ast.Document, str]) -> GraphQLDocument
         document_string, document_ast = self._get_doc_str_and_ast(document_string)
         return GraphQLDocument(
             schema=schema,

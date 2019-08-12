@@ -9,7 +9,7 @@ from promise import promisify
 if False:  # flake8: noqa
     from promise import Promise
     from rx import Observable
-    from typing import Any, Union, Optional
+    from typing import Any, Union, Optional, Generator
     from .language.ast import Document
     from .type.schema import GraphQLSchema
 
@@ -48,7 +48,7 @@ def graphql(*args, **kwargs):
 
 @asyncio.coroutine
 def graphql_async(*args, **kwargs):
-    # type: (*Any, **Any) -> Union[ExecutionResult, Observable]
+    # type: (*Any, **Any) -> Generator
     result = yield from execute_graphql_async(*args, **kwargs)
     return result
 
@@ -94,7 +94,7 @@ def execute_graphql_async(
     backend=None,  # type: Optional[Any]
     **execute_options  # type: Any
 ):
-    # type: (...) -> Union[ExecutionResult, Observable, Promise[ExecutionResult]]
+    # type: (...) -> Generator
     try:
         if backend is None:
             backend = get_default_backend()

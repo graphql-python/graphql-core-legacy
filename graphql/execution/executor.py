@@ -44,7 +44,7 @@ from .middleware import MiddlewareManager
 
 # Necessary for static type checking
 if False:  # flake8: noqa
-    from typing import Any, Optional, Union, Dict, List, Callable
+    from typing import Any, Optional, Union, Dict, List, Callable, Generator
     from ..language.ast import Document, OperationDefinition, Field
 
 logger = logging.getLogger(__name__)
@@ -209,7 +209,7 @@ def execute_async(
     allow_subscriptions=False,  # type: bool
     **options  # type: Any
 ):
-    # type: (...) -> Union[ExecutionResult]
+    # type: (...) -> Generator
     if executor is None:
         executor = AsyncioExecutor()
     exe_context = prepare_execution_context(
