@@ -98,7 +98,7 @@ class ExecutionContext(object):
                     u"GraphQL cannot execute a request containing a {}.".format(
                         definition.__class__.__name__
                     ),
-                    definition,
+                    [definition],
                 )
 
         if not operation:
