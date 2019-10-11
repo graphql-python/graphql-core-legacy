@@ -38,7 +38,7 @@ def _test_schema(server_schema):
     second_introspection = graphql(client_schema, introspection_query)
     assert contain_subset(
         initial_introspection.data, second_introspection.data
-    ), "\n%s\n%s" % (initial_introspection.data, second_introspection.data)
+    ), "\n{}\n{}".format(initial_introspection.data, second_introspection.data)
 
     return client_schema
 
@@ -478,7 +478,9 @@ def test_builds_a_schema_with_field_arguments_with_default_values():
                             args={
                                 "objArg": GraphQLArgument(
                                     GeoType,
-                                    default_value={"lat": 37.485, "lon": -122.148},
+                                    default_value=OrderedDict(
+                                        [("lat", 37.485), ("lon", -122.148)]
+                                    ),
                                 )
                             },
                         ),
