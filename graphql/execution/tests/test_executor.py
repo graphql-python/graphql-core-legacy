@@ -4,7 +4,8 @@ import json
 from pytest import raises
 
 from graphql.error import GraphQLError
-from graphql.execution import MiddlewareManager, execute
+from graphql.execution import execute
+from graphql.language.ast import ObjectTypeDefinition
 from graphql.language.parser import parse
 from graphql.type import (
     GraphQLArgument,
@@ -553,10 +554,17 @@ def test_fails_to_execute_a_query_containing_a_type_definition():
     with raises(GraphQLError) as excinfo:
         execute(schema, query)
 
+    error = excinfo.value
+
     assert (
-        excinfo.value.message
+        error.message
         == "GraphQL cannot execute a request containing a ObjectTypeDefinition."
     )
+
+    nodes = error.nodes
+    assert type(nodes) is list
+    assert len(nodes) == 1
+    assert isinstance(nodes[0], ObjectTypeDefinition)
 
 
 def test_exceptions_are_reraised_if_specified(mocker):
