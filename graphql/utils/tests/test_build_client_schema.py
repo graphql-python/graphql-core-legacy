@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from pprint import pprint
 
 from pytest import raises
 
@@ -35,7 +36,9 @@ def _test_schema(server_schema):
     initial_introspection = graphql(server_schema, introspection_query)
     client_schema = build_client_schema(initial_introspection.data)
     second_introspection = graphql(client_schema, introspection_query)
-    assert contain_subset(initial_introspection.data, second_introspection.data)
+    assert contain_subset(
+        initial_introspection.data, second_introspection.data
+    ), "\n%s\n%s" % (initial_introspection.data, second_introspection.data)
 
     return client_schema
 
