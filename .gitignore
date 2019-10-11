@@ -5,7 +5,11 @@ __pycache__/
 # Distribution / packaging
 .Python
 venv
+venv2
+venv3
 .venv
+.venv2
+.venv3
 env
 .env
 build/
