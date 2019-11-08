@@ -153,7 +153,7 @@ def test_parses_simple_type_inheriting_interface():
 
 def test_parses_simple_type_inheriting_multiple_interfaces():
     # type: () -> None
-    body = "type Hello implements Wo, rld { }"
+    body = "type Hello implements Wo & rld { }"
     loc = create_loc_fn(body)
     doc = parse(body)
     expected = ast.Document(

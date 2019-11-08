@@ -210,6 +210,8 @@ ignored_whitespace_characters = frozenset(
         0x000D,  # carriage return
         # Comma
         0x002C,
+        # Ampersand
+        0x0026,
     ]
 )
 

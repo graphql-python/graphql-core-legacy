@@ -128,7 +128,7 @@ def _print_object(type):
     # type: (GraphQLObjectType) -> str
     interfaces = type.interfaces
     implemented_interfaces = (
-        " implements {}".format(", ".join(i.name for i in interfaces))
+        " implements {}".format(" & ".join(i.name for i in interfaces))
         if interfaces
         else ""
     )
