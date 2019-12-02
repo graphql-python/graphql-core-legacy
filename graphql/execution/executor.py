@@ -456,7 +456,7 @@ def resolve_or_error(
                     info.parent_type.name, info.field_name
                 )
             )
-            e.stack = sys.exc_info()[2]  # type: ignore
+        e.stack = sys.exc_info()[2]  # type: ignore
         return e
 
 
