@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-from traceback import format_exception
 
 from ..error import GraphQLError
 from ..language import ast
