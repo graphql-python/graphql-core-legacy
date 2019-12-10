@@ -82,4 +82,5 @@ setup(
     tests_require=tests_requires,
     cmdclass={"test": PyTest},
     extras_require={"gevent": ["gevent>=1.1"], "test": tests_requires},
+    package_data={"graphql": ["py.typed"]},
 )
