@@ -12,14 +12,18 @@ from ..type.definition import (
     GraphQLNonNull,
 )
 from ..type.scalars import GraphQLFloat
+from ..utils.undefined import Undefined
 
 
 def ast_from_value(value, type=None):
     if isinstance(type, GraphQLNonNull):
         return ast_from_value(value, type.of_type)
 
+    if value is Undefined:
+        return ast.UndefinedValue()
+
     if value is None:
-        return None
+        return ast.NullValue()
 
     if isinstance(value, list):
         item_type = type.of_type if isinstance(type, GraphQLList) else None

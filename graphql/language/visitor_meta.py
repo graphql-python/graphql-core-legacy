@@ -21,6 +21,7 @@ QUERY_DOCUMENT_KEYS = {
     ast.FloatValue: (),
     ast.StringValue: (),
     ast.BooleanValue: (),
+    ast.NullValue: (),
     ast.EnumValue: (),
     ast.ListValue: ("values",),
     ast.ObjectValue: ("fields",),

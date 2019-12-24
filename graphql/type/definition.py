@@ -342,7 +342,7 @@ class GraphQLArgument(object):
     def __init__(
         self,
         type,  # type: Union[GraphQLInputObjectType, GraphQLNonNull, GraphQLList, GraphQLScalarType]
-        default_value=None,  # type: Optional[Any]
+        default_value=Undefined,  # type: Optional[Any]
         description=None,  # type: Optional[Any]
         out_name=None,  # type: Optional[str]
     ):
@@ -689,7 +689,7 @@ class GraphQLInputObjectField(object):
     def __init__(
         self,
         type,  # type: Union[GraphQLInputObjectType, GraphQLScalarType]
-        default_value=None,  # type: Optional[Any]
+        default_value=Undefined,  # type: Optional[Any]
         description=None,  # type: Optional[Any]
         out_name=None,  # type: str
     ):

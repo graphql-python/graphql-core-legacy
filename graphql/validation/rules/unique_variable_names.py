@@ -1,3 +1,4 @@
+from six import text_type
 from ...error import GraphQLError
 from .base import ValidationRule
 
@@ -41,4 +42,5 @@ class UniqueVariableNames(ValidationRule):
 
     @staticmethod
     def duplicate_variable_message(operation_name):
-        return 'There can be only one variable named "{}".'.format(operation_name)
+        s = 'There can be only one variable named "{}".'.format(operation_name)
+        return text_type(s)

@@ -1,5 +1,7 @@
 # type: ignore
 
+from itertools import starmap, repeat
+from typing import Union
 from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import (
@@ -51,6 +53,7 @@ def test_executes_using_a_schema():
         {
             "id": GraphQLField(GraphQLNonNull(GraphQLString)),
             "isPublished": GraphQLField(GraphQLBoolean),
+            "topic": GraphQLField(GraphQLString),
             "author": GraphQLField(BlogAuthor),
             "title": GraphQLField(GraphQLString),
             "body": GraphQLField(GraphQLString),
@@ -58,29 +61,36 @@ def test_executes_using_a_schema():
         },
     )
 
+    def _resolve_article(obj, info, id, topic):
+        return Article(id, topic)
+
+    def _resolve_feed(*_):
+        return list(starmap(Article, zip(range(1, 10 + 1), repeat("food"))))
+
     BlogQuery = GraphQLObjectType(
         "Query",
         {
             "article": GraphQLField(
                 BlogArticle,
-                args={"id": GraphQLArgument(GraphQLID)},
-                resolver=lambda obj, info, **args: Article(args["id"]),
+                args={
+                    "id": GraphQLArgument(GraphQLID),
+                    "topic": GraphQLArgument(GraphQLNonNull(GraphQLString)),
+                },
+                resolver=_resolve_article,
             ),
-            "feed": GraphQLField(
-                GraphQLList(BlogArticle),
-                resolver=lambda *_: map(Article, range(1, 10 + 1)),
-            ),
+            "feed": GraphQLField(GraphQLList(BlogArticle), resolver=_resolve_feed),
         },
     )
 
     BlogSchema = GraphQLSchema(BlogQuery)
 
     class Article(object):
-        def __init__(self, id):
-            # type: (int) -> None
+        def __init__(self, id, topic):
+            # type: (int, Union[str, None]) -> None
             self.id = id
             self.isPublished = True
             self.author = Author()
+            self.topic = "My topic is {}".format(topic or "null")
             self.title = "My Article {}".format(id)
             self.body = "This is a post"
             self.hidden = "This data is not exposed in the schema"
@@ -97,7 +107,7 @@ def test_executes_using_a_schema():
         @property
         def recentArticle(self):
             # type: () -> Article
-            return Article(1)
+            return Article(1, "food")
 
     class Pic(object):
         def __init__(self, uid, width, height):
@@ -112,7 +122,7 @@ def test_executes_using_a_schema():
           id,
           title
         },
-        article(id: "1") {
+        article(id: "1", topic: null) {
           ...articleFields,
           author {
             id,
@@ -132,6 +142,7 @@ def test_executes_using_a_schema():
       fragment articleFields on Article {
         id,
         isPublished,
+        topic,
         title,
         body,
         hidden,
@@ -159,6 +170,7 @@ def test_executes_using_a_schema():
         "article": {
             "id": "1",
             "isPublished": True,
+            "topic": "My topic is null",
             "title": "My Article 1",
             "body": "This is a post",
             "author": {
@@ -168,6 +180,7 @@ def test_executes_using_a_schema():
                 "recentArticle": {
                     "id": "1",
                     "isPublished": True,
+                    "topic": "My topic is food",
                     "title": "My Article 1",
                     "body": "This is a post",
                     "keywords": ["foo", "bar", "1", "true", None],

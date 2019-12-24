@@ -4,6 +4,7 @@ from graphql import Source, parse
 from graphql.error import GraphQLSyntaxError
 from graphql.language import ast
 from graphql.language.parser import Loc
+from graphql.utils.undefined import Undefined
 from typing import Callable
 
 
@@ -294,7 +295,7 @@ type Hello {
                                     name=ast.Name(value="Boolean", loc=loc(28, 35)),
                                     loc=loc(28, 35),
                                 ),
-                                default_value=None,
+                                default_value=Undefined,
                                 directives=[],
                                 loc=loc(22, 35),
                             )
@@ -391,7 +392,7 @@ type Hello {
                                     ),
                                     loc=loc(30, 38),
                                 ),
-                                default_value=None,
+                                default_value=Undefined,
                                 directives=[],
                                 loc=loc(22, 38),
                             )
@@ -436,7 +437,7 @@ type Hello {
                                     name=ast.Name(value="Boolean", loc=loc(30, 37)),
                                     loc=loc(30, 37),
                                 ),
-                                default_value=None,
+                                default_value=Undefined,
                                 directives=[],
                                 loc=loc(22, 37),
                             ),
@@ -446,7 +447,7 @@ type Hello {
                                     name=ast.Name(value="Int", loc=loc(47, 50)),
                                     loc=loc(47, 50),
                                 ),
-                                default_value=None,
+                                default_value=Undefined,
                                 directives=[],
                                 loc=loc(39, 50),
                             ),
@@ -554,7 +555,7 @@ input Hello {
                             name=ast.Name(value="String", loc=loc(24, 30)),
                             loc=loc(24, 30),
                         ),
-                        default_value=None,
+                        default_value=Undefined,
                         directives=[],
                         loc=loc(17, 30),
                     )

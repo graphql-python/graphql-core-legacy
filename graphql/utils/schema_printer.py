@@ -9,6 +9,7 @@ from ..type.definition import (
 )
 from ..type.directives import DEFAULT_DEPRECATION_REASON
 from .ast_from_value import ast_from_value
+from ..language.ast import UndefinedValue
 
 
 # Necessary for static type checking
@@ -201,10 +202,11 @@ def _print_args(field_or_directives):
 
 def _print_input_value(name, arg):
     # type: (str, GraphQLArgument) -> str
-    if arg.default_value is not None:
-        default_value = " = " + print_ast(ast_from_value(arg.default_value, arg.type))
-    else:
+    _ast = ast_from_value(arg.default_value, arg.type)
+    if isinstance(_ast, UndefinedValue):
         default_value = ""
+    else:
+        default_value = " = " + print_ast(_ast)
 
     return "{}: {}{}".format(name, arg.type, default_value)
 

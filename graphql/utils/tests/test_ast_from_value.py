@@ -41,6 +41,10 @@ def test_it_converts_string_values_to_asts():
     assert ast_from_value("123") == ast.StringValue("123")
 
 
+def test_it_converts_null_values_to_asts():
+    assert ast_from_value(None) == ast.NullValue()
+
+
 my_enum = GraphQLEnumType(
     "MyEnum", {"HELLO": GraphQLEnumValue(1), "GOODBYE": GraphQLEnumValue(2)}
 )

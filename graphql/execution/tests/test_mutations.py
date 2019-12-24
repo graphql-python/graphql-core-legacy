@@ -107,7 +107,16 @@ def assert_evaluate_mutations_serially(executor=None):
       },
       fifth: immediatelyChangeTheNumber(newNumber: 5) {
         theNumber
-      }
+      },
+      sixth: immediatelyChangeTheNumber(newNumber: null) {
+        theNumber
+      },
+      seventh: immediatelyChangeTheNumber(newNumber: 100) {
+        theNumber
+      },
+      eighth: immediatelyChangeTheNumber(newNumber: null) {
+        theNumber
+      },
     }"""
     ast = parse(doc)
     result = execute(schema, ast, Root(6), operation_name="M", executor=executor)
@@ -118,6 +127,9 @@ def assert_evaluate_mutations_serially(executor=None):
         "third": {"theNumber": 3},
         "fourth": {"theNumber": 4},
         "fifth": {"theNumber": 5},
+        "sixth": {"theNumber": None},
+        "seventh": {"theNumber": 100},
+        "eighth": {"theNumber": None},
     }
 
 

@@ -49,6 +49,27 @@ def _test_schema(test_field):
     )
 
 
+def test_explicit_null_is_passed_to_resolver():
+    def resolver(_, __, maybe_string):
+        return 'maybe_string is "{}"'.format(maybe_string or "null")
+
+    schema = _test_schema(
+        GraphQLField(
+            GraphQLString,
+            args=OrderedDict([("maybe_string", GraphQLArgument(GraphQLString))]),
+            resolver=resolver,
+        )
+    )
+
+    result = graphql(schema, '{ test(maybe_string: "Cool") }')
+    assert not result.errors
+    assert result.data == {"test": 'maybe_string is "Cool"'}
+
+    result = graphql(schema, "{ test(maybe_string: null) }")
+    assert not result.errors
+    assert result.data == {"test": 'maybe_string is "null"'}
+
+
 def test_default_function_accesses_properties():
     # type: () -> None
     schema = _test_schema(GraphQLField(GraphQLString))
