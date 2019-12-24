@@ -529,7 +529,7 @@ def complete_value(
             lambda resolved: complete_value(
                 exe_context, return_type, field_asts, info, path, resolved
             ),
-            lambda error: Promise.rejected(
+            lambda error: Promise.rejected(  # type: ignore
                 GraphQLLocatedError(field_asts, original_error=error, path=path)
             ),
         )
@@ -602,7 +602,9 @@ def complete_list_value(
         completed_results.append(completed_item)
         index += 1
 
-    return Promise.all(completed_results) if contains_promise else completed_results
+    return (  # type: ignore
+        Promise.all(completed_results) if contains_promise else completed_results
+    )
 
 
 def complete_leaf_value(
@@ -711,7 +713,9 @@ def complete_object_value(
 
     # Collect sub-fields to execute to complete this value.
     subfield_asts = exe_context.get_sub_fields(return_type, field_asts)
-    return execute_fields(exe_context, return_type, result, subfield_asts, path, info)
+    return execute_fields(  # type: ignore
+        exe_context, return_type, result, subfield_asts, path, info
+    )
 
 
 def complete_nonnull_value(
