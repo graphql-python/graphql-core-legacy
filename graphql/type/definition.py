@@ -649,7 +649,7 @@ class GraphQLInputObjectType(GraphQLNamedType):
         self.name = name
         self.description = description
         if container_type is None:
-            container_type = dict  # type: ignore
+            container_type = OrderedDict  # type: ignore
         assert callable(container_type), "container_type must be callable"
         self.container_type = container_type
         self._fields = fields

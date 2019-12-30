@@ -35,7 +35,7 @@ class ThreadExecutor(object):
 
     def execute_in_thread(self, fn, *args, **kwargs):
         # type: (Callable, *Any, **Any) -> Promise
-        promise = Promise()
+        promise = Promise()  # type: ignore
         thread = Thread(target=process, args=(promise, fn, args, kwargs))
         thread.start()
         self.threads.append(thread)
