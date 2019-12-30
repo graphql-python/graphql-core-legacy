@@ -12,7 +12,7 @@ def contain_subset(expected, actual):
     actual_is_dict = issubclass(t_actual, dict)
     expected_is_dict = issubclass(t_expected, dict)
     both_dicts = actual_is_dict and expected_is_dict
-    if not (both_dicts) and not (
+    if not both_dicts and not (
         issubclass(t_actual, t_expected) or issubclass(t_expected, t_actual)
     ):
         return False
@@ -22,8 +22,9 @@ def contain_subset(expected, actual):
         return False
     if isinstance(expected, list):
         aa = actual[:]
-        return all([any([contain_subset(exp, act) for act in aa]) for exp in expected])
-    for key in expected.keys():  # type: ignore
+        return all(any(contain_subset(exp, act) for act in aa)
+                   for exp in expected)
+    for key in expected:  # type: ignore
         eo = expected[key]
         ao = actual.get(key)
         if isinstance(eo, obj) and eo is not None and ao is not None:
