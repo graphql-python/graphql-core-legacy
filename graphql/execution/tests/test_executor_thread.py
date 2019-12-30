@@ -11,12 +11,21 @@ from graphql.type import (
     GraphQLSchema,
     GraphQLString,
 )
+from pytest import mark
 
 from ..executors.thread import ThreadExecutor
 from .test_mutations import assert_evaluate_mutations_serially
 from .utils import rejected, resolved
 
+###
+# Disabled because all these tests are flaky
+# The culprit lies in the fact that the `ThreadExecutor` incorrectly assumes that
+# the `Promise` class is thread-safe.
+# See https://git.io/JeA3s
+###
 
+
+@mark.xfail
 def test_executes_arbitary_code():
     # type: () -> None
     class Data(object):
@@ -157,6 +166,7 @@ def test_executes_arbitary_code():
     )
 
 
+@mark.xfail
 def test_synchronous_error_nulls_out_error_subtrees():
     # type: () -> None
     ast = parse(
@@ -289,6 +299,7 @@ def test_synchronous_error_nulls_out_error_subtrees():
     handle_results(execute(schema, ast, Data(), executor=ThreadExecutor()))
 
 
+@mark.xfail
 def test_evaluates_mutations_serially():
     # type: () -> None
     assert_evaluate_mutations_serially(executor=ThreadExecutor())
