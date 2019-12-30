@@ -1,4 +1,5 @@
 from ..language import ast
+from ..pyutils.ordereddict import OrderedDict
 from ..type import (
     GraphQLEnumType,
     GraphQLInputObjectType,
@@ -56,13 +57,15 @@ def value_from_ast(value_ast, type, variables=None):
         for field_ast in value_ast.fields:
             field_asts[field_ast.name.value] = field_ast
 
-        obj = {}
+        obj_items = []
         for field_name, field in fields.items():
             if field_name not in field_asts:
                 if field.default_value is not None:
                     # We use out_name as the output name for the
                     # dict if exists
-                    obj[field.out_name or field_name] = field.default_value
+                    obj_items.append(
+                        (field.out_name or field_name, field.default_value)
+                    )
 
                 continue
 
@@ -72,7 +75,9 @@ def value_from_ast(value_ast, type, variables=None):
 
             # We use out_name as the output name for the
             # dict if exists
-            obj[field.out_name or field_name] = field_value
+            obj_items.append((field.out_name or field_name, field_value))
+
+        obj = OrderedDict(obj_items)
 
         return type.create_container(obj)
 

@@ -19,7 +19,7 @@ from .utils import rejected, resolved
 
 ###
 # Disabled because all these tests are flaky
-# The culprit lies in the fact that the `ThreadExecutor` incorrectly assumes that
+# The culprit is that the `ThreadExecutor` incorrectly assumes that
 # the `Promise` class is thread-safe.
 # See https://git.io/JeA3s
 ###
