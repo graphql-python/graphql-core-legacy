@@ -32,17 +32,19 @@ except ImportError:
         else:
             raise TypeError("A Future, a coroutine or an awaitable is required")
 
-
 try:
-    from .asyncio_utils import asyncgen_to_observable, isasyncgen
+    from inspect import isasyncgen  # type: ignore
 except Exception:
 
     def isasyncgen(object):  # type: ignore
         False
 
+try:
+    from .asyncio_utils import asyncgen_to_observable
+except Exception:
+
     def asyncgen_to_observable(asyncgen, loop=None):
         pass
-
 
 class AsyncioExecutor(object):
     def __init__(self, loop=None):
