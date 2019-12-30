@@ -1,5 +1,4 @@
 import json
-import re
 import sys
 
 from six import string_types
@@ -12,6 +11,7 @@ from ..type.definition import (
     GraphQLNonNull,
 )
 from ..type.scalars import GraphQLFloat
+from .assert_valid_name import COMPILED_NAME_PATTERN
 
 
 def ast_from_value(value, type=None):
@@ -45,9 +45,7 @@ def ast_from_value(value, type=None):
         return ast.FloatValue(string_num)
 
     if isinstance(value, string_types):
-        if isinstance(type, GraphQLEnumType) and re.match(
-            r"^[_a-zA-Z][_a-zA-Z0-9]*$", value
-        ):
+        if isinstance(type, GraphQLEnumType) and COMPILED_NAME_PATTERN.match(value):
             return ast.EnumValue(value)
 
         return ast.StringValue(json.dumps(value)[1:-1])
