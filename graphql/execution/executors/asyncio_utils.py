@@ -1,5 +1,4 @@
-from inspect import isasyncgen  # type: ignore
-from asyncio import ensure_future, wait, CancelledError
+from asyncio import ensure_future, CancelledError
 from rx import AnonymousObservable
 
 

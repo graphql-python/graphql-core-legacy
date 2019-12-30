@@ -3,7 +3,7 @@
 import pytest
 
 try:
-    import pyannotate_runtime
+    import pyannotate_runtime  # noqa: F401
 
     PYANOTATE_PRESENT = True
 except ImportError:
