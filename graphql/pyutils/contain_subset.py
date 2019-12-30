@@ -22,8 +22,7 @@ def contain_subset(expected, actual):
         return False
     if isinstance(expected, list):
         aa = actual[:]
-        return all(any(contain_subset(exp, act) for act in aa)
-                   for exp in expected)
+        return all(any(contain_subset(exp, act) for act in aa) for exp in expected)
     for key in expected:  # type: ignore
         eo = expected[key]
         ao = actual.get(key)

@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from pprint import pprint
 
 from pytest import raises
 
@@ -714,7 +713,7 @@ def test_throws_when_missing_kind():
     )
 
 
-def test_succeds_on_smaller_equals_than_7_deep_lists():
+def test_succeeds_on_smaller_equals_than_7_deep_lists():
     schema = GraphQLSchema(
         query=GraphQLObjectType(
             name="Query",
