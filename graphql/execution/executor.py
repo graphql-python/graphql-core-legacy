@@ -59,9 +59,9 @@ def subscribe(*args, **kwargs):
 def execute(
     schema,  # type: GraphQLSchema
     document_ast,  # type: Document
-    root=None,  # type: Any
-    context=None,  # type: Optional[Any]
-    variables=None,  # type: Optional[Any]
+    root_value=None,  # type: Any
+    context_value=None,  # type: Optional[Any]
+    variable_values=None,  # type: Optional[Any]
     operation_name=None,  # type: Optional[str]
     executor=None,  # type: Any
     return_promise=False,  # type: bool
@@ -71,27 +71,27 @@ def execute(
 ):
     # type: (...) -> Union[ExecutionResult, Promise[ExecutionResult]]
 
-    if root is None and "root_value" in options:
+    if root_value is None and "root" in options:
         warnings.warn(
-            "root_value has been deprecated. Please use root=... instead.",
+            "The 'root' alias has been deprecated. Please use 'root_value' instead.",
             category=DeprecationWarning,
             stacklevel=2,
         )
-        root = options["root_value"]
-    if context is None and "context_value" in options:
+        root_value = options["root"]
+    if context_value is None and "context" in options:
         warnings.warn(
-            "context_value has been deprecated. Please use context=... instead.",
+            "The 'context' alias has been deprecated. Please use 'context_value' instead.",
             category=DeprecationWarning,
             stacklevel=2,
         )
-        context = options["context_value"]
-    if variables is None and "variable_values" in options:
+        context_value = options["context"]
+    if variable_values is None and "variables" in options:
         warnings.warn(
-            "variable_values has been deprecated. Please use variables=... instead.",
+            "The 'variables' alias has been deprecated. Please use 'variable_values' instead.",
             category=DeprecationWarning,
             stacklevel=2,
         )
-        variables = options["variable_values"]
+        variable_values = options["variables"]
     assert schema, "Must provide schema"
     assert isinstance(schema, GraphQLSchema), (
         "Schema must be an instance of GraphQLSchema. Also ensure that there are "
@@ -113,9 +113,9 @@ def execute(
     exe_context = ExecutionContext(
         schema,
         document_ast,
-        root,
-        context,
-        variables or {},
+        root_value,
+        context_value,
+        variable_values or {},
         operation_name,
         executor,
         middleware,
@@ -124,7 +124,7 @@ def execute(
 
     def promise_executor(v):
         # type: (Optional[Any]) -> Union[Dict, Promise[Dict], Observable]
-        return execute_operation(exe_context, exe_context.operation, root)
+        return execute_operation(exe_context, exe_context.operation, root_value)
 
     def on_rejected(error):
         # type: (Exception) -> None

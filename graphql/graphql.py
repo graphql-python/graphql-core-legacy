@@ -47,9 +47,9 @@ def graphql(*args, **kwargs):
 def execute_graphql(
     schema,  # type: GraphQLSchema
     request_string="",  # type: Union[Document, str]
-    root=None,  # type: Any
-    context=None,  # type: Optional[Any]
-    variables=None,  # type: Optional[Any]
+    root_value=None,  # type: Any
+    context_value=None,  # type: Optional[Any]
+    variable_values=None,  # type: Optional[Any]
     operation_name=None,  # type: Optional[Any]
     middleware=None,  # type: Optional[Any]
     backend=None,  # type: Optional[Any]
@@ -62,10 +62,10 @@ def execute_graphql(
 
         document = backend.document_from_string(schema, request_string)
         return document.execute(
-            root=root,
-            context=context,
+            root_value,
+            context_value,
             operation_name=operation_name,
-            variables=variables,
+            variable_values=variable_values,
             middleware=middleware,
             **execute_options
         )
