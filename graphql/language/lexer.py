@@ -1,3 +1,4 @@
+import re
 import json
 
 from six import unichr
@@ -55,6 +56,10 @@ class Lexer(object):
         self.prev_position = token.end
         return token
 
+    def look_ahead(self):
+        skip_token = read_token(self.source, self.prev_position)
+        return read_token(self.source, skip_token.start)
+
 
 class TokenKind(object):
     EOF = 1
@@ -76,6 +81,7 @@ class TokenKind(object):
     INT = 17
     FLOAT = 18
     STRING = 19
+    BLOCK_STRING = 20
 
 
 def get_token_desc(token):
@@ -111,6 +117,7 @@ TOKEN_DESCRIPTION = {
     TokenKind.INT: "Int",
     TokenKind.FLOAT: "Float",
     TokenKind.STRING: "String",
+    TokenKind.BLOCK_STRING: "Block string",
 }
 
 
@@ -155,7 +162,7 @@ def read_token(source, from_position):
 
     This skips over whitespace and comments until it finds the next lexable
     token, then lexes punctuators immediately or calls the appropriate
-    helper fucntion for more complicated tokens."""
+    helper function for more complicated tokens."""
     body = source.body
     body_length = len(body)
 
@@ -191,6 +198,11 @@ def read_token(source, from_position):
             return read_number(source, position, code)
 
         elif code == 34:  # "
+            if (
+                char_code_at(body, position + 1) == 34 and
+                char_code_at(body, position + 2) == 34
+            ):
+                return read_block_string(source, position)
             return read_string(source, position)
 
     raise GraphQLSyntaxError(
@@ -417,6 +429,55 @@ def read_string(source, start):
     return Token(TokenKind.STRING, start, position + 1, u"".join(value))
 
 
+def read_block_string(source, from_position):
+    body = source.body
+    position = from_position + 3
+
+    chunk_start = position
+    code = 0    # type: Optional[int]
+    value = []  # type: List[str]
+
+    while position < len(body) and code is not None:
+        code = char_code_at(body, position)
+
+        # Closing triple quote
+        if (
+            code == 34 and
+            char_code_at(body, position + 1) == 34 and
+            char_code_at(body, position + 2) == 34
+        ):
+            value.append(body[chunk_start:position])
+            return Token(
+                TokenKind.BLOCK_STRING,
+                from_position,
+                position + 3,
+                block_string_value(u"".join(value)),
+            )
+
+        if code < 0x0020 and code not in (0x0009, 0x000a, 0x000d):
+            raise GraphQLSyntaxError(
+                source,
+                position,
+                "Invalid character within str: %s." % print_char_code(code),
+            )
+
+        # Escaped triple quote (\""")
+        if (
+            code == 92 and
+            char_code_at(body, position + 1) == 34 and
+            char_code_at(body, position + 2) == 34 and
+            char_code_at(body, position + 3) == 34
+        ):
+            value.append(body[chunk_start, position] + '"""')
+            position += 4
+            chunk_start = position
+        else:
+            position += 1
+
+    raise GraphQLSyntaxError(source, position, "Unterminated string")
+
+
+
 def uni_char_code(a, b, c, d):
     # type: (int, int, int, int) -> int
     """Converts four hexidecimal chars to the integer that the
@@ -473,3 +534,36 @@ def read_name(source, position):
         end += 1
 
     return Token(TokenKind.NAME, position, end, body[position:end])
+
+
+
+SPLIT_RE = re.compile("\r\n|[\n\r]")
+WHITESPACE_RE = re.compile("(^[ |\t]*)")
+EMPTY_LINE_RE = re.compile("^\s*$")
+
+def block_string_value(value):
+    lines = SPLIT_RE.split(value)
+
+    common_indent = None
+    for line in lines[1:]:
+        match = WHITESPACE_RE.match(line)
+        indent = len(match.groups()[0])
+
+        if indent < len(line) and (common_indent is None or indent < common_indent):
+            common_indent = indent
+            if common_indent == 0:
+                break
+
+    if common_indent:
+        new_lines = [lines[0]]
+        for line in lines[1:]:
+            new_lines.append(line[common_indent:])
+        lines = new_lines
+
+    while len(lines) and EMPTY_LINE_RE.match(lines[0]):
+        lines = lines[1:]
+
+    while len(lines) and EMPTY_LINE_RE.match(lines[-1]):
+        lines = lines[:-1]
+
+    return '\n'.join(lines)

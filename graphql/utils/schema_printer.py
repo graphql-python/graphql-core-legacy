@@ -1,3 +1,5 @@
+import re
+
 from ..language.printer import print_ast
 from ..type.definition import (
     GraphQLEnumType,
@@ -22,6 +24,9 @@ if False:  # flake8: noqa
     from ..type.schema import GraphQLSchema
     from ..type.directives import GraphQLDirective
     from typing import Any, Union, Callable
+
+
+MAX_DESC_LEN = 120
 
 
 def print_schema(schema):
@@ -121,7 +126,7 @@ def _print_type(type):
 
 def _print_scalar(type):
     # type: (GraphQLScalarType) -> str
-    return "scalar {}".format(type.name)
+    return _print_description(type) + "scalar {}".format(type.name)
 
 
 def _print_object(type):
@@ -133,44 +138,69 @@ def _print_object(type):
         else ""
     )
 
-    return ("type {}{} {{\n" "{}\n" "}}").format(
-        type.name, implemented_interfaces, _print_fields(type)
+    return ("{}type {}{} {{\n" "{}\n" "}}").format(
+        _print_description(type),
+        type.name,
+        implemented_interfaces,
+        _print_fields(type),
     )
 
 
 def _print_interface(type):
     # type: (GraphQLInterfaceType) -> str
-    return ("interface {} {{\n" "{}\n" "}}").format(type.name, _print_fields(type))
+    return ("{}interface {} {{\n" "{}\n" "}}").format(
+        _print_description(type),
+        type.name,
+        _print_fields(type),
+    )
 
 
 def _print_union(type):
     # type: (GraphQLUnionType) -> str
-    return "union {} = {}".format(type.name, " | ".join(str(t) for t in type.types))
+    return "{}union {} = {}".format(
+        _print_description(type),
+        type.name,
+        " | ".join(str(t) for t in type.types),
+    )
 
 
 def _print_enum(type):
     # type: (GraphQLEnumType) -> str
-    return ("enum {} {{\n" "{}\n" "}}").format(
-        type.name, "\n".join("  " + v.name + _print_deprecated(v) for v in type.values)
+    enum_values_str = "\n".join(
+        _print_description(v, '  ', not idx) + '  ' + v.name + _print_deprecated(v)
+        for idx, v in enumerate(type.values)
+    )
+    return ("{}enum {} {{\n" "{}\n" "}}").format(
+        _print_description(type),
+        type.name,
+        enum_values_str,
     )
 
 
 def _print_input_object(type):
     # type: (GraphQLInputObjectType) -> str
-    return ("input {} {{\n" "{}\n" "}}").format(
+    fields_str = "\n".join(
+        _print_description(f, "  ", not idx) + "  " +  _print_input_value(name, f)
+        for idx, (name, f) in enumerate(type.fields.items())
+    )
+    return ("{}input {} {{\n" "{}\n" "}}").format(
+        _print_description(type),
         type.name,
-        "\n".join(
-            "  " + _print_input_value(name, field)
-            for name, field in type.fields.items()
-        ),
+        fields_str,
     )
 
 
 def _print_fields(type):
     # type: (Union[GraphQLObjectType, GraphQLInterfaceType]) -> str
     return "\n".join(
-        "  {}{}: {}{}".format(f_name, _print_args(f), f.type, _print_deprecated(f))
-        for f_name, f in type.fields.items()
+        "{}  {}{}: {}{}".format(
+            _print_description(f, '  ', not idx),
+            f_name,
+            _print_args(f),
+            f.type,
+            _print_deprecated(f),
+        )
+        for idx, (f_name, f) in enumerate(type.fields.items())
     )
 
 
@@ -188,15 +218,24 @@ def _print_deprecated(field_or_enum_value):
 
 def _print_args(field_or_directives):
     # type: (Union[GraphQLField, GraphQLDirective]) -> str
-    if not field_or_directives.args:
+    args = field_or_directives.args
+
+    if not args:
         return ""
 
-    return "({})".format(
-        ", ".join(
-            _print_input_value(arg_name, arg)
-            for arg_name, arg in field_or_directives.args.items()
+    if all(not arg.description for arg in args.values()):
+        return "({})".format(
+            ", ".join(
+                _print_input_value(arg_name, arg)
+                for arg_name, arg in args.items()
+            )
         )
+
+    args_description = "\n".join(
+        _print_description(arg, '  ', not idx) + "  " + _print_input_value(arg_name, arg)
+        for idx, (arg_name, arg) in enumerate(args.items())
     )
+    return "(\n" + args_description + "\n)"
 
 
 def _print_input_value(name, arg):
@@ -211,9 +250,70 @@ def _print_input_value(name, arg):
 
 def _print_directive(directive):
     # type: (GraphQLDirective) -> str
-    return "directive @{}{} on {}".format(
-        directive.name, _print_args(directive), " | ".join(directive.locations)
+    return "{}directive @{}{} on {}".format(
+        _print_description(directive),
+        directive.name,
+        _print_args(directive),
+        " | ".join(directive.locations),
     )
+
+
+def _print_description(definition, indentation="", first_in_block=True):
+    if not definition.description:
+        return ""
+
+    lines = _description_lines(definition.description, MAX_DESC_LEN - len(indentation))
+    if indentation and not first_in_block:
+        description = "\n" + indentation + '"""'
+    else:
+        description = indentation + '"""'
+
+    if len(lines) == 1 and len(lines[0]) < 70 and lines[0][-1] != '"':
+        return description + _escape_quote(lines[0]) + '"""\n'
+
+    has_leading_space = lines[0][0] == " " or lines[0][0] == "\t";
+    if not has_leading_space:
+        description += "\n";
+
+    for idx, line in enumerate(lines):
+        if idx != 0 or not has_leading_space:
+            description += indentation;
+
+        description += _escape_quote(line) + "\n";
+
+    return description + indentation + '"""\n';
+
+
+def _description_lines(description, max_len):
+    lines = []
+    raw_lines = description.split("\n")
+    for line in raw_lines:
+        if line == "":
+            lines.append(line)
+        else:
+            lines = lines + _break_lines(line, max_len)
+    return lines
+
+
+def _break_lines(line, max_len):
+    if len(line) < max_len + 5:
+        return [line]
+
+    line_split_re = r"((?: |^).{15,%s}(?= |$))" % str(max_len - 40)
+    parts = re.split(line_split_re, line)
+
+    if len(parts) < 4:
+        return [line]
+
+    sublines = [parts[0] + parts[1] + parts[2]]
+    for idx in range(3, len(parts), 2):
+        sublines.append(parts[idx][1:] + parts[idx + 1])
+
+    return sublines
+
+
+def _escape_quote(line):
+    return line.replace('"""', '\\"""')
 
 
 __all__ = ["print_schema", "print_introspection_schema"]

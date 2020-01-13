@@ -54,6 +54,37 @@ type Hello {
     assert output == body
 
 
+def test_supports_descriptions():
+    body = '''
+schema {
+  query: Query
+}
+
+"""This is a directive"""
+directive @foo(
+  """It has an argument"""
+  arg: Int
+) on FIELD
+
+"""With an enum"""
+enum Color {
+  RED
+
+  """Not a creative color"""
+  GREEN
+  BLUE
+}
+
+"""What a great type"""
+type Query {
+  """And a field to boot"""
+  str: String
+}
+'''
+    output = cycle_output(body)
+    assert output == body
+
+
 def test_maintains_skip_and_include_directives():
     body = """
     schema {

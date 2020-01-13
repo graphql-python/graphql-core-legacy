@@ -108,7 +108,7 @@ GraphQLDeprecatedDirective = GraphQLDirective(
         "reason": GraphQLArgument(
             type=GraphQLString,
             description=(
-                "Explains why this element was deprecated, usually also including a suggestion for how to"
+                "Explains why this element was deprecated, usually also including a suggestion for how to "
                 "access supported similar data. Formatted in [Markdown]"
                 "(https://daringfireball.net/projects/markdown/)."
             ),
