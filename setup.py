@@ -24,14 +24,14 @@ sys.path[:] = path_copy
 install_requires = ["six>=1.10.0", "promise>=2.3,<3", "rx>=1.6,<2"]
 
 tests_requires = [
-    "pytest==3.10.1",
-    "pytest-django==2.9.1",
-    "pytest-cov==2.3.1",
+    "pytest==4.6.9",
+    "pytest-django==3.8.0",
+    "pytest-cov==2.8.1",
     "coveralls==1.10.0",
     "gevent==1.4.0",
     "six>=1.10.0",
-    "pytest-benchmark==3.0.0",
-    "pytest-mock==1.2",
+    "pytest-benchmark==3.2.3",
+    "pytest-mock==2.0.0",
 ]
 
 
