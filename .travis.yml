@@ -11,8 +11,6 @@ matrix:
        python: 3.6
     -  env: TOXENV=py37
        python: 3.7
-       dist: xenial
-       sudo: true # required workaround for https://github.com/travis-ci/travis-ci/issues/9815
     -  env: TOXENV=pypy2
        python: pypy
     -  env: TOXENV=pypy
