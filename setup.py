@@ -21,14 +21,14 @@ except Exception:
 
 sys.path[:] = path_copy
 
-install_requires = ["six>=1.10.0", "promise>=2.3", "rx>=1.6,<3"]
+install_requires = ["six>=1.10.0", "promise>=2.3,<3", "rx>=1.6,<2"]
 
 tests_requires = [
-    "pytest>=3.3,<4.0",
+    "pytest==3.10.1",
     "pytest-django==2.9.1",
     "pytest-cov==2.3.1",
-    "coveralls",
-    "gevent>=1.1",
+    "coveralls==1.10.0",
+    "gevent==1.4.0",
     "six>=1.10.0",
     "pytest-benchmark==3.0.0",
     "pytest-mock==1.2",
@@ -67,7 +67,6 @@ setup(
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",

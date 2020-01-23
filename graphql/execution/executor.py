@@ -530,7 +530,9 @@ def complete_value(
                 exe_context, return_type, field_asts, info, path, resolved
             ),
             lambda error: Promise.rejected(  # type: ignore
-                GraphQLLocatedError(field_asts, original_error=error, path=path)
+                GraphQLLocatedError(  # type: ignore
+                    field_asts, original_error=error, path=path
+                )
             ),
         )
 
@@ -602,8 +604,10 @@ def complete_list_value(
         completed_results.append(completed_item)
         index += 1
 
-    return (  # type: ignore
-        Promise.all(completed_results) if contains_promise else completed_results
+    return (
+        Promise.all(completed_results)  # type: ignore
+        if contains_promise
+        else completed_results
     )
 
 

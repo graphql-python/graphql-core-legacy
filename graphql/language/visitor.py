@@ -148,8 +148,8 @@ def visit(root, visitor, key_map=None):
         if not is_leaving:
             stack = Stack(in_array, index, keys, edits, stack)
             in_array = isinstance(node, list)
-            keys = (  # type: ignore
-                node
+            keys = (
+                node  # type: ignore
                 if in_array
                 else visitor_keys.get(type(node), None) or []  # type: ignore
             )

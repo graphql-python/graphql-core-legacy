@@ -47,9 +47,9 @@ class GraphQLCompiledDocument(GraphQLDocument):
         execute = namespace["execute"]  # type: Callable
 
         namespace["schema"] = schema
-        return cls(  # type: ignore
+        return cls(
             schema=schema,
             document_string=document_string,
-            document_ast=document_ast,
+            document_ast=document_ast,  # type: ignore
             execute=execute,
         )

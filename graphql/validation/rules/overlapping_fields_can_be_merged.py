@@ -621,12 +621,15 @@ def _get_referenced_fields_and_fragment_names(
     if cached:
         return cached
 
-    fragment_type = type_from_ast(  # type: ignore
-        context.get_schema(), fragment.type_condition
+    fragment_type = type_from_ast(
+        context.get_schema(), fragment.type_condition  # type: ignore
     )
 
-    return _get_fields_and_fragments_names(  # type: ignore
-        context, cached_fields_and_fragment_names, fragment_type, fragment.selection_set
+    return _get_fields_and_fragments_names(
+        context,
+        cached_fields_and_fragment_names,
+        fragment_type,  # type: ignore
+        fragment.selection_set,
     )
 
 
@@ -659,15 +662,15 @@ def _collect_fields_and_fragment_names(
         elif isinstance(selection, ast.InlineFragment):
             type_condition = selection.type_condition
             if type_condition:
-                inline_fragment_type = type_from_ast(  # type: ignore
-                    context.get_schema(), selection.type_condition
+                inline_fragment_type = type_from_ast(
+                    context.get_schema(), selection.type_condition  # type: ignore
                 )
             else:
                 inline_fragment_type = parent_type  # type: ignore
 
-            _collect_fields_and_fragment_names(  # type: ignore
+            _collect_fields_and_fragment_names(
                 context,
-                inline_fragment_type,
+                inline_fragment_type,  # type: ignore
                 selection.selection_set,
                 ast_and_defs,
                 fragment_names,
@@ -683,8 +686,8 @@ def _subfield_conflicts(
     # type: (...) -> Optional[Tuple[Tuple[str, str], List[Node], List[Node]]]
     """Given a series of Conflicts which occurred between two sub-fields, generate a single Conflict."""
     if conflicts:
-        return (  # type: ignore
-            (response_name, [conflict[0] for conflict in conflicts]),
+        return (
+            (response_name, [conflict[0] for conflict in conflicts]),  # type: ignore
             tuple(itertools.chain([ast1], *[conflict[1] for conflict in conflicts])),
             tuple(itertools.chain([ast2], *[conflict[2] for conflict in conflicts])),
         )

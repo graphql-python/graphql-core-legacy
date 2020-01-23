@@ -476,33 +476,33 @@ def parse_value_literal(parser, is_const):
 
     elif token.kind == TokenKind.INT:
         advance(parser)
-        return ast.IntValue(  # type: ignore
-            value=token.value, loc=loc(parser, token.start)
+        return ast.IntValue(
+            value=token.value, loc=loc(parser, token.start)  # type: ignore
         )
 
     elif token.kind == TokenKind.FLOAT:
         advance(parser)
-        return ast.FloatValue(  # type: ignore
-            value=token.value, loc=loc(parser, token.start)
+        return ast.FloatValue(
+            value=token.value, loc=loc(parser, token.start)  # type: ignore
         )
 
     elif token.kind == TokenKind.STRING:
         advance(parser)
-        return ast.StringValue(  # type: ignore
-            value=token.value, loc=loc(parser, token.start)
+        return ast.StringValue(
+            value=token.value, loc=loc(parser, token.start)  # type: ignore
         )
 
     elif token.kind == TokenKind.NAME:
         if token.value in ("true", "false"):
             advance(parser)
-            return ast.BooleanValue(  # type: ignore
+            return ast.BooleanValue(
                 value=token.value == "true", loc=loc(parser, token.start)
             )
 
         if token.value != "null":
             advance(parser)
-            return ast.EnumValue(  # type: ignore
-                value=token.value, loc=loc(parser, token.start)
+            return ast.EnumValue(
+                value=token.value, loc=loc(parser, token.start)  # type: ignore
             )
 
     elif token.kind == TokenKind.DOLLAR:
@@ -728,10 +728,10 @@ def parse_field_definition(parser):
     # type: (Parser) -> FieldDefinition
     start = parser.token.start
 
-    return ast.FieldDefinition(  # type: ignore
+    return ast.FieldDefinition(
         name=parse_name(parser),
         arguments=parse_argument_defs(parser),
-        type=expect(parser, TokenKind.COLON) and parse_type(parser),
+        type=expect(parser, TokenKind.COLON) and parse_type(parser),  # type: ignore
         directives=parse_directives(parser),
         loc=loc(parser, start),
     )
@@ -749,9 +749,9 @@ def parse_input_value_def(parser):
     # type: (Parser) -> InputValueDefinition
     start = parser.token.start
 
-    return ast.InputValueDefinition(  # type: ignore
+    return ast.InputValueDefinition(
         name=parse_name(parser),
-        type=expect(parser, TokenKind.COLON) and parse_type(parser),
+        type=expect(parser, TokenKind.COLON) and parse_type(parser),  # type: ignore
         default_value=parse_const_value(parser)
         if skip(parser, TokenKind.EQUALS)
         else None,
@@ -780,10 +780,11 @@ def parse_union_type_definition(parser):
     start = parser.token.start
     expect_keyword(parser, "union")
 
-    return ast.UnionTypeDefinition(  # type: ignore
+    return ast.UnionTypeDefinition(
         name=parse_name(parser),
         directives=parse_directives(parser),
-        types=expect(parser, TokenKind.EQUALS) and parse_union_members(parser),
+        types=expect(parser, TokenKind.EQUALS)  # type: ignore
+        and parse_union_members(parser),
         loc=loc(parser, start),
     )
 
