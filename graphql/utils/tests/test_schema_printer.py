@@ -84,7 +84,7 @@ type Root {
 
 def test_prints_list_non_null_string_field():
     output = print_single_field_schema(
-        GraphQLField((GraphQLList(GraphQLNonNull(GraphQLString))))
+        GraphQLField(GraphQLList(GraphQLNonNull(GraphQLString)))
     )
     assert (
         output

@@ -80,4 +80,4 @@ def test_document_get_operation_type_multiple_operations_empty_operation_name():
     mutation {hello}
     """
     )
-    assert document.get_operation_type(None) is "mutation"
+    assert document.get_operation_type(None) == "mutation"

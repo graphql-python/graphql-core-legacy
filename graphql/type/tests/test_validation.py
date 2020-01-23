@@ -177,7 +177,7 @@ class TestTypeSystem_ASchemaMustContainUniquelyNamedTypes:
 
     # noinspection PyUnusedLocal
     def test_it_rejects_a_schema_which_have_same_named_objects_implementing_an_interface(
-        self
+        self,
     ):
         AnotherInterface = GraphQLInterfaceType(
             name="AnotherInterface",
@@ -384,7 +384,7 @@ class TestTypeSystem_FieldArgsMustBeObjects:
         )
 
     def test_rejects_an_object_with_incorrectly_typed_field_args_with_an_invalid_value(
-        self
+        self,
     ):
         with raises(AssertionError) as excinfo:
             assert schema_with_field_type(
@@ -422,7 +422,7 @@ class TestTypeSystem_ObjectInterfacesMustBeArray:
         )
 
     def test_accepts_an_object_type_with_interfaces_as_a_function_returning_an_array(
-        self
+        self,
     ):
         AnotherInterfaceType = GraphQLInterfaceType(
             name="AnotherInterface",
@@ -455,7 +455,7 @@ class TestTypeSystem_ObjectInterfacesMustBeArray:
         )
 
     def test_rejects_an_object_type_with_interfaces_as_a_function_returning_an_incorrect_type(
-        self
+        self,
     ):
         with raises(AssertionError) as excinfo:
             schema_with_field_type(
@@ -613,7 +613,7 @@ class TestTypeSystem_InputObjectsMustHaveFields:
         )
 
     def test_rejects_an_input_object_type_with_fields_function_returning_incorrectly_typed_field_value(
-        self
+        self,
     ):
         with raises(AssertionError) as excinfo:
             schema_with_input_object(
@@ -641,7 +641,7 @@ class TestTypeSystem_InputObjectsMustHaveFields:
         )
 
     def test_rejects_an_input_object_type_with_a_field_function_that_returns_nothing(
-        self
+        self,
     ):
         with raises(AssertionError) as excinfo:
             schema_with_input_object(
@@ -655,7 +655,7 @@ class TestTypeSystem_InputObjectsMustHaveFields:
         )
 
     def test_rejects_an_input_object_type_with_a_field_function_that_returns_empty(
-        self
+        self,
     ):
         with raises(AssertionError) as excinfo:
             schema_with_input_object(
@@ -728,7 +728,7 @@ class TestTypeSystem_InterfaceTypesMustBeResolvable:
         )
 
     def test_accepts_an_interface_type_defining_resolve_type_with_implementing_type_defining_is_type_of(
-        self
+        self,
     ):
         AnotherInterfaceType = GraphQLInterfaceType(
             name="AnotherInterface",
@@ -758,7 +758,7 @@ class TestTypeSystem_InterfaceTypesMustBeResolvable:
         )
 
     def test_rejects_an_interface_type_not_defining_resolve_type_with_implementing_type_not_defining_is_type_of(
-        self
+        self,
     ):
         AnotherInterfaceType = GraphQLInterfaceType(
             name="AnotherInterface", fields={"f": GraphQLField(GraphQLString)}
@@ -796,7 +796,7 @@ class TestTypeSystem_UnionTypesMustBeResolvable:
         )
 
     def test_accepts_a_union_type_defning_resolve_type_of_objects_defning_is_type_of(
-        self
+        self,
     ):
         assert schema_with_field_type(
             GraphQLUnionType(
@@ -817,7 +817,7 @@ class TestTypeSystem_UnionTypesMustBeResolvable:
         )
 
     def test_rejects_a_union_type_not_defining_resolve_type_of_object_types_not_defining_is_type_of(
-        self
+        self,
     ):
         with raises(AssertionError) as excinfo:
             schema_with_field_type(
@@ -896,7 +896,7 @@ class TestTypeSystem_ScalarTypesMustBeSerializable:
         )
 
     def test_rejects_a_scalar_type_defining_parse_literal_and_parse_value_with_an_incorrect_type(
-        self
+        self,
     ):
         with raises(AssertionError) as excinfo:
             schema_with_field_type(
@@ -1370,7 +1370,7 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
         assert schema_with_field_type(AnotherObject)
 
     def test_accepts_an_object_which_implements_an_interface_along_with_more_fields(
-        self
+        self,
     ):
         AnotherInterface = GraphQLInterfaceType(
             name="AnotherInterface",
@@ -1396,7 +1396,7 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
         assert schema_with_field_type(AnotherObject)
 
     def test_accepts_an_object_which_implements_an_interface_field_along_with_more_arguments(
-        self
+        self,
     ):
         AnotherInterface = GraphQLInterfaceType(
             name="AnotherInterface",
@@ -1425,7 +1425,7 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
         assert schema_with_field_type(AnotherObject)
 
     def test_rejects_an_object_which_implements_an_interface_field_along_with_additional_required_arguments(
-        self
+        self,
     ):
         AnotherInterface = GraphQLInterfaceType(
             name="AnotherInterface",
