@@ -11,9 +11,9 @@ matrix:
        python: 3.6
     -  env: TOXENV=py37
        python: 3.7
-    -  env: TOXENV=pypy2
-       python: pypy
     -  env: TOXENV=pypy
+       python: pypy
+    -  env: TOXENV=pypy3
        python: pypy3
     -  env: TOXENV=pre-commit
        python: 3.7
