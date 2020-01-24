@@ -306,10 +306,9 @@ def subscribe_fields(
         observable = result.catch_exception(catch_error).map(
             lambda data: map_result({response_name: data})
         )
-        return observable
         observables.append(observable)
 
-    return Observable.merge(observables)
+    return observables[0] if len(observables) == 1 else Observable.merge(observables)
 
 
 def resolve_field(

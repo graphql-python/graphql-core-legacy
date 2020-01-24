@@ -1,4 +1,3 @@
-# type: ignore
 from collections import OrderedDict, namedtuple
 from rx import Observable, Observer
 from rx.subjects import Subject
@@ -142,6 +141,7 @@ def create_subscription(
                 )
             ]
 
+        @staticmethod
         def importantEmail():
             return stream
 
@@ -209,10 +209,11 @@ def test_accepts_multiple_subscription_fields_defined_in_schema():
         message="Tests are good",
         unread=True,
     )
-    l = []
-    stream.subscribe(l.append)
+    inbox = []
+    stream.subscribe(inbox.append)
     send_important_email(email)
-    assert l[0][0] == email
+    assert len(inbox) == 1
+    assert inbox[0][0] == email
 
 
 def test_accepts_type_definition_with_sync_subscribe_function():
@@ -241,11 +242,11 @@ def test_accepts_type_definition_with_sync_subscribe_function():
         message="Tests are good",
         unread=True,
     )
-    l = []
-    subscription.subscribe(l.append)
+    inbox = []
+    subscription.subscribe(inbox.append)
     send_important_email(email)
-
-    assert l  # [0].data == {'importantEmail': None}
+    assert len(inbox) == 1
+    assert inbox[0].data == {"importantEmail": None}
 
 
 def test_throws_an_error_if_subscribe_does_not_return_an_iterator():
@@ -422,6 +423,5 @@ def test_event_order_is_correct_for_multiple_publishes():
     }
 
     assert len(payload) == 2
-    print(payload)
     assert payload[0].data == expected_payload1
     assert payload[1].data == expected_payload2
