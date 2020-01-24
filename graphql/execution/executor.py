@@ -283,8 +283,13 @@ def subscribe_fields(
         subscriber_exe_context.reset()
         return result
 
+    def catch_error(error):
+        subscriber_exe_context.errors.append(error)
+        return Observable.just(None)
+
     observables = []  # type: List[Observable]
 
+    # TODO: Make sure this works with multiple fields (currently untested)
     # assert len(fields) == 1, "Can only subscribe one element at a time."
 
     for response_name, field_asts in fields.items():
@@ -297,11 +302,6 @@ def subscribe_fields(
         )
         if result is Undefined:
             continue
-
-        def catch_error(error):
-            subscriber_exe_context.errors.append(error)
-            return Observable.just(None)
-
         # Map observable results
         observable = result.catch_exception(catch_error).map(
             lambda data: map_result({response_name: data})
