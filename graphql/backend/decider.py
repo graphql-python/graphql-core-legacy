@@ -4,10 +4,9 @@ import threading
 import os
 from time import sleep, time
 
-
+from ..pyutils.compat import Queue, check_threads
 from .base import GraphQLBackend, GraphQLDocument
 from .cache import GraphQLCachedBackend
-from ..pyutils.compat import Queue, check_threads
 
 # Necessary for static type checking
 if False:  # flake8: noqa

@@ -1,4 +1,5 @@
 import six
+
 from ..language.location import get_location
 
 # Necessary for static type checking

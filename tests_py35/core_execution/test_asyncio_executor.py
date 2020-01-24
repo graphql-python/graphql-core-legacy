@@ -1,7 +1,5 @@
-# flake8: noqa
-import pytest
 import asyncio
-import functools
+
 from graphql.error import format_error
 from graphql.execution import execute
 from graphql.language.parser import parse

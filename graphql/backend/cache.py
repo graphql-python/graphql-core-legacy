@@ -1,8 +1,8 @@
 from hashlib import sha1
 
 from six import string_types
-from ..type import GraphQLSchema
 
+from ..type import GraphQLSchema
 from .base import GraphQLBackend
 
 # Necessary for static type checking
