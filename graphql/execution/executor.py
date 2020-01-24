@@ -267,6 +267,7 @@ def subscribe_fields(
     parent_type,  # type: GraphQLObjectType
     source_value,  # type: Any
     fields,  # type: DefaultOrderedDict
+    only_first_field=True,  # type: bool
 ):
     # type: (...) -> Observable
     subscriber_exe_context = SubscriberExecutionContext(exe_context)
@@ -290,7 +291,7 @@ def subscribe_fields(
     observables = []  # type: List[Observable]
 
     # TODO: Make sure this works with multiple fields (currently untested)
-    # assert len(fields) == 1, "Can only subscribe one element at a time."
+    # so we can remove the "only_first_field" argument.
 
     for response_name, field_asts in fields.items():
         result = subscribe_field(
@@ -306,9 +307,11 @@ def subscribe_fields(
         observable = result.catch_exception(catch_error).map(
             lambda data: map_result({response_name: data})
         )
+        if only_first_field:
+            return observable
         observables.append(observable)
 
-    return observables[0] if len(observables) == 1 else Observable.merge(observables)
+    return Observable.merge(observables)
 
 
 def resolve_field(
