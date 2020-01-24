@@ -341,9 +341,6 @@ def _collect_conflicts_between_fragments(
             fragment_name2,
         )
 
-    conflicts,  # type: List[Tuple[Tuple[str, str], List[Node], List[Node]]]
-    are_mutually_exclusive,  # type: bool
-
 
 def _find_conflicts_between_sub_selection_sets(
     context,  # type: ValidationContext
