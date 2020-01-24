@@ -9,14 +9,16 @@ matrix:
        python: 3.6
     -  env: TOXENV=py37
        python: 3.7
+    -  env: TOXENV=py38
+       python: 3.8
     -  env: TOXENV=pypy
        python: pypy
     -  env: TOXENV=pypy3
        python: pypy3
     -  env: TOXENV=pre-commit
-       python: 3.7
+       python: 3.8
     -  env: TOXENV=mypy
-       python: 3.7
+       python: 3.8
 install: pip install coveralls tox
 script: tox
 after_success: coveralls
@@ -30,7 +32,7 @@ deploy:
   on:
     branch: master
     tags: true
-    python: 3.7
+    python: 3.8
   skip_existing: true
   user: syrusakbary
   password:
