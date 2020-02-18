@@ -22,7 +22,7 @@ def get_default_backend():
 
 
 def set_default_backend(backend):
-    # type: (GraphQLCoreBackend) -> None
+    # type: (GraphQLBackend) -> None
     global _default_backend
     assert isinstance(
         backend, GraphQLBackend
