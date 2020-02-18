@@ -4,17 +4,19 @@ This module provides a dynamic way of using different
 engines for a GraphQL schema query resolution.
 """
 
+from typing import Optional
+
 from .base import GraphQLBackend, GraphQLDocument
 from .core import GraphQLCoreBackend
 from .decider import GraphQLDeciderBackend
 from .cache import GraphQLCachedBackend
 
 
-_default_backend = None
+_default_backend = None  # type: Optional[GraphQLBackend]
 
 
 def get_default_backend():
-    # type: () -> GraphQLCoreBackend
+    # type: () -> GraphQLBackend
     global _default_backend
     if _default_backend is None:
         _default_backend = GraphQLCoreBackend()
