@@ -5,12 +5,13 @@ from six import string_types
 from ..execution import execute, ExecutionResult
 from ..language.base import parse, print_ast
 from ..language import ast
-from ..validation import validate
+from ..validation import validate, specified_rules
 from .base import GraphQLBackend, GraphQLDocument
 
 # Necessary for static type checking
 if False:  # flake8: noqa
-    from typing import Any, Optional, Union
+    from typing import Any, Optional, Union, List, Type
+    from ..validation.rules import ValidationRule
     from ..language.ast import Document
     from ..type.schema import GraphQLSchema
     from rx import Observable
@@ -24,8 +25,9 @@ def execute_and_validate(
 ):
     # type: (...) -> Union[ExecutionResult, Observable]
     do_validation = kwargs.get("validate", True)
+    validation_rules = kwargs.get("validation_rules", specified_rules)
     if do_validation:
-        validation_errors = validate(schema, document_ast)
+        validation_errors = validate(schema, document_ast, validation_rules)
         if validation_errors:
             return ExecutionResult(errors=validation_errors, invalid=True)
 
@@ -38,7 +40,14 @@ class GraphQLCoreBackend(GraphQLBackend):
 
     def __init__(self, executor=None):
         # type: (Optional[Any]) -> None
-        self.execute_params = {"executor": executor}
+        self.execute_params = {
+            "executor": executor,
+            "validation_rules": self.get_validation_rules(),
+        }
+
+    def get_validation_rules(self):
+        # type: () -> List[Type[ValidationRule]]
+        return specified_rules
 
     def document_from_string(self, schema, document_string):
         # type: (GraphQLSchema, Union[Document, str]) -> GraphQLDocument
