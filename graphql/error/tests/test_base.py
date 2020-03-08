@@ -89,8 +89,6 @@ def test_reraise_from_promise():
     formatted_tb = [row[2:] for row in extracted]
     formatted_tb = [tb for tb in formatted_tb if tb[0] != "reraise"]
 
-    print(formatted_tb)
-
     assert formatted_tb == [
         ("test_reraise_from_promise", "result.errors[0].reraise()"),
         ("_resolve_from_executor", "executor(resolve, reject)"),
