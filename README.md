@@ -6,7 +6,7 @@
 [github.com/graphql-python/graphql-core](https://github.com/graphql-python/graphql-core).**
 
 [![Build Status](https://travis-ci.org/graphql-python/graphql-core-legacy.svg?branch=master)](https://travis-ci.org/graphql-python/graphql-core-legacy)
-[![Coverage Status](https://coveralls.io/repos/graphql-python/graphql-core-legacy/badge.svg?branch=master&service=github)](https://coveralls.io/github/graphql-python/graphql-core-legacy?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/graphql-python/graphql-core-legacy/badge.svg?branch=master)](https://coveralls.io/github/graphql-python/graphql-core-legacy?branch=master)
 
 This library is a port of [GraphQL.js](https://github.com/graphql/graphql-js) to Python
 and up-to-date with release [0.6.0](https://github.com/graphql/graphql-js/releases/tag/v0.6.0).
