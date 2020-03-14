@@ -5,7 +5,6 @@ This is the repository of GraphQL for Python 2 (legacy version).
 **The repository for the current version GraphQL is available at
 [github.com/graphql-python/graphql-core](https://github.com/graphql-python/graphql-core).**
 
-[![PyPI version](https://badge.fury.io/py/graphql-core-legacy.svg)](https://badge.fury.io/py/graphql-core-legacy)
 [![Build Status](https://travis-ci.org/graphql-python/graphql-core-legacy.svg?branch=master)](https://travis-ci.org/graphql-python/graphql-core-legacy)
 [![Coverage Status](https://coveralls.io/repos/graphql-python/graphql-core-legacy/badge.svg?branch=master&service=github)](https://coveralls.io/github/graphql-python/graphql-core-legacy?branch=master)
 
