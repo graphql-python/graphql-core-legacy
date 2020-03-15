@@ -67,7 +67,7 @@ docs/_build/
 *.iml
 
 # Visual Studio
-/.vscode
+.vscode/*
 
 # OS X
 .DS_Store
