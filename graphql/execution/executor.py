@@ -150,7 +150,7 @@ def execute(
         return promise.get()
     else:
         clean = getattr(exe_context.executor, "clean", None)
-        if clean:
+        if callable(clean):
             clean()
 
     return promise
@@ -161,7 +161,7 @@ def execute_operation(
     operation,  # type: OperationDefinition
     root_value,  # type: Any
 ):
-    # type: (...) -> Union[Dict, Promise[Dict]]
+    # type: (...) -> Union[Dict, Promise[Dict], Observable]
     type = get_operation_root_type(exe_context.schema, operation)
     fields = collect_fields(
         exe_context, type, operation.selection_set, DefaultOrderedDict(list), set()
@@ -278,11 +278,11 @@ def subscribe_fields(
     def map_result(data):
         # type: (Dict[str, Any]) -> ExecutionResult
         if subscriber_exe_context.errors:
-            result = ExecutionResult(data=data, errors=subscriber_exe_context.errors)
+            res = ExecutionResult(data=data, errors=subscriber_exe_context.errors)
         else:
-            result = ExecutionResult(data=data)
+            res = ExecutionResult(data=data)
         subscriber_exe_context.reset()
-        return result
+        return res
 
     def catch_error(error):
         subscriber_exe_context.errors.append(error)
