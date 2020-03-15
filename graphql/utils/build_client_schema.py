@@ -253,7 +253,7 @@ def build_client_schema(introspection):
 
     def build_input_value(input_value_introspection, argument_type):
         input_value = argument_type(
-            description=input_value_introspection["description"],
+            description=input_value_introspection.get("description"),
             type=get_input_type(input_value_introspection["type"]),
             default_value=build_default_value(input_value_introspection),
         )
