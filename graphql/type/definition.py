@@ -110,10 +110,6 @@ class GraphQLNamedType(GraphQLType):
         return self.__class__ is other.__class__ and self.name == other.name
 
 
-def none_func(x):
-    None
-
-
 class GraphQLScalarType(GraphQLNamedType):
     """Scalar Type Definition
 
@@ -144,6 +140,7 @@ class GraphQLScalarType(GraphQLNamedType):
         # type: (...) -> None
         assert name, "Type must be named."
         assert_valid_name(name)
+        super(GraphQLScalarType, self).__init__(name)
         self.name = name
         self.description = description
 
@@ -161,8 +158,8 @@ class GraphQLScalarType(GraphQLNamedType):
             )
 
         self.serialize = serialize
-        self.parse_value = parse_value or none_func
-        self.parse_literal = parse_literal or none_func
+        self.parse_value = parse_value or None
+        self.parse_literal = parse_literal or None
 
     def __str__(self):
         # type: () -> str
@@ -207,6 +204,7 @@ class GraphQLObjectType(GraphQLNamedType):
         # type: (...) -> None
         assert name, "Type must be named."
         assert_valid_name(name)
+        super(GraphQLObjectType, self).__init__(name)
         self.name = name
         self.description = description
 
@@ -341,7 +339,7 @@ class GraphQLArgument(object):
 
     def __init__(
         self,
-        type,  # type: Union[GraphQLInputObjectType, GraphQLNonNull, GraphQLList, GraphQLScalarType]
+        type,  # type: Union[GraphQLInputObjectType, GraphQLNonNull, GraphQLList, GraphQLScalarType, GraphQLEnumType]
         default_value=None,  # type: Optional[Any]
         description=None,  # type: Optional[Any]
         out_name=None,  # type: Optional[str]
@@ -388,6 +386,7 @@ class GraphQLInterfaceType(GraphQLNamedType):
         description=None,  # type: Optional[Any]
     ):
         # type: (...) -> None
+        super(GraphQLInterfaceType, self).__init__(name)
         assert name, "Type must be named."
         assert_valid_name(name)
         self.name = name
@@ -435,6 +434,7 @@ class GraphQLUnionType(GraphQLNamedType):
         description=None,  # type: Optional[Any]
     ):
         # type: (...) -> None
+        super(GraphQLUnionType, self).__init__(name)
         assert name, "Type must be named."
         assert_valid_name(name)
         self.name = name
@@ -510,6 +510,7 @@ class GraphQLEnumType(GraphQLNamedType):
     def __init__(self, name, values, description=None):
         assert name, "Type must provide name."
         assert_valid_name(name)
+        super(GraphQLEnumType, self).__init__(name)
         self.name = name
         self.description = description
 
@@ -646,6 +647,7 @@ class GraphQLInputObjectType(GraphQLNamedType):
     ):
         # type: (...) -> None
         assert name, "Type must be named."
+        super(GraphQLInputObjectType, self).__init__(name)
         self.name = name
         self.description = description
         if container_type is None:
