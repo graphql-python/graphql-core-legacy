@@ -53,7 +53,7 @@ setup(
     name="graphql-core",
     version=version,
     description="GraphQL implementation for Python",
-    long_description=open("README.md").read(),
+    long_description=open("README.md", encoding="utf8").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/graphql-python/graphql-core-legacy",
     download_url="https://github.com/graphql-python/graphql-core-legacy/releases",
