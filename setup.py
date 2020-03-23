@@ -9,6 +9,9 @@ _version_re = re.compile(r"VERSION\s+=\s+(.*)")
 with open("graphql/__init__.py", "rb") as f:
     version = ast.literal_eval(_version_re.search(f.read().decode("utf-8")).group(1))
 
+with open("README.md", "rb") as freadme:
+    readme = freadme.read().decode("utf-8")
+
 path_copy = sys.path[:]
 
 sys.path.append("graphql")
@@ -53,7 +56,7 @@ setup(
     name="graphql-core",
     version=version,
     description="GraphQL implementation for Python",
-    long_description=open("README.md").read(),
+    long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/graphql-python/graphql-core-legacy",
     download_url="https://github.com/graphql-python/graphql-core-legacy/releases",
