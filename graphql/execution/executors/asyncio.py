@@ -6,7 +6,7 @@ from promise import Promise
 
 # Necessary for static type checking
 if False:  # flake8: noqa
-    from asyncio.unix_events import _UnixSelectorEventLoop
+    from asyncio import AbstractEventLoop
     from typing import Optional, Any, Callable, List
 
 try:
@@ -51,7 +51,7 @@ except Exception:
 
 class AsyncioExecutor(object):
     def __init__(self, loop=None):
-        # type: (Optional[_UnixSelectorEventLoop]) -> None
+        # type: (Optional[AbstractEventLoop]) -> None
         if loop is None:
             loop = get_event_loop()
         self.loop = loop
