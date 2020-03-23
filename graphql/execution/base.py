@@ -48,6 +48,9 @@ class ExecutionResult(object):
             and self.invalid == other.invalid
         )
 
+    def __str__(self):
+        return str(self.to_dict())
+
     def to_dict(self, format_error=None, dict_class=OrderedDict):
         # type: (Optional[Callable[[Exception], Dict]], Type[Dict]) -> Dict[str, Any]
         if format_error is None:
