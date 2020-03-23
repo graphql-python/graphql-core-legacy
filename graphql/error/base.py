@@ -44,7 +44,6 @@ class GraphQLError(Exception):
         self._locations = locations
         self.path = path
         self.extensions = extensions
-        return None
 
     @property
     def source(self):
