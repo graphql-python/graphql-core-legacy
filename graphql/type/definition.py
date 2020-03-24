@@ -45,21 +45,6 @@ def is_input_type(type_):
     )
 
 
-def is_output_type(type_):
-    # type: (Any) -> bool
-    named_type = get_named_type(type_)
-    return isinstance(
-        named_type,
-        (
-            GraphQLScalarType,
-            GraphQLObjectType,
-            GraphQLInterfaceType,
-            GraphQLUnionType,
-            GraphQLEnumType,
-        ),
-    )
-
-
 def get_nullable_type(type_):
     if isinstance(type_, GraphQLNonNull):
         return type_.of_type
@@ -738,12 +723,40 @@ class GraphQLList(GraphQLType):
         )
 
 
+# These types can all accept null as a value.
+graphql_nullable_types = (
+    GraphQLScalarType,
+    GraphQLObjectType,
+    GraphQLInterfaceType,
+    GraphQLUnionType,
+    GraphQLEnumType,
+    GraphQLInputObjectType,
+    GraphQLList,
+)
+
+GraphQLNullableType = Union[
+    GraphQLScalarType,
+    GraphQLObjectType,
+    GraphQLInterfaceType,
+    GraphQLUnionType,
+    GraphQLEnumType,
+    GraphQLInputObjectType,
+    GraphQLList,
+]
+
+
+def is_nullable_type(type_):
+    # type: (Any) -> bool
+    return isinstance(type_, graphql_nullable_types)
+
+
 class GraphQLNonNull(GraphQLType):
     """Non-Null Modifier
 
-    A non-null is a kind of type marker, a wrapping type which points to another type. Non-null types enforce that their values are never null
-    and can ensure an error is raised if this ever occurs during a request. It is useful for fields which you can make a strong guarantee on
-    non-nullability, for example usually the id field of a database row will never be null.
+    A non-null is a kind of type marker, a wrapping type which points to another type. Non-null types enforce
+    that their values are never null and can ensure an error is raised if this ever occurs during a request.
+    It is useful for fields which you can make a strong guarantee on non-nullability,
+    for example usually the id field of a database row will never be null.
 
     Example:
 
@@ -760,13 +773,13 @@ class GraphQLNonNull(GraphQLType):
 
     def __init__(
         self,
-        type_,  # type: Union[GraphQLList, GraphQLObjectType, GraphQLScalarType, GraphQLInputObjectType, GraphQLInterfaceType]
+        type_,  # type: GraphQLNullableType
     ):
         # type: (...) -> None
         assert is_type(type_) and not isinstance(
             type_, GraphQLNonNull
         ), "Can only create NonNull of a Nullable GraphQLType but got: {}.".format(type_)
-        self.of_type = type_  # type: Union[GraphQLList, GraphQLObjectType, GraphQLScalarType, GraphQLInputObjectType, GraphQLInterfaceType]
+        self.of_type = type_  # type: GraphQLNullableType
 
     def __str__(self):
         # type: () -> str
@@ -776,6 +789,31 @@ class GraphQLNonNull(GraphQLType):
         return isinstance(other, GraphQLNonNull) and self.of_type.is_same_type(
             other.of_type
         )
+
+
+# These types may be used as output types as the result of fields.
+graphql_output_types = (
+    GraphQLScalarType,
+    GraphQLObjectType,
+    GraphQLInterfaceType,
+    GraphQLUnionType,
+    GraphQLEnumType,
+)
+
+GraphQLOutputType = Union[
+    GraphQLScalarType,
+    GraphQLObjectType,
+    GraphQLInterfaceType,
+    GraphQLUnionType,
+    GraphQLEnumType,
+    GraphQLNullableType
+]
+
+
+def is_output_type(type_):
+    # type: (Any) -> bool
+    named_type = get_named_type(type_)
+    return isinstance(named_type, graphql_output_types)
 
 
 def is_union_type(type_):

@@ -1,6 +1,8 @@
 import itertools
 from collections import OrderedDict
 
+from typing import cast
+
 from ...error import GraphQLError
 from ...language import ast
 from ...language.printer import print_ast
@@ -10,8 +12,11 @@ from ...type.definition import (
     GraphQLList,
     GraphQLNonNull,
     GraphQLObjectType,
+    GraphQLOutputType,
     get_named_type,
     is_leaf_type,
+    is_list_type,
+    is_non_null_type,
 )
 from ...utils.type_comparators import is_equal_type
 from ...utils.type_from_ast import type_from_ast
@@ -545,7 +550,7 @@ def _find_conflict(
 
         # Two field calls must have the same arguments.
         if not _same_arguments(ast1.arguments, ast2.arguments):
-            return ((response_name, "they have differing arguments"), [ast1], [ast2])
+            return (response_name, "they have differing arguments"), [ast1], [ast2]
 
     if type1 and type2 and do_types_conflict(type1, type2):
         return (
@@ -685,37 +690,42 @@ def _subfield_conflicts(
     if conflicts:
         return (
             (response_name, [conflict[0] for conflict in conflicts]),  # type: ignore
-            tuple(itertools.chain([ast1], *[conflict[1] for conflict in conflicts])),
-            tuple(itertools.chain([ast2], *[conflict[2] for conflict in conflicts])),
+            list(itertools.chain([ast1], *[conflict[1] for conflict in conflicts])),
+            list(itertools.chain([ast2], *[conflict[2] for conflict in conflicts])),
         )
     return None
 
 
 def do_types_conflict(type1, type2):
-    # type: (GraphQLScalarType, GraphQLScalarType) -> bool
-    if isinstance(type1, GraphQLList):
-        if isinstance(type2, GraphQLList):
-            return do_types_conflict(type1.of_type, type2.of_type)
-        return True
+    # type: (GraphQLOutputType, GraphQLOutputType) -> bool
+    """Check whether two types conflict
 
-    if isinstance(type2, GraphQLList):
-        if isinstance(type1, GraphQLList):
-            return do_types_conflict(type1.of_type, type2.of_type)
+    Two types conflict if both types could not apply to a value simultaneously.
+    Composite types are ignored as their individual field types will be compared later
+    recursively. However List and Non-Null types must match.
+    """
+    if is_list_type(type1):
+        return (
+            do_types_conflict(
+                cast(GraphQLList, type1).of_type, cast(GraphQLList, type2).of_type
+            )
+            if is_list_type(type2)
+            else True
+        )
+    if is_list_type(type2):
         return True
-
-    if isinstance(type1, GraphQLNonNull):
-        if isinstance(type2, GraphQLNonNull):
-            return do_types_conflict(type1.of_type, type2.of_type)
+    if is_non_null_type(type1):
+        return (
+            do_types_conflict(
+                cast(GraphQLNonNull, type1).of_type, cast(GraphQLNonNull, type2).of_type
+            )
+            if is_non_null_type(type2)
+            else True
+        )
+    if is_non_null_type(type2):
         return True
-
-    if isinstance(type2, GraphQLNonNull):
-        if isinstance(type1, GraphQLNonNull):
-            return do_types_conflict(type1.of_type, type2.of_type)
-        return True
-
     if is_leaf_type(type1) or is_leaf_type(type2):
-        return type1 != type2
-
+        return type1 is not type2
     return False
 
 
