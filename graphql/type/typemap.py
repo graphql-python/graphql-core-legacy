@@ -164,9 +164,7 @@ class GraphQLTypeMap(OrderedDict):
             )
 
             assert is_type_sub_type_of(
-                cast("GraphQLSchema", schema),
-                object_field.type,
-                interface_field.type
+                cast("GraphQLSchema", schema), object_field.type, interface_field.type
             ), '{}.{} expects type "{}" but {}.{} provides type "{}".'.format(
                 interface,
                 field_name,

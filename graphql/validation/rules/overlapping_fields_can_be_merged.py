@@ -33,7 +33,7 @@ if False:  # flake8: noqa
         InlineFragment,
         SelectionSet,
     )
-    from ...type.definition import GraphQLField, GraphQLScalarType
+    from ...type.definition import GraphQLField
     from typing import List, Union, Any, Optional, Dict, Tuple
 
 

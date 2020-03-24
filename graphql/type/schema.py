@@ -4,25 +4,21 @@ except ImportError:  # Python < 3.3
     from collections import Iterable
 
 from collections import namedtuple
-from typing import Dict, Union, List, Optional, cast, NamedTuple
+from typing import Dict, Union, List, Optional
 
 from .definition import (
-    GraphQLAbstractType,
     GraphQLNamedType,
     GraphQLInterfaceType,
     GraphQLObjectType,
     GraphQLUnionType,
     GraphQLType,
-    is_union_type,
-    is_interface_type,
-    is_object_type,
 )
 from .directives import GraphQLDirective, specified_directives
 from .introspection import IntrospectionSchema
 from .typemap import GraphQLTypeMap
 
 
-InterfaceImplementations = namedtuple('InterfaceImplementations', 'objects, interfaces')
+InterfaceImplementations = namedtuple("InterfaceImplementations", "objects, interfaces")
 
 
 class GraphQLSchema(object):
