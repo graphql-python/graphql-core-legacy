@@ -12,7 +12,7 @@ interface_type = GraphQLInterfaceType(
     name="Interface",
     fields={
         "field_name": GraphQLField(
-            type=GraphQLString, resolver=lambda *_: implementing_type
+            type_=GraphQLString, resolver=lambda *_: implementing_type
         )
     },
 )
@@ -20,7 +20,7 @@ interface_type = GraphQLInterfaceType(
 implementing_type = GraphQLObjectType(
     name="Object",
     interfaces=[interface_type],
-    fields={"field_name": GraphQLField(type=GraphQLString, resolver=lambda *_: "")},
+    fields={"field_name": GraphQLField(type_=GraphQLString, resolver=lambda *_: "")},
 )
 
 
@@ -28,7 +28,7 @@ schema = GraphQLSchema(
     query=GraphQLObjectType(
         name="Query",
         fields={
-            "get_object": GraphQLField(type=interface_type, resolver=lambda *_: {})
+            "get_object": GraphQLField(type_=interface_type, resolver=lambda *_: {})
         },
     )
 )

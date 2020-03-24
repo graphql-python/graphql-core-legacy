@@ -3,20 +3,26 @@ try:
 except ImportError:  # Python < 3.3
     from collections import Iterable
 
-from .definition import GraphQLObjectType
+from collections import namedtuple
+from typing import Dict, Union, List, Optional, cast, NamedTuple
+
+from .definition import (
+    GraphQLAbstractType,
+    GraphQLNamedType,
+    GraphQLInterfaceType,
+    GraphQLObjectType,
+    GraphQLUnionType,
+    GraphQLType,
+    is_union_type,
+    is_interface_type,
+    is_object_type,
+)
 from .directives import GraphQLDirective, specified_directives
 from .introspection import IntrospectionSchema
 from .typemap import GraphQLTypeMap
 
-# Necessary for static type checking
-if False:  # flake8: noqa
-    from .definition import (
-        GraphQLNamedType,
-        GraphQLInterfaceType,
-        GraphQLUnionType,
-        GraphQLType,
-    )
-    from typing import Dict, Union, List, Optional
+
+InterfaceImplementations = namedtuple('InterfaceImplementations', 'objects, interfaces')
 
 
 class GraphQLSchema(object):
@@ -101,7 +107,7 @@ class GraphQLSchema(object):
         )  # type: List[GraphQLNamedType]
         if types:
             initial_types += types
-        self._type_map = GraphQLTypeMap(initial_types)  # type: GraphQLTypeMap
+        self._type_map = GraphQLTypeMap(initial_types)
 
     def get_query_type(self):
         # type: () -> GraphQLObjectType

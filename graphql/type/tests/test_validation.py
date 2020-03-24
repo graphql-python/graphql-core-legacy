@@ -1160,7 +1160,7 @@ def schema_with_arg_of_type(arg_type):
         name="BadObject",
         fields={
             "badField": GraphQLField(
-                type=GraphQLString, args={"badArg": GraphQLArgument(arg_type)}
+                type_=GraphQLString, args={"badArg": GraphQLArgument(arg_type)}
             )
         },
     )
@@ -1214,7 +1214,7 @@ def schema_with_input_field_of_type(input_field_type):
             name="Query",
             fields={
                 "f": GraphQLField(
-                    type=GraphQLString,
+                    type_=GraphQLString,
                     args={"badArg": GraphQLArgument(BadInputObjectType)},
                 )
             },
@@ -1352,7 +1352,7 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
             resolve_type=_none,
             fields={
                 "field": GraphQLField(
-                    type=GraphQLString, args={"input": GraphQLArgument(GraphQLString)}
+                    type_=GraphQLString, args={"input": GraphQLArgument(GraphQLString)}
                 )
             },
         )
@@ -1362,7 +1362,7 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
             interfaces=[AnotherInterface],
             fields={
                 "field": GraphQLField(
-                    type=GraphQLString, args={"input": GraphQLArgument(GraphQLString)}
+                    type_=GraphQLString, args={"input": GraphQLArgument(GraphQLString)}
                 )
             },
         )
@@ -1377,7 +1377,7 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
             resolve_type=_none,
             fields={
                 "field": GraphQLField(
-                    type=GraphQLString, args={"input": GraphQLArgument(GraphQLString)}
+                    type_=GraphQLString, args={"input": GraphQLArgument(GraphQLString)}
                 )
             },
         )
@@ -1387,7 +1387,7 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
             interfaces=[AnotherInterface],
             fields={
                 "field": GraphQLField(
-                    type=GraphQLString, args={"input": GraphQLArgument(GraphQLString)}
+                    type_=GraphQLString, args={"input": GraphQLArgument(GraphQLString)}
                 ),
                 "anotherfield": GraphQLField(GraphQLString),
             },
@@ -1403,7 +1403,7 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
             resolve_type=_none,
             fields={
                 "field": GraphQLField(
-                    type=GraphQLString, args={"input": GraphQLArgument(GraphQLString)}
+                    type_=GraphQLString, args={"input": GraphQLArgument(GraphQLString)}
                 )
             },
         )
@@ -1413,7 +1413,7 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
             interfaces=[AnotherInterface],
             fields={
                 "field": GraphQLField(
-                    type=GraphQLString,
+                    type_=GraphQLString,
                     args={
                         "input": GraphQLArgument(GraphQLString),
                         "anotherInput": GraphQLArgument(GraphQLString),
@@ -1432,7 +1432,7 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
             resolve_type=_none,
             fields={
                 "field": GraphQLField(
-                    type=GraphQLString, args={"input": GraphQLArgument(GraphQLString)}
+                    type_=GraphQLString, args={"input": GraphQLArgument(GraphQLString)}
                 )
             },
         )
@@ -1442,7 +1442,7 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
             interfaces=[AnotherInterface],
             fields={
                 "field": GraphQLField(
-                    type=GraphQLString,
+                    type_=GraphQLString,
                     args={
                         "input": GraphQLArgument(GraphQLString),
                         "anotherInput": GraphQLArgument(GraphQLNonNull(GraphQLString)),
@@ -1466,7 +1466,7 @@ class TestTypeSystem_ObjectsMustAdhereToInterfacesTheyImplement:
             resolve_type=_none,
             fields={
                 "field": GraphQLField(
-                    type=GraphQLString, args={"input": GraphQLArgument(GraphQLString)}
+                    type_=GraphQLString, args={"input": GraphQLArgument(GraphQLString)}
                 )
             },
         )

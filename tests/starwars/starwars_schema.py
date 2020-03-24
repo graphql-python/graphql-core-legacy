@@ -100,7 +100,7 @@ queryType = GraphQLObjectType(
                 "episode": GraphQLArgument(
                     description="If omitted, returns the hero of the whole saga. If "
                     "provided, returns the hero of that particular episode.",
-                    type=episodeEnum,
+                    type_=episodeEnum,
                 )
             },
             resolver=lambda root, info, **args: getHero(args.get("episode")),
@@ -109,7 +109,7 @@ queryType = GraphQLObjectType(
             humanType,
             args={
                 "id": GraphQLArgument(
-                    description="id of the human", type=GraphQLNonNull(GraphQLString)
+                    description="id of the human", type_=GraphQLNonNull(GraphQLString)
                 )
             },
             resolver=lambda root, info, **args: getHuman(args["id"]),
@@ -118,7 +118,7 @@ queryType = GraphQLObjectType(
             droidType,
             args={
                 "id": GraphQLArgument(
-                    description="id of the droid", type=GraphQLNonNull(GraphQLString)
+                    description="id of the droid", type_=GraphQLNonNull(GraphQLString)
                 )
             },
             resolver=lambda root, info, **args: getDroid(args["id"]),

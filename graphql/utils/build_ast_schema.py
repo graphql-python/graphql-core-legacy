@@ -217,7 +217,7 @@ def build_ast_schema(document):
             (
                 f.name.value,
                 GraphQLField(
-                    type=produce_type_def(f.type),
+                    type_=produce_type_def(f.type),
                     args=make_input_values(f.arguments, GraphQLArgument),
                     deprecation_reason=get_deprecation_reason(f.directives),
                 ),
@@ -233,7 +233,7 @@ def build_ast_schema(document):
             (
                 value.name.value,
                 cls(
-                    type=produce_type_def(value.type),
+                    type_=produce_type_def(value.type),
                     default_value=value_from_ast(
                         value.default_value, produce_type_def(value.type)
                     ),

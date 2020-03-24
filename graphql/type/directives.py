@@ -71,7 +71,7 @@ GraphQLIncludeDirective = GraphQLDirective(
     description="Directs the executor to include this field or fragment only when the `if` argument is true.",
     args={
         "if": GraphQLArgument(
-            type=GraphQLNonNull(GraphQLBoolean), description="Included when true."
+            type_=GraphQLNonNull(GraphQLBoolean), description="Included when true."
         )
     },
     locations=[
@@ -87,7 +87,7 @@ GraphQLSkipDirective = GraphQLDirective(
     description="Directs the executor to skip this field or fragment when the `if` argument is true.",
     args={
         "if": GraphQLArgument(
-            type=GraphQLNonNull(GraphQLBoolean), description="Skipped when true."
+            type_=GraphQLNonNull(GraphQLBoolean), description="Skipped when true."
         )
     },
     locations=[
@@ -106,7 +106,7 @@ GraphQLDeprecatedDirective = GraphQLDirective(
     description="Marks an element of a GraphQL schema as no longer supported.",
     args={
         "reason": GraphQLArgument(
-            type=GraphQLString,
+            type_=GraphQLString,
             description=(
                 "Explains why this element was deprecated, usually also including a suggestion for how to"
                 "access supported similar data. Formatted in [Markdown]"

@@ -225,7 +225,7 @@ def build_client_schema(introspection):
                 (
                     f["name"],
                     GraphQLField(
-                        type=get_output_type(f["type"]),
+                        type_=get_output_type(f["type"]),
                         description=f.get("description"),
                         resolver=no_execution,
                         deprecation_reason=f.get("deprecationReason"),
@@ -254,7 +254,7 @@ def build_client_schema(introspection):
     def build_input_value(input_value_introspection, argument_type):
         input_value = argument_type(
             description=input_value_introspection.get("description"),
-            type=get_input_type(input_value_introspection["type"]),
+            type_=get_input_type(input_value_introspection["type"]),
             default_value=build_default_value(input_value_introspection),
         )
         return input_value
