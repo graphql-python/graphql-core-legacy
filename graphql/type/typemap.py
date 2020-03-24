@@ -1,6 +1,8 @@
 from collections import OrderedDict, defaultdict
 from functools import reduce
 
+from typing import cast
+
 from ..utils.type_comparators import is_equal_type, is_type_sub_type_of
 from .definition import (
     GraphQLArgument,
@@ -162,7 +164,9 @@ class GraphQLTypeMap(OrderedDict):
             )
 
             assert is_type_sub_type_of(
-                schema, object_field.type, interface_field.type
+                cast("GraphQLSchema", schema),
+                object_field.type,
+                interface_field.type
             ), '{}.{} expects type "{}" but {}.{} provides type "{}".'.format(
                 interface,
                 field_name,
