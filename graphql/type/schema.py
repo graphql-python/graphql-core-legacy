@@ -4,7 +4,7 @@ except ImportError:  # Python < 3.3
     from collections import Iterable
 
 from .definition import GraphQLObjectType
-from .directives import GraphQLDirective, specified_directives
+from .directives import GraphQLDirective, specified_directives, GraphQLRecursionDirective
 from .introspection import IntrospectionSchema
 from .typemap import GraphQLTypeMap
 
@@ -88,7 +88,6 @@ class GraphQLSchema(object):
         self._subscription = subscription
         if directives is None:
             directives = specified_directives
-
         assert all(
             isinstance(d, GraphQLDirective) for d in directives
         ), "Schema directives must be List[GraphQLDirective] if provided but got: {}.".format(
@@ -126,7 +125,7 @@ class GraphQLSchema(object):
 
     def get_directives(self):
         # type: () -> List[GraphQLDirective]
-        return self._directives
+        return self._directives + [GraphQLRecursionDirective, ]
 
     def get_directive(self, name):
         # type: (str) -> Optional[GraphQLDirective]

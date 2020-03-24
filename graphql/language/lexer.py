@@ -76,6 +76,7 @@ class TokenKind(object):
     INT = 17
     FLOAT = 18
     STRING = 19
+    ASTERISK = 20 # recursive symbol
 
 
 def get_token_desc(token):
@@ -92,7 +93,7 @@ def get_token_kind_desc(kind):
 
 
 TOKEN_DESCRIPTION = {
-    TokenKind.EOF: "EOF",
+    TokenKind.EOF: "EOF", # end of file
     TokenKind.BANG: "!",
     TokenKind.DOLLAR: "$",
     TokenKind.PAREN_L: "(",
@@ -111,6 +112,7 @@ TOKEN_DESCRIPTION = {
     TokenKind.INT: "Int",
     TokenKind.FLOAT: "Float",
     TokenKind.STRING: "String",
+    TokenKind.ASTERISK: "RS", # recursion selection
 }
 
 
@@ -118,7 +120,6 @@ def char_code_at(s, pos):
     # type: (str, int) -> Optional[int]
     if 0 <= pos < len(s):
         return ord(s[pos])
-
     return None
 
 
@@ -135,6 +136,7 @@ PUNCT_CODE_TO_KIND = {
     ord("{"): TokenKind.BRACE_L,
     ord("|"): TokenKind.PIPE,
     ord("}"): TokenKind.BRACE_R,
+    ord("*"): TokenKind.ASTERISK, # recursive
 }
 
 
@@ -155,14 +157,14 @@ def read_token(source, from_position):
 
     This skips over whitespace and comments until it finds the next lexable
     token, then lexes punctuators immediately or calls the appropriate
-    helper fucntion for more complicated tokens."""
+    helper function for more complicated tokens."""
     body = source.body
     body_length = len(body)
 
     position = position_after_whitespace(body, from_position)
 
     if position >= body_length:
-        return Token(TokenKind.EOF, position, position)
+        return Token(TokenKind.EOF, position, position) # \n send token
 
     code = char_code_at(body, position)
     if code:
@@ -173,15 +175,15 @@ def read_token(source, from_position):
 
         kind = PUNCT_CODE_TO_KIND.get(code)
         if kind is not None:
-            return Token(kind, position, position + 1)
+            return Token(kind, position, position + 1) # send token of 20 - asterisk
 
-        if code == 46:  # .
+        if code == 46:  # . if token is point
             if (
                 char_code_at(body, position + 1)
                 == char_code_at(body, position + 2)
                 == 46
             ):
-                return Token(TokenKind.SPREAD, position, position + 3)
+                return Token(TokenKind.SPREAD, position, position + 3) # this definition of fragments
 
         elif 65 <= code <= 90 or code == 95 or 97 <= code <= 122:
             # A-Z, _, a-z

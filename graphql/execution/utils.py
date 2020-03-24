@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 import logging
 from traceback import format_exception
+from copy import deepcopy
 
 from ..error import GraphQLError
 from ..language import ast
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
 from ..type.definition import GraphQLInterfaceType, GraphQLUnionType
-from ..type.directives import GraphQLIncludeDirective, GraphQLSkipDirective
+from ..type.directives import (
+    GraphQLIncludeDirective,
+    GraphQLSkipDirective,
+    GraphQLRecursionDirective,
+)
 from ..type.introspection import (
     SchemaMetaFieldDef,
     TypeMetaFieldDef,
@@ -57,16 +62,16 @@ class ExecutionContext(object):
     )
 
     def __init__(
-        self,
-        schema,  # type: GraphQLSchema
-        document_ast,  # type: Document
-        root_value,  # type: Any
-        context_value,  # type: Any
-        variable_values,  # type: Optional[Dict[str, Any]]
-        operation_name,  # type: Optional[str]
-        executor,  # type: Any
-        middleware,  # type: Optional[Any]
-        allow_subscriptions,  # type: bool
+            self,
+            schema,  # type: GraphQLSchema
+            document_ast,  # type: Document
+            root_value,  # type: Any
+            context_value,  # type: Any
+            variable_values,  # type: Optional[Dict[str, Any]]
+            operation_name,  # type: Optional[str]
+            executor,  # type: Any
+            middleware,  # type: Optional[Any]
+            allow_subscriptions,  # type: bool
     ):
         # type: (...) -> None
         """Constructs a ExecutionContext object from the arguments passed
@@ -84,9 +89,9 @@ class ExecutionContext(object):
                     )
 
                 if (
-                    not operation_name
-                    or definition.name
-                    and definition.name.value == operation_name
+                        not operation_name
+                        or definition.name
+                        and definition.name.value == operation_name
                 ):
                     operation = definition
 
@@ -222,11 +227,11 @@ def get_operation_root_type(schema, operation):
 
 
 def collect_fields(
-    ctx,  # type: ExecutionContext
-    runtime_type,  # type: GraphQLObjectType
-    selection_set,  # type: SelectionSet
-    fields,  # type: DefaultOrderedDict
-    prev_fragment_names,  # type: Set[str]
+        ctx,  # type: ExecutionContext
+        runtime_type,  # type: GraphQLObjectType
+        selection_set,  # type: SelectionSet
+        fields,  # type: DefaultOrderedDict
+        prev_fragment_names,  # type: Set[str]
 ):
     # type: (...) -> DefaultOrderedDict
     """
@@ -241,7 +246,8 @@ def collect_fields(
         directives = selection.directives
 
         if isinstance(selection, ast.Field):
-            if not should_include_node(ctx, directives):
+            validate = validate_directives(ctx, directives, selection)
+            if isinstance(validate, bool) and not validate:
                 continue
 
             name = get_field_entry_key(selection)
@@ -249,7 +255,7 @@ def collect_fields(
 
         elif isinstance(selection, ast.InlineFragment):
             if not should_include_node(
-                ctx, directives
+                    ctx, directives
             ) or not does_fragment_condition_match(ctx, selection, runtime_type):
                 continue
 
@@ -261,7 +267,7 @@ def collect_fields(
             frag_name = selection.name.value
 
             if frag_name in prev_fragment_names or not should_include_node(
-                ctx, directives
+                    ctx, directives
             ):
                 continue
 
@@ -269,9 +275,9 @@ def collect_fields(
             fragment = ctx.fragments[frag_name]
             frag_directives = fragment.directives
             if (
-                not fragment
-                or not should_include_node(ctx, frag_directives)
-                or not does_fragment_condition_match(ctx, fragment, runtime_type)
+                    not fragment
+                    or not should_include_node(ctx, frag_directives)
+                    or not does_fragment_condition_match(ctx, fragment, runtime_type)
             ):
                 continue
 
@@ -320,10 +326,73 @@ def should_include_node(ctx, directives):
     return True
 
 
+def validate_directives(ctx, directives, selection):
+    for directive in directives:
+        if directive.name.value in (GraphQLSkipDirective.name, GraphQLIncludeDirective.name):
+            # @skip, @include checking directive
+            return should_include_node(ctx, directive)
+        elif directive.name.value == GraphQLRecursionDirective.name:
+            # @recursive directive check
+            build_recursive_selection_set(ctx, directive, selection)
+
+
+def relay_node_check(selection, frame):
+    """ Check it if relay structure is presented
+    modules {
+            edges {
+                node {
+                    uid # place new recursive query here
+                    }
+                }
+            }
+    """
+    if frame:
+        relay_frame = frame.pop(0)
+    else:
+        return True
+    for selection in selection.selection_set.selections:
+        if selection.name.value == relay_frame:
+            return relay_node_check(selection, frame)
+    return False
+
+
+def insert_recursive_selection(selection, depth, frame=[]):
+    def insert_in_frame(selection, paste_selection, frame=frame):
+        if frame:
+            relay_frame = frame.pop(0)
+        else:
+            # remove directive
+            selection.directives = []
+            paste_selection.directives = []
+            # return inner selection
+            returnable_selection_set = selection.selection_set
+            # insert in depth
+            returnable_selection_set.selections.append(paste_selection)
+            return paste_selection
+        for selection in selection.selection_set.selections:
+            if selection.name.value == relay_frame:
+                return insert_in_frame(selection, paste_selection, frame)
+
+    #  remove_directive(selection)
+    for counter in range(int(depth)):
+        copy_selection = deepcopy(selection)
+        copy_frame = deepcopy(frame)
+        selection = insert_in_frame(selection, copy_selection, copy_frame)
+
+
+def build_recursive_selection_set(ctx, directive, selection):
+    depth_size = directive.arguments[0].value.value
+    is_relay = relay_node_check(selection, ['edges', 'node'])
+    if is_relay:
+        insert_recursive_selection(selection, depth_size, ['edges', 'node'])
+    else:
+        insert_recursive_selection(selection, depth_size)
+
+
 def does_fragment_condition_match(
-    ctx,  # type: ExecutionContext
-    fragment,  # type: Union[FragmentDefinition, InlineFragment]
-    type_,  # type: GraphQLObjectType
+        ctx,  # type: ExecutionContext
+        fragment,  # type: Union[FragmentDefinition, InlineFragment]
+        type_,  # type: GraphQLObjectType
 ):
     # type: (...) -> bool
     type_condition_ast = fragment.type_condition
@@ -363,9 +432,9 @@ def default_resolve_fn(source, info, **args):
 
 
 def get_field_def(
-    schema,  # type: GraphQLSchema
-    parent_type,  # type: GraphQLObjectType
-    field_name,  # type: str
+        schema,  # type: GraphQLSchema
+        parent_type,  # type: GraphQLObjectType
+        field_name,  # type: str
 ):
     # type: (...) -> Optional[GraphQLField]
     """This method looks up the field on the given type defintion.

@@ -110,6 +110,8 @@ def execute(
     if executor is None:
         executor = SyncExecutor()
 
+    # operation_name, document_ast
+
     exe_context = ExecutionContext(
         schema,
         document_ast,

@@ -6,7 +6,7 @@ except ImportError:  # Python < 3.3
 from ..pyutils.ordereddict import OrderedDict
 from ..utils.assert_valid_name import assert_valid_name
 from .definition import GraphQLArgument, GraphQLNonNull, is_input_type
-from .scalars import GraphQLBoolean, GraphQLString
+from .scalars import GraphQLBoolean, GraphQLString, GraphQLInt
 
 
 class DirectiveLocation(object):
@@ -97,6 +97,26 @@ GraphQLSkipDirective = GraphQLDirective(
     ],
 )
 
+
+# Recursive directive (TimurMardanov for neomodel)
+GraphQLRecursionDirective = GraphQLDirective(
+    name='recursive',
+    description = "Recursion of the selection set, with depth.",
+    args = {
+        'depth': GraphQLArgument(
+                type=GraphQLNonNull(GraphQLInt), description='Depth of recursion.',
+                default_value=1,
+            )
+    },
+    locations=[
+        DirectiveLocation.FIELD,
+        DirectiveLocation.FIELD_DEFINITION,
+        DirectiveLocation.FRAGMENT_SPREAD,
+        DirectiveLocation.INLINE_FRAGMENT,
+    ],
+)
+#
+
 """Constant string used for default reason for a deprecation."""
 DEFAULT_DEPRECATION_REASON = "No longer supported"
 
@@ -122,4 +142,5 @@ specified_directives = [
     GraphQLIncludeDirective,
     GraphQLSkipDirective,
     GraphQLDeprecatedDirective,
+    GraphQLRecursionDirective,
 ]
