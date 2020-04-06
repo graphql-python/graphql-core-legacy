@@ -537,7 +537,8 @@ def complete_value(
                 GraphQLLocatedError(  # type: ignore
                     field_asts, original_error=error, path=path
                 )
-                if isinstance(error, GraphQLError) else error
+                if isinstance(error, GraphQLError)
+                else error
             ),
         )
 
