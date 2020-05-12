@@ -36,7 +36,7 @@ tests_requires = [
     "cython==0.29.17",
     "gevent==1.5.0",
     "pytest-benchmark==3.2.3",
-    "pytest-mock==2.0.0"
+    "pytest-mock==2.0.0",
 ]
 
 
