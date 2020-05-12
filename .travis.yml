@@ -22,7 +22,10 @@ matrix:
 install: pip install coveralls tox
 script: tox
 after_success: coveralls
-
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $HOME/.cache/pre-commit
 deploy:
   provider: pypi
   distributions: "sdist bdist_wheel"
