@@ -19,7 +19,7 @@ matrix:
        python: 3.8
     -  env: TOXENV=mypy
        python: 3.8
-install: pip install coveralls tox
+install: pip install "tox==3.15.0" "coveralls==1.11.1"
 script: tox
 after_success: coveralls
 cache:
