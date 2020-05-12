@@ -38,7 +38,7 @@ QueryType = GraphQLObjectType(
     name="Query",
     fields={
         "colorEnum": GraphQLField(
-            type=ColorType,
+            type_=ColorType,
             args={
                 "fromEnum": GraphQLArgument(ColorType),
                 "fromInt": GraphQLArgument(GraphQLInt),
@@ -49,7 +49,7 @@ QueryType = GraphQLObjectType(
             ),
         ),
         "colorInt": GraphQLField(
-            type=GraphQLInt,
+            type_=GraphQLInt,
             args={
                 "fromEnum": GraphQLArgument(ColorType),
                 "fromInt": GraphQLArgument(GraphQLInt),
@@ -63,7 +63,7 @@ MutationType = GraphQLObjectType(
     name="Mutation",
     fields={
         "favoriteEnum": GraphQLField(
-            type=ColorType,
+            type_=ColorType,
             args={"color": GraphQLArgument(ColorType)},
             resolver=lambda value, info, **args: args.get("color"),
         )
@@ -74,7 +74,7 @@ SubscriptionType = GraphQLObjectType(
     name="Subscription",
     fields={
         "subscribeToEnum": GraphQLField(
-            type=ColorType,
+            type_=ColorType,
             args={"color": GraphQLArgument(ColorType)},
             resolver=lambda value, info, **args: Observable.from_([args.get("color")]),
         )
@@ -187,9 +187,9 @@ def test_accepts_enum_literals_as_input_arguments_to_subscriptions():
         allow_subscriptions=True,
     )
     assert isinstance(result, Observable)
-    l = []
-    result.subscribe(l.append)
-    result = l[0]
+    lit = []
+    result.subscribe(lit.append)
+    result = lit[0]
     assert not result.errors
     assert result.data == {"subscribeToEnum": "GREEN"}
 

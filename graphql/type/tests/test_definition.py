@@ -74,7 +74,7 @@ BlogSubscription = GraphQLObjectType(
     "Subscription",
     {
         "articleSubscribe": GraphQLField(
-            args={"id": GraphQLArgument(GraphQLString)}, type=BlogArticle
+            args={"id": GraphQLArgument(GraphQLString)}, type_=BlogArticle
         )
     },
 )
@@ -169,7 +169,7 @@ def test_defines_an_object_type_with_deprecated_field():
         "foo",
         fields={
             "bar": GraphQLField(
-                type=GraphQLString, deprecation_reason="A terrible reason"
+                type_=GraphQLString, deprecation_reason="A terrible reason"
             )
         },
     )
@@ -198,7 +198,7 @@ def test_includes_nested_input_objects_in_the_map():
         name="SomeMutation",
         fields={
             "mutateSomething": GraphQLField(
-                type=BlogArticle, args={"input": GraphQLArgument(SomeInputObject)}
+                type_=BlogArticle, args={"input": GraphQLArgument(SomeInputObject)}
             )
         },
     )
@@ -206,7 +206,7 @@ def test_includes_nested_input_objects_in_the_map():
         name="SomeSubscription",
         fields={
             "subscribeToSomething": GraphQLField(
-                type=BlogArticle, args={"input": GraphQLArgument(SomeInputObject)}
+                type_=BlogArticle, args={"input": GraphQLArgument(SomeInputObject)}
             )
         },
     )

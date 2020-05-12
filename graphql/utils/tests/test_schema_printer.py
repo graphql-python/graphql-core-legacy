@@ -147,7 +147,7 @@ type Root {
 
 def test_prints_string_field_with_int_arg():
     output = print_single_field_schema(
-        GraphQLField(type=GraphQLString, args={"argOne": GraphQLArgument(GraphQLInt)})
+        GraphQLField(type_=GraphQLString, args={"argOne": GraphQLArgument(GraphQLInt)})
     )
     assert (
         output
@@ -166,7 +166,7 @@ type Root {
 def test_prints_string_field_with_int_arg_with_default():
     output = print_single_field_schema(
         GraphQLField(
-            type=GraphQLString,
+            type_=GraphQLString,
             args={"argOne": GraphQLArgument(GraphQLInt, default_value=2)},
         )
     )
@@ -187,7 +187,7 @@ type Root {
 def test_prints_string_field_with_non_null_int_arg():
     output = print_single_field_schema(
         GraphQLField(
-            type=GraphQLString,
+            type_=GraphQLString,
             args={"argOne": GraphQLArgument(GraphQLNonNull(GraphQLInt))},
         )
     )
@@ -208,7 +208,7 @@ type Root {
 def test_prints_string_field_with_multiple_args():
     output = print_single_field_schema(
         GraphQLField(
-            type=GraphQLString,
+            type_=GraphQLString,
             args=OrderedDict(
                 [
                     ("argOne", GraphQLArgument(GraphQLInt)),
@@ -235,7 +235,7 @@ type Root {
 def test_prints_string_field_with_multiple_args_first_is_default():
     output = print_single_field_schema(
         GraphQLField(
-            type=GraphQLString,
+            type_=GraphQLString,
             args=OrderedDict(
                 [
                     ("argOne", GraphQLArgument(GraphQLInt, default_value=1)),
@@ -263,7 +263,7 @@ type Root {
 def test_prints_string_field_with_multiple_args_second_is_default():
     output = print_single_field_schema(
         GraphQLField(
-            type=GraphQLString,
+            type_=GraphQLString,
             args=OrderedDict(
                 [
                     ("argOne", GraphQLArgument(GraphQLInt)),
@@ -291,7 +291,7 @@ type Root {
 def test_prints_string_field_with_multiple_args_last_is_default():
     output = print_single_field_schema(
         GraphQLField(
-            type=GraphQLString,
+            type_=GraphQLString,
             args=OrderedDict(
                 [
                     ("argOne", GraphQLArgument(GraphQLInt)),

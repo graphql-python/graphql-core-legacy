@@ -56,7 +56,7 @@ __Schema = GraphQLObjectType(
                 "types",
                 GraphQLField(
                     description="A list of all types supported by this server.",
-                    type=GraphQLNonNull(
+                    type_=GraphQLNonNull(
                         GraphQLList(GraphQLNonNull(__Type))  # type: ignore
                     ),
                     resolver=lambda schema, *_: schema.get_type_map().values(),
@@ -66,7 +66,7 @@ __Schema = GraphQLObjectType(
                 "queryType",
                 GraphQLField(
                     description="The type that query operations will be rooted at.",
-                    type=GraphQLNonNull(__Type),  # type: ignore
+                    type_=GraphQLNonNull(__Type),  # type: ignore
                     resolver=lambda schema, *_: schema.get_query_type(),
                 ),
             ),
@@ -75,7 +75,7 @@ __Schema = GraphQLObjectType(
                 GraphQLField(
                     description="If this server supports mutation, the type that "
                     "mutation operations will be rooted at.",
-                    type=__Type,  # type: ignore
+                    type_=__Type,  # type: ignore
                     resolver=lambda schema, *_: schema.get_mutation_type(),
                 ),
             ),
@@ -84,7 +84,7 @@ __Schema = GraphQLObjectType(
                 GraphQLField(
                     description="If this server support subscription, the type "
                     "that subscription operations will be rooted at.",
-                    type=__Type,  # type: ignore
+                    type_=__Type,  # type: ignore
                     resolver=lambda schema, *_: schema.get_subscription_type(),
                 ),
             ),
@@ -92,7 +92,7 @@ __Schema = GraphQLObjectType(
                 "directives",
                 GraphQLField(
                     description="A list of all directives supported by this server.",
-                    type=GraphQLNonNull(
+                    type_=GraphQLNonNull(
                         GraphQLList(GraphQLNonNull(__Directive))  # type: ignore
                     ),
                     resolver=lambda schema, *_: schema.get_directives(),
@@ -121,7 +121,7 @@ __Directive = GraphQLObjectType(
             (
                 "locations",
                 GraphQLField(
-                    type=GraphQLNonNull(
+                    type_=GraphQLNonNull(
                         GraphQLList(GraphQLNonNull(__DirectiveLocation))  # type: ignore
                     )
                 ),
@@ -129,7 +129,7 @@ __Directive = GraphQLObjectType(
             (
                 "args",
                 GraphQLField(
-                    type=GraphQLNonNull(
+                    type_=GraphQLNonNull(
                         GraphQLList(GraphQLNonNull(__InputValue))  # type: ignore
                     ),
                     resolver=lambda directive, *args: input_fields_to_list(
@@ -140,7 +140,7 @@ __Directive = GraphQLObjectType(
             (
                 "onOperation",
                 GraphQLField(
-                    type=GraphQLNonNull(GraphQLBoolean),
+                    type_=GraphQLNonNull(GraphQLBoolean),
                     deprecation_reason="Use `locations`.",
                     resolver=lambda directive, *args: set(directive.locations)
                     & _on_operation_locations,
@@ -149,7 +149,7 @@ __Directive = GraphQLObjectType(
             (
                 "onFragment",
                 GraphQLField(
-                    type=GraphQLNonNull(GraphQLBoolean),
+                    type_=GraphQLNonNull(GraphQLBoolean),
                     deprecation_reason="Use `locations`.",
                     resolver=lambda directive, *args: set(directive.locations)
                     & _on_fragment_locations,
@@ -158,7 +158,7 @@ __Directive = GraphQLObjectType(
             (
                 "onField",
                 GraphQLField(
-                    type=GraphQLNonNull(GraphQLBoolean),
+                    type_=GraphQLNonNull(GraphQLBoolean),
                     deprecation_reason="Use `locations`.",
                     resolver=lambda directive, *args: set(directive.locations)
                     & _on_field_locations,
@@ -421,7 +421,7 @@ __Type = GraphQLObjectType(
             (
                 "kind",
                 GraphQLField(
-                    type=GraphQLNonNull(__TypeKind),  # type: ignore
+                    type_=GraphQLNonNull(__TypeKind),  # type: ignore
                     resolver=TypeFieldResolvers.kind,
                 ),
             ),
@@ -430,7 +430,7 @@ __Type = GraphQLObjectType(
             (
                 "fields",
                 GraphQLField(
-                    type=GraphQLList(GraphQLNonNull(__Field)),  # type: ignore
+                    type_=GraphQLList(GraphQLNonNull(__Field)),  # type: ignore
                     args={
                         "includeDeprecated": GraphQLArgument(
                             GraphQLBoolean, default_value=False
@@ -442,21 +442,21 @@ __Type = GraphQLObjectType(
             (
                 "interfaces",
                 GraphQLField(
-                    type=GraphQLList(GraphQLNonNull(__Type)),  # type: ignore
+                    type_=GraphQLList(GraphQLNonNull(__Type)),  # type: ignore
                     resolver=TypeFieldResolvers.interfaces,
                 ),
             ),
             (
                 "possibleTypes",
                 GraphQLField(
-                    type=GraphQLList(GraphQLNonNull(__Type)),  # type: ignore
+                    type_=GraphQLList(GraphQLNonNull(__Type)),  # type: ignore
                     resolver=TypeFieldResolvers.possible_types,
                 ),
             ),
             (
                 "enumValues",
                 GraphQLField(
-                    type=GraphQLList(GraphQLNonNull(__EnumValue)),  # type: ignore
+                    type_=GraphQLList(GraphQLNonNull(__EnumValue)),  # type: ignore
                     args={
                         "includeDeprecated": GraphQLArgument(
                             GraphQLBoolean, default_value=False
@@ -468,15 +468,15 @@ __Type = GraphQLObjectType(
             (
                 "inputFields",
                 GraphQLField(
-                    type=GraphQLList(GraphQLNonNull(__InputValue)),  # type: ignore
+                    type_=GraphQLList(GraphQLNonNull(__InputValue)),  # type: ignore
                     resolver=TypeFieldResolvers.input_fields,
                 ),
             ),
             (
                 "ofType",
                 GraphQLField(
-                    type=__Type,  # type: ignore
-                    resolver=lambda type, *_: getattr(type, "of_type", None),
+                    type_=__Type,  # type: ignore
+                    resolver=lambda type_, *_: getattr(type_, "of_type", None),
                 ),
             ),
         ]
@@ -494,7 +494,7 @@ __Field = GraphQLObjectType(
             (
                 "args",
                 GraphQLField(
-                    type=GraphQLNonNull(
+                    type_=GraphQLNonNull(
                         GraphQLList(GraphQLNonNull(__InputValue))  # type: ignore
                     ),
                     resolver=lambda field, *_: input_fields_to_list(field.args),
@@ -504,14 +504,14 @@ __Field = GraphQLObjectType(
             (
                 "isDeprecated",
                 GraphQLField(
-                    type=GraphQLNonNull(GraphQLBoolean),
+                    type_=GraphQLNonNull(GraphQLBoolean),
                     resolver=lambda field, *_: bool(field.deprecation_reason),
                 ),
             ),
             (
                 "deprecationReason",
                 GraphQLField(
-                    type=GraphQLString,
+                    type_=GraphQLString,
                     resolver=lambda field, *_: field.deprecation_reason,
                 ),
             ),
@@ -532,7 +532,7 @@ __InputValue = GraphQLObjectType(
             (
                 "defaultValue",
                 GraphQLField(
-                    type=GraphQLString,
+                    type_=GraphQLString,
                     resolver=lambda input_val, *_: None
                     if input_val.default_value is None
                     else print_ast(ast_from_value(input_val.default_value, input_val)),
@@ -554,14 +554,14 @@ __EnumValue = GraphQLObjectType(
             (
                 "isDeprecated",
                 GraphQLField(
-                    type=GraphQLNonNull(GraphQLBoolean),
+                    type_=GraphQLNonNull(GraphQLBoolean),
                     resolver=lambda field, *_: bool(field.deprecation_reason),
                 ),
             ),
             (
                 "deprecationReason",
                 GraphQLField(
-                    type=GraphQLString,
+                    type_=GraphQLString,
                     resolver=lambda enum_value, *_: enum_value.deprecation_reason,
                 ),
             ),
@@ -644,14 +644,14 @@ IntrospectionSchema = __Schema
 
 SchemaMetaFieldDef = GraphQLField(
     # name='__schema',
-    type=GraphQLNonNull(__Schema),
+    type_=GraphQLNonNull(__Schema),
     description="Access the current type schema of this server.",
     resolver=lambda source, info, **args: info.schema,
     args={},
 )
 
 TypeMetaFieldDef = GraphQLField(
-    type=__Type,
+    type_=__Type,
     # name='__type',
     description="Request the type information of a single type.",
     args={"name": GraphQLArgument(GraphQLNonNull(GraphQLString))},
@@ -659,7 +659,7 @@ TypeMetaFieldDef = GraphQLField(
 )
 
 TypeNameMetaFieldDef = GraphQLField(
-    type=GraphQLNonNull(GraphQLString),
+    type_=GraphQLNonNull(GraphQLString),
     # name='__typename',
     description="The name of the current Object type at runtime.",
     resolver=lambda source, info, **args: info.parent_type.name,

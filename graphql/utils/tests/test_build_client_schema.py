@@ -81,7 +81,7 @@ def test_builds_a_simple_schema_with_both_operation_types():
         description="This is a simple subscription type",
         fields={
             "string": GraphQLField(
-                type=GraphQLString, description="This is a string field"
+                type_=GraphQLString, description="This is a string field"
             )
         },
     )
@@ -420,10 +420,10 @@ def test_builds_a_schema_with_an_input_object():
             fields={
                 "geocode": GraphQLField(
                     description="Get a geocode from an address",
-                    type=GraphQLString,
+                    type_=GraphQLString,
                     args={
                         "address": GraphQLArgument(
-                            description="The address to lookup", type=AddressType
+                            description="The address to lookup", type_=AddressType
                         )
                     },
                 )
@@ -499,7 +499,7 @@ def test_builds_a_schema_with_custom_directives():
             description="This is a simple type",
             fields={
                 "string": GraphQLField(
-                    type=GraphQLString, description="This is a string field"
+                    type_=GraphQLString, description="This is a string field"
                 )
             },
         ),
@@ -586,14 +586,14 @@ def test_builds_a_schema_aware_of_deprecation():
                     (
                         "shinyString",
                         GraphQLField(
-                            type=GraphQLString,
+                            type_=GraphQLString,
                             description="This is a shiny string field",
                         ),
                     ),
                     (
                         "deprecatedString",
                         GraphQLField(
-                            type=GraphQLString,
+                            type_=GraphQLString,
                             description="This is a deprecated string field",
                             deprecation_reason="Use shinyString",
                         ),
@@ -601,7 +601,7 @@ def test_builds_a_schema_aware_of_deprecation():
                     (
                         "color",
                         GraphQLField(
-                            type=GraphQLEnumType(
+                            type_=GraphQLEnumType(
                                 name="Color",
                                 values=OrderedDict(
                                     [
