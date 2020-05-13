@@ -13,7 +13,7 @@ from rx import Observable
 from six import string_types
 from promise import Promise, promise_for_dict, is_thenable
 
-from ..error import GraphQLError, GraphQLLocatedError
+from ..error import GraphQLError, GraphQLLocatedError, HandledGraphQLError
 from ..pyutils.default_ordered_dict import DefaultOrderedDict
 from ..pyutils.ordereddict import OrderedDict
 from ..utils.undefined import Undefined
@@ -450,6 +450,8 @@ def resolve_or_error(
     # type: (...) -> Any
     try:
         return executor.execute(resolve_fn, source, info, **args)
+    except HandledGraphQLError:
+        raise
     except Exception as e:
         logger.exception(
             "An error occurred while resolving field {}.{}".format(

@@ -81,3 +81,6 @@ class GraphQLError(Exception):
             if self.positions and source:
                 self._locations = [get_location(source, pos) for pos in self.positions]
         return self._locations
+
+class HandledGraphQLError(GraphQLError):
+    pass
