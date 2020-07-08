@@ -1,3 +1,4 @@
+import logging
 from asyncio import ensure_future, CancelledError
 from rx import AnonymousObservable
 
@@ -26,4 +27,5 @@ async def iterate_asyncgen(asyncgen, observer):
     except CancelledError:
         pass
     except Exception as e:
+        logging.exception(e)
         observer.on_error(e)
