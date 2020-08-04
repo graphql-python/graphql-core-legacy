@@ -8,7 +8,7 @@ import pytest
 
 asyncio = pytest.importorskip("asyncio")
 
-from graphql.error import format_error
+from graphql.error import format_error, GraphQLError
 from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import GraphQLField, GraphQLObjectType, GraphQLSchema, GraphQLString
@@ -95,7 +95,7 @@ def test_asyncio_executor_with_error():
     def resolver_2(context, *_):
         # type: (Optional[Any], *ResolveInfo) -> NoReturn
         asyncio.sleep(0.003)
-        raise Exception("resolver_2 failed!")
+        raise GraphQLError("resolver_2 failed!")
 
     Type = GraphQLObjectType(
         "Type",
@@ -115,6 +115,25 @@ def test_asyncio_executor_with_error():
         }
     ]
     assert result.data == {"a": "hey", "b": None}
+
+
+def test_asyncio_executor_exceptions_reraised():
+    # type: () -> None
+    ast = parse("query Example { a }")
+
+    class Error(Exception):
+        pass
+
+    def resolver(context, *_):
+        # type: (Optional[Any], *ResolveInfo) -> str
+        raise Error("UH OH!")
+
+    Type = GraphQLObjectType(
+        "Type", {"a": GraphQLField(GraphQLString, resolver=resolver)}
+    )
+
+    with pytest.raises(Error):
+        execute(GraphQLSchema(Type), ast, executor=AsyncioExecutor())
 
 
 def test_evaluates_mutations_serially():

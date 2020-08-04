@@ -1,4 +1,5 @@
 from .execution import ExecutionResult
+from .error import GraphQLError
 from .backend import get_default_backend
 
 from promise import promisify
@@ -69,7 +70,7 @@ def execute_graphql(
             middleware=middleware,
             **execute_options
         )
-    except Exception as e:
+    except GraphQLError as e:
         return ExecutionResult(errors=[e], invalid=True)
 
 

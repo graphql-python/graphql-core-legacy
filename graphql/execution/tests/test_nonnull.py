@@ -1,5 +1,5 @@
 # type: ignore
-from graphql.error import format_error
+from graphql.error import format_error, GraphQLError
 from graphql.execution import execute
 from graphql.language.parser import parse
 from graphql.type import (
@@ -17,10 +17,10 @@ if False:  # flake8: noqa
     from promise import Promise
     from typing import Any, Optional, Dict, Tuple, Union
 
-sync_error = Exception("sync")
-non_null_sync_error = Exception("nonNullSync")
-promise_error = Exception("promise")
-non_null_promise_error = Exception("nonNullPromise")
+sync_error = GraphQLError("sync")
+non_null_sync_error = GraphQLError("nonNullSync")
+promise_error = GraphQLError("promise")
+non_null_promise_error = GraphQLError("nonNullPromise")
 
 
 class ThrowingData(object):
