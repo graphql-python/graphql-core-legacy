@@ -71,9 +71,13 @@ def get_variable_values(
             errors = is_valid_value(value, var_type)
             if errors:
                 message = u"\n" + u"\n".join(errors)
+                try:
+                    serialized_value = json.dumps(value, sort_keys=True)
+                except TypeError:
+                    serialized_value = str(value)
                 raise GraphQLError(
                     'Variable "${}" got invalid value {}.{}'.format(
-                        var_name, json.dumps(value, sort_keys=True), message
+                        var_name, serialized_value, message
                     ),
                     [def_ast],
                 )
