@@ -167,6 +167,7 @@ def build_ast_schema(document):
             name=directive_ast.name.value,
             locations=[node.value for node in directive_ast.locations],
             args=make_input_values(directive_ast.arguments, GraphQLArgument),
+            description=get_description(directive_ast),
         )
 
     def get_object_type(type_ast):
@@ -210,6 +211,7 @@ def build_ast_schema(document):
             name=definition.name.value,
             fields=lambda: make_field_def_map(definition),
             interfaces=make_implemented_interfaces(definition),
+            description=get_description(definition),
         )
 
     def make_field_def_map(definition):
@@ -220,6 +222,7 @@ def build_ast_schema(document):
                     type_=produce_type_def(f.type),
                     args=make_input_values(f.arguments, GraphQLArgument),
                     deprecation_reason=get_deprecation_reason(f.directives),
+                    description=get_description(f),
                 ),
             )
             for f in definition.fields
@@ -237,6 +240,7 @@ def build_ast_schema(document):
                     default_value=value_from_ast(
                         value.default_value, produce_type_def(value.type)
                     ),
+                    description=get_description(value),
                 ),
             )
             for value in values
@@ -247,6 +251,7 @@ def build_ast_schema(document):
             name=definition.name.value,
             resolve_type=_none,
             fields=lambda: make_field_def_map(definition),
+            description=get_description(definition),
         )
 
     def make_enum_def(definition):
@@ -254,18 +259,24 @@ def build_ast_schema(document):
             (
                 v.name.value,
                 GraphQLEnumValue(
-                    deprecation_reason=get_deprecation_reason(v.directives)
+                    deprecation_reason=get_deprecation_reason(v.directives),
+                    description=get_description(v),
                 ),
             )
             for v in definition.values
         )
-        return GraphQLEnumType(name=definition.name.value, values=values)
+        return GraphQLEnumType(
+            name=definition.name.value,
+            values=values,
+            description=get_description(definition),
+        )
 
     def make_union_def(definition):
         return GraphQLUnionType(
             name=definition.name.value,
             resolve_type=_none,
             types=[produce_type_def(t) for t in definition.types],
+            description=get_description(definition),
         )
 
     def make_scalar_def(definition):
@@ -277,6 +288,7 @@ def build_ast_schema(document):
             # will cause them to pass.
             parse_literal=_false,
             parse_value=_false,
+            description=get_description(definition),
         )
 
     def make_input_object_def(definition):
@@ -285,6 +297,7 @@ def build_ast_schema(document):
             fields=lambda: make_input_values(
                 definition.fields, GraphQLInputObjectField
             ),
+            description=get_description(definition),
         )
 
     _schema_def_handlers = {
@@ -352,3 +365,8 @@ def get_deprecation_reason(directives):
         return args["reason"]
     else:
         return None
+
+
+def get_description(node):
+    if node.description:
+        return node.description.value

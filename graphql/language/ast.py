@@ -543,13 +543,14 @@ class FloatValue(Value):
 
 
 class StringValue(Value):
-    __slots__ = ("loc", "value")
+    __slots__ = ("loc", "value", "is_block_string")
     _fields = ("value",)
 
-    def __init__(self, value, loc=None):
+    def __init__(self, value, loc=None, is_block_string=False):
         # type: (str, Optional[Loc]) -> None
         self.loc = loc
         self.value = value
+        self.is_block_string = is_block_string
 
     def __eq__(self, other):
         # type: (Any) -> bool
@@ -989,7 +990,7 @@ class OperationTypeDefinition(Node):
 
 
 class ObjectTypeDefinition(TypeDefinition):
-    __slots__ = ("loc", "name", "interfaces", "directives", "fields")
+    __slots__ = ("loc", "name", "interfaces", "directives", "fields", "description")
     _fields = ("name", "interfaces", "fields")
 
     def __init__(
@@ -999,6 +1000,7 @@ class ObjectTypeDefinition(TypeDefinition):
         interfaces=None,  # type: Optional[List[NamedType]]
         loc=None,  # type: Optional[Loc]
         directives=None,  # type: Optional[List[Directive]]
+        description=None,  # type: Optional[String]
     ):
         # type: (...) -> None
         self.loc = loc
@@ -1006,12 +1008,12 @@ class ObjectTypeDefinition(TypeDefinition):
         self.interfaces = interfaces
         self.fields = fields
         self.directives = directives
+        self.description = description
 
     def __eq__(self, other):
         # type: (Any) -> bool
         return self is other or (
-            isinstance(other, ObjectTypeDefinition)
-            and
+            isinstance(other, ObjectTypeDefinition) and
             # self.loc == other.loc and
             self.name == other.name
             and self.interfaces == other.interfaces
@@ -1042,7 +1044,7 @@ class ObjectTypeDefinition(TypeDefinition):
 
 
 class FieldDefinition(Node):
-    __slots__ = ("loc", "name", "arguments", "type", "directives")
+    __slots__ = ("loc", "name", "arguments", "type", "directives", "description")
     _fields = ("name", "arguments", "type")
 
     def __init__(
@@ -1052,6 +1054,7 @@ class FieldDefinition(Node):
         type,  # type: Union[NamedType, NonNullType, ListType]
         loc=None,  # type: Optional[Loc]
         directives=None,  # type: Optional[List]
+        description=None,  # type: Optional[String]
     ):
         # type: (...) -> None
         self.loc = loc
@@ -1059,6 +1062,7 @@ class FieldDefinition(Node):
         self.arguments = arguments
         self.type = type
         self.directives = directives
+        self.description = description
 
     def __eq__(self, other):
         # type: (Any) -> bool
@@ -1094,7 +1098,7 @@ class FieldDefinition(Node):
 
 
 class InputValueDefinition(Node):
-    __slots__ = ("loc", "name", "type", "default_value", "directives")
+    __slots__ = ("loc", "name", "type", "default_value", "directives", "description")
     _fields = ("name", "type", "default_value")
 
     def __init__(
@@ -1104,6 +1108,7 @@ class InputValueDefinition(Node):
         default_value=None,  # type: Any
         loc=None,  # type: Optional[Loc]
         directives=None,  # type: Optional[List]
+        description=None,  # type: Optional[String]
     ):
         # type: (...) -> None
         self.loc = loc
@@ -1111,6 +1116,7 @@ class InputValueDefinition(Node):
         self.type = type
         self.default_value = default_value
         self.directives = directives
+        self.description = description
 
     def __eq__(self, other):
         # type: (Any) -> bool
@@ -1147,7 +1153,7 @@ class InputValueDefinition(Node):
 
 
 class InterfaceTypeDefinition(TypeDefinition):
-    __slots__ = ("loc", "name", "fields", "directives")
+    __slots__ = ("loc", "name", "fields", "directives", "description")
     _fields = ("name", "fields")
 
     def __init__(
@@ -1156,12 +1162,14 @@ class InterfaceTypeDefinition(TypeDefinition):
         fields,  # type: List[FieldDefinition]
         loc=None,  # type: Optional[Loc]
         directives=None,  # type: Optional[List[Directive]]
+        description=None,  # type: Optional[String]
     ):
         # type: (...) -> None
         self.loc = loc
         self.name = name
         self.fields = fields
         self.directives = directives
+        self.description = description
 
     def __eq__(self, other):
         # type: (Any) -> bool
@@ -1194,7 +1202,7 @@ class InterfaceTypeDefinition(TypeDefinition):
 
 
 class UnionTypeDefinition(TypeDefinition):
-    __slots__ = ("loc", "name", "types", "directives")
+    __slots__ = ("loc", "name", "types", "directives", "description")
     _fields = ("name", "types")
 
     def __init__(
@@ -1203,12 +1211,14 @@ class UnionTypeDefinition(TypeDefinition):
         types,  # type: List[NamedType]
         loc=None,  # type: Optional[Loc]
         directives=None,  # type: Optional[List[Directive]]
+        description=None,  # type: Optional[String]
     ):
         # type: (...) -> None
         self.loc = loc
         self.name = name
         self.types = types
         self.directives = directives
+        self.description = description
 
     def __eq__(self, other):
         # type: (Any) -> bool
@@ -1241,7 +1251,7 @@ class UnionTypeDefinition(TypeDefinition):
 
 
 class ScalarTypeDefinition(TypeDefinition):
-    __slots__ = ("loc", "name", "directives")
+    __slots__ = ("loc", "name", "directives", "description")
     _fields = ("name",)
 
     def __init__(
@@ -1249,11 +1259,13 @@ class ScalarTypeDefinition(TypeDefinition):
         name,  # type: Name
         loc=None,  # type: Optional[Loc]
         directives=None,  # type: Optional[List[Directive]]
+        description=None,  # type: Optional[String]
     ):
         # type: (...) -> None
         self.loc = loc
         self.name = name
         self.directives = directives
+        self.description = description
 
     def __eq__(self, other):
         # type: (Any) -> bool
@@ -1284,7 +1296,7 @@ class ScalarTypeDefinition(TypeDefinition):
 
 
 class EnumTypeDefinition(TypeDefinition):
-    __slots__ = ("loc", "name", "values", "directives")
+    __slots__ = ("loc", "name", "values", "directives", "description")
     _fields = ("name", "values")
 
     def __init__(
@@ -1293,12 +1305,14 @@ class EnumTypeDefinition(TypeDefinition):
         values,  # type: List[EnumValueDefinition]
         loc=None,  # type: Optional[Loc]
         directives=None,  # type: Optional[List[Directive]]
+        description=None,  # type: Optional[String]
     ):
         # type: (...) -> None
         self.loc = loc
         self.name = name
         self.values = values
         self.directives = directives
+        self.description = description
 
     def __eq__(self, other):
         # type: (Any) -> bool
@@ -1331,7 +1345,7 @@ class EnumTypeDefinition(TypeDefinition):
 
 
 class EnumValueDefinition(Node):
-    __slots__ = ("loc", "name", "directives")
+    __slots__ = ("loc", "name", "directives", "description")
     _fields = ("name",)
 
     def __init__(
@@ -1339,11 +1353,13 @@ class EnumValueDefinition(Node):
         name,  # type: Name
         loc=None,  # type: Optional[Loc]
         directives=None,  # type: Optional[List[Directive]]
+        description=None,  # type: Optional[String]
     ):
         # type: (...) -> None
         self.loc = loc
         self.name = name
         self.directives = directives
+        self.description = description
 
     def __eq__(self, other):
         # type: (Any) -> bool
@@ -1374,7 +1390,7 @@ class EnumValueDefinition(Node):
 
 
 class InputObjectTypeDefinition(TypeDefinition):
-    __slots__ = ("loc", "name", "fields", "directives")
+    __slots__ = ("loc", "name", "fields", "directives", "description")
     _fields = ("name", "fields")
 
     def __init__(
@@ -1383,12 +1399,14 @@ class InputObjectTypeDefinition(TypeDefinition):
         fields,  # type: List[InputValueDefinition]
         loc=None,  # type: Optional[Loc]
         directives=None,  # type: Optional[List[Directive]]
+        description=None,  # type: Optional[String]
     ):
         # type: (...) -> None
         self.loc = loc
         self.name = name
         self.fields = fields
         self.directives = directives
+        self.description = description
 
     def __eq__(self, other):
         # type: (Any) -> bool
@@ -1454,7 +1472,7 @@ class TypeExtensionDefinition(TypeSystemDefinition):
 
 
 class DirectiveDefinition(TypeSystemDefinition):
-    __slots__ = ("loc", "name", "arguments", "locations")
+    __slots__ = ("loc", "name", "arguments", "locations", "description")
     _fields = ("name", "locations")
 
     def __init__(
@@ -1463,12 +1481,14 @@ class DirectiveDefinition(TypeSystemDefinition):
         locations,  # type: List[Name]
         arguments=None,  # type: Optional[List[InputValueDefinition]]
         loc=None,  # type: Optional[Loc]
+        description=None,  # type: Optional[String]
     ):
         # type: (...) -> None
         self.name = name
         self.locations = locations
         self.loc = loc
         self.arguments = arguments
+        self.description = description
 
     def __eq__(self, other):
         # type: (Any) -> bool
