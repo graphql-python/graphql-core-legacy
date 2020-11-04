@@ -271,17 +271,17 @@ def _print_description(definition, indentation="", first_in_block=True):
     if len(lines) == 1 and len(lines[0]) < 70 and lines[0][-1] != '"':
         return description + _escape_quote(lines[0]) + '"""\n'
 
-    has_leading_space = lines[0][0] == " " or lines[0][0] == "\t";
+    has_leading_space = not lines[0] or lines[0][0] in " \t"
     if not has_leading_space:
-        description += "\n";
+        description += "\n"
 
     for idx, line in enumerate(lines):
         if idx != 0 or not has_leading_space:
-            description += indentation;
+            description += indentation
 
-        description += _escape_quote(line) + "\n";
+        description += _escape_quote(line) + "\n"
 
-    return description + indentation + '"""\n';
+    return description + indentation + '"""\n'
 
 
 def _description_lines(description, max_len):
