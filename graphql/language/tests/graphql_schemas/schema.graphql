@@ -1,0 +1,8 @@
+type Query {
+    person(name: ID!): Person
+    skill(name: ID!): Skill
+}
+
+schema {
+    query: Query
+}

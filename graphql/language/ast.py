@@ -1079,6 +1079,7 @@ class FieldDefinition(Node):
             "name={self.name!r}"
             ", arguments={self.arguments!r}"
             ", type={self.type!r}"
+            ", directives={self.directives!r}"
             ")"
         ).format(self=self)
 
