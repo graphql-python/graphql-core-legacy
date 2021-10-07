@@ -428,16 +428,23 @@ def subscribe_field(
             )
         )
 
-    return result.map(
-        functools.partial(
-            complete_value_catching_error,
-            exe_context,
-            return_type,
-            field_asts,
-            info,
-            path,
-        )
-    )
+    def complete_subscription_result(result):
+        def promise_executor(v):
+            return complete_value_catching_error(
+                exe_context,
+                return_type,
+                field_asts,
+                info,
+                path,
+                result,
+            )
+
+        promise = Promise.resolve(None).then(promise_executor)
+        exe_context.executor.wait_until_finished()
+
+        return promise.get()
+
+    return result.map(complete_subscription_result)
 
 
 def resolve_or_error(
